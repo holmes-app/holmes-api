@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 from holmes import __version__
 
 tests_require = [
+    'mock',
     'nose',
     'coverage',
     'yanc',
