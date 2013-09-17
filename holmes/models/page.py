@@ -4,8 +4,6 @@
 
 from motorengine import Document, URLField, StringField, ReferenceField, DateTimeField
 
-from holmes.models.domain import Domain
-
 
 class Page(Document):
     title = StringField()
@@ -13,5 +11,5 @@ class Page(Document):
     added_date = DateTimeField(required=True, auto_now_on_insert=True)
     updated_date = DateTimeField(required=True, auto_now_on_insert=True, auto_now_on_update=True)
 
-    domain = ReferenceField(Domain, required=True)
-    #last_processing = ReferenceField(Processing, required=False)
+    domain = ReferenceField("holmes.models.domain.Domain", required=True)
+    last_processing = ReferenceField("holmes.models.processing.Processing", required=False)
