@@ -31,7 +31,6 @@ class MotorEngineFactory(base.Factory):
     ABSTRACT_FACTORY = True
 
     @classmethod
-    @return_future
     def _build(cls, target_class, *args, **kwargs):
         return target_class(*args, **kwargs)
 

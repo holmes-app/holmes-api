@@ -19,4 +19,9 @@ class PageFactory(MotorEngineFactory):
 
     title = factory.Sequence(lambda n: 'page-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
+
+    added_date = None
+    updated_date = None
+
     domain = factory.SubFactory(DomainFactory)
+    #last_processing = factory.SubFactory(LastProcessingFactory)
