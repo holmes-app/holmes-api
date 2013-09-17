@@ -13,6 +13,7 @@ tests_require = [
     'tox',
     'ipdb',
     'coveralls',
+    'factory_boy',
 ]
 
 setup(

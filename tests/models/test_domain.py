@@ -7,14 +7,15 @@ from preggy import expect
 from tests.base import ApiTestCase
 from tornado.testing import gen_test
 
-from holmes.models import Domain
+from tests.fixtures import DomainFactory
 
 
 class TestDomain(ApiTestCase):
+
     @gen_test
     def test_can_create_domain(self):
-        domain = yield Domain.objects.create(url="http://www.globo.com/", name="Globo.com")
+        domain = yield DomainFactory.create()
 
         expect(domain._id).not_to_be_null()
-        expect(domain.url).to_equal("http://www.globo.com/")
-        expect(domain.name).to_equal("Globo.com")
+        expect(domain.url).to_include("http://my-site-")
+        expect(domain.name).to_include("domain-")
