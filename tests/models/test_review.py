@@ -6,6 +6,7 @@ from datetime import datetime
 from preggy import expect
 from tornado.testing import gen_test
 
+from holmes.models import Review
 from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -21,6 +22,10 @@ class TestReview(ApiTestCase):
         expect(review.created_date).to_be_like(datetime.now())
 
         expect(review.page._id).to_equal(page._id)
+
+        loaded = yield Review.objects.get(review._id)
+        expect(loaded.created_date).to_be_like(review.created_date)
+        expect(loaded.is_complete).to_be_like(review.is_complete)
 
     def test_can_append_facts(self):
         review = ReviewFactory.build()

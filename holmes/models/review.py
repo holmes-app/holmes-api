@@ -2,13 +2,18 @@
 # -*- coding: utf-8 -*-
 
 
-from motorengine import Document, ReferenceField, DateTimeField, ListField, EmbeddedDocumentField
+from motorengine import (
+    Document, ReferenceField, DateTimeField,
+    ListField, EmbeddedDocumentField, BooleanField
+)
 
 
 class Review(Document):
     page = ReferenceField("holmes.models.page.Page", required=True)
     facts = ListField(EmbeddedDocumentField("holmes.models.fact.Fact"))
     violations = ListField(EmbeddedDocumentField("holmes.models.violation.Violation"))
+
+    is_complete = BooleanField(required=True, default=False)
 
     created_date = DateTimeField(required=True, auto_now_on_insert=True)
 
