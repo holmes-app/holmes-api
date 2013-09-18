@@ -31,3 +31,14 @@ class TestReview(ApiTestCase):
         expect(review.facts[0].key).to_equal("a")
         expect(review.facts[0].value).to_equal("b")
         expect(review.facts[0].unit).to_equal("c")
+
+    def test_can_append_violations(self):
+        review = ReviewFactory.build()
+        expect(review.violations).to_length(0)
+
+        review.add_violation("a", "b", "c", 100)
+        expect(review.violations).to_length(1)
+        expect(review.violations[0].key).to_equal("a")
+        expect(review.violations[0].title).to_equal("b")
+        expect(review.violations[0].description).to_equal("c")
+        expect(review.violations[0].points).to_equal(100)

@@ -30,5 +30,8 @@ class PageFactory(MotorEngineFactory):
 class ReviewFactory(MotorEngineFactory):
     FACTORY_FOR = Review
 
+    facts = factory.LazyAttribute(lambda a: [])
+    violations = factory.LazyAttribute(lambda a: [])
+
     created_date = None
     page = None
