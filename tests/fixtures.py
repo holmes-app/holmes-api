@@ -3,7 +3,7 @@
 
 import factory
 
-from holmes.models import Domain, Page, Processing
+from holmes.models import Domain, Page, Review
 from tests.base import MotorEngineFactory
 
 
@@ -24,11 +24,11 @@ class PageFactory(MotorEngineFactory):
     updated_date = None
 
     domain = None
-    last_processing = None
+    last_review = None
 
 
-class ProcessingFactory(MotorEngineFactory):
-    FACTORY_FOR = Processing
+class ReviewFactory(MotorEngineFactory):
+    FACTORY_FOR = Review
 
     created_date = None
     page = None

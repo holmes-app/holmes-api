@@ -12,4 +12,4 @@ class Page(Document):
     updated_date = DateTimeField(required=True, auto_now_on_insert=True, auto_now_on_update=True)
 
     domain = ReferenceField("holmes.models.domain.Domain", required=True)
-    last_processing = ReferenceField("holmes.models.processing.Processing", required=False)
+    last_review = ReferenceField("holmes.models.review.Review", required=False)
