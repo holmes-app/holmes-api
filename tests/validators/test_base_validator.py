@@ -21,3 +21,22 @@ class TestBaseValidator(ApiTestCase):
         expect(review.violations).to_be_empty()
         expect(review.facts).to_be_empty()
         expect(result).to_be_true()
+
+    @gen_test
+    def test_can_add_fact(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        Validator(None, review).add_fact('test', 10)
+        Validator(None, review).add_fact('other', 20, 'unit')
+
+        expect(review.facts).to_length(2)
+
+        expect(review.facts[0].key).to_equal('test')
+        expect(review.facts[0].value).to_equal(10)
+        expect(review.facts[0].unit).to_equal('value')
+
+        expect(review.facts[1].key).to_equal('other')
+        expect(review.facts[1].value).to_equal(20)
+        expect(review.facts[1].unit).to_equal('unit')

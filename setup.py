@@ -47,6 +47,7 @@ Holmes is a service to investigate your website health.
         'motorengine',
         'requests',
         'lxml',
+        'cssselect'
     ],
     extras_require={
         'tests': tests_require,

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
 from factory import base
@@ -41,3 +42,13 @@ class MotorEngineFactory(base.Factory):
         del kwargs['callback']
         instance = target_class(*args, **kwargs)
         instance.save(callback=callback)
+
+
+PAGES_ROOT_PATH = abspath(join(dirname(__file__), 'pages'))
+
+
+class ValidatorTestCase(ApiTestCase):
+
+    def get_page(self, name):
+        with open(join(PAGES_ROOT_PATH.rstrip('/'), name.lstrip('/')), 'r') as page:
+            return page.read()
