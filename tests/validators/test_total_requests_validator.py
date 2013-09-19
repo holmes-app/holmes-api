@@ -28,3 +28,7 @@ class TestValidator(ValidatorTestCase):
             validator.validate()
 
             expect(review.facts).to_length(1)
+
+            expect(review.facts[0].key).to_equal('total.requests')
+            expect(review.facts[0].value).to_equal(69)
+            expect(review.facts[0].unit).to_equal('value')
