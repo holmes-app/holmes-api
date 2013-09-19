@@ -29,3 +29,4 @@ class TestReview(ApiTestCase):
 
         expect(reviewer.status_code).to_equal(200)
         expect(reviewer.content).not_to_be_null()
+        expect(reviewer.html).not_to_be_null()
