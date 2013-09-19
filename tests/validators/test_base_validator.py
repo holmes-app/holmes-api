@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from mock import Mock
 from preggy import expect
 from tornado.testing import gen_test
 
@@ -21,6 +22,13 @@ class TestBaseValidator(ApiTestCase):
         expect(review.violations).to_be_empty()
         expect(review.facts).to_be_empty()
         expect(result).to_be_true()
+
+    def test_can_get_response(self):
+        mock_reviewer = Mock()
+
+        Validator(mock_reviewer, None).get_response("some url")
+
+        mock_reviewer.get_response.assert_called_once_with('some url')
 
     @gen_test
     def test_can_add_fact(self):
