@@ -48,3 +48,18 @@ class TestBaseValidator(ApiTestCase):
         expect(review.facts[1].key).to_equal('other')
         expect(review.facts[1].value).to_equal(20)
         expect(review.facts[1].unit).to_equal('unit')
+
+    @gen_test
+    def test_can_add_violation(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        Validator(None, review).add_violation('a', 'b', 'c', 10)
+
+        expect(review.violations).to_length(1)
+
+        expect(review.violations[0].key).to_equal('a')
+        expect(review.violations[0].title).to_equal('b')
+        expect(review.violations[0].description).to_equal('c')
+        expect(review.violations[0].points).to_equal(10)

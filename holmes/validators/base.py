@@ -26,3 +26,6 @@ class Validator(object):
 
     def add_fact(self, key, value, unit='value'):
         self.review.add_fact(key, value, unit)
+
+    def add_violation(self, key, title, description, points):
+        self.review.add_violation(key, title, description, points)
