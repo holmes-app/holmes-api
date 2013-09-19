@@ -55,6 +55,7 @@ Holmes is a service to investigate your website health.
     entry_points={
         'console_scripts': [
             'holmes-api=holmes.server:main',
+            'holmes-worker=holmes.worker:main',
         ],
     },
 )

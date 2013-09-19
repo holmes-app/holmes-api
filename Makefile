@@ -31,3 +31,6 @@ mongo_test: kill_mongo_test
 
 run: mongo
 	@holmes-api -vvv -c ./holmes/config/local.conf
+
+worker: mongo
+	@holmes-worker -vvv -c ./holmes/config/local.conf
