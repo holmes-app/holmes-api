@@ -3,6 +3,7 @@
 
 import requests
 import lxml.html
+from tornado.concurrent import return_future
 
 from holmes.models import Review
 
@@ -41,4 +42,10 @@ class Reviewer(object):
 
     def run_validators(self, review_instance):
         for validator in self.validators:
-            validator.validate(self, review_instance)
+            validator_instance = validator(self, review_instance)
+            validator_instance.validate()
+
+    @return_future
+    def conclude(self, review, callback):
+        review.is_complete = True
+        review.save(callback=callback)
