@@ -13,10 +13,11 @@ class InvalidReviewError(RuntimeError):
 
 
 class Reviewer(object):
-    def __init__(self, page, validators=[]):
+    def __init__(self, page, config=None, validators=[]):
         self.page = page
         self.status_code = None
         self.content = None
+        self.config = config
         self.validators = validators
 
     def review(self):

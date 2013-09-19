@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from mock import Mock
 from preggy import expect
 from tornado.testing import gen_test
 
@@ -22,6 +23,13 @@ class TestBaseValidator(ApiTestCase):
         expect(review.facts).to_be_empty()
         expect(result).to_be_true()
 
+    def test_can_get_response(self):
+        mock_reviewer = Mock()
+
+        Validator(mock_reviewer, None).get_response("some url")
+
+        mock_reviewer.get_response.assert_called_once_with('some url')
+
     @gen_test
     def test_can_add_fact(self):
         domain = yield DomainFactory.create()
@@ -40,3 +48,18 @@ class TestBaseValidator(ApiTestCase):
         expect(review.facts[1].key).to_equal('other')
         expect(review.facts[1].value).to_equal(20)
         expect(review.facts[1].unit).to_equal('unit')
+
+    @gen_test
+    def test_can_add_violation(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        Validator(None, review).add_violation('a', 'b', 'c', 10)
+
+        expect(review.violations).to_length(1)
+
+        expect(review.violations[0].key).to_equal('a')
+        expect(review.violations[0].title).to_equal('b')
+        expect(review.violations[0].description).to_equal('c')
+        expect(review.violations[0].points).to_equal(10)
