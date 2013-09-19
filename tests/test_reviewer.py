@@ -3,6 +3,7 @@
 
 from datetime import datetime
 
+from mock import Mock
 from preggy import expect
 from tornado.testing import gen_test
 
@@ -51,3 +52,14 @@ class TestReview(ApiTestCase):
         expect(loaded_review).not_to_be_null()
 
         yield loaded_review.load_references()
+
+    @gen_test
+    def test_validator_runs_validators(self):
+        mock_validator = Mock()
+        domain = yield DomainFactory.create(url="http://www.globo.com")
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+
+        reviewer = Reviewer(page=page, validators=[mock_validator])
+        reviewer.review()
+
+        expect(mock_validator.called).to_equal(True)

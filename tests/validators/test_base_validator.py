@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from preggy import expect
+from tornado.testing import gen_test
 
 from holmes.validators.base import Validator
 from tests.base import ApiTestCase
@@ -9,6 +10,7 @@ from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestBaseValidator(ApiTestCase):
+    @gen_test
     def test_can_validate(self):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
