@@ -31,7 +31,7 @@ class Reviewer(object):
         response = self.get_response(self.page.url)
 
         if response.status_code > 399:
-            raise InvalidReviewError("Could not load %s!" % self.page.url)
+            raise InvalidReviewError("Could not load '%s'!" % self.page.url)
 
         self.status_code = response.status_code
         self.content = response.text
