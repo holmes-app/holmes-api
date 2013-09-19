@@ -45,7 +45,14 @@ class Reviewer(object):
             validator_instance = validator(self, review_instance)
             validator_instance.validate()
 
+    def handle_save_review(self, review, callback):
+        def handle(*args, **kw):
+            review.page.last_review = review
+            review.page.save(callback)
+
+        return handle
+
     @return_future
     def conclude(self, review, callback):
         review.is_complete = True
-        review.save(callback=callback)
+        review.save(callback=self.handle_save_review(review, callback))

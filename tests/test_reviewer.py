@@ -45,3 +45,9 @@ class TestReview(ApiTestCase):
 
         expect(review.is_complete).to_be_true()
         expect(review.created_date).to_be_like(datetime.now())
+        expect(page.last_review).to_equal(review)
+
+        loaded_review = yield Review.objects.get(review._id)
+        expect(loaded_review).not_to_be_null()
+
+        yield loaded_review.load_references()
