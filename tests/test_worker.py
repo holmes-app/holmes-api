@@ -25,7 +25,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker.working).to_be_true
 
 
-    @patch.object(holmes.worker.HolmesWorker,'do_work')
+    @patch.object(holmes.worker.HolmesWorker,'_do_work')
     def test_worker_run_keyboard_interrupt(self, do_work_mock):
         do_work_mock.side_effect = KeyboardInterrupt()
 

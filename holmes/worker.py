@@ -11,14 +11,14 @@ class HolmesWorker(object):
     def run(self):
         try:
             while self.working:
-                self.do_work()
+                self._do_work()
         except KeyboardInterrupt:
             return True
 
     def stop_work(self):
         self.working = False
 
-    def do_work(self):
+    def _do_work(self):
         print "."
 
 
