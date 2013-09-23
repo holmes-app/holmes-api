@@ -3,6 +3,7 @@
 
 import sys
 import time
+import logging
 from os.path import abspath, dirname, join
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -46,7 +47,7 @@ class HolmesWorker(object):
         parser = OptionParser()
         parser.add_option('-c', '--conf', dest='conf', default=join(self.root_path, 'holmes/config/local.conf'),
                           help='Configuration file to use for the server.')
-        parser.add_option('--verbose', '-v', action='count',
+        parser.add_option('--verbose', '-v', action='count', default=0,
                           help='Log level: v=warning, vv=info, vvv=debug.')
         
         self.options, self.arguments = parser.parse_args(arguments)
@@ -55,6 +56,27 @@ class HolmesWorker(object):
         if verify:
             verify_config(self.options.conf)
         self.config = Config.load(self.options.conf)
+
+    def _config_logging(self):
+        LOGS = {
+            0: 'error',
+            1: 'warning',
+            2: 'info',
+            3: 'debug'
+        }
+
+        if self.options.verbose:
+            log_level = LOGS[self.options.verbose].upper()
+        else:
+            log_level = self.config.LOG_LEVEL.upper()
+
+        logging.basicConfig(
+            level=log_level,
+            format=self.config.LOG_FORMAT,
+            datefmt=self.config.LOG_DATE_FORMAT
+        )
+
+        return log_level
 
 
 def main():

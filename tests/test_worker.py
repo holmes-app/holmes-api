@@ -11,6 +11,7 @@ from tests.base import ApiTestCase
 
 
 class WorkerTestCase(ApiTestCase):
+    root_path = abspath(join(dirname(__file__), ".."))
 
     @patch('holmes.worker.HolmesWorker')
     def test_worker_main_function(self, worker_mock):
@@ -40,16 +41,14 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_can_parse_opt(self):
         worker = holmes.worker.HolmesWorker()
         expect(worker.options.conf).not_to_equal("test.conf")
-        expect(worker.options.verbose).to_be_null()
+        expect(worker.options.verbose).to_equal(0)
 
         worker._parse_opt(arguments=["-c", "test.conf", "-vv"])
         expect(worker.options.conf).to_equal("test.conf")
         expect(worker.options.verbose).to_equal(2)
 
     def test_worker_can_create_an_instance_with_config_file(self):
-        root_path = abspath(join(dirname(__file__), ".."))
-
-        worker = holmes.worker.HolmesWorker(['-c', join(root_path, './tests/config/test_one_validator.conf')])
+        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/config/test_one_validator.conf')])
         expect(worker.config.VALIDATORS).to_length(1)
 
     @patch('holmes.worker.verify_config')
@@ -58,10 +57,13 @@ class WorkerTestCase(ApiTestCase):
         worker._load_config(verify=True)
         expect(verify_config_mock.called).to_be_true()
         
+    def test_worker_logging_config_from_arguments(self):
+        worker = holmes.worker.HolmesWorker(["", "-v"])
+        log_level = worker._config_logging()
+        expect(log_level).to_equal("WARNING")
 
-
-
-
-
-
+    def test_worker_logging_config_from_file(self):
+        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/config/test_one_validator.conf')])
+        log_level = worker._config_logging()
+        expect(log_level).to_equal("INFO")
 
