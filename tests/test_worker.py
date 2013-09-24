@@ -8,6 +8,7 @@ from os.path import abspath, dirname, join
 
 import holmes.worker
 from tests.base import ApiTestCase
+from tests.fixtures import DomainFactory, PageFactory
 
 
 class WorkerTestCase(ApiTestCase):
@@ -66,4 +67,12 @@ class WorkerTestCase(ApiTestCase):
         worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/config/test_one_validator.conf')])
         log_level = worker._config_logging()
         expect(log_level).to_equal("INFO")
+
+    @patch('holmes.reviewer.Reviewer')
+    def test_worker_do_work(self, reviewer_mock):
+        worker = holmes.worker.HolmesWorker()
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        worker._do_work(page)
+        expect(reviewer_mock().called).to_be_true()
 

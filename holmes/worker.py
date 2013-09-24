@@ -5,10 +5,10 @@ import sys
 import time
 import logging
 from os.path import abspath, dirname, join
-from holmes.config import Config
-from holmes.reviewer import Reviewer
 from derpconf.config import verify_config
 from optparse import OptionParser
+from holmes.config import Config
+from holmes.reviewer import Reviewer
 
 
 class HolmesWorker(object):
@@ -22,6 +22,7 @@ class HolmesWorker(object):
         
         self._parse_opt(arguments)
         self._load_config(self.options.verbose == 3)
+        self._config_logging()
 
     def run(self):
         try:
@@ -35,13 +36,11 @@ class HolmesWorker(object):
         self.working = False
 
     def _do_work(self):
-        pages = self._load_new_pages()
+        page = self._load_next_page_from_api()
+        Reviewer(page, self.config, self.validators)
 
-        for page in pages:
-            Reviewer(page, self.config, self.validators)
-
-    def _load_new_pages(self):
-        return ["http://www.globo.com", "http://g1.globo.com"]
+    def _load_next_page_from_api(self):
+        return {"url": "http://globo.com", "page_id": 1}
 
     def _parse_opt(self, arguments):
         parser = OptionParser()
