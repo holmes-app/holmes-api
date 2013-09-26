@@ -45,7 +45,7 @@ class HolmesWorker(object):
     def _do_work(self):
         self._ping_api()
 
-        page = self._load_next_page_from_api()
+        page = self._load_next_page()
         Reviewer(page, self.config, self.validators)
 
     def _ping_api(self):
@@ -55,7 +55,7 @@ class HolmesWorker(object):
             logging.fatal("Fail to ping API [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
             self.working = False
 
-    def _load_next_page_from_api(self):
+    def _load_next_page(self):
         return {"url": "http://globo.com", "page_id": 1}
 
     def _parse_opt(self, arguments):

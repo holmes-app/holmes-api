@@ -20,6 +20,12 @@ class WorkerTestCase(ApiTestCase):
         holmes.worker.main()
         expect(worker_mock().run.called).to_be_true()
 
+    @patch('holmes.worker.time.sleep')
+    def test_worker_sleep_time(self, worker_sleep):
+        worker = holmes.worker.HolmesWorker()
+        worker.run()
+        expect(worker_sleep.called).to_be_true()
+
     def test_worker_working_flag(self):
         worker = holmes.worker.HolmesWorker()
         
@@ -96,4 +102,9 @@ class WorkerTestCase(ApiTestCase):
         worker = holmes.worker.HolmesWorker()
         worker._ping_api()
         expect(worker.working).to_be_false()
+
+
+
+
+
 
