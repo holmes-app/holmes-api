@@ -34,7 +34,7 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_worker_ping_can_ping_existing_worker(self):
-        date = datetime(2010, 10, 10, 10, 10, 10)
+        date = datetime(2013, 9, 26, 17, 45, 0)
 
         worker = yield WorkerFactory.create(last_ping=date)
 
