@@ -9,6 +9,8 @@ from mock import patch
 import holmes.server
 from tests.base import ApiTestCase
 
+from holmes.handlers.worker_ping import WorkerPingHandler
+
 
 class ApiServerTestCase(ApiTestCase):
     def test_healthcheck(self):
@@ -18,7 +20,9 @@ class ApiServerTestCase(ApiTestCase):
 
     def test_server_handlers(self):
         srv = holmes.server.HolmesApiServer()
-        expect(srv.get_handlers()).to_length(1)
+        handlers = srv.get_handlers()
+        expect(handlers).to_length(1)
+        expect(handlers[0]).to_equal(('/worker/ping', WorkerPingHandler))
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()
