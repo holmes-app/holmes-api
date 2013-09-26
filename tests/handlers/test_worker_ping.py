@@ -12,7 +12,7 @@ from tests.base import ApiTestCase
 from tests.fixtures import WorkerFactory
 
 
-class TestWorkerHandler(ApiTestCase):
+class TestWorkerPingHandler(ApiTestCase):
     
     @gen_test
     def test_worker_ping_can_ping_new_worker(self):

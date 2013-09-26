@@ -43,3 +43,4 @@ class WorkerFactory(MotorEngineFactory):
 
     uuid = factory.LazyAttribute(lambda a: uuid4())
     last_ping = None
+    current_page = None
