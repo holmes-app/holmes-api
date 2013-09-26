@@ -17,3 +17,9 @@ class TestWorker(ApiTestCase):
 
         expect(worker._id).not_to_be_null()
         expect(worker.uuid).not_to_be_null()
+
+    @gen_test
+    def test_worker_model_str(self):
+        worker = yield WorkerFactory.create()
+
+        expect(str(worker)).to_equal("Worker %s" % str(worker.uuid))
