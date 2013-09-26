@@ -27,9 +27,7 @@ class ApiServerTestCase(ApiTestCase):
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()
         plugins = srv.get_plugins()
-
         expect(plugins).to_length(1)
-
         expect(plugins[0]).to_equal(MotorEnginePlugin)
 
     @patch('holmes.server.HolmesApiServer')
