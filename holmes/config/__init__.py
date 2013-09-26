@@ -5,6 +5,7 @@ from derpconf.config import Config  # NOQA
 
 
 Config.define("WORKER_SLEEP_TIME", 10, "Main loop sleep time", "Worker")
+Config.define("HOLMES_API_URL", "http://localhost:2368", "URL that Worker will communicate with API", "Worker")
 
 Config.define("LOG_LEVEL", "ERROR", "Default log level", "Logging")
 Config.define("LOG_FORMAT", "%(asctime)s:%(levelname)s %(module)s - %(message)s",

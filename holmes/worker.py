@@ -4,9 +4,14 @@
 import sys
 import time
 import logging
+from uuid import uuid4
 from os.path import abspath, dirname, join
+
+import requests
+from requests.exceptions import ConnectionError
 from derpconf.config import verify_config
 from optparse import OptionParser
+
 from holmes.config import Config
 from holmes.reviewer import Reviewer
 
@@ -15,6 +20,8 @@ class HolmesWorker(object):
 
     def __init__(self, arguments=[]):
         self.root_path = abspath(join(dirname(__file__), ".."))
+
+        self.uuid = uuid4().hex
 
         self.working = True
         self.config = None
@@ -36,8 +43,17 @@ class HolmesWorker(object):
         self.working = False
 
     def _do_work(self):
+        self._ping_api()
+
         page = self._load_next_page_from_api()
         Reviewer(page, self.config, self.validators)
+
+    def _ping_api(self):
+        try:
+            requests.post("%s/worker/ping" % self.config.HOLMES_API_URL, data={"worker_uuid": self.uuid})
+        except ConnectionError:
+            logging.fatal("Fail to ping API [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
+            self.working = False
 
     def _load_next_page_from_api(self):
         return {"url": "http://globo.com", "page_id": 1}

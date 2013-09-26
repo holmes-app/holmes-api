@@ -5,6 +5,7 @@
 from preggy import expect
 from mock import patch
 from os.path import abspath, dirname, join
+from requests.exceptions import ConnectionError
 
 import holmes.worker
 from tests.base import ApiTestCase
@@ -75,4 +76,24 @@ class WorkerTestCase(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         worker._do_work(page)
         expect(reviewer_mock().called).to_be_true()
+
+    @patch.object(holmes.worker.HolmesWorker, '_ping_api')
+    def test_worker_do_work_calling_ping_api(self, ping_api_mock):
+        worker = holmes.worker.HolmesWorker()
+        worker._do_work()
+        expect(ping_api_mock.called).to_be_true()
+
+    @patch('holmes.worker.requests.post')
+    def test_worker_ping_api(self, requests_mock):
+        worker = holmes.worker.HolmesWorker()
+        worker._ping_api()
+        expect(requests_mock.called).to_be_true()
+
+    @patch('holmes.worker.requests.post')
+    def test_worker_ping_api_connection_error(self, ping_api_mock):
+        ping_api_mock.side_effect = ConnectionError()
+
+        worker = holmes.worker.HolmesWorker()
+        worker._ping_api()
+        expect(worker.working).to_be_false()
 
