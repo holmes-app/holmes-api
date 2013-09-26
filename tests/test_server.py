@@ -9,7 +9,7 @@ from mock import patch
 import holmes.server
 from tests.base import ApiTestCase
 
-from holmes.handlers.worker_ping import WorkerPingHandler
+from holmes.handlers.worker import WorkerPingHandler
 
 
 class ApiServerTestCase(ApiTestCase):

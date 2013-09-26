@@ -3,7 +3,8 @@
 
 from cow.server import Server
 from cow.plugins.motorengine_plugin import MotorEnginePlugin
-from holmes.handlers.worker_ping import WorkerPingHandler
+
+from holmes.handlers.worker import WorkerPingHandler
 
 
 def main():

@@ -3,8 +3,9 @@
 
 import factory
 
-from holmes.models import Domain, Page, Review
+from holmes.models import Domain, Page, Review, Worker
 from tests.base import MotorEngineFactory
+from uuid import uuid4
 
 
 class DomainFactory(MotorEngineFactory):
@@ -35,3 +36,10 @@ class ReviewFactory(MotorEngineFactory):
 
     created_date = None
     page = None
+
+
+class WorkerFactory(MotorEngineFactory):
+    FACTORY_FOR = Worker
+
+    uuid = factory.LazyAttribute(lambda a: uuid4())
+    last_ping = None

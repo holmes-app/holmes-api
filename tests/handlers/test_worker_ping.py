@@ -1,18 +1,56 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from uuid import uuid4
+from datetime import datetime
+
 from preggy import expect
+from tornado.testing import gen_test
+
+from holmes.models import Worker
 from tests.base import ApiTestCase
-from uuid import uuid1
+from tests.fixtures import WorkerFactory
 
 
-class TestReview(ApiTestCase):
-    def test_worker_ping_can_ping(self):
-        worker_uuid = uuid1().hex
+class TestWorkerHandler(ApiTestCase):
+    
+    @gen_test
+    def test_worker_ping_can_ping_new_worker(self):
+        worker_uuid = uuid4()
 
-        response = self.fetch('/worker/ping',
-                              method='POST',
-                              body='worker_uuid=%s' % worker_uuid
-                              )
+        response = yield self.http_client.fetch(
+            self.get_url('/worker/ping'),
+            method='POST',
+            body='worker_uuid=%s' % str(worker_uuid)
+        )
+
+        workers = yield Worker.objects.filter(uuid=worker_uuid).find_all()
+
+        expect(workers).to_length(1)
+
+        worker = workers[0]
         expect(response.code).to_equal(200)
-        expect(response.body).to_be_like(worker_uuid)
+        expect(response.body).to_be_like(str(worker.uuid))
+
+    @gen_test
+    def test_worker_ping_can_ping_existing_worker(self):
+        date = datetime(2010, 10, 10, 10, 10, 10)
+
+        worker = yield WorkerFactory.create(last_ping=date)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/worker/ping'),
+            method='POST',
+            body='worker_uuid=%s' % str(worker.uuid)
+        )
+
+        workers = yield Worker.objects.filter(uuid=worker.uuid).find_all()
+        
+        expect(workers).to_length(1)
+
+        worker = workers[0]
+        expect(response.code).to_equal(200)
+        expect(response.body).to_be_like(str(worker.uuid))
+        expect(worker.last_ping).to_be_greater_than(date)
+
+
