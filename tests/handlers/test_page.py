@@ -8,8 +8,9 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Page
+from holmes.models import Page, Domain
 from tests.base import ApiTestCase
+from tests.fixtures import DomainFactory, PageFactory
 
 
 class TestPageHandler(ApiTestCase):
@@ -46,6 +47,26 @@ class TestPageHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
             expect(err.response.reason).to_be_like("Invalid url [%s]" % invalid_url)
+
+        else:
+            assert False, "Should not have got this far"
+
+    @gen_test
+    def test_when_url_already_exists(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/page'),
+                method='POST',
+                body='url=%s' % page.url
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(409)
+            expect(err.response.reason).to_be_like("Duplicate entry for page [%s]" % page.url)
 
         else:
             assert False, "Should not have got this far"
