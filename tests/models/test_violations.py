@@ -22,7 +22,9 @@ class TestViolations(ApiTestCase):
         loaded_review = yield Review.objects.get(review._id)
 
         expect(loaded_review.violations).to_length(1)
-        expect(loaded_review.violations[0].key).to_equal("some.random.fact")
-        expect(loaded_review.violations[0].title).to_equal("test title")
-        expect(loaded_review.violations[0].description).to_equal("test description")
-        expect(loaded_review.violations[0].points).to_equal(1203)
+        violation = loaded_review.violations[0]
+        expect(violation.key).to_equal("some.random.fact")
+        expect(violation.title).to_equal("test title")
+        expect(violation.description).to_equal("test description")
+        expect(violation.points).to_equal(1203)
+        expect(str(violation)).to_equal("%s (%d points)" % (violation.key, violation.points))
