@@ -26,7 +26,7 @@ class HolmesWorker(object):
         self.working = True
         self.config = None
         self.validators = set()
-        
+
         self._parse_opt(arguments)
         self._load_config(self.options.verbose == 3)
         self._config_logging()
@@ -64,7 +64,7 @@ class HolmesWorker(object):
                           help='Configuration file to use for the server.')
         parser.add_option('--verbose', '-v', action='count', default=0,
                           help='Log level: v=warning, vv=info, vvv=debug.')
-        
+
         self.options, self.arguments = parser.parse_args(arguments)
 
     def _load_config(self, verify=False):
