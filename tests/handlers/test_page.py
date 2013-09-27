@@ -3,12 +3,14 @@
 
 import sys
 from uuid import UUID
+from ujson import loads
 
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Page, Domain
+
+from holmes.models import Page
 from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory
 
@@ -67,7 +69,36 @@ class TestPageHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(409)
             expect(err.response.reason).to_be_like("Duplicate entry for page [%s]" % page.url)
-
         else:
             assert False, "Should not have got this far"
-            
+
+    @gen_test
+    def test_get_page_not_found(self):
+        invalid_page_uuid = "00000000-0000-0000-0000-000000000000"
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/page/%s' % invalid_page_uuid),
+                method='GET'
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like("Page UUID [%s] not found" % invalid_page_uuid)
+        else:
+            assert False, "Should not have got this far"
+
+    @gen_test
+    def test_get_page_get_info(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        response = yield self.http_client.fetch(self.get_url('/page/%s' % page.uuid))
+
+        expect(response.code).to_equal(200)
+
+        returned_page = loads(response.body)
+        
+        expect(returned_page['uuid']).to_equal(str(page.uuid))
+        expect(returned_page['url']).to_equal(page.url)

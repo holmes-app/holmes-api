@@ -22,9 +22,11 @@ class ApiServerTestCase(ApiTestCase):
     def test_server_handlers(self):
         srv = holmes.server.HolmesApiServer()
         handlers = srv.get_handlers()
-        expect(handlers).to_length(2)
+        expect(handlers).not_to_be_null()
+        expect(handlers).to_length(3)
         expect(handlers[0]).to_equal(('/worker/ping', WorkerPingHandler))
-        expect(handlers[1]).to_equal(('/page', PageHandler))
+        expect(handlers[1]).to_equal(('/page/?', PageHandler))
+        expect(handlers[2]).to_equal(('/page/([a-z0-9-]*)/?', PageHandler))
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()

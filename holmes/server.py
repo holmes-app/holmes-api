@@ -16,7 +16,8 @@ class HolmesApiServer(Server):
     def get_handlers(self):
         handlers = [
             ('/worker/ping', WorkerPingHandler),
-            ('/page', PageHandler),
+            ('/page/?', PageHandler),
+            ('/page/([a-z0-9-]*)/?', PageHandler),
         ]
 
         return tuple(handlers)
