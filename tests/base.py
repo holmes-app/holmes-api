@@ -12,8 +12,8 @@ from holmes.server import HolmesApiServer
 
 
 class ApiTestCase(CowTestCase):
-    def get_server(self):
-        cfg = Config(
+    def get_config(self):
+        return dict(
             MONGO_DATABASES={
                 'default': {
                     'host': 'localhost',
@@ -23,6 +23,8 @@ class ApiTestCase(CowTestCase):
             }
         )
 
+    def get_server(self):
+        cfg = Config(**self.get_config())
         self.server = HolmesApiServer(config=cfg)
         return self.server
 

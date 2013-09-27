@@ -15,6 +15,12 @@ from tests.fixtures import DomainFactory, PageFactory
 class WorkerTestCase(ApiTestCase):
     root_path = abspath(join(dirname(__file__), ".."))
 
+    def get_config(self):
+        cfg = super(WorkerTestCase, self).get_config()
+        cfg['WORKER_SLEEP_TIME'] = 1
+
+        return cfg
+
     @patch('holmes.worker.HolmesWorker')
     def test_worker_main_function(self, worker_mock):
         holmes.worker.main()
@@ -24,7 +30,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_sleep_time(self, worker_sleep):
         worker = holmes.worker.HolmesWorker()
         worker.run()
-        expect(worker_sleep.called).to_be_true()
+        worker_sleep.assert_called_once_with(1)
 
     def test_worker_working_flag(self):
         worker = holmes.worker.HolmesWorker()
