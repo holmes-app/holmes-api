@@ -18,6 +18,7 @@ class WorkerTestCase(ApiTestCase):
     def get_config(self):
         cfg = super(WorkerTestCase, self).get_config()
         cfg['WORKER_SLEEP_TIME'] = 1
+        cfg['HOLMES_API_URL'] = "http://localhost:2368"
 
         return cfg
 
@@ -95,11 +96,15 @@ class WorkerTestCase(ApiTestCase):
         worker._do_work()
         expect(ping_api_mock.called).to_be_true()
 
-    @patch('holmes.worker.requests.post')
+    @patch('requests.post')
     def test_worker_ping_api(self, requests_mock):
         worker = holmes.worker.HolmesWorker()
         worker._ping_api()
         expect(requests_mock.called).to_be_true()
+        requests_mock.assert_called_once_with(
+            "http://localhost:2368/worker/ping",
+            data={"worker_uuid": worker.uuid}
+        )
 
     @patch('holmes.worker.requests.post')
     def test_worker_ping_api_connection_error(self, ping_api_mock):
