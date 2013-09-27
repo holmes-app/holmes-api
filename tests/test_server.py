@@ -10,6 +10,7 @@ import holmes.server
 from tests.base import ApiTestCase
 
 from holmes.handlers.worker import WorkerPingHandler
+from holmes.handlers.page import PageHandler
 
 
 class ApiServerTestCase(ApiTestCase):
@@ -21,8 +22,9 @@ class ApiServerTestCase(ApiTestCase):
     def test_server_handlers(self):
         srv = holmes.server.HolmesApiServer()
         handlers = srv.get_handlers()
-        expect(handlers).to_length(1)
+        expect(handlers).to_length(2)
         expect(handlers[0]).to_equal(('/worker/ping', WorkerPingHandler))
+        expect(handlers[1]).to_equal(('/page', PageHandler))
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()

@@ -16,6 +16,7 @@ class TestPage(ApiTestCase):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
 
+        expect(page.uuid).not_to_be_null()
         expect(page._id).not_to_be_null()
         expect(page.url).to_include("http://my-site.com/")
         expect(page.title).to_include("page-")
