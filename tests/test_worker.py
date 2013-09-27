@@ -20,7 +20,7 @@ class WorkerTestCase(ApiTestCase):
         holmes.worker.main()
         expect(worker_mock().run.called).to_be_true()
 
-    @patch('holmes.worker.time.sleep')
+    @patch('time.sleep')
     def test_worker_sleep_time(self, worker_sleep):
         worker = holmes.worker.HolmesWorker()
         worker.run()
@@ -28,7 +28,7 @@ class WorkerTestCase(ApiTestCase):
 
     def test_worker_working_flag(self):
         worker = holmes.worker.HolmesWorker()
-        
+
         expect(worker.working).to_be_true()
         worker.stop_work()
         expect(worker.working).to_be_false()
@@ -64,7 +64,7 @@ class WorkerTestCase(ApiTestCase):
         worker = holmes.worker.HolmesWorker()
         worker._load_config(verify=True)
         expect(verify_config_mock.called).to_be_true()
-        
+
     def test_worker_logging_config_from_arguments(self):
         worker = holmes.worker.HolmesWorker(["", "-v"])
         log_level = worker._config_logging()
@@ -102,9 +102,3 @@ class WorkerTestCase(ApiTestCase):
         worker = holmes.worker.HolmesWorker()
         worker._ping_api()
         expect(worker.working).to_be_false()
-
-
-
-
-
-
