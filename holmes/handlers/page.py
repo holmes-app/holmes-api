@@ -14,8 +14,8 @@ class PageHandler(RequestHandler):
     def post(self):
         url = self.get_argument('url')
 
-        domain_url = get_domain_from_url(url)
-        if not domain_url:
+        domain_name, domain_url = get_domain_from_url(url)
+        if not domain_name:
             self.set_status(400, "Invalid url [%s]" % url)
             self.finish()
             return
@@ -23,11 +23,9 @@ class PageHandler(RequestHandler):
         domain = yield Domain.objects.filter(url=domain_url).find_all()
 
         if not domain:
-            domain = yield Domain.objects.create(url=domain_url)
-            page = yield Page.objects.create(url=url)
+            domain = yield Domain.objects.create(url=domain_url, name=domain_name)
 
-        self.write(page._id)
+        page = yield Page.objects.create(url=url, domain=domain)
+
+        self.write(str(page.uuid))
         self.finish()
-
-    def get(self):
-        pass

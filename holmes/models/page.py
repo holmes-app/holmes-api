@@ -8,7 +8,7 @@ from motorengine import Document, URLField, StringField, ReferenceField, DateTim
 
 class Page(Document):
     uuid = UUIDField(default=uuid4)
-    title = StringField()
+    title = StringField(required=False)
     url = URLField(required=True)
     added_date = DateTimeField(required=True, auto_now_on_insert=True)
     updated_date = DateTimeField(required=True, auto_now_on_insert=True, auto_now_on_update=True)
