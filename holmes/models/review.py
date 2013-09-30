@@ -33,3 +33,14 @@ class Review(Document):
         violation = Violation(key=key, title=title, description=description, points=points)
 
         self.violations.append(violation)
+
+    def to_dict(self):
+        return {
+            "pageId": str(self.page.uuid),
+            "domain": self.page.domain.name,
+            "isComplete": self.is_complete,
+            "reviewId": str(self.uuid),
+            "createdAt": self.created_date,
+            "facts": [fact.to_dict() for fact in self.facts],
+            "violations": [violation.to_dict() for violation in self.violations]
+        }

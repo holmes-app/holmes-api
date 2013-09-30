@@ -16,3 +16,11 @@ class Violation(Document):
 
     def __repr__(self):
         return self.__str__()
+
+    def to_dict(self):
+        return {
+            "key": self.key,
+            "title": self.title,
+            "description": self.description,
+            "points": self.points
+        }
