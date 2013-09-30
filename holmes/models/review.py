@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from uuid import uuid4
 
 from motorengine import (
     Document, ReferenceField, DateTimeField,
-    ListField, EmbeddedDocumentField, BooleanField
+    ListField, EmbeddedDocumentField, BooleanField,
+    UUIDField
 )
 
 
@@ -14,6 +16,7 @@ class Review(Document):
     violations = ListField(EmbeddedDocumentField("holmes.models.violation.Violation"))
 
     is_complete = BooleanField(required=True, default=False)
+    uuid = UUIDField(default=uuid4)
 
     created_date = DateTimeField(required=True, auto_now_on_insert=True)
 

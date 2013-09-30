@@ -26,6 +26,7 @@ class TestReview(ApiTestCase):
         loaded = yield Review.objects.get(review._id)
         expect(loaded.created_date).to_be_like(review.created_date)
         expect(loaded.is_complete).to_be_like(review.is_complete)
+        expect(loaded.uuid).not_to_be_null()
 
     def test_can_append_facts(self):
         review = ReviewFactory.build()
