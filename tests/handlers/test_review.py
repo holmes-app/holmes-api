@@ -8,9 +8,8 @@ from datetime import datetime
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
-from ujson import dumps
+from ujson import loads
 
-from holmes.models import Review
 from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -43,6 +42,10 @@ class TestReviewHandler(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
+        review.add_fact("fact", "kb", "value")
+        review.add_violation("violation", "title", "description", 100)
+        yield review.save()
+
         url = self.get_url(
             '/page/%s/review/%s' % (
                 page.uuid,
@@ -61,9 +64,13 @@ class TestReviewHandler(ApiTestCase):
             "pageId": str(page.uuid),
             "reviewId": str(review.uuid),
             "isComplete": False,
-            "facts": [],
-            "violations": [],
+            'facts': [
+                {'key': 'fact', 'unit': 'value', 'value': 'kb'}
+            ],
+            'violations': [
+                {u'points': 100, u'description': u'description', u'key': u'violation', u'title': u'title'}
+            ],
             "createdAt": dt
         }
 
-        expect(response.body).to_be_like(dumps(expected))
+        expect(loads(response.body)).to_be_like(expected)
