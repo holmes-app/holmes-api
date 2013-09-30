@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
+from datetime import datetime
 
 from tornado.web import RequestHandler
 from tornado import gen
@@ -11,18 +12,17 @@ from holmes.models import Review
 
 
 class ReviewHandler(RequestHandler):
+    def __parse_uuid(self, uuid):
+        try:
+            return UUID(uuid)
+        except ValueError:
+            return None
 
     @gen.coroutine
     def get(self, page_uuid, review_uuid):
-        parsed_uuid = None
-        try:
-            parsed_uuid = UUID(review_uuid)
-        except ValueError:
-            pass
-
         review = None
-        if parsed_uuid:
-            review = yield Review.objects.get(uuid=parsed_uuid)
+        if self.__parse_uuid(review_uuid):
+            review = yield Review.objects.get(uuid=review_uuid)
 
         if not review:
             self.set_status(404, "Review with uuid of %s not found!" % review_uuid)
@@ -33,4 +33,22 @@ class ReviewHandler(RequestHandler):
         yield review.page.load_references(['domain'])
 
         self.write(dumps(review.to_dict()))
+        self.finish()
+
+    @gen.coroutine
+    def post(self, page_uuid, review_uuid):
+        review = None
+        if self.__parse_uuid(review_uuid):
+            review = yield Review.objects.get(uuid=review_uuid)
+
+        if not review:
+            self.set_status(404, "Review with uuid of %s not found!" % review_uuid)
+            self.finish()
+            return
+
+        review.is_complete = True
+        review.completed_date = datetime.now()
+        yield review.save()
+
+        self.write("OK")
         self.finish()

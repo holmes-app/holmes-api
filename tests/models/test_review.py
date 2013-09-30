@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from datetime import datetime
 
 from preggy import expect
@@ -48,3 +49,29 @@ class TestReview(ApiTestCase):
         expect(review.violations[0].title).to_equal("b")
         expect(review.violations[0].description).to_equal("c")
         expect(review.violations[0].points).to_equal(100)
+
+    def test_cant_append_facts_after_complete(self):
+        review = ReviewFactory.build()
+        expect(review.facts).to_length(0)
+        review.is_complete = True
+
+        try:
+            review.add_fact("a", "b", "c")
+        except ValueError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
+        else:
+            assert False, "Should not have gotten this far"
+
+    def test_cant_append_violations_after_complete(self):
+        review = ReviewFactory.build()
+        expect(review.facts).to_length(0)
+        review.is_complete = True
+
+        try:
+            review.add_violation("a", "b", "c", 10)
+        except ValueError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
+        else:
+            assert False, "Should not have gotten this far"
