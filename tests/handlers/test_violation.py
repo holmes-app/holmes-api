@@ -12,7 +12,7 @@ from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
-class TestFactHandler(ApiTestCase):
+class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_invalid_review_returns_404(self):
@@ -20,14 +20,14 @@ class TestFactHandler(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
 
         url = self.get_url(
-            '/page/%s/review/invalid/fact' % page.uuid
+            '/page/%s/review/invalid/violation' % page.uuid
         )
 
         try:
             yield self.http_client.fetch(
                 url,
                 method='POST',
-                body='key=test.fact&unit=kb&value=10'
+                body='key=test.violation&title=title&description=description&points=20'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -44,7 +44,7 @@ class TestFactHandler(ApiTestCase):
         review = yield ReviewFactory.create(page=page)
 
         url = self.get_url(
-            '/page/%s/review/%s/fact' % (
+            '/page/%s/review/%s/violation' % (
                 page.uuid,
                 review.uuid
             )
@@ -53,7 +53,7 @@ class TestFactHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             url,
             method='POST',
-            body='key=test.fact&unit=kb&value=10'
+            body='key=test.violation&title=title&description=description&points=20'
         )
 
         expect(response.code).to_equal(200)
@@ -62,9 +62,10 @@ class TestFactHandler(ApiTestCase):
         review = yield Review.objects.get(uuid=review.uuid)
 
         expect(review).not_to_be_null()
-        expect(review.facts).to_length(1)
+        expect(review.violations).to_length(1)
 
-        fact = review.facts[0]
-        expect(fact.key).to_equal('test.fact')
-        expect(fact.unit).to_equal('kb')
-        expect(fact.value).to_equal('10')
+        violation = review.violations[0]
+        expect(violation.key).to_equal('test.violation')
+        expect(violation.title).to_equal('title')
+        expect(violation.description).to_equal('description')
+        expect(violation.points).to_equal(20)
