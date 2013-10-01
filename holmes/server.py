@@ -19,6 +19,7 @@ class HolmesApiServer(Server):
     def get_handlers(self):
         handlers = [
             (r'/worker/ping', WorkerHandler),
+            (r'/worker/list', WorkerHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/fact/?', CreateFactHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),

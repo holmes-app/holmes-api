@@ -4,6 +4,7 @@
 from tornado.web import RequestHandler
 from tornado import gen
 from uuid import UUID
+from ujson import dumps
 
 from holmes.models.worker import Worker
 
@@ -24,5 +25,13 @@ class WorkerHandler(RequestHandler):
         self.write(str(worker_uuid))
         self.finish()
 
+    @gen.coroutine
     def get(self):
-        pass  # active workers
+        workers = yield Worker.objects.filter().find_all()
+
+        workers_json = []
+        for worker in workers:
+            workers_json.append(worker.to_dict())
+
+        self.write(dumps(workers_json))
+        self.finish()

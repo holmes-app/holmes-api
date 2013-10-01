@@ -15,3 +15,10 @@ class Page(Document):
 
     domain = ReferenceField("holmes.models.domain.Domain", required=True)
     last_review = ReferenceField("holmes.models.review.Review", required=False)
+
+    def to_dict(self):
+        return {
+            "uuid": str(self.uuid),
+            "title": self.title,
+            "url": self.url
+        }

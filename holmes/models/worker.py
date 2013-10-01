@@ -15,3 +15,10 @@ class Worker(Document):
 
     def __repr__(self):
         return str(self)
+
+    def to_dict(self):
+        return {
+            "uuid": str(self.uuid),
+            "last_ping": str(self.last_ping),
+            "current_page": None
+        }
