@@ -4,7 +4,7 @@
 from cow.server import Server
 from cow.plugins.motorengine_plugin import MotorEnginePlugin
 
-from holmes.handlers.worker import WorkerPingHandler
+from holmes.handlers.worker import WorkerHandler
 from holmes.handlers.page import PageHandler
 from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import CreateViolationHandler
@@ -18,7 +18,7 @@ def main():
 class HolmesApiServer(Server):
     def get_handlers(self):
         handlers = [
-            (r'/worker/ping', WorkerPingHandler),
+            (r'/worker/ping', WorkerHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/fact/?', CreateFactHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),

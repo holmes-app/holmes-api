@@ -8,7 +8,7 @@ from uuid import UUID
 from holmes.models.worker import Worker
 
 
-class WorkerPingHandler(RequestHandler):
+class WorkerHandler(RequestHandler):
 
     @gen.coroutine
     def post(self):
@@ -23,3 +23,6 @@ class WorkerPingHandler(RequestHandler):
         
         self.write(str(worker_uuid))
         self.finish()
+
+    def get(self):
+        pass  # active workers
