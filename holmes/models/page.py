@@ -22,3 +22,9 @@ class Page(Document):
             "title": self.title,
             "url": self.url
         }
+
+    def __str__(self):
+        return str(self.uuid)
+
+    def __repr__(self):
+        return str(self)

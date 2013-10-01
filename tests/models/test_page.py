@@ -23,3 +23,14 @@ class TestPage(ApiTestCase):
 
         expect(page.added_date).to_be_like(datetime.now())
         expect(page.updated_date).to_be_like(datetime.now())
+
+    @gen_test
+    def test_can_convert_page_to_dict(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        page_dict = page.to_dict()
+
+        expect(page_dict['uuid']).to_equal(str(page.uuid))
+        expect(page_dict['title']).to_equal(page.title)
+        expect(page_dict['url']).to_equal(page.url)
