@@ -23,12 +23,12 @@ class PageHandler(RequestHandler):
             self.finish()
             return
 
-        domain = yield Domain.objects.filter(url=domain_url).find_all()
+        domain = yield Domain.objects.get(url=domain_url)
 
         if not domain:
             domain = yield Domain.objects.create(url=domain_url, name=domain_name)
 
-        page = yield Page.objects.filter(url=url).find_all()
+        page = yield Page.objects.get(url=url)
 
         if page:
             self.set_status(409, "Duplicate entry for page [%s]" % url)

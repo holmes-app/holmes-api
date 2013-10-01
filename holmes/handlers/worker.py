@@ -5,7 +5,7 @@ from tornado.web import RequestHandler
 from tornado import gen
 from uuid import UUID
 from ujson import dumps
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from holmes.models.worker import Worker
 from holmes.models.page import Page
@@ -17,10 +17,10 @@ class WorkerHandler(RequestHandler):
     def post(self, uuid):
         worker_uuid = UUID(uuid)
 
-        workers = yield Worker.objects.filter(uuid=worker_uuid).find_all()
+        worker = yield Worker.objects.get(uuid=worker_uuid)
         
-        if len(workers) > 0:
-            yield workers[0].save()
+        if worker:
+            yield worker.save()
         else:
             yield Worker.objects.create(uuid=worker_uuid)
         
@@ -37,7 +37,10 @@ class WorkerHandler(RequestHandler):
             self.finish()
             return
 
-        next_pages = yield Page.objects.filter().find_all()  # 'added_date=updated_date'
+        yesterday = datetime.now() - timedelta(1)
+
+        #next_pages = yield Page.objects.filter(added_date=yesterday).find_all()
+        next_pages = yield Page.objects.filter().find_all()
 
         if not next_pages:
             self.set_status(404, "None available")
@@ -62,6 +65,7 @@ class WorkersHandler(RequestHandler):
 
         workers_json = []
         for worker in workers:
+            #yield worker.load_references(['current_page'])
             workers_json.append(worker.to_dict())
 
         self.write(dumps(workers_json))

@@ -28,11 +28,10 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
 
         page_uuid = UUID(response.body)
-        page = yield Page.objects.filter(uuid=page_uuid).find_all()
+        page = yield Page.objects.get(uuid=page_uuid)
 
         expect(page).not_to_be_null()
-        expect(page).to_length(1)
-        expect(page_uuid).to_equal(page[0].uuid)
+        expect(page_uuid).to_equal(page.uuid)
 
     @gen_test
     def test_error_when_invalid_url(self):

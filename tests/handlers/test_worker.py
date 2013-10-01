@@ -3,7 +3,7 @@
 
 import sys
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 from ujson import loads
 
 from preggy import expect
@@ -27,17 +27,15 @@ class TestWorkerHandler(ApiTestCase):
             body=''
         )
 
-        workers = yield Worker.objects.filter(uuid=worker_uuid).find_all()
+        worker = yield Worker.objects.get(uuid=worker_uuid)
 
-        expect(workers).to_length(1)
-
-        worker = workers[0]
+        expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
         expect(response.body).to_be_like(str(worker.uuid))
 
     @gen_test
     def test_worker_ping_can_ping_existing_worker(self):
-        date = datetime(2013, 9, 26, 17, 45, 0)
+        date = datetime.now()
 
         worker = yield WorkerFactory.create(last_ping=date)
 
@@ -47,11 +45,9 @@ class TestWorkerHandler(ApiTestCase):
             body='current_page=%s' % str(worker.current_page)
         )
 
-        workers = yield Worker.objects.filter(uuid=worker.uuid).find_all()
+        worker = yield Worker.objects.get(uuid=worker.uuid)
         
-        expect(workers).to_length(1)
-
-        worker = workers[0]
+        expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
         expect(response.body).to_be_like(str(worker.uuid))
         expect(worker.last_ping).to_be_greater_than(date)
@@ -97,7 +93,10 @@ class TestWorkerHandler(ApiTestCase):
             page.delete()
 
         domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+
+        yesterday = datetime.now() - timedelta(1)
+
+        page = yield PageFactory.create(domain=domain, added_date=yesterday, updated_date=yesterday)
         worker = yield WorkerFactory.create(current_page=page)
 
         response = yield self.http_client.fetch(
