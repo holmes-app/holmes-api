@@ -121,7 +121,7 @@ class TestWorkerHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
 
-        workers = yield Worker.objects.filter().find_all()
+        workers = yield Worker.objects.find_all()
 
         returned_json = loads(response.body)
         expect(returned_json).to_length(len(workers))
