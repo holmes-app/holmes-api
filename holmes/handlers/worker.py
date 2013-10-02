@@ -49,9 +49,9 @@ class WorkerHandler(RequestHandler):
         next_page = next_pages[0]
 
         worker.current_page = next_page
-        worker.save()
+        yield worker.save()
         next_page.updated_date = datetime.now()
-        next_page.save()
+        yield next_page.save()
 
         self.write(next_page.to_dict())
         self.finish()
