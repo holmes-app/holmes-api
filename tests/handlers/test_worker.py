@@ -46,7 +46,7 @@ class TestWorkerHandler(ApiTestCase):
         )
 
         worker = yield Worker.objects.get(uuid=worker.uuid)
-        
+
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
         expect(response.body).to_be_like(str(worker.uuid))
@@ -69,7 +69,7 @@ class TestWorkerHandler(ApiTestCase):
     @gen_test
     def test_worker_next_page_without_page(self):
         yield Page.objects.delete()
-        
+
         worker = yield WorkerFactory.create()
 
         try:
@@ -87,7 +87,7 @@ class TestWorkerHandler(ApiTestCase):
     @gen_test
     def test_worker_get_next(self):
         yield Page.objects.delete()
-        
+
         domain = yield DomainFactory.create()
 
         yesterday = datetime.now() - timedelta(1)
@@ -107,6 +107,8 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_workers_list(self):
+        yield Worker.objects.delete()
+
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
         worker = yield WorkerFactory.create(current_page=page)
@@ -122,6 +124,6 @@ class TestWorkerHandler(ApiTestCase):
         returned_json = loads(response.body)
         expect(returned_json).to_length(len(workers))
 
-        #expect(returned_json[0]['uuid']).to_equal(str(worker.uuid))
-        #expect(returned_json[0]['current_page']).to_equal(page.url)
+        expect(returned_json[0]['uuid']).to_equal(str(worker.uuid))
+        expect(returned_json[0]['current_page']).to_equal(str(page.uuid))
 

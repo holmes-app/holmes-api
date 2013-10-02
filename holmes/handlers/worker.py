@@ -65,7 +65,6 @@ class WorkersHandler(RequestHandler):
 
         workers_json = []
         for worker in workers:
-            #yield worker.load_references(['current_page'])
             workers_json.append(worker.to_dict())
 
         self.write(dumps(workers_json))
