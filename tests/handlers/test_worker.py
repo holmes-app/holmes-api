@@ -12,7 +12,7 @@ from tornado.httpclient import HTTPError
 
 from holmes.models import Worker, Page
 from tests.base import ApiTestCase
-from tests.fixtures import WorkerFactory, DomainFactory, PageFactory
+from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
 
 
 class TestWorkerHandler(ApiTestCase):
@@ -42,7 +42,7 @@ class TestWorkerHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/worker/%s/ping' % str(worker.uuid)),
             method='POST',
-            body='current_page=%s' % str(worker.current_page)
+            body='current_review=%s' % str(worker.current_review)
         )
 
         worker = yield Worker.objects.get(uuid=worker.uuid)
@@ -93,7 +93,9 @@ class TestWorkerHandler(ApiTestCase):
         yesterday = datetime.now() - timedelta(1)
 
         page = yield PageFactory.create(domain=domain, added_date=yesterday, updated_date=yesterday)
-        worker = yield WorkerFactory.create(current_page=page)
+        review = yield ReviewFactory.create(page=page)
+
+        worker = yield WorkerFactory.create(current_review=review)
 
         response = yield self.http_client.fetch(
             self.get_url('/worker/%s/next' % str(worker.uuid))
@@ -103,7 +105,7 @@ class TestWorkerHandler(ApiTestCase):
         expect(returned_json).not_to_be_null()
         expect(returned_json['uuid']).to_equal(str(page.uuid))
         expect(page.added_date).not_to_equal(page.updated_date)
-        expect(worker.current_page).to_equal(page)
+        expect(worker.current_review).to_equal(review)
 
     @gen_test
     def test_workers_list(self):
@@ -111,7 +113,9 @@ class TestWorkerHandler(ApiTestCase):
 
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
-        worker = yield WorkerFactory.create(current_page=page)
+
+        review = yield ReviewFactory.create(page=page)
+        worker = yield WorkerFactory.create(current_review=review)
 
         response = yield self.http_client.fetch(
             self.get_url('/workers/'),
@@ -125,5 +129,6 @@ class TestWorkerHandler(ApiTestCase):
         expect(returned_json).to_length(len(workers))
 
         expect(returned_json[0]['uuid']).to_equal(str(worker.uuid))
-        expect(returned_json[0]['current_page']).to_equal(str(page.uuid))
+        expect(returned_json[0]['current_review']).to_equal(str(review.uuid))
+
 

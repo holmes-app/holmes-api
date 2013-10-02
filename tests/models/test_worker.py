@@ -6,7 +6,7 @@ from preggy import expect
 from tornado.testing import gen_test
 
 from tests.base import ApiTestCase
-from tests.fixtures import WorkerFactory, PageFactory, DomainFactory
+from tests.fixtures import WorkerFactory, PageFactory, DomainFactory, ReviewFactory
 
 
 class TestWorker(ApiTestCase):
@@ -25,9 +25,10 @@ class TestWorker(ApiTestCase):
         expect(str(worker)).to_equal("Worker %s" % str(worker.uuid))
 
     @gen_test
-    def test_worker_current_page(self):
+    def test_worker_current_review_page(self):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
-        worker = yield WorkerFactory.create(current_page=page)
+        review = yield ReviewFactory.create(page=page)
+        worker = yield WorkerFactory.create(current_review=review)
 
-        expect(worker.current_page).to_equal(page)
+        expect(worker.current_review.page).to_equal(page)

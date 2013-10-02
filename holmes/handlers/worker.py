@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from holmes.models.worker import Worker
 from holmes.models.page import Page
+from holmes.models.review import Review
 
 
 class WorkerHandler(RequestHandler):
@@ -48,8 +49,11 @@ class WorkerHandler(RequestHandler):
 
         next_page = next_pages[0]
 
-        worker.current_page = next_page
+        review = yield Review.objects.create(page=next_page)
+
+        worker.current_review = review
         yield worker.save()
+
         next_page.updated_date = datetime.now()
         yield next_page.save()
 

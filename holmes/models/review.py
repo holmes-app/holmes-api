@@ -52,3 +52,9 @@ class Review(Document):
             "facts": [fact.to_dict() for fact in self.facts],
             "violations": [violation.to_dict() for violation in self.violations]
         }
+
+    def __str__(self):
+        return str(self.uuid)
+
+    def __repr__(self):
+        return str(self)
