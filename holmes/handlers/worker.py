@@ -18,12 +18,12 @@ class WorkerHandler(RequestHandler):
         worker_uuid = UUID(uuid)
 
         worker = yield Worker.objects.get(uuid=worker_uuid)
-        
+
         if worker:
             yield worker.save()
         else:
             yield Worker.objects.create(uuid=worker_uuid)
-        
+
         self.write(str(worker_uuid))
         self.finish()
 

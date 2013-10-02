@@ -16,7 +16,7 @@ from tests.fixtures import DomainFactory, PageFactory
 
 
 class TestPageHandler(ApiTestCase):
-    
+
     @gen_test
     def test_can_save(self):
         response = yield self.http_client.fetch(
@@ -98,6 +98,6 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
 
         returned_page = loads(response.body)
-        
+
         expect(returned_page['uuid']).to_equal(str(page.uuid))
         expect(returned_page['url']).to_equal(page.url)
