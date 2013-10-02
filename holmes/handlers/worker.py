@@ -39,9 +39,7 @@ class WorkerHandler(RequestHandler):
 
         yesterday = datetime.now() - timedelta(1)
 
-
-        #next_pages = yield Page.objects.filter(added_date__lt=yesterday).find_all()
-        next_pages = yield Page.objects.find_all()
+        next_pages = yield Page.objects.filter(added_date__lt=yesterday).find_all()
 
         if not next_pages:
             self.set_status(404, "None available")
@@ -60,6 +58,7 @@ class WorkerHandler(RequestHandler):
 
 
 class WorkersHandler(RequestHandler):
+
     @gen.coroutine
     def get(self):
         workers = yield Worker.objects.find_all()

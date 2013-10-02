@@ -68,10 +68,8 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_worker_next_page_without_page(self):
-        pages = yield Page.objects.find_all()
-        for page in pages:
-            page.delete()
-
+        yield Page.objects.delete()
+        
         worker = yield WorkerFactory.create()
 
         try:
@@ -88,10 +86,8 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_worker_get_next(self):
-        pages = yield Page.objects.find_all()
-        for page in pages:
-            page.delete()
-
+        yield Page.objects.delete()
+        
         domain = yield DomainFactory.create()
 
         yesterday = datetime.now() - timedelta(1)
