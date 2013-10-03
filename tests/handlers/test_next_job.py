@@ -32,7 +32,6 @@ class TestNextJobHandler(ApiTestCase):
 
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page, is_complete=True, completed_date=dt)
-        print str(page.uuid)
 
         page.last_review = review
         page.last_review_date = dt
