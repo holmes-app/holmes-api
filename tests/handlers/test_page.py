@@ -10,7 +10,7 @@ from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
 
-from holmes.models import Page
+from holmes.models import Page, Domain
 from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory
 
@@ -19,6 +19,27 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body='url=%s' % "http://globo.com"
+        )
+
+        expect(response.code).to_equal(200)
+
+        page_uuid = UUID(response.body)
+        page = yield Page.objects.get(uuid=page_uuid)
+
+        expect(page).not_to_be_null()
+        expect(page_uuid).to_equal(page.uuid)
+
+    @gen_test
+    def test_can_save_known_domain(self):
+        yield Domain.objects.create(url="http://globo.com", name="globo.com")
+
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',

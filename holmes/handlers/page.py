@@ -5,7 +5,6 @@ from uuid import UUID
 
 from tornado.web import RequestHandler
 from tornado import gen
-from ujson import dumps
 
 from holmes.models import Page, Domain
 from holmes.utils import get_domain_from_url
@@ -23,7 +22,7 @@ class PageHandler(RequestHandler):
             self.finish()
             return
 
-        domain = yield Domain.objects.get(url=domain_url)
+        domain = yield Domain.objects.get(name=domain_name)
 
         if not domain:
             domain = yield Domain.objects.create(url=domain_url, name=domain_name)
@@ -50,7 +49,7 @@ class PageHandler(RequestHandler):
             self.set_status(404, "Page UUID [%s] not found" % uuid)
             self.finish()
             return
-    
+
         page_json = {
             "uuid": str(page.uuid),
             "title": page.title,
