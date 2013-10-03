@@ -58,13 +58,21 @@ class HolmesWorker(object):
     def _load_next_job(self):
         try:
             response = requests.get("%s/next" % self.config.HOLMES_API_URL)
-            print response.body
             if response and response.body:
                 return loads(response.body)
 
         except ConnectionError:
             logging.fatal("Fail to get next review from [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
             self.working = False
+
+    def _start_job(self, review_uuid):
+        try:
+            response = requests.post("%s/worker/%s/start/%s" %
+                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid))
+            return ("OK" == response.body)
+
+        except ConnectionError:
+            logging.error("Fail to start review.")
 
     def _parse_opt(self, arguments):
         parser = OptionParser()
