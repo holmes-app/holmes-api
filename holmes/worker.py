@@ -6,6 +6,7 @@ import time
 import logging
 from uuid import uuid4
 from os.path import abspath, dirname, join
+from ujson import loads
 
 import requests
 from requests.exceptions import ConnectionError
@@ -13,7 +14,6 @@ from derpconf.config import verify_config
 from optparse import OptionParser
 
 from holmes.config import Config
-from holmes.reviewer import Reviewer
 
 
 class HolmesWorker(object):
@@ -57,7 +57,11 @@ class HolmesWorker(object):
 
     def _load_next_job(self):
         try:
-            requests.get("%s/next" % self.config.HOLMES_API_URL)
+            response = requests.get("%s/next" % self.config.HOLMES_API_URL)
+            print response.body
+            if response and response.body:
+                return loads(response.body)
+
         except ConnectionError:
             logging.fatal("Fail to get next review from [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
             self.working = False
