@@ -9,9 +9,21 @@ from tornado.concurrent import return_future
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
+from holmes.models import Domain, Page, Review, Worker
 
 
 class ApiTestCase(CowTestCase):
+    def drop_collection(self, document):
+        document.objects.delete(callback=self.stop)
+        self.wait()
+
+    def setUp(self):
+        super(ApiTestCase, self).setUp()
+        self.drop_collection(Domain)
+        self.drop_collection(Page)
+        self.drop_collection(Review)
+        self.drop_collection(Worker)
+
     def get_config(self):
         return dict(
             MONGO_DATABASES={

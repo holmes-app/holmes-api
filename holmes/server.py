@@ -10,6 +10,7 @@ from holmes.handlers.page import PageHandler
 from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import CreateViolationHandler
 from holmes.handlers.review import ReviewHandler
+from holmes.handlers.next_job import NextJobHandler
 
 
 def main():
@@ -28,6 +29,7 @@ class HolmesApiServer(Server):
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/?', PageHandler),
             (r'/page/?', PageHandler),
+            (r'/next/?', NextJobHandler),
         ]
 
         return tuple(handlers)

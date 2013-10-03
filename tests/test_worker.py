@@ -51,7 +51,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_can_create_an_instance(self):
         worker = holmes.worker.HolmesWorker()
         expect(worker.working).to_be_true()
-        expect(worker.config.VALIDATORS).to_equal(set())
+        expect(worker.config.VALIDATORS).to_equal([])
 
     def test_worker_can_parse_opt(self):
         worker = holmes.worker.HolmesWorker()

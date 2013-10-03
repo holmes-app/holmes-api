@@ -15,6 +15,7 @@ class Page(Document):
 
     domain = ReferenceField("holmes.models.domain.Domain", required=True)
     last_review = ReferenceField("holmes.models.review.Review", required=False)
+    last_review_date = DateTimeField(required=False)
 
     def to_dict(self):
         return {
