@@ -106,10 +106,20 @@ class WorkerTestCase(ApiTestCase):
             data={"worker_uuid": worker.uuid}
         )
 
-    @patch('holmes.worker.requests.post')
+    @patch('requests.post')
     def test_worker_ping_api_connection_error(self, ping_api_mock):
         ping_api_mock.side_effect = ConnectionError()
 
         worker = holmes.worker.HolmesWorker()
-        worker._ping_api()
+        was_successful = worker._ping_api()
         expect(worker.working).to_be_false()
+        expect(was_successful).to_be_false()
+
+    @patch('requests.get')
+    def test_worker_load_next_job(self, load_next_job_mock):
+        load_next_job_mock.side_effect = ConnectionError()
+
+        worker = holmes.worker.HolmesWorker()
+        worker._load_next_job()
+        expect(worker.working).to_be_false()
+
