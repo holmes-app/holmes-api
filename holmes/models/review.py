@@ -43,10 +43,10 @@ class Review(Document):
 
     def to_dict(self):
         return {
-            "pageId": str(self.page.uuid),
-            "domain": self.page.domain.name,
+            "page": self.page and self.page.to_dict() or None,
+            "domain": self.page and self.page.domain.name or None,
             "isComplete": self.is_complete,
-            "reviewId": str(self.uuid),
+            "uuid": str(self.uuid),
             "createdAt": self.created_date,
             "completedAt": self.completed_date,
             "facts": [fact.to_dict() for fact in self.facts],

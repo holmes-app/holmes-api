@@ -62,8 +62,8 @@ class TestReviewHandler(ApiTestCase):
 
         expected = {
             "domain": domain.name,
-            "pageId": str(page.uuid),
-            "reviewId": str(review.uuid),
+            "page": page.to_dict(),
+            "uuid": str(review.uuid),
             "isComplete": False,
             'facts': [
                 {'key': 'fact', 'unit': 'value', 'value': 'kb'}

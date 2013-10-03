@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from uuid import uuid4
-from datetime import datetime, timedelta
-from ujson import loads
 
 from preggy import expect
 from tornado.testing import gen_test
