@@ -11,7 +11,7 @@ from holmes.models.review import Review
 class WorkerStateHandler(RequestHandler):
 
     @gen.coroutine
-    def post(self, worker_uuid, review_uuid):
+    def post(self, worker_uuid, state, review_uuid):
         worker = yield Worker.objects.get(uuid=worker_uuid)
 
         if not worker:
@@ -31,8 +31,17 @@ class WorkerStateHandler(RequestHandler):
             self.finish()
             return
 
-        worker.current_review = review
+        if "start" == state:
+            worker.current_review = review
+
+        if "complete" == state:
+            review.is_complete = True
+            worker.current_review = None
+
+        yield review.save()
         yield worker.save()
 
         self.write("OK")
         self.finish()
+
+

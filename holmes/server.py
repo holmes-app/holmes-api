@@ -22,8 +22,7 @@ class HolmesApiServer(Server):
         handlers = [
             (r'/workers/?', WorkersHandler),
             (r'/worker/([a-z0-9-]*)/ping', WorkerHandler),
-            (r'/worker/([a-z0-9-]*)/next', WorkerHandler),
-            (r'/worker/([a-z0-9-]*)/start/([a-z0-9-]*)', WorkerStateHandler),
+            (r'/worker/([a-z0-9-]*)/(start|complete)/([a-z0-9-]*)', WorkerStateHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/fact/?', CreateFactHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
