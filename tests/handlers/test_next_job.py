@@ -55,9 +55,9 @@ class TestNextJobHandler(ApiTestCase):
         result = loads(response.body)
 
         expect(result['url']).to_equal(page.url)
-        expect(result['pageId']).to_equal(str(page.uuid))
+        expect(result['page']).to_equal(str(page.uuid))
 
-        loaded_review = yield Review.objects.get(uuid=result['reviewId'])
+        loaded_review = yield Review.objects.get(uuid=result['review'])
         yield loaded_review.load_references(['page'])
 
         expect(loaded_review).not_to_be_null()

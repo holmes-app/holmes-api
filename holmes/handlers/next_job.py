@@ -37,8 +37,8 @@ class NextJobHandler(RequestHandler):
         )
 
         self.write(dumps({
-            "pageId": str(page.uuid),
-            "reviewId": str(review.uuid),
+            "page": str(page.uuid),
+            "review": str(review.uuid),
             "url": page.url
         }))
 
