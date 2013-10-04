@@ -190,3 +190,20 @@ class WorkerTestCase(ApiTestCase):
             "http://localhost:2368/worker/%s/start/000" % str(worker.uuid)
         )
 
+    @patch('requests.post')
+    def test_worker_complete_error(self, load_start_job_mock):
+        load_start_job_mock.side_effect = ConnectionError()
+
+        worker = holmes.worker.HolmesWorker()
+        worker._complete_job("000")
+        expect(worker.working).to_be_true()
+
+    @patch('requests.post')
+    def test_worker_complete_call_api(self, requests_mock):
+        worker = holmes.worker.HolmesWorker()
+        worker._complete_job("000")
+        expect(requests_mock.called).to_be_true()
+        requests_mock.assert_called_once_with(
+            "http://localhost:2368/worker/%s/complete/000" % str(worker.uuid)
+        )
+

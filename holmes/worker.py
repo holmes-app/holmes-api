@@ -74,6 +74,15 @@ class HolmesWorker(object):
         except ConnectionError:
             logging.error("Fail to start review.")
 
+    def _complete_job(self, review_uuid):
+        try:
+            response = requests.post("%s/worker/%s/complete/%s" %
+                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid))
+            return ("OK" == response.body)
+
+        except ConnectionError:
+            logging.error("Fail to start review.")
+
     def _parse_opt(self, arguments):
         parser = OptionParser()
         parser.add_option('-c', '--conf', dest='conf', default=join(self.root_path, 'holmes/config/local.conf'),
