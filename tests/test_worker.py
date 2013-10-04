@@ -207,3 +207,35 @@ class WorkerTestCase(ApiTestCase):
             "http://localhost:2368/worker/%s/complete/000" % str(worker.uuid)
         )
 
+    def test_do_work_without_next_job(self):
+        worker = holmes.worker.HolmesWorker()
+
+        job = None
+        worker._load_next_job = Mock(return_value=job)
+        worker._ping_api = Mock(return_value=True)
+        worker._start_job = Mock()
+        worker._complete_job = Mock()
+
+        worker._do_work()
+
+        expect(worker._start_job.called).to_be_false()
+        expect(worker._complete_job.called).to_be_false()
+
+    @gen_test
+    def test_do_work_with_next_job(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        worker = holmes.worker.HolmesWorker()
+
+        job = {"page": str(page.uuid), "review": str(review.uuid), "url": page.url}
+        worker._load_next_job = Mock(return_value=job)
+        worker._ping_api = Mock(return_value=True)
+        worker._start_job = Mock()
+        worker._complete_job = Mock()
+
+        worker._do_work()
+
+        expect(worker._start_job.called).to_be_true()
+        expect(worker._complete_job.called).to_be_true()
