@@ -70,6 +70,9 @@ class HolmesWorker(object):
             self.working = False
 
     def _start_job(self, review_uuid):
+        if not review_uuid:
+            return False
+
         try:
             response = requests.post("%s/worker/%s/start/%s" %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
@@ -79,6 +82,9 @@ class HolmesWorker(object):
             logging.error("Fail to start review.")
 
     def _complete_job(self, review_uuid):
+        if not review_uuid:
+            return False
+
         try:
             response = requests.post("%s/worker/%s/complete/%s" %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))

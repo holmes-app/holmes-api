@@ -183,12 +183,30 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_start_call_api(self, requests_mock):
+        response = Response()
+        response.status_code = 200
+        response.body = "OK"
+        requests_mock.return_value = response
+
         worker = holmes.worker.HolmesWorker()
-        worker._start_job("000")
+        result = worker._start_job("000")
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
             "http://localhost:2368/worker/%s/start/000" % str(worker.uuid)
         )
+        expect(result).to_be_true()
+
+    @patch('requests.post')
+    def test_worker_start_null_job(self, requests_mock):
+        response = Response()
+        response.status_code = 200
+        response.body = "OK"
+        requests_mock.return_value = response
+
+        worker = holmes.worker.HolmesWorker()
+        result = worker._start_job(None)
+        expect(requests_mock.called).to_be_false()
+        expect(result).to_be_false()
 
     @patch('requests.post')
     def test_worker_complete_error(self, load_start_job_mock):
@@ -200,12 +218,30 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_complete_call_api(self, requests_mock):
+        response = Response()
+        response.status_code = 200
+        response.body = "OK"
+        requests_mock.return_value = response
+
         worker = holmes.worker.HolmesWorker()
-        worker._complete_job("000")
+        result = worker._complete_job("000")
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
             "http://localhost:2368/worker/%s/complete/000" % str(worker.uuid)
         )
+        expect(result).to_be_true()
+
+    @patch('requests.post')
+    def test_worker_complete_null_job(self, requests_mock):
+        response = Response()
+        response.status_code = 200
+        response.body = "OK"
+        requests_mock.return_value = response
+
+        worker = holmes.worker.HolmesWorker()
+        result = worker._complete_job(None)
+        expect(requests_mock.called).to_be_false()
+        expect(result).to_be_false()
 
     def test_do_work_without_next_job(self):
         worker = holmes.worker.HolmesWorker()
