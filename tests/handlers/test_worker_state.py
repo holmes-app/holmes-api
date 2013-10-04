@@ -7,7 +7,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Worker
+from holmes.models import Worker, Page, Review
 from tests.base import ApiTestCase
 from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
 
@@ -94,7 +94,7 @@ class TestWorkerStateHandler(ApiTestCase):
             assert False, "Should not have got this far"
 
     @gen_test
-    def test_worker_complete_working(self):
+    def test_worker_complete_work(self):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
 
@@ -108,14 +108,21 @@ class TestWorkerStateHandler(ApiTestCase):
         )
 
         worker = yield Worker.objects.get(uuid=worker.uuid)
+        page = yield Page.objects.get(uuid=page.uuid)
+        page.load_references(['last_review'])
+        review = yield Review.objects.get(uuid=review.uuid)
 
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
         expect(response.body).to_be_like("OK")
+
+        expect(review.is_complete).to_be_true()
+        expect(review.completed_date).not_to_be_null()
+        expect(page.last_review.uuid).to_equal(review.uuid)
         expect(worker.current_review).to_be_null()
 
     @gen_test
-    def test_worker_complete_working_invalid_worker(self):
+    def test_worker_complete_work_invalid_worker(self):
         try:
             yield self.http_client.fetch(
                 self.get_url('/worker/%s/complete/%s' % (self.zero_uuid, self.zero_uuid)),
@@ -131,7 +138,7 @@ class TestWorkerStateHandler(ApiTestCase):
             assert False, "Should not have got this far"
 
     @gen_test
-    def test_worker_complete_working_invalid_review(self):
+    def test_worker_complete_work_invalid_review(self):
 
         worker = yield WorkerFactory.create()
 
@@ -150,7 +157,7 @@ class TestWorkerStateHandler(ApiTestCase):
             assert False, "Should not have got this far"
 
     @gen_test
-    def test_worker_complete_working_already_complete_review(self):
+    def test_worker_complete_work_already_complete_review(self):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
 

@@ -45,6 +45,9 @@ class HolmesWorker(object):
     def _do_work(self):
         if self._ping_api():
             self._load_next_job()
+            #start
+            #Reviewer(job=[review_uuid, page_uuid, page_url], url_base_api)
+            #complete
 
     def _ping_api(self):
         try:

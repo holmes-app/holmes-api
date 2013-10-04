@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from tornado.web import RequestHandler
 from tornado import gen
 
@@ -36,6 +38,10 @@ class WorkerStateHandler(RequestHandler):
 
         if "complete" == state:
             review.is_complete = True
+            review.completed_date = datetime.now()
+            yield review.load_references(['page'])
+            review.page.last_review = review
+            yield review.page.save()
             worker.current_review = None
 
         yield review.save()
