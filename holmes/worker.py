@@ -52,7 +52,7 @@ class HolmesWorker(object):
 
     def _ping_api(self):
         try:
-            requests.post("%s/worker/ping" % self.config.HOLMES_API_URL, data={"worker_uuid": self.uuid})
+            requests.post("%s/worker/%s/ping" % (self.config.HOLMES_API_URL, self.uuid), data={"worker_uuid": self.uuid})
             return True
         except ConnectionError:
             logging.fatal("Fail to ping API [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
@@ -61,10 +61,9 @@ class HolmesWorker(object):
 
     def _load_next_job(self):
         try:
-            response = requests.get("%s/next" % self.config.HOLMES_API_URL)
-            if response and response.body:
-                return loads(response.body)
-
+            response = requests.post("%s/next" % self.config.HOLMES_API_URL, data={})
+            if response and response.text:
+                return loads(response.text)
         except ConnectionError:
             logging.fatal("Fail to get next review from [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
             self.working = False
