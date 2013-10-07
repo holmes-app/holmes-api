@@ -6,13 +6,18 @@ from os.path import abspath, dirname, join
 from preggy import expect
 from mock import patch, Mock
 from requests.exceptions import ConnectionError
-from requests import Response
 from tornado.testing import gen_test
 import requests
 
 import holmes.worker
 from tests.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+
+
+class MockResponse(object):
+    def __init__(self, status_code=200, text=""):
+        self.status_code = status_code
+        self.text = text
 
 
 class WorkerTestCase(ApiTestCase):
@@ -22,7 +27,6 @@ class WorkerTestCase(ApiTestCase):
         cfg = super(WorkerTestCase, self).get_config()
         cfg['WORKER_SLEEP_TIME'] = 1
         cfg['HOLMES_API_URL'] = "http://localhost:2368"
-
         return cfg
 
     @patch('holmes.worker.HolmesWorker')
@@ -33,6 +37,8 @@ class WorkerTestCase(ApiTestCase):
     @patch('time.sleep')
     def test_worker_sleep_time(self, worker_sleep):
         worker = holmes.worker.HolmesWorker()
+        worker._do_work = Mock()
+        worker_sleep.side_effect = lambda *args: worker.stop_work()
         worker.run()
         worker_sleep.assert_called_once_with(1)
 
@@ -105,7 +111,7 @@ class WorkerTestCase(ApiTestCase):
         worker._ping_api()
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            "http://localhost:2368/worker/ping",
+            "http://localhost:2368/worker/%s/ping" % worker.uuid,
             data={"worker_uuid": worker.uuid}
         )
 
@@ -118,7 +124,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker.working).to_be_false()
         expect(was_successful).to_be_false()
 
-    @patch('requests.get')
+    @patch('requests.post')
     def test_worker_load_next_job_error(self, load_next_job_mock):
         load_next_job_mock.side_effect = ConnectionError()
 
@@ -126,24 +132,20 @@ class WorkerTestCase(ApiTestCase):
         worker._load_next_job()
         expect(worker.working).to_be_false()
 
-    @patch('requests.get')
+    @patch('requests.post')
     def test_worker_load_next_job_must_call_api(self, load_next_job_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = ""
+        response = MockResponse(200, "")
         load_next_job_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
         worker._load_next_job()
 
         expect(load_next_job_mock.called).to_be_true()
-        load_next_job_mock.assert_called_once_with("http://localhost:2368/next")
+        load_next_job_mock.assert_called_once_with("http://localhost:2368/next", data={})
 
-    @patch('requests.get')
+    @patch('requests.post')
     def test_worker_load_next_job_without_jobs(self, load_next_job_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = ""
+        response = MockResponse(200, "")
 
         load_next_job_mock.return_value = response
 
@@ -158,12 +160,11 @@ class WorkerTestCase(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        response = Response()
-        response.status_code = 200
-        response.body = '{"page": "%s", "review": "%s", "url": "%s"}' % \
-                        (str(page.uuid), str(review.uuid), page.url)
+        response = MockResponse(200,
+                                '{"page": "%s", "review": "%s", "url": "%s"}' %
+                                (str(page.uuid), str(review.uuid), page.url))
 
-        requests.get = Mock(return_value=response)
+        requests.post = Mock(return_value=response)
 
         worker = holmes.worker.HolmesWorker()
         next_job = worker._load_next_job()
@@ -183,9 +184,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_start_call_api(self, requests_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = "OK"
+        response = MockResponse(200, "OK")
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
@@ -198,9 +197,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_start_null_job(self, requests_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = "OK"
+        response = MockResponse(200, "OK")
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
@@ -218,9 +215,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_complete_call_api(self, requests_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = "OK"
+        response = MockResponse(200, "OK")
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
@@ -233,9 +228,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
-        response = Response()
-        response.status_code = 200
-        response.body = "OK"
+        response = MockResponse(200, "OK")
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()

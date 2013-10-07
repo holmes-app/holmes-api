@@ -75,7 +75,7 @@ class HolmesWorker(object):
         try:
             response = requests.post("%s/worker/%s/start/%s" %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
-            return ("OK" == response.body)
+            return ("OK" == response.text)
 
         except ConnectionError:
             logging.error("Fail to start review.")
@@ -87,7 +87,7 @@ class HolmesWorker(object):
         try:
             response = requests.post("%s/worker/%s/complete/%s" %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
-            return ("OK" == response.body)
+            return ("OK" == response.text)
 
         except ConnectionError:
             logging.error("Fail to start review.")
