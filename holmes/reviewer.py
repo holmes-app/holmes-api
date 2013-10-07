@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from os.path import join
 from uuid import UUID
 import inspect
 
@@ -16,10 +17,17 @@ class InvalidReviewError(RuntimeError):
 
 
 class Reviewer(object):
-    def __init__(self, page_uuid, page_url, review_uuid, config=None, validators=[]):
-        self.page_uuid = UUID(page_uuid)
+    def __init__(self, api_url, page_uuid, page_url, review_uuid, config=None, validators=[]):
+        self.api_url = api_url
+
+        self.page_uuid = page_uuid
+        if not isinstance(self.page_uuid, UUID):
+            self.page_uuid = UUID(page_uuid)
+
         self.page_url = page_url
-        self.review_uuid = UUID(review_uuid)
+        self.review_uuid = review_uuid
+        if not isinstance(self.review_uuid, UUID):
+            self.review_uuid = UUID(review_uuid)
 
         assert isinstance(config, Config), "config argument must be an instance of holmes.config.Config"
         self.config = config
@@ -61,9 +69,25 @@ class Reviewer(object):
             validator_instance = validator(self)
             validator_instance.validate()
 
+    def get_url(self, url):
+        return join(self.api_url.rstrip('/'), url.lstrip('/'))
+
     def add_fact(self, key, value, unit='value'):
-        # call api to add_fact
-        pass
+        url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
+        response = requests.post(url, data={
+            "key": key,
+            "value": value,
+            "unit": unit
+        })
+
+        if response.status_code > 399:
+            raise InvalidReviewError("Could not add fact %s to review %s! Status Code: %d, Error: %s" % (
+                key,
+                self.review_uuid,
+                response.status_code,
+                response.body
+            ))
+            return
 
     def add_violation(self, key, title, description, points):
         # call api to add_violation

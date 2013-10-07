@@ -4,8 +4,11 @@
 import sys
 from uuid import uuid4
 
-from preggy import expect
+import requests
 import lxml.html
+from preggy import expect
+from tornado.testing import gen_test
+from mock import patch, Mock
 
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.config import Config
@@ -14,14 +17,24 @@ from tests.base import ApiTestCase
 
 
 class TestReview(ApiTestCase):
-    def test_can_create_reviewer(self):
-        page_uuid = uuid4()
-        page_url = "http://page.url"
-        review_uuid = uuid4()
-        config = Config()
-        validators = [Validator]
+    def get_reviewer(
+            self, api_url=None, page_uuid=None, page_url="http://page.url",
+            review_uuid=None, config=None, validators=[Validator]):
 
-        reviewer = Reviewer(
+        if api_url is None:
+            api_url = self.get_url('/')
+
+        if page_uuid is None:
+            page_uuid = str(uuid4())
+
+        if review_uuid is None:
+            review_uuid = uuid4()
+
+        if config is None:
+            config = Config()
+
+        return Reviewer(
+            api_url=api_url,
             page_uuid=str(page_uuid),
             page_url=page_url,
             review_uuid=str(review_uuid),
@@ -29,27 +42,22 @@ class TestReview(ApiTestCase):
             validators=validators
         )
 
+    def test_can_create_reviewer(self):
+        page_uuid = uuid4()
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
+        reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid, config=config, validators=validators)
+
         expect(reviewer.page_uuid).to_equal(page_uuid)
-        expect(reviewer.page_url).to_equal(page_url)
+        expect(reviewer.page_url).to_equal("http://page.url")
         expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
 
     def test_reviewer_fails_if_wrong_config(self):
-        page_uuid = uuid4()
-        page_url = "http://page.url"
-        review_uuid = uuid4()
-        config = "wrong config object"
-        validators = [Validator]
-
         try:
-            Reviewer(
-                page_uuid=str(page_uuid),
-                page_url=page_url,
-                review_uuid=str(review_uuid),
-                config=config,
-                validators=validators
-            )
+            self.get_reviewer(config="wrong config object")
         except AssertionError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("config argument must be an instance of holmes.config.Config")
@@ -57,21 +65,11 @@ class TestReview(ApiTestCase):
             assert False, "Shouldn't have gotten this far"
 
     def test_reviewer_fails_if_wrong_validators(self):
-        page_uuid = uuid4()
-        page_url = "http://page.url"
-        review_uuid = uuid4()
-        config = Config()
         validators = [Validator, "wtf"]
         validators2 = [Validator, Config]
 
         try:
-            Reviewer(
-                page_uuid=str(page_uuid),
-                page_url=page_url,
-                review_uuid=str(review_uuid),
-                config=config,
-                validators=validators
-            )
+            self.get_reviewer(validators=validators)
         except AssertionError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
@@ -79,13 +77,7 @@ class TestReview(ApiTestCase):
             assert False, "Shouldn't have gotten this far"
 
         try:
-            Reviewer(
-                page_uuid=str(page_uuid),
-                page_url=page_url,
-                review_uuid=str(review_uuid),
-                config=config,
-                validators=validators2
-            )
+            self.get_reviewer(validators=validators2)
         except AssertionError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
@@ -93,19 +85,8 @@ class TestReview(ApiTestCase):
             assert False, "Shouldn't have gotten this far"
 
     def test_load_content_raises_when_invalid_status_code(self):
-        page_uuid = uuid4()
         page_url = "http://page.url"
-        review_uuid = uuid4()
-        config = Config()
-        validators = [Validator]
-
-        reviewer = Reviewer(
-            page_uuid=str(page_uuid),
-            page_url=page_url,
-            review_uuid=str(review_uuid),
-            config=config,
-            validators=validators
-        )
+        reviewer = self.get_reviewer()
 
         reviewer.responses[page_url] = {
             'status': 500,
@@ -122,19 +103,8 @@ class TestReview(ApiTestCase):
             assert False, "Should not have gotten this far"
 
     def test_get_response_fills_dict(self):
-        page_uuid = uuid4()
         page_url = "http://www.google.com"
-        review_uuid = uuid4()
-        config = Config()
-        validators = [Validator]
-
-        reviewer = Reviewer(
-            page_uuid=str(page_uuid),
-            page_url=page_url,
-            review_uuid=str(review_uuid),
-            config=config,
-            validators=validators
-        )
+        reviewer = self.get_reviewer(page_url=page_url)
 
         reviewer.get_response(page_url)
 
@@ -152,19 +122,8 @@ class TestReview(ApiTestCase):
             def validate(self):
                 test_class['has_validated'] = True
 
-        page_uuid = uuid4()
-        page_url = "http://page.url"
-        review_uuid = uuid4()
-        config = Config()
-        validators = [MockValidator]
-
-        reviewer = Reviewer(
-            page_uuid=str(page_uuid),
-            page_url=page_url,
-            review_uuid=str(review_uuid),
-            config=config,
-            validators=validators
-        )
+        page_url = "http://www.google.com"
+        reviewer = self.get_reviewer(page_url=page_url, validators=[MockValidator])
 
         reviewer.responses[page_url] = {
             'status': 200,
@@ -175,3 +134,21 @@ class TestReview(ApiTestCase):
         reviewer.review()
 
         expect(test_class['has_validated']).to_be_true()
+
+    @gen_test
+    def test_reviewer_add_fact(self):
+        with patch.object(requests, 'post') as post_mock:
+            response_mock = Mock(status_code=200, text="OK")
+            post_mock.return_value = response_mock
+
+            page_uuid = uuid4()
+            review_uuid = uuid4()
+
+            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+
+            reviewer.add_fact("key", "value", "unit")
+
+            post_mock.assert_called_once_with(
+                '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
+                data={'unit': 'unit', 'value': 'value', 'key': 'key'}
+            )
