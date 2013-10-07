@@ -76,3 +76,26 @@ class TestReviewHandler(ApiTestCase):
         }
 
         expect(loads(response.body)).to_be_like(expected)
+
+
+class TestCompleteReviewHandler(ApiTestCase):
+
+    @gen_test
+    def test_invalid_review_returns_404(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        url = self.get_url('/page/%s/review/invalid/complete' % page.uuid)
+
+        try:
+            yield self.http_client.fetch(
+                url,
+                method='GET'
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like("Review with uuid of invalid not found!")
+        else:
+            assert False, "Should not have got this far"
