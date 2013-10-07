@@ -2,83 +2,176 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from datetime import datetime
+from uuid import uuid4
 
-from mock import Mock, patch
 from preggy import expect
-from tornado.testing import gen_test
+import lxml.html
 
-from holmes.models import Review
 from holmes.reviewer import Reviewer, InvalidReviewError
+from holmes.config import Config
+from holmes.validators.base import Validator
 from tests.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory
 
 
 class TestReview(ApiTestCase):
-    @gen_test
-    def test_review_returns_review_object(self):
-        domain = yield DomainFactory.create(url="http://www.globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+    def test_can_create_reviewer(self):
+        page_uuid = uuid4()
+        page_url = "http://page.url"
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
 
-        reviewer = Reviewer(page=page)
-        expect(reviewer.review()).to_be_instance_of(Review)
+        reviewer = Reviewer(
+            page_uuid=str(page_uuid),
+            page_url=page_url,
+            review_uuid=str(review_uuid),
+            config=config,
+            validators=validators
+        )
 
-    @gen_test
-    def test_review_gets_content(self):
-        domain = yield DomainFactory.create(url="http://www.globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        expect(reviewer.page_uuid).to_equal(page_uuid)
+        expect(reviewer.page_url).to_equal(page_url)
+        expect(reviewer.review_uuid).to_equal(review_uuid)
+        expect(reviewer.config).to_equal(config)
+        expect(reviewer.validators).to_equal(validators)
 
-        reviewer = Reviewer(page=page)
-        reviewer.review()
+    def test_reviewer_fails_if_wrong_config(self):
+        page_uuid = uuid4()
+        page_url = "http://page.url"
+        review_uuid = uuid4()
+        config = "wrong config object"
+        validators = [Validator]
 
-        expect(reviewer.status_code).to_equal(200)
-        expect(reviewer.content).not_to_be_null()
-        expect(reviewer.html).not_to_be_null()
+        try:
+            Reviewer(
+                page_uuid=str(page_uuid),
+                page_url=page_url,
+                review_uuid=str(review_uuid),
+                config=config,
+                validators=validators
+            )
+        except AssertionError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("config argument must be an instance of holmes.config.Config")
+        else:
+            assert False, "Shouldn't have gotten this far"
 
-    @gen_test
-    def test_review_finish_review(self):
-        domain = yield DomainFactory.create(url="http://www.globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+    def test_reviewer_fails_if_wrong_validators(self):
+        page_uuid = uuid4()
+        page_url = "http://page.url"
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator, "wtf"]
+        validators2 = [Validator, Config]
 
-        reviewer = Reviewer(page=page)
-        review = reviewer.review()
+        try:
+            Reviewer(
+                page_uuid=str(page_uuid),
+                page_url=page_url,
+                review_uuid=str(review_uuid),
+                config=config,
+                validators=validators
+            )
+        except AssertionError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
+        else:
+            assert False, "Shouldn't have gotten this far"
 
-        yield reviewer.conclude(review)
+        try:
+            Reviewer(
+                page_uuid=str(page_uuid),
+                page_url=page_url,
+                review_uuid=str(review_uuid),
+                config=config,
+                validators=validators2
+            )
+        except AssertionError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
+        else:
+            assert False, "Shouldn't have gotten this far"
 
-        expect(review.is_complete).to_be_true()
-        expect(review.created_date).to_be_like(datetime.now())
-        expect(page.last_review).to_equal(review)
-
-        loaded_review = yield Review.objects.get(review._id)
-        expect(loaded_review).not_to_be_null()
-
-        yield loaded_review.load_references()
-
-    @gen_test
-    def test_validator_runs_validators(self):
-        mock_validator = Mock()
-        domain = yield DomainFactory.create(url="http://www.globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
-
-        reviewer = Reviewer(page=page, validators=[mock_validator])
-        reviewer.review()
-
-        expect(mock_validator.called).to_equal(True)
-
-    @gen_test
     def test_load_content_raises_when_invalid_status_code(self):
-        with patch.object(Reviewer, 'get_response') as get_response_mock:
-            response_mock = Mock(status_code=400)
-            get_response_mock.return_value = response_mock
+        page_uuid = uuid4()
+        page_url = "http://page.url"
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
 
-            domain = yield DomainFactory.create(url="http://www.globo.com")
-            page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        reviewer = Reviewer(
+            page_uuid=str(page_uuid),
+            page_url=page_url,
+            review_uuid=str(review_uuid),
+            config=config,
+            validators=validators
+        )
 
-            reviewer = Reviewer(page=page)
-            try:
-                reviewer.load_content()
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of("Could not load 'http://www.globo.com/'!")
-            else:
-                assert False, "Should not have gotten this far"
+        reviewer.responses[page_url] = {
+            'status': 500,
+            'content': "",
+            'html': None
+        }
+
+        try:
+            reviewer.load_content()
+        except InvalidReviewError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("Could not load 'http://page.url'!")
+        else:
+            assert False, "Should not have gotten this far"
+
+    def test_get_response_fills_dict(self):
+        page_uuid = uuid4()
+        page_url = "http://www.google.com"
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
+
+        reviewer = Reviewer(
+            page_uuid=str(page_uuid),
+            page_url=page_url,
+            review_uuid=str(review_uuid),
+            config=config,
+            validators=validators
+        )
+
+        reviewer.get_response(page_url)
+
+        expect(reviewer.responses).to_include(page_url)
+        expect(reviewer.responses[page_url]['status']).to_equal(200)
+        expect(reviewer.responses[page_url]['content']).to_include("btnG")
+
+        expect(reviewer.responses[page_url]['html']).not_to_be_null()
+        expect(reviewer.responses[page_url]['html']).to_be_instance_of(lxml.html.HtmlElement)
+
+    def test_review_calls_validators(self):
+        test_class = {}
+
+        class MockValidator(Validator):
+            def validate(self):
+                test_class['has_validated'] = True
+
+        page_uuid = uuid4()
+        page_url = "http://page.url"
+        review_uuid = uuid4()
+        config = Config()
+        validators = [MockValidator]
+
+        reviewer = Reviewer(
+            page_uuid=str(page_uuid),
+            page_url=page_url,
+            review_uuid=str(review_uuid),
+            config=config,
+            validators=validators
+        )
+
+        reviewer.responses[page_url] = {
+            'status': 200,
+            'content': "<html><head></head><body></body></html>",
+            'html': None
+        }
+
+        reviewer.review()
+
+        expect(test_class['has_validated']).to_be_true()

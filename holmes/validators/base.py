@@ -6,9 +6,8 @@ import gzip
 
 
 class Validator(object):
-    def __init__(self, reviewer, review):
+    def __init__(self, reviewer):
         self.reviewer = reviewer
-        self.review = review
 
     def validate(self):
         return True
@@ -25,7 +24,7 @@ class Validator(object):
         return out.getvalue()
 
     def add_fact(self, key, value, unit='value'):
-        self.review.add_fact(key, value, unit)
+        self.reviewer.add_fact(key, value, unit)
 
     def add_violation(self, key, title, description, points):
-        self.review.add_violation(key, title, description, points)
+        self.reviewer.add_violation(key, title, description, points)
