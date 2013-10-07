@@ -81,18 +81,37 @@ class Reviewer(object):
         })
 
         if response.status_code > 399:
-            raise InvalidReviewError("Could not add fact %s to review %s! Status Code: %d, Error: %s" % (
+            raise InvalidReviewError("Could not add fact '%s' to review %s! Status Code: %d, Error: %s" % (
                 key,
                 self.review_uuid,
                 response.status_code,
-                response.body
+                response.text
             ))
-            return
 
     def add_violation(self, key, title, description, points):
-        # call api to add_violation
-        pass
+        url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
+        response = requests.post(url, data={
+            "key": key,
+            "title": title,
+            "description": description,
+            "points": points
+        })
+
+        if response.status_code > 399:
+            raise InvalidReviewError("Could not add violation '%s' to review %s! Status Code: %d, Error: %s" % (
+                key,
+                self.review_uuid,
+                response.status_code,
+                response.text
+            ))
 
     def complete(self):
-        # call api to complete
-        pass
+        url = self.get_url('/page/%s/review/%s/complete' % (self.page_uuid, self.review_uuid))
+        response = requests.post(url, data={})
+
+        if response.status_code > 399:
+            raise InvalidReviewError("Could not complete review %s! Status Code: %d, Error: %s" % (
+                self.review_uuid,
+                response.status_code,
+                response.text
+            ))
