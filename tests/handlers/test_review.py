@@ -90,12 +90,66 @@ class TestCompleteReviewHandler(ApiTestCase):
         try:
             yield self.http_client.fetch(
                 url,
-                method='GET'
+                method='POST',
+                body=""
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
             expect(err.response.reason).to_be_like("Review with uuid of invalid not found!")
+        else:
+            assert False, "Should not have got this far"
+
+    @gen_test
+    def test_can_complete_review(self):
+        dt = datetime.now()
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                review.uuid
+            )
+        )
+
+        response = yield self.http_client.fetch(url, method='POST', body='')
+
+        expect(response.code).to_equal(200)
+
+        review = yield Review.objects.get(review._id)
+        yield review.load_references(['page'])
+        yield review.page.load_references(['last_review'])
+
+        expect(review.is_complete).to_be_true()
+        expect(review.completed_date).to_be_greater_or_equal_to(dt)
+        expect(review.page.last_review._id).to_equal(review._id)
+
+    @gen_test
+    def test_cant_complete_review_twice(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page, is_complete=True)
+
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                review.uuid
+            )
+        )
+
+        try:
+            yield self.http_client.fetch(
+                url,
+                method='POST',
+                body=""
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_be_like("Review '%s' is already completed!" % str(review.uuid))
         else:
             assert False, "Should not have got this far"

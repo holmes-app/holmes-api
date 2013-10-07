@@ -11,17 +11,19 @@ from ujson import dumps
 from holmes.models import Review
 
 
-class ReviewHandler(RequestHandler):
-    def __parse_uuid(self, uuid):
+class BaseReviewHandler(RequestHandler):
+    def _parse_uuid(self, uuid):
         try:
             return UUID(uuid)
         except ValueError:
             return None
 
+
+class ReviewHandler(BaseReviewHandler):
     @gen.coroutine
     def get(self, page_uuid, review_uuid):
         review = None
-        if self.__parse_uuid(review_uuid):
+        if self._parse_uuid(review_uuid):
             review = yield Review.objects.get(uuid=review_uuid)
 
         if not review:
@@ -36,11 +38,11 @@ class ReviewHandler(RequestHandler):
         self.finish()
 
 
-class CompleteReviewHandler(RequestHandler):
+class CompleteReviewHandler(BaseReviewHandler):
     @gen.coroutine
     def post(self, page_uuid, review_uuid):
         review = None
-        if self.__parse_uuid(review_uuid):
+        if self._parse_uuid(review_uuid):
             review = yield Review.objects.get(uuid=review_uuid)
 
         if not review:
@@ -49,7 +51,7 @@ class CompleteReviewHandler(RequestHandler):
             return
 
         if review.is_complete:
-            self.set_status(400, "Review already completed")
+            self.set_status(400, "Review '%s' is already completed!" % review_uuid)
             self.finish()
             return
 
