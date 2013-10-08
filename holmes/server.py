@@ -6,7 +6,7 @@ from cow.plugins.motorengine_plugin import MotorEnginePlugin
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler
 from holmes.handlers.worker_state import WorkerStateHandler
-from holmes.handlers.page import PageHandler
+from holmes.handlers.page import PageHandler, PagesHandler
 from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import CreateViolationHandler
 from holmes.handlers.review import ReviewHandler, CompleteReviewHandler
@@ -29,6 +29,7 @@ class HolmesApiServer(Server):
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/?', PageHandler),
             (r'/page/?', PageHandler),
+            (r'/pages/?', PagesHandler),
             (r'/next/?', NextJobHandler),
         ]
 

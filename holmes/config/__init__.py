@@ -15,3 +15,5 @@ Config.define("LOG_DATE_FORMAT", "%Y-%m-%d %H:%M:%S",
 
 Config.define("VALIDATORS", [], "List of classes to validate a website", "Review")
 Config.define("REVIEW_EXPIRATION_IN_SECONDS", 6 * 60 * 60, "Number of seconds that a review expires in.", "Review")
+
+Config.define("MAX_ENQUEUE_BUFFER_LENGTH", 1000, "Number of urls to enqueue before submitting to the /pages route", "Validators")

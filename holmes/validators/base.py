@@ -9,6 +9,22 @@ class Validator(object):
     def __init__(self, reviewer):
         self.reviewer = reviewer
 
+    @property
+    def page_uuid(self):
+        return self.reviewer.page_uuid
+
+    @property
+    def page_url(self):
+        return self.reviewer.page_url
+
+    @property
+    def review_uuid(self):
+        return self.reviewer.review_uuid
+
+    @property
+    def config(self):
+        return self.reviewer.config
+
     def validate(self):
         return True
 
@@ -27,6 +43,9 @@ class Validator(object):
         f.close()
 
         return out.getvalue()
+
+    def enqueue(self, *url):
+        self.reviewer.enqueue(*url)
 
     def add_fact(self, key, value, unit='value'):
         self.reviewer.add_fact(key, value, unit)

@@ -4,19 +4,22 @@
 from uuid import uuid4
 
 from preggy import expect
-from tornado.testing import gen_test
+from tornado.testing import gen_test, LogTrapTestCase
 
 from holmes.reviewer import Reviewer
 from holmes.models.review import Review
+from holmes.models.page import Page
+from holmes.models.domain import Domain
 from holmes.config import Config
 from holmes.validators.total_requests import TotalRequestsValidator
 from holmes.validators.js_requests import JSRequestsValidator
 from holmes.validators.css_requests import CSSRequestsValidator
+from holmes.validators.link_crawler import LinkCrawlerValidator
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
-class CanProcessWebsiteTest(ApiTestCase):
+class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
     def get_config(self):
         conf = super(CanProcessWebsiteTest, self).get_config()
         conf['MAX_JS_REQUESTS_PER_PAGE'] = 0
@@ -54,7 +57,8 @@ class CanProcessWebsiteTest(ApiTestCase):
             validators = [
                 TotalRequestsValidator,
                 JSRequestsValidator,
-                CSSRequestsValidator
+                CSSRequestsValidator,
+                LinkCrawlerValidator
             ]
 
         return Reviewer(
@@ -68,6 +72,10 @@ class CanProcessWebsiteTest(ApiTestCase):
 
     @gen_test
     def test_can_process_globo_com(self):
+        yield Review.objects.delete()
+        yield Page.objects.delete()
+        yield Domain.objects.delete()
+
         domain = yield DomainFactory.create(name="globo.com", url="http://www.globo.com")
         page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
         review = yield ReviewFactory.create(page=page)
@@ -83,7 +91,7 @@ class CanProcessWebsiteTest(ApiTestCase):
 
         loaded_review = yield Review.objects.get(review._id, lazy=False)
 
-        expect(loaded_review.facts).to_length(7)
+        expect(loaded_review.facts).to_length(8)
         expect(loaded_review.violations).to_length(4)
 
         print

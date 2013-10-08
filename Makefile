@@ -40,7 +40,7 @@ kill_run:
 run_daemon:
 	@holmes-api -vvv -c ./holmes/config/local.conf &
 
-run: mongo
+run:
 	@holmes-api -vvv -c ./holmes/config/local.conf
 
 worker: mongo

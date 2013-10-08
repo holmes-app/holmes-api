@@ -87,6 +87,31 @@ class Reviewer(object):
     def get_url(self, url):
         return join(self.api_url.rstrip('/'), url.lstrip('/'))
 
+    def enqueue(self, *urls):
+        if not urls:
+            return
+
+        if len(urls) == 1:
+            post_url = self.get_url('/page')
+            data = {
+                "url": urls[0]
+            }
+            error_message = "Could not enqueue page '" + urls[0] + "'! Status Code: %d, Error: %s"
+        else:
+            post_url = self.get_url('/pages')
+            data = {
+                "url": urls
+            }
+            error_message = "Could not enqueue the " + str(len(urls)) + " pages sent! Status Code: %d, Error: %s"
+
+        response = requests.post(post_url, data=data)
+
+        if response.status_code > 399:
+            raise InvalidReviewError(error_message % (
+                response.status_code,
+                response.text
+            ))
+
     def add_fact(self, key, value, unit='value'):
         url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
         response = requests.post(url, data={
