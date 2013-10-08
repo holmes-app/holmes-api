@@ -1,7 +1,7 @@
 mongodatabase = holmes
 
 test: mongo_test
-	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/
+	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
 	@coverage report -m --fail-under=80
 
 tox:

@@ -7,7 +7,7 @@ from tornado.testing import gen_test
 
 from holmes.reviewer import Reviewer
 from holmes.validators.js_requests import JSRequestsValidator
-from tests.base import ValidatorTestCase
+from tests.unit.base import ValidatorTestCase
 from tests.fixtures import DomainFactory, PageFactory
 
 

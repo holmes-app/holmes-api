@@ -9,7 +9,7 @@ from preggy import expect
 from tornado.testing import gen_test
 
 from holmes.models import Worker
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
 
 

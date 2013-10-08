@@ -13,7 +13,7 @@ from mock import patch, Mock
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.config import Config
 from holmes.validators.base import Validator
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 
 
 class TestReview(ApiTestCase):

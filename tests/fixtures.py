@@ -2,10 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import factory
+from tornado.concurrent import return_future
 
 from holmes.models import Domain, Page, Review, Worker
-from tests.base import MotorEngineFactory
 from uuid import uuid4
+
+
+class MotorEngineFactory(factory.base.Factory):
+    """Factory for motorengine objects."""
+    ABSTRACT_FACTORY = True
+
+    @classmethod
+    def _build(cls, target_class, *args, **kwargs):
+        return target_class(*args, **kwargs)
+
+    @classmethod
+    @return_future
+    def _create(cls, target_class, *args, **kwargs):
+        callback = kwargs.get('callback', None)
+        del kwargs['callback']
+        instance = target_class(*args, **kwargs)
+        instance.save(callback=callback)
 
 
 class DomainFactory(MotorEngineFactory):

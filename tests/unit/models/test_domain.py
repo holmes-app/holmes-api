@@ -4,9 +4,9 @@
 
 from preggy import expect
 
-from tests.base import ApiTestCase
 from tornado.testing import gen_test
 
+from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory
 
 

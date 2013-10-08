@@ -6,7 +6,7 @@ from preggy import expect
 from tornado.testing import gen_test
 
 from holmes.validators.base import Validator
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 
 
 class TestBaseValidator(ApiTestCase):

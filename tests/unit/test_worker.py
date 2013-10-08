@@ -10,23 +10,23 @@ from tornado.testing import gen_test
 import requests
 
 import holmes.worker
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class MockResponse(object):
-    def __init__(self, status_code=200, text=""):
+    def __init__(self, status_code=200, text=''):
         self.status_code = status_code
         self.text = text
 
 
 class WorkerTestCase(ApiTestCase):
-    root_path = abspath(join(dirname(__file__), ".."))
+    root_path = abspath(join(dirname(__file__), '..', '..'))
 
     def get_config(self):
         cfg = super(WorkerTestCase, self).get_config()
         cfg['WORKER_SLEEP_TIME'] = 1
-        cfg['HOLMES_API_URL'] = "http://localhost:2368"
+        cfg['HOLMES_API_URL'] = 'http://localhost:2368'
         return cfg
 
     @patch('holmes.worker.HolmesWorker')
@@ -64,15 +64,15 @@ class WorkerTestCase(ApiTestCase):
 
     def test_worker_can_parse_opt(self):
         worker = holmes.worker.HolmesWorker()
-        expect(worker.options.conf).not_to_equal("test.conf")
+        expect(worker.options.conf).not_to_equal('test.conf')
         expect(worker.options.verbose).to_equal(0)
 
-        worker._parse_opt(arguments=["-c", "test.conf", "-vv"])
-        expect(worker.options.conf).to_equal("test.conf")
+        worker._parse_opt(arguments=['-c', 'test.conf', '-vv'])
+        expect(worker.options.conf).to_equal('test.conf')
         expect(worker.options.verbose).to_equal(2)
 
     def test_worker_can_create_an_instance_with_config_file(self):
-        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/config/test_one_validator.conf')])
+        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/unit/config/test_one_validator.conf')])
         expect(worker.config.VALIDATORS).to_length(1)
 
     @patch('holmes.worker.verify_config')
@@ -82,14 +82,14 @@ class WorkerTestCase(ApiTestCase):
         expect(verify_config_mock.called).to_be_true()
 
     def test_worker_logging_config_from_arguments(self):
-        worker = holmes.worker.HolmesWorker(["", "-v"])
+        worker = holmes.worker.HolmesWorker(['', '-v'])
         log_level = worker._config_logging()
-        expect(log_level).to_equal("WARNING")
+        expect(log_level).to_equal('WARNING')
 
     def test_worker_logging_config_from_file(self):
-        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/config/test_one_validator.conf')])
+        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/unit/config/test_one_validator.conf')])
         log_level = worker._config_logging()
-        expect(log_level).to_equal("INFO")
+        expect(log_level).to_equal('INFO')
 
     @patch('holmes.reviewer.Reviewer')
     def test_worker_do_work(self, reviewer_mock):
@@ -111,8 +111,8 @@ class WorkerTestCase(ApiTestCase):
         worker._ping_api()
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            "http://localhost:2368/worker/%s/ping" % worker.uuid,
-            data={"worker_uuid": worker.uuid}
+            'http://localhost:2368/worker/%s/ping' % worker.uuid,
+            data={'worker_uuid': worker.uuid}
         )
 
     @patch('requests.post')
@@ -134,18 +134,18 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_load_next_job_must_call_api(self, load_next_job_mock):
-        response = MockResponse(200, "")
+        response = MockResponse(200, '')
         load_next_job_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
         worker._load_next_job()
 
         expect(load_next_job_mock.called).to_be_true()
-        load_next_job_mock.assert_called_once_with("http://localhost:2368/next", data={})
+        load_next_job_mock.assert_called_once_with('http://localhost:2368/next', data={})
 
     @patch('requests.post')
     def test_worker_load_next_job_without_jobs(self, load_next_job_mock):
-        response = MockResponse(200, "")
+        response = MockResponse(200, '')
 
         load_next_job_mock.return_value = response
 
@@ -160,9 +160,13 @@ class WorkerTestCase(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        response = MockResponse(200,
-                                '{"page": "%s", "review": "%s", "url": "%s"}' %
-                                (str(page.uuid), str(review.uuid), page.url))
+        expected = '{"page": "%s", "review": "%s", "url": "%s"}' % (
+            str(page.uuid),
+            str(review.uuid),
+            page.url
+        )
+
+        response = MockResponse(200, expected)
 
         requests.post = Mock(return_value=response)
 
@@ -179,25 +183,25 @@ class WorkerTestCase(ApiTestCase):
         load_start_job_mock.side_effect = ConnectionError()
 
         worker = holmes.worker.HolmesWorker()
-        worker._start_job("000")
+        worker._start_job('000')
         expect(worker.working).to_be_true()
 
     @patch('requests.post')
     def test_worker_start_call_api(self, requests_mock):
-        response = MockResponse(200, "OK")
+        response = MockResponse(200, 'OK')
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
-        result = worker._start_job("000")
+        result = worker._start_job('000')
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            "http://localhost:2368/worker/%s/start/000" % str(worker.uuid)
+            'http://localhost:2368/worker/%s/start/000' % str(worker.uuid)
         )
         expect(result).to_be_true()
 
     @patch('requests.post')
     def test_worker_start_null_job(self, requests_mock):
-        response = MockResponse(200, "OK")
+        response = MockResponse(200, 'OK')
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
@@ -210,25 +214,25 @@ class WorkerTestCase(ApiTestCase):
         load_start_job_mock.side_effect = ConnectionError()
 
         worker = holmes.worker.HolmesWorker()
-        worker._complete_job("000")
+        worker._complete_job('000')
         expect(worker.working).to_be_true()
 
     @patch('requests.post')
     def test_worker_complete_call_api(self, requests_mock):
-        response = MockResponse(200, "OK")
+        response = MockResponse(200, 'OK')
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
-        result = worker._complete_job("000")
+        result = worker._complete_job('000')
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            "http://localhost:2368/worker/%s/complete/000" % str(worker.uuid)
+            'http://localhost:2368/worker/%s/complete/000' % str(worker.uuid)
         )
         expect(result).to_be_true()
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
-        response = MockResponse(200, "OK")
+        response = MockResponse(200, 'OK')
         requests_mock.return_value = response
 
         worker = holmes.worker.HolmesWorker()
@@ -258,7 +262,7 @@ class WorkerTestCase(ApiTestCase):
 
         worker = holmes.worker.HolmesWorker()
 
-        job = {"page": str(page.uuid), "review": str(review.uuid), "url": page.url}
+        job = {'page': str(page.uuid), 'review': str(review.uuid), 'url': page.url}
         worker._load_next_job = Mock(return_value=job)
         worker._ping_api = Mock(return_value=True)
         worker._start_job = Mock()

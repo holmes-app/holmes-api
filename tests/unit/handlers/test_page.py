@@ -11,7 +11,7 @@ from tornado.httpclient import HTTPError
 
 
 from holmes.models import Page, Domain
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory
 
 

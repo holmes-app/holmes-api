@@ -7,7 +7,7 @@ from preggy import expect
 from mock import patch
 
 import holmes.server
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 
 
 class ApiServerTestCase(ApiTestCase):

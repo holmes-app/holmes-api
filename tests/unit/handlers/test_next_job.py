@@ -8,7 +8,7 @@ from tornado.testing import gen_test
 from ujson import loads
 
 from holmes.models import Review
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 

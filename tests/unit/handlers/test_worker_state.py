@@ -8,7 +8,7 @@ from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
 from holmes.models import Worker, Page, Review
-from tests.base import ApiTestCase
+from tests.unit.base import ApiTestCase
 from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
 
 
