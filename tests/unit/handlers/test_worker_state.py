@@ -114,11 +114,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
-        expect(response.body).to_be_like("OK")
-
-        expect(review.is_complete).to_be_true()
-        expect(review.completed_date).not_to_be_null()
-        expect(page.last_review.uuid).to_equal(review.uuid)
+        expect(response.body).to_be_like('OK')
         expect(worker.current_review).to_be_null()
 
     @gen_test
@@ -153,27 +149,5 @@ class TestWorkerStateHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
             expect(err.response.reason).to_be_like("Unknown Review")
-        else:
-            assert False, "Should not have got this far"
-
-    @gen_test
-    def test_worker_complete_work_already_complete_review(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-
-        review = yield ReviewFactory.create(page=page, is_complete=True)
-        worker = yield WorkerFactory.create()
-
-        try:
-            yield self.http_client.fetch(
-                self.get_url('/worker/%s/complete/%s' % (str(worker.uuid), str(review.uuid))),
-                method='POST',
-                body=''
-            )
-        except HTTPError:
-            err = sys.exc_info()[1]
-            expect(err).not_to_be_null()
-            expect(err.code).to_equal(400)
-            expect(err.response.reason).to_be_like("Review already completed")
         else:
             assert False, "Should not have got this far"

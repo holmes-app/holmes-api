@@ -49,7 +49,7 @@ class HolmesWorker(object):
             if job:
                 self._start_job(job['review'])
                 self._start_reviewer(job=job)
-                self._complete_job(job['review'])
+                self._complete_job(job['review'], job['page'])
 
     def _start_reviewer(self, job):
         if job:
@@ -108,17 +108,31 @@ class HolmesWorker(object):
         except ConnectionError:
             logging.error("Fail to start review.")
 
-    def _complete_job(self, review_uuid):
+    def _complete_job(self, review_uuid, page_uuid):
+        self._complete_review(review_uuid, page_uuid)
+        self._complete_work(review_uuid)
+
+    def _complete_review(self, review_uuid=None, page_uuid=None):
+        if not review_uuid or not page_uuid:
+            return False
+
+        try:
+            response = requests.post('%s/page/%s/complete/%s' %
+                                    (self.config.HOLMES_API_URL, page_uuid, review_uuid))
+            return ('OK' == response.text)
+        except ConnectionError:
+            logging.error('Fail to complete worker.')
+
+    def _complete_work(self, review_uuid):
         if not review_uuid:
             return False
 
         try:
-            response = requests.post("%s/worker/%s/complete/%s" %
+            response = requests.post('%s/worker/%s/complete/%s' %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
-            return ("OK" == response.text)
-
+            return ('OK' == response.text)
         except ConnectionError:
-            logging.error("Fail to start review.")
+            logging.error('Fail to complete worker.')
 
     def _parse_opt(self, arguments):
         parser = OptionParser()

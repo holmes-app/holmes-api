@@ -4,7 +4,7 @@
 from os.path import abspath, dirname, join
 
 from preggy import expect
-from mock import patch, Mock
+from mock import patch, Mock, call
 from requests.exceptions import ConnectionError
 from tornado.testing import gen_test
 import requests
@@ -118,7 +118,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._start_job.called).to_be_true()
         worker._start_job.assert_called_once_with("00001")
         worker._start_reviewer.assert_called_once_with(job=job)
-        worker._complete_job.assert_called_once_with("00001")
+        worker._complete_job.assert_called_once_with("00001", "0001")
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
@@ -226,7 +226,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_complete_error(self, load_start_job_mock):
         load_start_job_mock.side_effect = ConnectionError()
         worker = self.get_worker()
-        worker._complete_job('000')
+        worker._complete_job('000', '001')
         expect(worker.working).to_be_true()
 
     @patch('requests.post')
@@ -234,19 +234,24 @@ class WorkerTestCase(ApiTestCase):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
         worker = self.get_worker()
-        result = worker._complete_job('000')
+        worker._complete_job('000', '001')
         expect(requests_mock.called).to_be_true()
-        requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/complete/000' % str(worker.uuid)
-        )
-        expect(result).to_be_true()
+
+        expect(requests_mock.call_count).to_equal(2)
+
+        call_expected = [
+            call('http://localhost:2368/page/001/complete/000'),
+            call('http://localhost:2368/worker/%s/complete/000' % str(worker.uuid)),
+            ]
+
+        expect(requests_mock.mock_calls).to_equal(call_expected)
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
         worker = self.get_worker()
-        result = worker._complete_job(None)
+        result = worker._complete_job(None, None)
         expect(requests_mock.called).to_be_false()
         expect(result).to_be_false()
 
