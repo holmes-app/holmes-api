@@ -52,15 +52,16 @@ class HolmesWorker(object):
                 self._complete_job(job['review'])
 
     def _start_reviewer(self, job):
-        reviewer = Reviewer(
-            api_url=self.config.HOLMES_API_URL,
-            page_uuid=job['page'],
-            page_url=job['url'],
-            review_uuid=job['review'],
-            config=self.config,
-            validators=self._load_validators()
-            )
-        reviewer.review()
+        if job:
+            reviewer = Reviewer(
+                api_url=self.config.HOLMES_API_URL,
+                page_uuid=job['page'],
+                page_url=job['url'],
+                review_uuid=job['review'],
+                config=self.config,
+                validators=self._load_validators()
+                )
+            reviewer.review()
 
     def _load_validators(self):
         validators = []

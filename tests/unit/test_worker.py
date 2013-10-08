@@ -335,3 +335,19 @@ class WorkerTestCase(ApiTestCase):
 
         expect(validators).not_to_be_null()
         expect(validators).to_length(2)
+
+    @patch("holmes.reviewer.Reviewer.review")
+    def test_start_reviwer_without_job(self, mock_reviewer):
+        worker = self.get_worker()
+        worker._start_reviewer(None)
+        expect(mock_reviewer.called).not_to_be_true()
+
+    @patch("holmes.reviewer.Reviewer.review")
+    def test_start_reviwer(self, mock_reviewer):
+        worker = self.get_worker()
+        worker._load_validators = Mock(return_value=[])
+        job = {"page": "00000000-0000-0000-0000-000000000000",
+               "review": "00000000-0000-0000-0000-000000000000",
+               "url": "http://globo.com"}
+        worker._start_reviewer(job=job)
+        expect(mock_reviewer.called).to_be_true()
