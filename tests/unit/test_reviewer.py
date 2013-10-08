@@ -7,7 +7,6 @@ from uuid import uuid4
 import requests
 import lxml.html
 from preggy import expect
-from tornado.testing import gen_test
 from mock import patch, Mock
 
 from holmes.reviewer import Reviewer, InvalidReviewError
@@ -131,7 +130,11 @@ class TestReview(ApiTestCase):
             'html': None
         }
 
-        reviewer.review()
+        with patch.object(requests, 'post') as post_mock:
+            response_mock = Mock(status_code=200, text="OK")
+            post_mock.return_value = response_mock
+
+            reviewer.review()
 
         expect(test_class['has_validated']).to_be_true()
 

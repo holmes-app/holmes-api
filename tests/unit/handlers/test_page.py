@@ -78,19 +78,14 @@ class TestPageHandler(ApiTestCase):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
 
-        try:
-            yield self.http_client.fetch(
-                self.get_url('/page'),
-                method='POST',
-                body='url=%s' % page.url
-            )
-        except HTTPError:
-            err = sys.exc_info()[1]
-            expect(err).not_to_be_null()
-            expect(err.code).to_equal(409)
-            expect(err.response.reason).to_be_like("Duplicate entry for page [%s]" % page.url)
-        else:
-            assert False, "Should not have got this far"
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body='url=%s' % page.url
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
 
     @gen_test
     def test_get_page_not_found(self):
