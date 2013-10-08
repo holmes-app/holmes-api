@@ -11,6 +11,7 @@ import requests
 
 import holmes.worker
 from holmes.config import Config
+from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -271,8 +272,52 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._start_job.called).to_be_true()
         expect(worker._complete_job.called).to_be_true()
 
+    def test_load_validators_none(self):
+        worker = holmes.worker.HolmesWorker()
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(0)
+
     def test_load_validators(self):
         worker = self.get_worker()
+
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(2)
+
+        for validator in validators:
+            try:
+                expect(issubclass(validator, Validator)).to_be_true()
+            except TypeError:
+                assert False, "Expect all validators to be subclass of holmes.validators.base.Validator"
+
+    def test_load_validators_can_instantiate_a_validator(self):
+        worker = self.get_worker()
+        worker.config.VALIDATORS = ['holmes.validators.js_requests.JSRequestsValidator']
+
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(1)
+
+        validator_class = validators[0]
+        validator = validator_class(None)
+        expect(type(validator)).to_equal(holmes.validators.js_requests.JSRequestsValidator)
+
+    def test_load_validators_invalid_validator_full_name(self):
+        worker = self.get_worker()
+        worker.config.VALIDATORS += ['JSRequestsValidator']
+
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(2)
+
+    def test_load_validators_unknown_class(self):
+        worker = self.get_worker()
+        worker.config.VALIDATORS += ['holmes.validators.js_requests.ValidatorDoesNotExist']
 
         validators = worker._load_validators()
 

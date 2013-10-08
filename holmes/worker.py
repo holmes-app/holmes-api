@@ -51,7 +51,19 @@ class HolmesWorker(object):
                 self._complete_job(job['review'])
 
     def _load_validators(self):
-        return self.config.VALIDATORS
+        validators = []
+
+        for validator_full_name in self.config.VALIDATORS:
+            try:
+                module_name, class_name = validator_full_name.rsplit('.', 1)
+                module = __import__(module_name, globals(), locals(), class_name)
+                validators.append(getattr(module, class_name))
+            except ValueError:
+                logging.warn("Invalid validator name [%s]. Will be ignored." % validator_full_name)
+            except AttributeError:
+                logging.warn("Validator [%s] not found. Will be ignored." % validator_full_name)
+
+        return validators
 
     def _ping_api(self):
         try:
