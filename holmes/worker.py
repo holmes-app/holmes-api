@@ -50,6 +50,9 @@ class HolmesWorker(object):
                 #Reviewer(job=[review_uuid, page_uuid, page_url], url_base_api)
                 self._complete_job(job['review'])
 
+    def _load_validators(self):
+        return self.config.VALIDATORS
+
     def _ping_api(self):
         try:
             requests.post("%s/worker/%s/ping" % (self.config.HOLMES_API_URL, self.uuid), data={"worker_uuid": self.uuid})

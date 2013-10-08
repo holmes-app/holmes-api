@@ -10,6 +10,7 @@ from tornado.testing import gen_test
 import requests
 
 import holmes.worker
+from holmes.config import Config
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -23,10 +24,18 @@ class MockResponse(object):
 class WorkerTestCase(ApiTestCase):
     root_path = abspath(join(dirname(__file__), '..', '..'))
 
+    def get_worker(self):
+        worker = holmes.worker.HolmesWorker()
+        worker.config = Config(**self.get_config())
+        return worker
+
     def get_config(self):
         cfg = super(WorkerTestCase, self).get_config()
         cfg['WORKER_SLEEP_TIME'] = 1
         cfg['HOLMES_API_URL'] = 'http://localhost:2368'
+        cfg['VALIDATORS'] = ['holmes.validators.js_requests.JSRequestsValidator',
+                             'holmes.validators.total_requests.TotalRequestsValidator',
+                             ]
         return cfg
 
     @patch('holmes.worker.HolmesWorker')
@@ -36,14 +45,14 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('time.sleep')
     def test_worker_sleep_time(self, worker_sleep):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._do_work = Mock()
         worker_sleep.side_effect = lambda *args: worker.stop_work()
         worker.run()
         worker_sleep.assert_called_once_with(1)
 
     def test_worker_working_flag(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
 
         expect(worker.working).to_be_true()
         worker.stop_work()
@@ -53,7 +62,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_run_keyboard_interrupt(self, do_work_mock):
         do_work_mock.side_effect = KeyboardInterrupt()
 
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker.run()
         expect(worker.working).to_be_false()
 
@@ -63,7 +72,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker.config.VALIDATORS).to_equal([])
 
     def test_worker_can_parse_opt(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         expect(worker.options.conf).not_to_equal('test.conf')
         expect(worker.options.verbose).to_equal(0)
 
@@ -77,7 +86,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('holmes.worker.verify_config')
     def test_worker_validating_config_load(self, verify_config_mock):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._load_config(verify=True)
         expect(verify_config_mock.called).to_be_true()
 
@@ -93,7 +102,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('holmes.reviewer.Reviewer')
     def test_worker_do_work(self, reviewer_mock):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
         worker._do_work(page)
@@ -107,7 +116,7 @@ class WorkerTestCase(ApiTestCase):
 
     @patch('requests.post')
     def test_worker_ping_api(self, requests_mock):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._ping_api()
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
@@ -118,8 +127,7 @@ class WorkerTestCase(ApiTestCase):
     @patch('requests.post')
     def test_worker_ping_api_connection_error(self, ping_api_mock):
         ping_api_mock.side_effect = ConnectionError()
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         was_successful = worker._ping_api()
         expect(worker.working).to_be_false()
         expect(was_successful).to_be_false()
@@ -127,8 +135,7 @@ class WorkerTestCase(ApiTestCase):
     @patch('requests.post')
     def test_worker_load_next_job_error(self, load_next_job_mock):
         load_next_job_mock.side_effect = ConnectionError()
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._load_next_job()
         expect(worker.working).to_be_false()
 
@@ -136,8 +143,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_load_next_job_must_call_api(self, load_next_job_mock):
         response = MockResponse(200, '')
         load_next_job_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._load_next_job()
 
         expect(load_next_job_mock.called).to_be_true()
@@ -146,10 +152,8 @@ class WorkerTestCase(ApiTestCase):
     @patch('requests.post')
     def test_worker_load_next_job_without_jobs(self, load_next_job_mock):
         response = MockResponse(200, '')
-
         load_next_job_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         next_job = worker._load_next_job()
 
         expect(next_job).to_be_null()
@@ -181,8 +185,7 @@ class WorkerTestCase(ApiTestCase):
     @patch('requests.post')
     def test_worker_start_error(self, load_start_job_mock):
         load_start_job_mock.side_effect = ConnectionError()
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._start_job('000')
         expect(worker.working).to_be_true()
 
@@ -190,8 +193,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_start_call_api(self, requests_mock):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         result = worker._start_job('000')
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
@@ -203,8 +205,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_start_null_job(self, requests_mock):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         result = worker._start_job(None)
         expect(requests_mock.called).to_be_false()
         expect(result).to_be_false()
@@ -212,8 +213,7 @@ class WorkerTestCase(ApiTestCase):
     @patch('requests.post')
     def test_worker_complete_error(self, load_start_job_mock):
         load_start_job_mock.side_effect = ConnectionError()
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         worker._complete_job('000')
         expect(worker.working).to_be_true()
 
@@ -221,8 +221,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_complete_call_api(self, requests_mock):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         result = worker._complete_job('000')
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
@@ -234,14 +233,13 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_complete_null_job(self, requests_mock):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
-
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
         result = worker._complete_job(None)
         expect(requests_mock.called).to_be_false()
         expect(result).to_be_false()
 
     def test_do_work_without_next_job(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
 
         job = None
         worker._load_next_job = Mock(return_value=job)
@@ -260,7 +258,7 @@ class WorkerTestCase(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        worker = holmes.worker.HolmesWorker()
+        worker = self.get_worker()
 
         job = {'page': str(page.uuid), 'review': str(review.uuid), 'url': page.url}
         worker._load_next_job = Mock(return_value=job)
@@ -272,3 +270,11 @@ class WorkerTestCase(ApiTestCase):
 
         expect(worker._start_job.called).to_be_true()
         expect(worker._complete_job.called).to_be_true()
+
+    def test_load_validators(self):
+        worker = self.get_worker()
+
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(2)
