@@ -25,6 +25,22 @@ class TestNextJobHandler(ApiTestCase):
         expect(response.body).to_be_empty()
 
     @gen_test
+    def test_can_get_next_job_to_new_pages(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/next'),
+            method='POST',
+            body=""
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).not_to_be_empty()
+        expect(loads(response.body)['page']).not_to_be_null()
+        expect(loads(response.body)['page']).to_equal(str(page.uuid))
+
+    @gen_test
     def test_can_get_next_job(self):
         dt = datetime(2010, 10, 10, 10, 10, 10)
 

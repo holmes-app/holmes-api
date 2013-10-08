@@ -15,18 +15,21 @@ class NextJobHandler(RequestHandler):
 
     @gen.coroutine
     def post(self):
-        dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
-
-        pages_in_need_of_review = yield Page.objects.filter(
-            last_review__is_null=False,
-            last_review_date__is_null=False,
-            last_review_date__lt=dt
-        ).find_all()
+        pages_in_need_of_review = yield Page.objects.filter(last_review__is_null=True).find_all()
 
         if len(pages_in_need_of_review) == 0:
-            self.write("")
-            self.finish()
-            return
+            dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
+
+            pages_in_need_of_review = yield Page.objects.filter(
+                last_review__is_null=False,
+                last_review_date__is_null=False,
+                last_review_date__lt=dt
+            ).find_all()
+
+            if len(pages_in_need_of_review) == 0:
+                self.write("")
+                self.finish()
+                return
 
         page = pages_in_need_of_review[0]
 
