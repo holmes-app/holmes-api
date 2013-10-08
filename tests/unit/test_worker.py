@@ -101,13 +101,24 @@ class WorkerTestCase(ApiTestCase):
         log_level = worker._config_logging()
         expect(log_level).to_equal('INFO')
 
-    @patch('holmes.reviewer.Reviewer')
-    def test_worker_do_work(self, reviewer_mock):
+    def test_worker_do_work(self):
         worker = self.get_worker()
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        worker._do_work(page)
-        expect(reviewer_mock().called).to_be_true()
+
+        worker._ping_api = Mock()
+        job = {"page": "0001", "review": "00001", "url": "http://globo.com"}
+        worker._load_next_job = Mock(return_value=job)
+        worker._start_job = Mock()
+        worker._start_reviewer = Mock()
+        worker._complete_job = Mock()
+
+        worker._do_work()
+
+        expect(worker._ping_api.called).to_be_true()
+        expect(worker._load_next_job.called).to_be_true()
+        expect(worker._start_job.called).to_be_true()
+        worker._start_job.assert_called_once_with("00001")
+        worker._start_reviewer.assert_called_once_with(job=job)
+        worker._complete_job.assert_called_once_with("00001")
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
@@ -265,6 +276,7 @@ class WorkerTestCase(ApiTestCase):
         worker._load_next_job = Mock(return_value=job)
         worker._ping_api = Mock(return_value=True)
         worker._start_job = Mock()
+        worker._start_reviewer = Mock()
         worker._complete_job = Mock()
 
         worker._do_work()

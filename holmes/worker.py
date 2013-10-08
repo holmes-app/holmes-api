@@ -14,6 +14,7 @@ from derpconf.config import verify_config
 from optparse import OptionParser
 
 from holmes.config import Config
+from holmes.reviewer import Reviewer
 
 
 class HolmesWorker(object):
@@ -47,8 +48,19 @@ class HolmesWorker(object):
             job = self._load_next_job()
             if job:
                 self._start_job(job['review'])
-                #Reviewer(job=[review_uuid, page_uuid, page_url], url_base_api)
+                self._start_reviewer(job=job)
                 self._complete_job(job['review'])
+
+    def _start_reviewer(self, job):
+        reviewer = Reviewer(
+            api_url=self.config.HOLMES_API_URL,
+            page_uuid=job['page'],
+            page_url=job['url'],
+            review_uuid=job['review'],
+            config=self.config,
+            validators=self._load_validators()
+            )
+        reviewer.review()
 
     def _load_validators(self):
         validators = []
@@ -59,28 +71,28 @@ class HolmesWorker(object):
                 module = __import__(module_name, globals(), locals(), class_name)
                 validators.append(getattr(module, class_name))
             except ValueError:
-                logging.warn("Invalid validator name [%s]. Will be ignored." % validator_full_name)
+                logging.warn('Invalid validator name [%s]. Will be ignored.' % validator_full_name)
             except AttributeError:
-                logging.warn("Validator [%s] not found. Will be ignored." % validator_full_name)
+                logging.warn('Validator [%s] not found. Will be ignored.' % validator_full_name)
 
         return validators
 
     def _ping_api(self):
         try:
-            requests.post("%s/worker/%s/ping" % (self.config.HOLMES_API_URL, self.uuid), data={"worker_uuid": self.uuid})
+            requests.post('%s/worker/%s/ping' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
             return True
         except ConnectionError:
-            logging.fatal("Fail to ping API [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
+            logging.fatal('Fail to ping API [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
             self.working = False
             return False
 
     def _load_next_job(self):
         try:
-            response = requests.post("%s/next" % self.config.HOLMES_API_URL, data={})
+            response = requests.post('%s/next' % self.config.HOLMES_API_URL, data={})
             if response and response.text:
                 return loads(response.text)
         except ConnectionError:
-            logging.fatal("Fail to get next review from [%s]. Stopping Worker." % self.config.HOLMES_API_URL)
+            logging.fatal('Fail to get next review from [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
             self.working = False
 
     def _start_job(self, review_uuid):
@@ -88,9 +100,9 @@ class HolmesWorker(object):
             return False
 
         try:
-            response = requests.post("%s/worker/%s/start/%s" %
+            response = requests.post('%s/worker/%s/start/%s' %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
-            return ("OK" == response.text)
+            return ('OK' == response.text)
 
         except ConnectionError:
             logging.error("Fail to start review.")
