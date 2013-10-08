@@ -43,12 +43,20 @@ class Reviewer(object):
     def review(self):
         self.load_content()
         self.run_validators()
+        self.complete()
 
     def load_content(self):
         self.get_response(self.page_url)
 
         if self.responses[self.page_url]['status'] > 399:
             raise InvalidReviewError("Could not load '%s'!" % self.page_url)
+
+    @property
+    def current(self):
+        if not self.page_url in self.responses:
+            self.load_content()
+
+        return self.responses[self.page_url]
 
     def get_response(self, url):
         if url in self.responses:
@@ -57,12 +65,19 @@ class Reviewer(object):
         response = requests.get(url)
 
         self.responses[url] = {}
-        self.responses[url]['status'] = response.status_code
-        self.responses[url]['content'] = response.text
 
-        self.responses[url]['html'] = None
+        result = {
+            'status': response.status_code,
+            'content': response.text,
+            'html': None
+        }
+
         if response.status_code < 399:
-            self.responses[url]['html'] = lxml.html.fromstring(response.text)
+            result['html'] = lxml.html.fromstring(response.text)
+
+        self.responses[url] = result
+
+        return result
 
     def run_validators(self):
         for validator in self.validators:

@@ -1,8 +1,13 @@
 mongodatabase = holmes
 
-test: mongo_test
+test: mongo_test unit integration
+
+unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
 	@coverage report -m --fail-under=80
+
+integration: mongo kill_run run_daemon
+	@`which nosetests` -vv --with-yanc -s tests/integration/
 
 tox:
 	@PATH=$$PATH:~/.pythonbrew/pythons/Python-2.6.*/bin/:~/.pythonbrew/pythons/Python-2.7.*/bin/:~/.pythonbrew/pythons/Python-3.0.*/bin/:~/.pythonbrew/pythons/Python-3.1.*/bin/:~/.pythonbrew/pythons/Python-3.2.3/bin/:~/.pythonbrew/pythons/Python-3.3.0/bin/ tox
@@ -28,6 +33,12 @@ mongo_test: kill_mongo_test
 	@rm -rf /tmp/$(mongodatabase)/mongotestdata && mkdir -p /tmp/$(mongodatabase)/mongotestdata
 	@mongod --dbpath /tmp/$(mongodatabase)/mongotestdata --logpath /tmp/$(mongodatabase)/mongotestlog --port 6686 --quiet &
 	@sleep 3
+
+kill_run:
+	@ps aux | awk '(/.+holmes-api.+/ && $$0 !~ /awk/){ system("kill -9 "$$2) }'
+
+run_daemon:
+	@holmes-api -vvv -c ./holmes/config/local.conf &
 
 run: mongo
 	@holmes-api -vvv -c ./holmes/config/local.conf

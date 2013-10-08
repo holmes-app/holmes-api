@@ -15,14 +15,14 @@ class JSRequestsValidator(Validator):
 
         results = self.process_js_requests(js_files)
 
-        total_size = sum([len(item.text) for item in results.values()]) / 1024.0
+        total_size = sum([len(item['content']) for item in results.values()]) / 1024.0
         self.add_fact(
             key='total.size.js',
             value=total_size,
             unit='kb'
         )
 
-        total_size_gzip = sum([len(self.to_gzip(item.text)) for item in results.values()]) / 1024.0
+        total_size_gzip = sum([len(self.to_gzip(item['content'])) for item in results.values()]) / 1024.0
         self.add_fact(
             key='total.size.js.gzipped',
             value=total_size_gzip,
@@ -48,7 +48,7 @@ class JSRequestsValidator(Validator):
             )
 
     def get_js_requests(self):
-        return self.reviewer.html.cssselect('script[src]')
+        return self.reviewer.current['html'].cssselect('script[src]')
 
     def process_js_requests(self, js_files):
         results = {}

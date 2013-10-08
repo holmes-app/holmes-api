@@ -16,6 +16,11 @@ class Validator(object):
         return self.reviewer.get_response(url)
 
     def to_gzip(self, content):
+        try:
+            content = content.encode('utf-8')
+        except UnicodeEncodeError:
+            pass
+
         out = StringIO.StringIO()
         f = gzip.GzipFile(fileobj=out, mode='w')
         f.write(content)

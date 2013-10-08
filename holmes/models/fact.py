@@ -16,3 +16,15 @@ class Fact(Document):
             "unit": self.unit,
             "value": self.value
         }
+
+    def __str__(self):
+        unit = self.unit != "value" and self.unit or ""
+        value = self.value
+
+        if unit in ['kb']:
+            value = "%.2f" % float(value)
+
+        return "%s: %s%s" % (self.key, value, unit)
+
+    def __repr__(self):
+        return str(self)
