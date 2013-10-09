@@ -65,31 +65,54 @@ class PagesHandler(RequestHandler):
     @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
-        page_count = 0
 
-        domains_to_add = []
+        if not urls:
+            self.set_status(200)
+            self.write("0")
+            self.finish()
+            return
+
         pages_to_add = []
 
+        all_domains = []
         for url in urls:
             domain_name, domain_url = get_domain_from_url(url)
             if not domain_name:
-                self.set_status(400, "Invalid url [%s]" % url)
+                self.set_status(400, "In the urls you posted there is an invalid URL: %s" % url)
                 self.finish()
                 return
+            all_domains.append((domain_name, domain_url))
 
-            domain = yield Domain.objects.get(name=domain_name)
+        existing_domains = yield Domain.objects.filter(name__in=[domain[0] for domain in all_domains]).find_all()
+        if not existing_domains:
+            existing_domains = []
+        existing_domains_dict = dict([(domain.name, domain) for domain in existing_domains])
 
-            if not domain:
-                domain = Domain(url=domain_url, name=domain_name)
-                domains_to_add.append(domain)
+        domains_to_add = [
+            Domain(name=domain[0], url=domain[1])
+            for domain in all_domains
+            if not domain[0] in existing_domains_dict
+        ]
+        domains_to_add_dict = dict([(domain.name, domain) for domain in domains_to_add])
 
-            page = yield Page.objects.get(url=url)
+        all_domains_dict = {}
+        all_domains_dict.update(existing_domains_dict)
+        all_domains_dict.update(domains_to_add_dict)
 
-            if page:
+        existing_pages = yield Page.objects.filter(url__in=urls).find_all()
+        if not existing_pages:
+            existing_pages = []
+        existing_pages_dict = dict([(page.url, page) for page in existing_pages])
+
+        pages_to_add = []
+
+        for url in urls:
+            if url in existing_pages_dict:
                 continue
+            domain_name, domain_url = get_domain_from_url(url)
+            domain = all_domains_dict[domain_name]
 
             pages_to_add.append(Page(url=url, domain=domain))
-            page_count += 1
 
         if domains_to_add:
             yield Domain.objects.bulk_insert(domains_to_add)
@@ -97,5 +120,5 @@ class PagesHandler(RequestHandler):
         if pages_to_add:
             yield Page.objects.bulk_insert(pages_to_add)
 
-        self.write(str(page_count))
+        self.write(str(len(pages_to_add)))
         self.finish()

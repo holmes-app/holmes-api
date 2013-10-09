@@ -9,7 +9,6 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-
 from holmes.models import Page, Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory
@@ -117,3 +116,95 @@ class TestPageHandler(ApiTestCase):
 
         expect(returned_page['uuid']).to_equal(str(page.uuid))
         expect(returned_page['url']).to_equal(page.url)
+
+
+class TestPagesHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_save_with_no_urls(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='POST',
+            body=""
+        )
+
+        expect(response.code).to_equal(200)
+        expect(int(response.body)).to_equal(0)
+
+    @gen_test
+    def test_can_save(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        urls = ["http://%d.globo.com/%d.html" % (num, num) for num in range(1000)]
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='POST',
+            body="&".join(['url=%s' % url for url in urls])
+        )
+
+        expect(response.code).to_equal(200)
+        expect(int(response.body)).to_equal(1000)
+
+    @gen_test
+    def test_saves_only_new_pages(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        domain = yield DomainFactory.create(name="globo.com", url="http://globo.com")
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+
+        urls = ["http://%d.globo.com/%d.html" % (num, num) for num in range(10)]
+        urls.append(page.url)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='POST',
+            body="&".join(['url=%s' % url for url in urls])
+        )
+
+        expect(response.code).to_equal(200)
+        expect(int(response.body)).to_equal(10)
+
+    @gen_test
+    def test_saves_does_nothing_if_all_pages_already_there(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        domain = yield DomainFactory.create(name="globo.com", url="http://globo.com")
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+
+        urls = [page.url]
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='POST',
+            body="&".join(['url=%s' % url for url in urls])
+        )
+
+        expect(response.code).to_equal(200)
+        expect(int(response.body)).to_equal(0)
+
+    @gen_test
+    def test_cant_save_invalid_urls(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        urls = ["/%d.html" % num for num in range(1000)]
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/pages'),
+                method='POST',
+                body="&".join(['url=%s' % url for url in urls])
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_equal("In the urls you posted there is an invalid URL: /0.html")
+        else:
+            assert False, "Should not have gotten this far"
