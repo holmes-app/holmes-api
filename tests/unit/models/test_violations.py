@@ -27,4 +27,9 @@ class TestViolations(ApiTestCase):
         expect(violation.title).to_equal("test title")
         expect(violation.description).to_equal("test description")
         expect(violation.points).to_equal(1203)
-        expect(str(violation)).to_be_like("%s: %s (%d points)" % (violation.key, violation.title, violation.points))
+        expect(str(violation)).to_be_like("%s: %s (%d points)\n%s" % (
+            violation.key,
+            violation.title,
+            violation.points,
+            violation.description
+        ))
