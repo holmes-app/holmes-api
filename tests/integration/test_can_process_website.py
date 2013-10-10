@@ -4,7 +4,8 @@
 from uuid import uuid4
 
 from preggy import expect
-from tornado.testing import gen_test, LogTrapTestCase
+from tornado.testing import AsyncTestCase
+from motorengine import connect
 
 from holmes.reviewer import Reviewer
 from holmes.models.review import Review
@@ -16,25 +17,20 @@ from holmes.validators.js_requests import JSRequestsValidator
 from holmes.validators.css_requests import CSSRequestsValidator
 from holmes.validators.link_crawler import LinkCrawlerValidator
 from holmes.validators.img_requests import ImageRequestsValidator
-from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
-class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
+class CanProcessWebsiteTest(AsyncTestCase):
+    def setUp(self):
+        super(CanProcessWebsiteTest, self).setUp()
+        connect('holmes', host='localhost', port=6685, io_loop=self.io_loop)
+
     def get_config(self):
-        conf = super(CanProcessWebsiteTest, self).get_config()
+        conf = {}
         conf['MAX_JS_REQUESTS_PER_PAGE'] = 0
         conf['MAX_JS_KB_PER_PAGE_AFTER_GZIP'] = 0
         conf['MAX_CSS_REQUESTS_PER_PAGE'] = 0
         conf['MAX_CSS_KB_PER_PAGE_AFTER_GZIP'] = 0
-
-        conf['MONGO_DATABASES'] = {
-            'default': {
-                'host': 'localhost',
-                'port': 6685,
-                'database': 'holmes'
-            }
-        }
 
         return conf
 
@@ -72,15 +68,22 @@ class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
             validators=validators
         )
 
-    @gen_test
     def test_can_process_globo_com(self):
-        yield Review.objects.delete()
-        yield Page.objects.delete()
-        yield Domain.objects.delete()
+        Review.objects.delete(callback=self.stop)
+        self.wait()
+        Page.objects.delete(callback=self.stop)
+        self.wait()
+        Domain.objects.delete(callback=self.stop)
+        self.wait()
 
-        domain = yield DomainFactory.create(name="globo.com", url="http://www.globo.com/")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
-        review = yield ReviewFactory.create(page=page)
+        DomainFactory.create(name="globo.com", url="http://www.globo.com", callback=self.stop)
+        domain = self.wait()
+
+        PageFactory.create(domain=domain, url="http://www.globo.com/", callback=self.stop)
+        page = self.wait()
+
+        ReviewFactory.create(page=page, callback=self.stop)
+        review = self.wait()
 
         reviewer = self.get_reviewer(
             api_url="http://localhost:2368",
@@ -91,10 +94,11 @@ class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
 
         reviewer.review()
 
-        loaded_review = yield Review.objects.get(review._id, lazy=False)
+        Review.objects.get(review._id, callback=self.stop)
+        loaded_review = self.wait(timeout=30)
 
-        expect(loaded_review.facts).to_length(11)
-        expect(loaded_review.violations).to_length(4)
+        expect(loaded_review.facts).to_length(10)
+        expect(loaded_review.violations).to_length(5)
 
         print
         print

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 from holmes.validators.base import Validator
 
 
@@ -21,18 +20,18 @@ class ImageRequestsValidator(Validator):
         for item in results.values():
             if item:
                 size_img = len(item['content']) / 1024.0
-                size_img_gzip = len(self.to_gzip(item['content'])) / 1024.0
                 total_size += size_img
-                total_size_gzip += size_img_gzip
 
-                if size_img_gzip > self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP:
+                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP:
                     self.add_violation(
                         key='single.size.img',
                         title='Single image size in kb is too big.',
                         description='Found a image bigger then limit %d (%d over limit): %s' % (
-                            self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP, size_img_gzip - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP, item
+                            self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP,
+                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP,
+                            item
                         ),
-                        points=size_img_gzip - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP
+                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP
                     )
 
         self.add_fact(
@@ -41,17 +40,11 @@ class ImageRequestsValidator(Validator):
             unit='kb'
         )
 
-        self.add_fact(
-            key='total.size.img.gzipped',
-            value=total_size_gzip,
-            unit='kb'
-        )
-
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
             self.add_violation(
                 key='total.requests.img',
                 title='Too many image requests.',
-                description='This page has %d images request (%d over limit). Having too many requests impose a tax in the browser due to handshakes.' % (
+                description='This page has %d image requests (%d over limit). Having too many requests impose a tax in the browser due to handshakes.' % (
                     len(img_files), len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE
                 ),
                 points=5 * (len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE)
@@ -72,6 +65,24 @@ class ImageRequestsValidator(Validator):
         results = {}
         for img_file in img_files:
             src = img_file.get('src')
-            results[src] = self.get_response(src)
+            if not src:
+                continue
+
+            is_absolute = self.is_absolute(src)
+
+            if not is_absolute:
+                src = self.rebase(src)
+
+            response = self.get_response(src)
+
+            if response['status'] > 399:
+                self.add_violation(
+                    key='broken.img',
+                    title='Image not found.',
+                    description="The image in '%s' could not be found or took more than 10 seconds to load." % src,
+                    points=50
+                )
+            else:
+                results[src] = response
 
         return results

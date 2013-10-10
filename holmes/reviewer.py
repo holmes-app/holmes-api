@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from os.path import join
 from uuid import UUID
 import inspect
 
 import requests
+from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError
 import lxml.html
 
 from holmes.config import Config
@@ -39,6 +41,7 @@ class Reviewer(object):
         self.validators = validators
 
         self.responses = {}
+        self.status_codes = {}
 
     def review(self):
         self.load_content()
@@ -60,12 +63,13 @@ class Reviewer(object):
 
     def get_response(self, url):
         if url in self.responses:
-            return
+            return self.responses[url]
 
         try:
             response = requests.get(url)
         except Exception:
             return {
+                'url': url,
                 'status': 404,
                 'content': '',
                 'html': None
@@ -74,8 +78,9 @@ class Reviewer(object):
         self.responses[url] = {}
 
         result = {
+            'url': url,
             'status': response.status_code,
-            'content': response.text,
+            'content': response.content,
             'html': None
         }
 
@@ -85,6 +90,19 @@ class Reviewer(object):
         self.responses[url] = result
 
         return result
+
+    def get_status_code(self, url):
+        if not url in self.status_codes:
+            try:
+                response = requests.request(method="GET", url=url, stream=True, timeout=10.0)
+                response.iter_lines().next()
+                self.status_codes[url] = response.status_code
+            except (TooManyRedirects, Timeout, HTTPError, ConnectionError):
+                err = sys.exc_info()[1]
+                print "ERROR IN %s: %s" % (url, str(err))
+                self.status_codes[url] = 404
+
+        return self.status_codes[url]
 
     def run_validators(self):
         for validator in self.validators:

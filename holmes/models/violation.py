@@ -12,7 +12,7 @@ class Violation(Document):
     points = IntField(required=True)
 
     def __str__(self):
-        return "%s: %s (%d points)" % (self.key, self.title, self.points)
+        return "%s: %s (%d points)\n%s" % (self.key, self.title, self.points, self.description)
 
     def __repr__(self):
         return self.__str__()

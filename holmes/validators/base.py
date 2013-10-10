@@ -1,13 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import StringIO
-import gzip
+import urlparse
 
 
 class Validator(object):
     def __init__(self, reviewer):
         self.reviewer = reviewer
+
+    def is_absolute(self, url):
+        return bool(urlparse.urlparse(url).scheme)
+
+    def rebase(self, url):
+        return urlparse.urljoin(self.page_url.rstrip('/'), url.lstrip('/'))
 
     @property
     def page_uuid(self):
@@ -31,18 +36,11 @@ class Validator(object):
     def get_response(self, url):
         return self.reviewer.get_response(url)
 
+    def get_status_code(self, url):
+        return self.reviewer.get_status_code(url)
+
     def to_gzip(self, content):
-        try:
-            content = content.encode('utf-8')
-        except UnicodeEncodeError:
-            pass
-
-        out = StringIO.StringIO()
-        f = gzip.GzipFile(fileobj=out, mode='w')
-        f.write(content)
-        f.close()
-
-        return out.getvalue()
+        return content.encode('zip')
 
     def enqueue(self, *url):
         self.reviewer.enqueue(*url)

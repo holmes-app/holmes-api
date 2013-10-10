@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urlparse
 import re
 
 from holmes.validators.base import Validator
@@ -14,9 +13,6 @@ class LinkCrawlerValidator(Validator):
     def __init__(self, *args, **kw):
         super(LinkCrawlerValidator, self).__init__(*args, **kw)
         self.url_buffer = []
-
-    def is_absolute(self, url):
-        return bool(urlparse.urlparse(url).scheme)
 
     def looks_like_image(self, url):
         image_types = ['png', 'webp', 'gif', 'jpg', 'jpeg']
@@ -43,20 +39,35 @@ class LinkCrawlerValidator(Validator):
             is_absolute = self.is_absolute(url)
 
             if not is_absolute:
-                self.send_url(url=urlparse.urljoin(self.page_url.rstrip('/'), url.lstrip('/')))
+                url = self.rebase(url)
+                self.test_url(url)
+                self.send_url(url)
                 num_links += 1
             else:
                 domain, domain_url = get_domain_from_url(url)
-                if domain in url:
+                if domain in self.page_url:
+                    self.test_url(url)
                     self.send_url(url)
-                    num_links += 1
+                num_links += 1
 
         self.add_fact(
-            key='total.links',
+            key='total.number.links',
             value=num_links
         )
 
         self.flush()
+
+    def test_url(self, url):
+        status = self.get_status_code(url)
+
+        if status > 399:
+            self.add_violation(
+                key='broken.link',
+                title='A link is broken',
+                description=('A link from your page to "%s" is broken or the page failed to load in under 3 seconds. '
+                    'This can lead your site to lose rating with Search Engines and is misleading to users.') % url,
+                points=100
+            )
 
     def send_url(self, url):
         self.url_buffer.append(url)
