@@ -161,7 +161,7 @@ class TestReview(ApiTestCase):
 
     @patch("requests.get")
     def test_get_response_fills_html_when_200(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text='Error')
+        mock_get.return_value = Mock(status_code=200, text='OK')
 
         page_url = "http://www.google.com"
         reviewer = self.get_reviewer(page_url=page_url)
@@ -319,3 +319,25 @@ class TestReview(ApiTestCase):
                 )
             else:
                 assert False, "Should not have gotten this far"
+
+    def test_can_get_current(self):
+        reviewer = self.get_reviewer()
+
+        reviewer.responses[reviewer.page_url] = {
+            'status': 200,
+            'content': "",
+            'html': None
+        }
+
+        response = reviewer.current
+        expect(response).not_to_be_null()
+        expect(response['status']).to_equal(200)
+
+    @patch("requests.get")
+    def test_can_get_current_when_not_loaded(self, mock_get):
+        reviewer = self.get_reviewer()
+
+        expect(reviewer.page_url in reviewer.responses).to_be_false()
+        mock_get.return_value = Mock(status_code=200, text='OK')
+        reviewer.current
+        expect(reviewer.page_url in reviewer.responses).to_be_true()
