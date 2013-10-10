@@ -389,3 +389,41 @@ class TestReview(ApiTestCase):
         reviewer = self.get_reviewer()
         reviewer.get_status_code(reviewer.page_url)
         expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
+
+    def test_enqueue_when_none(self):
+        reviewer = self.get_reviewer()
+        enqueue = reviewer.enqueue()
+        expect(enqueue).to_be_null()
+
+    @patch("requests.post")
+    def test_can_enqueue_one_url(self, mock_post):
+        mock_post.return_value = Mock(status_code=200, text='OK')
+        reviewer = self.get_reviewer()
+        reviewer.enqueue('http://globo.com')
+        mock_post.assert_called_once_with(
+            '%spage' % reviewer.api_url,
+            data={'url': 'http://globo.com'}
+            )
+
+    @patch("requests.post")
+    def test_can_enqueue_multiple_urls(self, mock_post):
+        mock_post.return_value = Mock(status_code=200, text='OK')
+        reviewer = self.get_reviewer()
+        reviewer.enqueue('http://globo.com', 'http://g1.globo.com')
+        mock_post.assert_called_once_with(
+            '%spages' % reviewer.api_url,
+            data={'url': ('http://globo.com', 'http://g1.globo.com')}
+            )
+
+    @patch("requests.post")
+    def test_enqueue_404(self, mock_post):
+        mock_post.return_value = Mock(status_code=404, text='Not Found')
+        reviewer = self.get_reviewer()
+        try:
+            reviewer.enqueue('http://globo.com')
+        except InvalidReviewError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of(
+                "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found")
+        else:
+            assert False, "Should not have gotten this far"
