@@ -209,7 +209,7 @@ class WorkerTestCase(ApiTestCase):
         result = worker._start_job('000')
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/start/000' % str(worker.uuid)
+            'http://localhost:2368/worker/%s/review/000/start' % str(worker.uuid)
         )
         expect(result).to_be_true()
 
@@ -240,8 +240,8 @@ class WorkerTestCase(ApiTestCase):
         expect(requests_mock.call_count).to_equal(2)
 
         call_expected = [
-            call('http://localhost:2368/page/001/complete/000'),
-            call('http://localhost:2368/worker/%s/complete/000' % str(worker.uuid)),
+            call('http://localhost:2368/page/001/review/000/complete'),
+            call('http://localhost:2368/worker/%s/review/000/complete' % str(worker.uuid)),
             ]
 
         expect(requests_mock.mock_calls).to_equal(call_expected)

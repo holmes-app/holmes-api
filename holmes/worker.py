@@ -20,7 +20,7 @@ from holmes.reviewer import Reviewer
 class HolmesWorker(object):
 
     def __init__(self, arguments=[]):
-        self.root_path = abspath(join(dirname(__file__), ".."))
+        self.root_path = abspath(join(dirname(__file__), '..'))
 
         self.uuid = uuid4().hex
 
@@ -36,8 +36,10 @@ class HolmesWorker(object):
         try:
             while self.working:
                 self._do_work()
+                logging.debug('Nap time (%ss)' % self.config.WORKER_SLEEP_TIME)
                 time.sleep(self.config.WORKER_SLEEP_TIME)
         except KeyboardInterrupt:
+            logging.info('Bye.')
             self.working = False
 
     def stop_work(self):
@@ -53,6 +55,7 @@ class HolmesWorker(object):
 
     def _start_reviewer(self, job):
         if job:
+            logging.debug('Starting Review for [%s]' % job['url'])
             reviewer = Reviewer(
                 api_url=self.config.HOLMES_API_URL,
                 page_uuid=job['page'],
@@ -101,12 +104,12 @@ class HolmesWorker(object):
             return False
 
         try:
-            response = requests.post('%s/worker/%s/start/%s' %
+            response = requests.post('%s/worker/%s/review/%s/start' %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
             return ('OK' == response.text)
 
         except ConnectionError:
-            logging.error("Fail to start review.")
+            logging.error('Fail to start review.')
 
     def _complete_job(self, review_uuid, page_uuid):
         self._complete_review(review_uuid, page_uuid)
@@ -117,7 +120,7 @@ class HolmesWorker(object):
             return False
 
         try:
-            response = requests.post('%s/page/%s/complete/%s' %
+            response = requests.post('%s/page/%s/review/%s/complete' %
                                     (self.config.HOLMES_API_URL, page_uuid, review_uuid))
             return ('OK' == response.text)
         except ConnectionError:
@@ -128,7 +131,7 @@ class HolmesWorker(object):
             return False
 
         try:
-            response = requests.post('%s/worker/%s/complete/%s' %
+            response = requests.post('%s/worker/%s/review/%s/complete' %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid))
             return ('OK' == response.text)
         except ConnectionError:

@@ -15,7 +15,8 @@ class NextJobHandler(RequestHandler):
 
     @gen.coroutine
     def post(self):
-        pages_in_need_of_review = yield Page.objects.filter(last_review__is_null=True).find_all()
+        pages_in_need_of_review = yield Page.objects.filter(last_review__is_null=True) \
+                                                    .order_by('added_date').find_all()
 
         if len(pages_in_need_of_review) == 0:
             dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
@@ -38,6 +39,9 @@ class NextJobHandler(RequestHandler):
             facts=[],
             violations=[]
         )
+
+        page.last_review = review
+        yield page.save()
 
         self.write(dumps({
             "page": str(page.uuid),

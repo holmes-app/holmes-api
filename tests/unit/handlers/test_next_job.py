@@ -7,7 +7,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from ujson import loads
 
-from holmes.models import Review
+from holmes.models import Review, Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -77,3 +77,36 @@ class TestNextJobHandler(ApiTestCase):
 
         expect(loaded_review).not_to_be_null()
         expect(loaded_review.page.uuid).to_equal(page.uuid)
+
+    @gen_test
+    def test_call_next_job_two_times_will_give_two_different_pages_order_by_page_creation(self):
+        domain = yield DomainFactory.create()
+
+        yield Page.objects.delete()
+
+        page_one = yield PageFactory.create(domain=domain)
+        page_two = yield PageFactory.create(domain=domain)
+
+        expect(str(page_one.uuid)).not_to_equal(str(page_two.uuid))
+
+        response = yield self.http_client.fetch(
+            self.get_url('/next'),
+            method='POST',
+            body=""
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).not_to_be_empty()
+        expect(loads(response.body)['page']).not_to_be_null()
+        expect(loads(response.body)['page']).to_equal(str(page_one.uuid))
+
+        response = yield self.http_client.fetch(
+            self.get_url('/next'),
+            method='POST',
+            body=""
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).not_to_be_empty()
+        expect(loads(response.body)['page']).not_to_be_null()
+        expect(loads(response.body)['page']).to_equal(str(page_two.uuid))

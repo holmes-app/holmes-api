@@ -13,7 +13,7 @@ from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFact
 
 
 class TestWorkerStateHandler(ApiTestCase):
-    zero_uuid = "00000000-0000-0000-0000-000000000000"
+    zero_uuid = '00000000-0000-0000-0000-000000000000'
 
     @gen_test
     def test_worker_start_working(self):
@@ -24,7 +24,7 @@ class TestWorkerStateHandler(ApiTestCase):
         worker = yield WorkerFactory.create()
 
         response = yield self.http_client.fetch(
-            self.get_url('/worker/%s/start/%s' % (str(worker.uuid), str(review.uuid))),
+            self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), str(review.uuid))),
             method='POST',
             body=''
         )
@@ -33,14 +33,14 @@ class TestWorkerStateHandler(ApiTestCase):
 
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
-        expect(response.body).to_be_like("OK")
+        expect(response.body).to_be_like('OK')
         expect(str(worker.current_review)).to_equal(str(review.uuid))
 
     @gen_test
     def test_worker_start_working_invalid_worker(self):
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/start/%s' % (self.zero_uuid, self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/start' % (self.zero_uuid, self.zero_uuid)),
                 method='POST',
                 body=''
             )
@@ -48,9 +48,9 @@ class TestWorkerStateHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Unknown Worker")
+            expect(err.response.reason).to_be_like('Unknown Worker')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_worker_start_working_invalid_review(self):
@@ -59,7 +59,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/start/%s' % (str(worker.uuid), self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), self.zero_uuid)),
                 method='POST',
                 body=''
             )
@@ -67,9 +67,9 @@ class TestWorkerStateHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Unknown Review")
+            expect(err.response.reason).to_be_like('Unknown Review')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_worker_start_working_already_complete_review(self):
@@ -81,7 +81,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/start/%s' % (str(worker.uuid), str(review.uuid))),
+                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), str(review.uuid))),
                 method='POST',
                 body=''
             )
@@ -89,9 +89,9 @@ class TestWorkerStateHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
-            expect(err.response.reason).to_be_like("Review already completed")
+            expect(err.response.reason).to_be_like('Review already completed')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_worker_complete_work(self):
@@ -102,7 +102,7 @@ class TestWorkerStateHandler(ApiTestCase):
         worker = yield WorkerFactory.create(current_review=review)
 
         response = yield self.http_client.fetch(
-            self.get_url('/worker/%s/complete/%s' % (str(worker.uuid), str(review.uuid))),
+            self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), str(review.uuid))),
             method='POST',
             body=''
         )
@@ -121,7 +121,7 @@ class TestWorkerStateHandler(ApiTestCase):
     def test_worker_complete_work_invalid_worker(self):
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/complete/%s' % (self.zero_uuid, self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/complete' % (self.zero_uuid, self.zero_uuid)),
                 method='POST',
                 body=''
             )
@@ -129,9 +129,9 @@ class TestWorkerStateHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Unknown Worker")
+            expect(err.response.reason).to_be_like('Unknown Worker')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_worker_complete_work_invalid_review(self):
@@ -140,7 +140,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/complete/%s' % (str(worker.uuid), self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), self.zero_uuid)),
                 method='POST',
                 body=''
             )
@@ -148,6 +148,6 @@ class TestWorkerStateHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Unknown Review")
+            expect(err.response.reason).to_be_like('Unknown Review')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
