@@ -88,18 +88,17 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_get_page_not_found(self):
-        invalid_page_uuid = '00000000-0000-0000-0000-000000000000'
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/page/%s' % invalid_page_uuid),
+                self.get_url('/page/%s' % self.ZERO_UUID),
                 method='GET'
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like('Page UUID [%s] not found' % invalid_page_uuid)
+            expect(err.response.reason).to_be_like('Page UUID [%s] not found' % self.ZERO_UUID)
         else:
             assert False, 'Should not have got this far'
 

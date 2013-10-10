@@ -13,7 +13,6 @@ from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFact
 
 
 class TestWorkerStateHandler(ApiTestCase):
-    zero_uuid = '00000000-0000-0000-0000-000000000000'
 
     @gen_test
     def test_worker_start_working(self):
@@ -40,7 +39,7 @@ class TestWorkerStateHandler(ApiTestCase):
     def test_worker_start_working_invalid_worker(self):
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/review/%s/start' % (self.zero_uuid, self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/start' % (self.ZERO_UUID, self.ZERO_UUID)),
                 method='POST',
                 body=''
             )
@@ -59,7 +58,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID)),
                 method='POST',
                 body=''
             )
@@ -121,7 +120,7 @@ class TestWorkerStateHandler(ApiTestCase):
     def test_worker_complete_work_invalid_worker(self):
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/review/%s/complete' % (self.zero_uuid, self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/complete' % (self.ZERO_UUID, self.ZERO_UUID)),
                 method='POST',
                 body=''
             )
@@ -140,7 +139,7 @@ class TestWorkerStateHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), self.zero_uuid)),
+                self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID)),
                 method='POST',
                 body=''
             )

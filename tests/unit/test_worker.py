@@ -104,7 +104,7 @@ class WorkerTestCase(ApiTestCase):
         worker = self.get_worker()
 
         worker._ping_api = Mock()
-        job = {'page': '0001', 'review': '00001', 'url': 'http://globo.com'}
+        job = {'page': self.ZERO_UUID, 'review': self.ZERO_UUID, 'url': 'http://globo.com'}
         worker._load_next_job = Mock(return_value=job)
         worker._start_job = Mock()
         worker._start_reviewer = Mock()
@@ -115,9 +115,9 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._ping_api.called).to_be_true()
         expect(worker._load_next_job.called).to_be_true()
         expect(worker._start_job.called).to_be_true()
-        worker._start_job.assert_called_once_with('00001')
+        worker._start_job.assert_called_once_with(self.ZERO_UUID)
         worker._start_reviewer.assert_called_once_with(job=job)
-        worker._complete_job.assert_called_once_with('00001')
+        worker._complete_job.assert_called_once_with(self.ZERO_UUID)
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
@@ -197,7 +197,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_start_error(self, load_start_job_mock):
         load_start_job_mock.side_effect = ConnectionError()
         worker = self.get_worker()
-        worker._start_job('000')
+        worker._start_job(self.ZERO_UUID)
         expect(worker.working).to_be_true()
 
     @patch('requests.post')
@@ -205,10 +205,10 @@ class WorkerTestCase(ApiTestCase):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
         worker = self.get_worker()
-        result = worker._start_job('000')
+        result = worker._start_job(self.ZERO_UUID)
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/review/000/start' % str(worker.uuid)
+            'http://localhost:2368/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID)
         )
         expect(result).to_be_true()
 
@@ -225,7 +225,7 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_complete_error(self, load_start_job_mock):
         load_start_job_mock.side_effect = ConnectionError()
         worker = self.get_worker()
-        worker._complete_job('000')
+        worker._complete_job(self.ZERO_UUID)
         expect(worker.working).to_be_true()
 
     @patch('requests.post')
@@ -233,8 +233,9 @@ class WorkerTestCase(ApiTestCase):
         response = MockResponse(200, 'OK')
         requests_mock.return_value = response
         worker = self.get_worker()
-        worker._complete_job('000')
-        requests_mock.assert_called_once_with('http://localhost:2368/worker/%s/review/000/complete' % str(worker.uuid))
+        worker._complete_job(self.ZERO_UUID)
+        requests_mock.assert_called_once_with(
+            'http://localhost:2368/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID))
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
@@ -350,8 +351,6 @@ class WorkerTestCase(ApiTestCase):
     def test_start_reviwer(self, mock_reviewer):
         worker = self.get_worker()
         worker._load_validators = Mock(return_value=[])
-        job = {'page': '00000000-0000-0000-0000-000000000000',
-               'review': '00000000-0000-0000-0000-000000000000',
-               'url': 'http://globo.com'}
+        job = {'page': self.ZERO_UUID, 'review': self.ZERO_UUID, 'url': 'http://globo.com'}
         worker._start_reviewer(job=job)
         expect(mock_reviewer.called).to_be_true()

@@ -11,6 +11,8 @@ from holmes.models import Domain, Page, Review, Worker
 
 
 class ApiTestCase(CowTestCase):
+    ZERO_UUID = '00000000-0000-0000-0000-000000000000'
+
     def drop_collection(self, document):
         document.objects.delete(callback=self.stop)
         self.wait()
