@@ -122,6 +122,7 @@ class WorkerTestCase(ApiTestCase):
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
         worker = holmes.worker.HolmesWorker()
+        worker._load_next_job = Mock(return_value=None)
         worker._do_work()
         expect(ping_api_mock.called).to_be_true()
 
@@ -280,7 +281,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._complete_job.called).to_be_true()
 
     def test_load_validators_none(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/unit/config/test_empty_conf.conf')])
         validators = worker._load_validators()
 
         expect(validators).not_to_be_null()
