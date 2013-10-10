@@ -65,27 +65,27 @@ class Reviewer(object):
         if url in self.responses:
             return self.responses[url]
 
+        self.responses[url] = {}
+
         try:
             response = requests.get(url)
         except Exception:
-            return {
+            result = {
                 'url': url,
                 'status': 404,
                 'content': '',
                 'html': None
             }
+        else:
+            result = {
+                'url': url,
+                'status': response.status_code,
+                'content': response.content,
+                'html': None
+            }
 
-        self.responses[url] = {}
-
-        result = {
-            'url': url,
-            'status': response.status_code,
-            'content': response.content,
-            'html': None
-        }
-
-        if response.status_code < 399:
-            result['html'] = lxml.html.fromstring(response.text)
+            if response.status_code < 399:
+                result['html'] = lxml.html.fromstring(response.text)
 
         self.responses[url] = result
 

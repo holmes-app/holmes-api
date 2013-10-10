@@ -24,7 +24,7 @@ class TestReview(ApiTestCase):
             api_url = self.get_url('/')
 
         if page_uuid is None:
-            page_uuid = str(uuid4())
+            page_uuid = uuid4()
 
         if review_uuid is None:
             review_uuid = uuid4()
@@ -34,9 +34,9 @@ class TestReview(ApiTestCase):
 
         return Reviewer(
             api_url=api_url,
-            page_uuid=str(page_uuid),
+            page_uuid=page_uuid,
             page_url=page_url,
-            review_uuid=str(review_uuid),
+            review_uuid=review_uuid,
             config=config,
             validators=validators
         )
@@ -47,6 +47,38 @@ class TestReview(ApiTestCase):
         config = Config()
         validators = [Validator]
         reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid, config=config, validators=validators)
+
+        expect(reviewer.page_uuid).to_equal(page_uuid)
+        expect(reviewer.page_url).to_equal("http://page.url")
+        expect(reviewer.review_uuid).to_equal(review_uuid)
+        expect(reviewer.config).to_equal(config)
+        expect(reviewer.validators).to_equal(validators)
+
+    def test_can_create_reviewer_with_page_string_uuid(self):
+        page_uuid = uuid4()
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
+        reviewer = self.get_reviewer(page_uuid=str(page_uuid),
+                                     review_uuid=review_uuid,
+                                     config=config,
+                                     validators=validators)
+
+        expect(reviewer.page_uuid).to_equal(page_uuid)
+        expect(reviewer.page_url).to_equal("http://page.url")
+        expect(reviewer.review_uuid).to_equal(review_uuid)
+        expect(reviewer.config).to_equal(config)
+        expect(reviewer.validators).to_equal(validators)
+
+    def test_can_create_reviewer_with_review_string_uuid(self):
+        page_uuid = uuid4()
+        review_uuid = uuid4()
+        config = Config()
+        validators = [Validator]
+        reviewer = self.get_reviewer(page_uuid=page_uuid,
+                                     review_uuid=str(review_uuid),
+                                     config=config,
+                                     validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
         expect(reviewer.page_url).to_equal("http://page.url")
@@ -113,6 +145,20 @@ class TestReview(ApiTestCase):
 
         expect(reviewer.responses[page_url]['html']).not_to_be_null()
         expect(reviewer.responses[page_url]['html']).to_be_instance_of(lxml.html.HtmlElement)
+
+    @patch("requests.get")
+    def test_get_response_fills_empty_dict_when_error(self, mock_get):
+        mock_get.side_effect = Exception
+
+        page_url = "http://www.google.com"
+        reviewer = self.get_reviewer(page_url=page_url)
+
+        reviewer.get_response(page_url)
+
+        expect(reviewer.responses).to_include(page_url)
+        expect(reviewer.responses[page_url]['status']).to_equal(404)
+        expect(reviewer.responses[page_url]['content']).to_include('')
+        expect(reviewer.responses[page_url]['html']).to_be_null()
 
     def test_review_calls_validators(self):
         test_class = {}
