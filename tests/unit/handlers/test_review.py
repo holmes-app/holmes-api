@@ -33,9 +33,9 @@ class TestReviewHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Review with uuid of invalid not found!")
+            expect(err.response.reason).to_be_like('Review with uuid of invalid not found!')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_can_get_review(self):
@@ -43,8 +43,8 @@ class TestReviewHandler(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        review.add_fact("fact", "kb", "value")
-        review.add_violation("violation", "title", "description", 100)
+        review.add_fact('fact', 'kb', 'value')
+        review.add_violation('violation', 'title', 'description', 100)
         yield review.save()
 
         url = self.get_url(
@@ -61,18 +61,18 @@ class TestReviewHandler(ApiTestCase):
         dt = calendar.timegm(datetime.now().utctimetuple())
 
         expected = {
-            "domain": domain.name,
-            "page": page.to_dict(),
-            "uuid": str(review.uuid),
-            "isComplete": False,
+            'domain': domain.name,
+            'page': page.to_dict(),
+            'uuid': str(review.uuid),
+            'isComplete': False,
             'facts': [
                 {'key': 'fact', 'unit': 'value', 'value': 'kb'}
             ],
             'violations': [
                 {u'points': 100, u'description': u'description', u'key': u'violation', u'title': u'title'}
             ],
-            "createdAt": dt,
-            "completedAt": None
+            'createdAt': dt,
+            'completedAt': None
         }
 
         expect(loads(response.body)).to_be_like(expected)
@@ -91,15 +91,15 @@ class TestCompleteReviewHandler(ApiTestCase):
             yield self.http_client.fetch(
                 url,
                 method='POST',
-                body=""
+                body=''
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Review with uuid of invalid not found!")
+            expect(err.response.reason).to_be_like('Review with uuid of invalid not found!')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_can_complete_review(self):
@@ -144,12 +144,12 @@ class TestCompleteReviewHandler(ApiTestCase):
             yield self.http_client.fetch(
                 url,
                 method='POST',
-                body=""
+                body=''
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
-            expect(err.response.reason).to_be_like("Review '%s' is already completed!" % str(review.uuid))
+            expect(err.response.reason).to_be_like('Review with uuid %s is already completed!' % str(review.uuid))
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'

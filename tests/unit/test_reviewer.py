@@ -18,7 +18,7 @@ from tests.unit.base import ApiTestCase
 
 class TestReview(ApiTestCase):
     def get_reviewer(
-            self, api_url=None, page_uuid=None, page_url="http://page.url",
+            self, api_url=None, page_uuid=None, page_url='http://page.url',
             review_uuid=None, config=None, validators=[Validator]):
 
         if api_url is None:
@@ -50,7 +50,7 @@ class TestReview(ApiTestCase):
         reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid, config=config, validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
-        expect(reviewer.page_url).to_equal("http://page.url")
+        expect(reviewer.page_url).to_equal('http://page.url')
         expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
@@ -66,7 +66,7 @@ class TestReview(ApiTestCase):
                                      validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
-        expect(reviewer.page_url).to_equal("http://page.url")
+        expect(reviewer.page_url).to_equal('http://page.url')
         expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
@@ -82,19 +82,19 @@ class TestReview(ApiTestCase):
                                      validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
-        expect(reviewer.page_url).to_equal("http://page.url")
+        expect(reviewer.page_url).to_equal('http://page.url')
         expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
 
     def test_reviewer_fails_if_wrong_config(self):
         try:
-            self.get_reviewer(config="wrong config object")
+            self.get_reviewer(config='wrong config object')
         except AssertionError:
             err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of("config argument must be an instance of holmes.config.Config")
+            expect(err).to_have_an_error_message_of('config argument must be an instance of holmes.config.Config')
         else:
-            assert False, "Shouldn't have gotten this far"
+            assert False, 'Shouldn not have gotten this far'
 
     def test_reviewer_fails_if_wrong_validators(self):
         validators = [Validator, "wtf"]
@@ -104,25 +104,25 @@ class TestReview(ApiTestCase):
             self.get_reviewer(validators=validators)
         except AssertionError:
             err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
+            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
         else:
-            assert False, "Shouldn't have gotten this far"
+            assert False, 'Shouldn not have gotten this far'
 
         try:
             self.get_reviewer(validators=validators2)
         except AssertionError:
             err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of("All validators must subclass holmes.validators.base.Validator")
+            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
         else:
-            assert False, "Shouldn't have gotten this far"
+            assert False, 'Shouldn not have gotten this far'
 
     def test_load_content_raises_when_invalid_status_code(self):
-        page_url = "http://page.url"
+        page_url = 'http://page.url'
         reviewer = self.get_reviewer()
 
         reviewer.responses[page_url] = {
             'status': 500,
-            'content': "",
+            'content': '',
             'html': None
         }
 
@@ -132,26 +132,26 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Could not load 'http://page.url'!")
         else:
-            assert False, "Should not have gotten this far"
+            assert False, 'Shouldn not have gotten this far'
 
     def test_get_response_fills_dict(self):
-        page_url = "http://www.google.com"
+        page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
 
         reviewer.get_response(page_url)
 
         expect(reviewer.responses).to_include(page_url)
         expect(reviewer.responses[page_url]['status']).to_equal(200)
-        expect(reviewer.responses[page_url]['content']).to_include("btnG")
+        expect(reviewer.responses[page_url]['content']).to_include('btnG')
 
         expect(reviewer.responses[page_url]['html']).not_to_be_null()
         expect(reviewer.responses[page_url]['html']).to_be_instance_of(lxml.html.HtmlElement)
 
-    @patch("requests.get")
+    @patch('requests.get')
     def test_get_response_fills_empty_dict_when_error(self, mock_get):
         mock_get.side_effect = Exception
 
-        page_url = "http://www.google.com"
+        page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
 
         result = reviewer.get_response(page_url)
@@ -160,11 +160,11 @@ class TestReview(ApiTestCase):
         expect(result['content']).to_equal('')
         expect(result['html']).to_be_null()
 
-    @patch("requests.get")
+    @patch('requests.get')
     def test_get_response_fills_html_when_200(self, mock_get):
         mock_get.return_value = Mock(status_code=200, text='OK')
 
-        page_url = "http://www.google.com"
+        page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
 
         result = reviewer.get_response(page_url)
@@ -173,11 +173,11 @@ class TestReview(ApiTestCase):
         expect(result['content']).not_to_be_null()
         expect(result['html']).not_to_be_null()
 
-    @patch("requests.get")
+    @patch('requests.get')
     def test_get_response_do_not_fills_html_when_404(self, mock_get):
         mock_get.return_value = Mock(status_code=404, text='Error')
 
-        page_url = "http://www.google.com"
+        page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
 
         result = reviewer.get_response(page_url)
@@ -193,17 +193,17 @@ class TestReview(ApiTestCase):
             def validate(self):
                 test_class['has_validated'] = True
 
-        page_url = "http://www.google.com"
+        page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url, validators=[MockValidator])
 
         reviewer.responses[page_url] = {
             'status': 200,
-            'content': "<html><head></head><body></body></html>",
+            'content': '<html><head></head><body></body></html>',
             'html': None
         }
 
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text="OK")
+            response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             reviewer.review()
@@ -212,7 +212,7 @@ class TestReview(ApiTestCase):
 
     def test_reviewer_add_fact(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text="OK")
+            response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -220,7 +220,7 @@ class TestReview(ApiTestCase):
 
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
-            reviewer.add_fact("key", "value", "unit")
+            reviewer.add_fact('key', 'value', 'unit')
 
             post_mock.assert_called_once_with(
                 '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
@@ -229,7 +229,7 @@ class TestReview(ApiTestCase):
 
     def test_reviewer_add_fact_fails_if_wrong_status(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=400, text="OK")
+            response_mock = Mock(status_code=400, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -238,18 +238,18 @@ class TestReview(ApiTestCase):
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
             try:
-                reviewer.add_fact("key", "value", "unit")
+                reviewer.add_fact('key', 'value', 'unit')
             except InvalidReviewError:
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(
                     "Could not add fact 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
                 )
             else:
-                assert False, "Should not have gotten this far"
+                assert False, 'Shouldn not have gotten this far'
 
     def test_reviewer_add_violation(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text="OK")
+            response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -257,7 +257,7 @@ class TestReview(ApiTestCase):
 
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
-            reviewer.add_violation("key", "title", "description", 100)
+            reviewer.add_violation('key', 'title', 'description', 100)
 
             post_mock.assert_called_once_with(
                 '%s/page/%s/review/%s/violation' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
@@ -266,7 +266,7 @@ class TestReview(ApiTestCase):
 
     def test_reviewer_add_violation_fails_if_wrong_status(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=400, text="OK")
+            response_mock = Mock(status_code=400, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -275,18 +275,18 @@ class TestReview(ApiTestCase):
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
             try:
-                reviewer.add_violation("key", "title", "description", 100)
+                reviewer.add_violation('key', 'title', 'description', 100)
             except InvalidReviewError:
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(
                     "Could not add violation 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
                 )
             else:
-                assert False, "Should not have gotten this far"
+                assert False, 'Shouldn not have gotten this far'
 
     def test_reviewer_complete(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text="OK")
+            response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -303,7 +303,7 @@ class TestReview(ApiTestCase):
 
     def test_reviewer_complete_fails_if_wrong_status(self):
         with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=400, text="OK")
+            response_mock = Mock(status_code=400, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
@@ -316,17 +316,17 @@ class TestReview(ApiTestCase):
             except InvalidReviewError:
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(
-                    "Could not complete review %s! Status Code: 400, Error: OK" % review_uuid
+                    'Could not complete review %s! Status Code: 400, Error: OK' % review_uuid
                 )
             else:
-                assert False, "Should not have gotten this far"
+                assert False, 'Shouldn not have gotten this far'
 
     def test_can_get_current(self):
         reviewer = self.get_reviewer()
 
         reviewer.responses[reviewer.page_url] = {
             'status': 200,
-            'content': "",
+            'content': '',
             'html': None
         }
 
@@ -334,7 +334,7 @@ class TestReview(ApiTestCase):
         expect(response).not_to_be_null()
         expect(response['status']).to_equal(200)
 
-    @patch("requests.get")
+    @patch('requests.get')
     def test_can_get_current_when_not_loaded(self, mock_get):
         reviewer = self.get_reviewer()
 
@@ -345,7 +345,7 @@ class TestReview(ApiTestCase):
 
     def test_can_get_status_code(self):
         reviewer = self.get_reviewer()
-        page_url = "http://google.com"
+        page_url = 'http://google.com'
         expect(reviewer.status_codes).to_length(0)
         reviewer.get_status_code(page_url)
         expect(reviewer.status_codes).to_length(1)
@@ -353,7 +353,7 @@ class TestReview(ApiTestCase):
 
     def test_can_get_status_code_when_already_got_before(self):
         reviewer = self.get_reviewer()
-        page_url = "http://google.com"
+        page_url = 'http://google.com'
 
         reviewer.get_status_code(page_url)
         expect(reviewer.status_codes).to_length(1)
@@ -395,7 +395,7 @@ class TestReview(ApiTestCase):
         enqueue = reviewer.enqueue()
         expect(enqueue).to_be_null()
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_can_enqueue_one_url(self, mock_post):
         mock_post.return_value = Mock(status_code=200, text='OK')
         reviewer = self.get_reviewer()
@@ -405,7 +405,7 @@ class TestReview(ApiTestCase):
             data={'url': 'http://globo.com'}
             )
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_can_enqueue_multiple_urls(self, mock_post):
         mock_post.return_value = Mock(status_code=200, text='OK')
         reviewer = self.get_reviewer()
@@ -415,7 +415,7 @@ class TestReview(ApiTestCase):
             data={'url': ('http://globo.com', 'http://g1.globo.com')}
             )
 
-    @patch("requests.post")
+    @patch('requests.post')
     def test_enqueue_404(self, mock_post):
         mock_post.return_value = Mock(status_code=404, text='Not Found')
         reviewer = self.get_reviewer()
@@ -426,4 +426,4 @@ class TestReview(ApiTestCase):
             expect(err).to_have_an_error_message_of(
                 "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found")
         else:
-            assert False, "Should not have gotten this far"
+            assert False, 'Should not have gotten this far'

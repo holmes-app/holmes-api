@@ -13,14 +13,14 @@ class Worker(Document):
     current_review = ReferenceField(reference_document_type='holmes.models.review.Review')
 
     def __str__(self):
-        return "Worker %s" % str(self.uuid)
+        return 'Worker %s' % str(self.uuid)
 
     def __repr__(self):
         return str(self)
 
     def to_dict(self):
         return {
-            "uuid": str(self.uuid),
-            "last_ping": str(self.last_ping),
-            "current_review": self.current_review and str(self.current_review.uuid) or None
+            'uuid': str(self.uuid),
+            'last_ping': str(self.last_ping),
+            'current_review': self.current_review and str(self.current_review.uuid) or None
         }

@@ -22,7 +22,7 @@ class TestWorker(ApiTestCase):
     def test_worker_model_str(self):
         worker = yield WorkerFactory.create()
 
-        expect(str(worker)).to_equal("Worker %s" % str(worker.uuid))
+        expect(str(worker)).to_equal('Worker %s' % str(worker.uuid))
 
     @gen_test
     def test_worker_current_review_page(self):

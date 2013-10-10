@@ -27,7 +27,7 @@ class ReviewHandler(BaseReviewHandler):
             review = yield Review.objects.get(uuid=review_uuid)
 
         if not review:
-            self.set_status(404, "Review with uuid of %s not found!" % review_uuid)
+            self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
 
@@ -46,12 +46,12 @@ class CompleteReviewHandler(BaseReviewHandler):
             review = yield Review.objects.get(uuid=review_uuid)
 
         if not review:
-            self.set_status(404, "Review with uuid of %s not found!" % review_uuid)
+            self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
 
         if review.is_complete:
-            self.set_status(400, "Review '%s' is already completed!" % review_uuid)
+            self.set_status(400, 'Review with uuid %s is already completed!' % review_uuid)
             self.finish()
             return
 
@@ -64,5 +64,5 @@ class CompleteReviewHandler(BaseReviewHandler):
 
         yield review.save()
 
-        self.write("OK")
+        self.write('OK')
         self.finish()

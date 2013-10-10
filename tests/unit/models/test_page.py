@@ -18,8 +18,8 @@ class TestPage(ApiTestCase):
 
         expect(page.uuid).not_to_be_null()
         expect(page._id).not_to_be_null()
-        expect(page.url).to_include("http://my-site.com/")
-        expect(page.title).to_include("page-")
+        expect(page.url).to_include('http://my-site.com/')
+        expect(page.title).to_include('page-')
 
         expect(page.added_date).to_be_like(datetime.now())
         expect(page.updated_date).to_be_like(datetime.now())

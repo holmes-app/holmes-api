@@ -32,12 +32,12 @@ class Reviewer(object):
         if not isinstance(self.review_uuid, UUID):
             self.review_uuid = UUID(review_uuid)
 
-        assert isinstance(config, Config), "config argument must be an instance of holmes.config.Config"
+        assert isinstance(config, Config), 'config argument must be an instance of holmes.config.Config'
         self.config = config
 
         for validator in validators:
-            assert inspect.isclass(validator), "All validators must subclass holmes.validators.base.Validator"
-            assert issubclass(validator, Validator), "All validators must subclass holmes.validators.base.Validator"
+            assert inspect.isclass(validator), 'All validators must subclass holmes.validators.base.Validator'
+            assert issubclass(validator, Validator), 'All validators must subclass holmes.validators.base.Validator'
 
         self.validators = validators
 
@@ -95,12 +95,12 @@ class Reviewer(object):
     def get_status_code(self, url):
         if not url in self.status_codes:
             try:
-                response = requests.request(method="GET", url=url, stream=True, timeout=10.0)
+                response = requests.request(method='GET', url=url, stream=True, timeout=10.0)
                 response.iter_lines().next()
                 self.status_codes[url] = response.status_code
             except (TooManyRedirects, Timeout, HTTPError, ConnectionError):
                 err = sys.exc_info()[1]
-                logging.warn("ERROR IN %s: %s" % (url, str(err)))
+                logging.warn('ERROR IN %s: %s' % (url, str(err)))
                 self.status_codes[url] = 404
 
         return self.status_codes[url]
@@ -120,7 +120,7 @@ class Reviewer(object):
         if len(urls) == 1:
             post_url = self.get_url('/page')
             data = {
-                "url": urls[0]
+                'url': urls[0]
             }
             error_message = "Could not enqueue page '" + urls[0] + "'! Status Code: %d, Error: %s"
         else:
@@ -141,9 +141,9 @@ class Reviewer(object):
     def add_fact(self, key, value, unit='value'):
         url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
         response = requests.post(url, data={
-            "key": key,
-            "value": value,
-            "unit": unit
+            'key': key,
+            'value': value,
+            'unit': unit
         })
 
         if response.status_code > 399:
@@ -157,7 +157,7 @@ class Reviewer(object):
     def add_violation(self, key, title, description, points):
         url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
         response = requests.post(url, data={
-            "key": key,
+            'key': key,
             "title": title,
             "description": description,
             "points": points

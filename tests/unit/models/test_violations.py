@@ -16,18 +16,18 @@ class TestViolations(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        review.add_violation(key="some.random.fact", title="test title", description="test description", points=1203)
+        review.add_violation(key='some.random.fact', title='test title', description='test description', points=1203)
         yield review.save()
 
         loaded_review = yield Review.objects.get(review._id)
 
         expect(loaded_review.violations).to_length(1)
         violation = loaded_review.violations[0]
-        expect(violation.key).to_equal("some.random.fact")
-        expect(violation.title).to_equal("test title")
-        expect(violation.description).to_equal("test description")
+        expect(violation.key).to_equal('some.random.fact')
+        expect(violation.title).to_equal('test title')
+        expect(violation.description).to_equal('test description')
         expect(violation.points).to_equal(1203)
-        expect(str(violation)).to_be_like("%s: %s (%d points)\n%s" % (
+        expect(str(violation)).to_be_like('%s: %s (%d points)\n%s' % (
             violation.key,
             violation.title,
             violation.points,

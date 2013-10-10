@@ -17,5 +17,5 @@ class TestDomain(ApiTestCase):
         domain = yield DomainFactory.create()
 
         expect(domain._id).not_to_be_null()
-        expect(domain.url).to_include("http://my-site-")
-        expect(domain.name).to_include("domain-")
+        expect(domain.url).to_include('http://my-site-')
+        expect(domain.name).to_include('domain-')

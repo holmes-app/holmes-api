@@ -33,21 +33,21 @@ class TestReview(ApiTestCase):
         review = ReviewFactory.build()
         expect(review.facts).to_length(0)
 
-        review.add_fact("a", "b", "c")
+        review.add_fact('a', 'b', 'c')
         expect(review.facts).to_length(1)
-        expect(review.facts[0].key).to_equal("a")
-        expect(review.facts[0].value).to_equal("b")
-        expect(review.facts[0].unit).to_equal("c")
+        expect(review.facts[0].key).to_equal('a')
+        expect(review.facts[0].value).to_equal('b')
+        expect(review.facts[0].unit).to_equal('c')
 
     def test_can_append_violations(self):
         review = ReviewFactory.build()
         expect(review.violations).to_length(0)
 
-        review.add_violation("a", "b", "c", 100)
+        review.add_violation('a', 'b', 'c', 100)
         expect(review.violations).to_length(1)
-        expect(review.violations[0].key).to_equal("a")
-        expect(review.violations[0].title).to_equal("b")
-        expect(review.violations[0].description).to_equal("c")
+        expect(review.violations[0].key).to_equal('a')
+        expect(review.violations[0].title).to_equal('b')
+        expect(review.violations[0].description).to_equal('c')
         expect(review.violations[0].points).to_equal(100)
 
     def test_cant_append_facts_after_complete(self):
@@ -56,12 +56,12 @@ class TestReview(ApiTestCase):
         review.is_complete = True
 
         try:
-            review.add_fact("a", "b", "c")
+            review.add_fact('a', 'b', 'c')
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
         else:
-            assert False, "Should not have gotten this far"
+            assert False, 'Shouldn not have gotten this far'
 
     def test_cant_append_violations_after_complete(self):
         review = ReviewFactory.build()
@@ -69,9 +69,9 @@ class TestReview(ApiTestCase):
         review.is_complete = True
 
         try:
-            review.add_violation("a", "b", "c", 10)
+            review.add_violation('a', 'b', 'c', 10)
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
         else:
-            assert False, "Should not have gotten this far"
+            assert False, 'Shouldn not have gotten this far'

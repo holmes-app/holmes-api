@@ -28,7 +28,7 @@ class NextJobHandler(RequestHandler):
             ).find_all()
 
             if len(pages_in_need_of_review) == 0:
-                self.write("")
+                self.write('')
                 self.finish()
                 return
 
@@ -44,9 +44,9 @@ class NextJobHandler(RequestHandler):
         yield page.save()
 
         self.write(dumps({
-            "page": str(page.uuid),
-            "review": str(review.uuid),
-            "url": page.url
+            'page': str(page.uuid),
+            'review': str(review.uuid),
+            'url': page.url
         }))
 
         self.finish()

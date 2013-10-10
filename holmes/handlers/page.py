@@ -48,7 +48,7 @@ class PageHandler(BaseHandler):
         #self.finish()
 
     @gen.coroutine
-    def get(self, uuid=""):
+    def get(self, uuid=''):
         uuid = UUID(uuid)
 
         page = yield Page.objects.get(uuid=uuid)

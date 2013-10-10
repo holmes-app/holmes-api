@@ -35,7 +35,7 @@ class CanProcessWebsiteTest(AsyncTestCase):
         return conf
 
     def get_reviewer(
-            self, api_url=None, page_uuid=None, page_url="http://page.url",
+            self, api_url=None, page_uuid=None, page_url='http://page.url',
             review_uuid=None, config=None, validators=None):
 
         if api_url is None:
@@ -76,19 +76,19 @@ class CanProcessWebsiteTest(AsyncTestCase):
         Domain.objects.delete(callback=self.stop)
         self.wait()
 
-        DomainFactory.create(name="globo.com", url="http://www.globo.com", callback=self.stop)
+        DomainFactory.create(name='globo.com', url='http://www.globo.com', callback=self.stop)
         domain = self.wait()
 
-        PageFactory.create(domain=domain, url="http://www.globo.com/", callback=self.stop)
+        PageFactory.create(domain=domain, url='http://www.globo.com/', callback=self.stop)
         page = self.wait()
 
         ReviewFactory.create(page=page, callback=self.stop)
         review = self.wait()
 
         reviewer = self.get_reviewer(
-            api_url="http://localhost:2368",
+            api_url='http://localhost:2368',
             page_uuid=page.uuid,
-            page_url="http://www.globo.com/",
+            page_url='http://www.globo.com/',
             review_uuid=review.uuid
         )
 

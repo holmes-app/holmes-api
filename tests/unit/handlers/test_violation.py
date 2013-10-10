@@ -33,9 +33,9 @@ class TestViolationHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Review with uuid of invalid not found!")
+            expect(err.response.reason).to_be_like('Review with uuid of invalid not found!')
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_can_save_fact(self):
@@ -57,7 +57,7 @@ class TestViolationHandler(ApiTestCase):
         )
 
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal("OK")
+        expect(response.body).to_equal('OK')
 
         review = yield Review.objects.get(uuid=review.uuid)
 

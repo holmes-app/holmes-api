@@ -18,7 +18,7 @@ class TestNextJobHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)
@@ -32,7 +32,7 @@ class TestNextJobHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)
@@ -62,7 +62,7 @@ class TestNextJobHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)
@@ -92,7 +92,7 @@ class TestNextJobHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)
@@ -103,7 +103,7 @@ class TestNextJobHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)

@@ -104,7 +104,7 @@ class WorkerTestCase(ApiTestCase):
         worker = self.get_worker()
 
         worker._ping_api = Mock()
-        job = {"page": "0001", "review": "00001", "url": "http://globo.com"}
+        job = {'page': '0001', 'review': '00001', 'url': 'http://globo.com'}
         worker._load_next_job = Mock(return_value=job)
         worker._start_job = Mock()
         worker._start_reviewer = Mock()
@@ -115,9 +115,9 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._ping_api.called).to_be_true()
         expect(worker._load_next_job.called).to_be_true()
         expect(worker._start_job.called).to_be_true()
-        worker._start_job.assert_called_once_with("00001")
+        worker._start_job.assert_called_once_with('00001')
         worker._start_reviewer.assert_called_once_with(job=job)
-        worker._complete_job.assert_called_once_with("00001")
+        worker._complete_job.assert_called_once_with('00001')
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
@@ -298,7 +298,7 @@ class WorkerTestCase(ApiTestCase):
             try:
                 expect(issubclass(validator, Validator)).to_be_true()
             except TypeError:
-                assert False, "Expect all validators to be subclass of holmes.validators.base.Validator"
+                assert False, 'Expect all validators to be subclass of holmes.validators.base.Validator'
 
     def test_load_validators_can_instantiate_a_validator(self):
         worker = self.get_worker()
@@ -350,8 +350,8 @@ class WorkerTestCase(ApiTestCase):
     def test_start_reviwer(self, mock_reviewer):
         worker = self.get_worker()
         worker._load_validators = Mock(return_value=[])
-        job = {"page": "00000000-0000-0000-0000-000000000000",
-               "review": "00000000-0000-0000-0000-000000000000",
-               "url": "http://globo.com"}
+        job = {'page': '00000000-0000-0000-0000-000000000000',
+               'review': '00000000-0000-0000-0000-000000000000',
+               'url': 'http://globo.com'}
         worker._start_reviewer(job=job)
         expect(mock_reviewer.called).to_be_true()
