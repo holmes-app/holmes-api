@@ -14,13 +14,13 @@ class PageHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header('Access-Control-Allow-Origin', '*')
 
         url = self.get_argument('url')
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
-            self.set_status(400, "Invalid url [%s]" % url)
+            self.set_status(400, 'Invalid url [%s]' % url)
             self.finish()
             return
 
@@ -54,7 +54,7 @@ class PageHandler(BaseHandler):
         page = yield Page.objects.get(uuid=uuid)
 
         if not page:
-            self.set_status(404, "Page UUID [%s] not found" % uuid)
+            self.set_status(404, 'Page UUID [%s] not found' % uuid)
             self.finish()
             return
 
@@ -76,7 +76,7 @@ class PagesHandler(BaseHandler):
 
         if not urls:
             self.set_status(200)
-            self.write("0")
+            self.write('0')
             self.finish()
             return
 
@@ -86,14 +86,12 @@ class PagesHandler(BaseHandler):
         for url in urls:
             domain_name, domain_url = get_domain_from_url(url)
             if not domain_name:
-                self.set_status(400, "In the urls you posted there is an invalid URL: %s" % url)
+                self.set_status(400, 'In the urls you posted there is an invalid URL: %s' % url)
                 self.finish()
                 return
             all_domains.append((domain_name, domain_url))
 
         existing_domains = yield Domain.objects.filter(name__in=[domain[0] for domain in all_domains]).find_all()
-        if not existing_domains:
-            existing_domains = []
         existing_domains_dict = dict([(domain.name, domain) for domain in existing_domains])
 
         domains_to_add = [
@@ -122,8 +120,7 @@ class PagesHandler(BaseHandler):
 
             pages_to_add.append(Page(url=url, domain=domain))
 
-        if domains_to_add:
-            yield Domain.objects.bulk_insert(domains_to_add)
+        yield Domain.objects.bulk_insert(domains_to_add)
 
         if pages_to_add:
             yield Page.objects.bulk_insert(pages_to_add)
@@ -132,6 +129,6 @@ class PagesHandler(BaseHandler):
         self.finish()
 
     def options(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.write("OK")
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.write('OK')
         self.finish()

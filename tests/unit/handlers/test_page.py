@@ -24,7 +24,7 @@ class TestPageHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
-            body='url=%s' % "http://globo.com"
+            body='url=%s' % 'http://globo.com'
         )
 
         expect(response.code).to_equal(200)
@@ -37,12 +37,12 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_known_domain(self):
-        yield Domain.objects.create(url="http://globo.com", name="globo.com")
+        yield Domain.objects.create(url='http://globo.com', name='globo.com')
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
-            body='url=%s' % "http://globo.com"
+            body='url=%s' % 'http://globo.com'
         )
 
         expect(response.code).to_equal(200)
@@ -55,7 +55,7 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_error_when_invalid_url(self):
-        invalid_url = ""
+        invalid_url = ''
 
         try:
             yield self.http_client.fetch(
@@ -67,10 +67,10 @@ class TestPageHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
-            expect(err.response.reason).to_be_like("Invalid url [%s]" % invalid_url)
+            expect(err.response.reason).to_be_like('Invalid url [%s]' % invalid_url)
 
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_when_url_already_exists(self):
@@ -88,7 +88,7 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_get_page_not_found(self):
-        invalid_page_uuid = "00000000-0000-0000-0000-000000000000"
+        invalid_page_uuid = '00000000-0000-0000-0000-000000000000'
 
         try:
             yield self.http_client.fetch(
@@ -99,9 +99,9 @@ class TestPageHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like("Page UUID [%s] not found" % invalid_page_uuid)
+            expect(err.response.reason).to_be_like('Page UUID [%s] not found' % invalid_page_uuid)
         else:
-            assert False, "Should not have got this far"
+            assert False, 'Should not have got this far'
 
     @gen_test
     def test_get_page_get_info(self):
@@ -128,7 +128,7 @@ class TestPagesHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='POST',
-            body=""
+            body=''
         )
 
         expect(response.code).to_equal(200)
@@ -139,12 +139,12 @@ class TestPagesHandler(ApiTestCase):
         yield Domain.objects.delete()
         yield Page.objects.delete()
 
-        urls = ["http://%d.globo.com/%d.html" % (num, num) for num in range(1000)]
+        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='POST',
-            body="&".join(['url=%s' % url for url in urls])
+            body='&'.join(['url=%s' % url for url in urls])
         )
 
         expect(response.code).to_equal(200)
@@ -155,16 +155,16 @@ class TestPagesHandler(ApiTestCase):
         yield Domain.objects.delete()
         yield Page.objects.delete()
 
-        domain = yield DomainFactory.create(name="globo.com", url="http://globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        domain = yield DomainFactory.create(name='globo.com', url='http://globo.com')
+        page = yield PageFactory.create(domain=domain, url='http://www.globo.com/')
 
-        urls = ["http://%d.globo.com/%d.html" % (num, num) for num in range(10)]
+        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(10)]
         urls.append(page.url)
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='POST',
-            body="&".join(['url=%s' % url for url in urls])
+            body='&'.join(['url=%s' % url for url in urls])
         )
 
         expect(response.code).to_equal(200)
@@ -175,15 +175,15 @@ class TestPagesHandler(ApiTestCase):
         yield Domain.objects.delete()
         yield Page.objects.delete()
 
-        domain = yield DomainFactory.create(name="globo.com", url="http://globo.com")
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        domain = yield DomainFactory.create(name='globo.com', url='http://globo.com')
+        page = yield PageFactory.create(domain=domain, url='http://www.globo.com/')
 
         urls = [page.url]
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='POST',
-            body="&".join(['url=%s' % url for url in urls])
+            body='&'.join(['url=%s' % url for url in urls])
         )
 
         expect(response.code).to_equal(200)
@@ -194,7 +194,7 @@ class TestPagesHandler(ApiTestCase):
         yield Domain.objects.delete()
         yield Page.objects.delete()
 
-        urls = ["/%d.html" % num for num in range(1000)]
+        urls = ['/%d.html' % num for num in range(1000)]
 
         try:
             yield self.http_client.fetch(
@@ -205,9 +205,9 @@ class TestPagesHandler(ApiTestCase):
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err.code).to_equal(400)
-            expect(err.response.reason).to_equal("In the urls you posted there is an invalid URL: /0.html")
+            expect(err.response.reason).to_equal('In the urls you posted there is an invalid URL: /0.html')
         else:
-            assert False, "Should not have gotten this far"
+            assert False, 'Should not have gotten this far'
 
     @gen_test
     def test_pages_will_return_options(self):

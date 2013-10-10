@@ -28,7 +28,7 @@ class CreateFactHandler(RequestHandler):
             review = yield Review.objects.get(uuid=parsed_uuid)
 
         if not review:
-            self.set_status(404, "Review with uuid of %s not found!" % review_uuid)
+            self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
 
