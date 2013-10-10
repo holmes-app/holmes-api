@@ -153,12 +153,37 @@ class TestReview(ApiTestCase):
         page_url = "http://www.google.com"
         reviewer = self.get_reviewer(page_url=page_url)
 
-        reviewer.get_response(page_url)
+        result = reviewer.get_response(page_url)
 
-        expect(reviewer.responses).to_include(page_url)
-        expect(reviewer.responses[page_url]['status']).to_equal(404)
-        expect(reviewer.responses[page_url]['content']).to_include('')
-        expect(reviewer.responses[page_url]['html']).to_be_null()
+        expect(result['status']).to_equal(404)
+        expect(result['content']).to_equal('')
+        expect(result['html']).to_be_null()
+
+    @patch("requests.get")
+    def test_get_response_fills_html_when_200(self, mock_get):
+        mock_get.return_value = Mock(status_code=200, text='Error')
+
+        page_url = "http://www.google.com"
+        reviewer = self.get_reviewer(page_url=page_url)
+
+        result = reviewer.get_response(page_url)
+
+        expect(result['status']).to_equal(200)
+        expect(result['content']).not_to_be_null()
+        expect(result['html']).not_to_be_null()
+
+    @patch("requests.get")
+    def test_get_response_do_not_fills_html_when_404(self, mock_get):
+        mock_get.return_value = Mock(status_code=404, text='Error')
+
+        page_url = "http://www.google.com"
+        reviewer = self.get_reviewer(page_url=page_url)
+
+        result = reviewer.get_response(page_url)
+
+        expect(result['status']).to_equal(404)
+        expect(result['content']).not_to_be_null()
+        expect(result['html']).to_be_null()
 
     def test_review_calls_validators(self):
         test_class = {}
