@@ -140,9 +140,8 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_ping_api_connection_error(self, ping_api_mock):
         ping_api_mock.side_effect = ConnectionError()
         worker = self.get_worker()
-        was_successful = worker._ping_api()
+        worker._do_work()
         expect(worker.working).to_be_false()
-        expect(was_successful).to_be_false()
 
     @patch('requests.post')
     def test_worker_load_next_job_error(self, load_next_job_mock):
