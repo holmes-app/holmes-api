@@ -8,6 +8,7 @@ import requests
 import lxml.html
 from preggy import expect
 from mock import patch, Mock
+from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError
 
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.config import Config
@@ -341,3 +342,50 @@ class TestReview(ApiTestCase):
         mock_get.return_value = Mock(status_code=200, text='OK')
         reviewer.current
         expect(reviewer.page_url in reviewer.responses).to_be_true()
+
+    def test_can_get_status_code(self):
+        reviewer = self.get_reviewer()
+        page_url = "http://google.com"
+        expect(reviewer.status_codes).to_length(0)
+        reviewer.get_status_code(page_url)
+        expect(reviewer.status_codes).to_length(1)
+        expect(reviewer.status_codes[page_url]).not_to_be_null()
+
+    def test_can_get_status_code_when_already_got_before(self):
+        reviewer = self.get_reviewer()
+        page_url = "http://google.com"
+
+        reviewer.get_status_code(page_url)
+        expect(reviewer.status_codes).to_length(1)
+        expect(reviewer.status_codes[page_url]).not_to_be_null()
+
+        reviewer.get_status_code(page_url)
+        expect(reviewer.status_codes).to_length(1)
+
+    @patch("requests.request")
+    def test_can_get_status_code_fail_http_error(self, mock_request):
+        mock_request.side_effect = HTTPError
+        reviewer = self.get_reviewer()
+        reviewer.get_status_code(reviewer.page_url)
+        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
+
+    @patch("requests.request")
+    def test_can_get_status_code_fail_timeout(self, mock_request):
+        mock_request.side_effect = Timeout
+        reviewer = self.get_reviewer()
+        reviewer.get_status_code(reviewer.page_url)
+        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
+
+    @patch("requests.request")
+    def test_can_get_status_code_fail_too_many_redirects(self, mock_request):
+        mock_request.side_effect = TooManyRedirects
+        reviewer = self.get_reviewer()
+        reviewer.get_status_code(reviewer.page_url)
+        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
+
+    @patch("requests.request")
+    def test_can_get_status_code_fail_connection_error(self, mock_request):
+        mock_request.side_effect = ConnectionError
+        reviewer = self.get_reviewer()
+        reviewer.get_status_code(reviewer.page_url)
+        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)

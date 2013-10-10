@@ -9,6 +9,7 @@ import inspect
 import requests
 from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError
 import lxml.html
+import logging
 
 from holmes.config import Config
 from holmes.validators.base import Validator
@@ -99,7 +100,7 @@ class Reviewer(object):
                 self.status_codes[url] = response.status_code
             except (TooManyRedirects, Timeout, HTTPError, ConnectionError):
                 err = sys.exc_info()[1]
-                print "ERROR IN %s: %s" % (url, str(err))
+                logging.warn("ERROR IN %s: %s" % (url, str(err)))
                 self.status_codes[url] = 404
 
         return self.status_codes[url]
