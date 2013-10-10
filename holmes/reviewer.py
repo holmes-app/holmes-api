@@ -62,7 +62,14 @@ class Reviewer(object):
         if url in self.responses:
             return
 
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except Exception:
+            return {
+                'status': 404,
+                'content': '',
+                'html': None
+            }
 
         self.responses[url] = {}
 

@@ -15,6 +15,7 @@ from holmes.validators.total_requests import TotalRequestsValidator
 from holmes.validators.js_requests import JSRequestsValidator
 from holmes.validators.css_requests import CSSRequestsValidator
 from holmes.validators.link_crawler import LinkCrawlerValidator
+from holmes.validators.img_requests import ImageRequestsValidator
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -58,7 +59,8 @@ class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
                 TotalRequestsValidator,
                 JSRequestsValidator,
                 CSSRequestsValidator,
-                LinkCrawlerValidator
+                LinkCrawlerValidator,
+                ImageRequestsValidator,
             ]
 
         return Reviewer(
@@ -76,7 +78,7 @@ class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
         yield Page.objects.delete()
         yield Domain.objects.delete()
 
-        domain = yield DomainFactory.create(name="globo.com", url="http://www.globo.com")
+        domain = yield DomainFactory.create(name="globo.com", url="http://www.globo.com/")
         page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
         review = yield ReviewFactory.create(page=page)
 
@@ -91,7 +93,7 @@ class CanProcessWebsiteTest(ApiTestCase, LogTrapTestCase):
 
         loaded_review = yield Review.objects.get(review._id, lazy=False)
 
-        expect(loaded_review.facts).to_length(8)
+        expect(loaded_review.facts).to_length(11)
         expect(loaded_review.violations).to_length(4)
 
         print
