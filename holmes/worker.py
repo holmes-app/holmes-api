@@ -78,6 +78,8 @@ class HolmesWorker(object):
                 logging.warn('Invalid validator name [%s]. Will be ignored.' % validator_full_name)
             except AttributeError:
                 logging.warn('Validator [%s] not found. Will be ignored.' % validator_full_name)
+            except ImportError:
+                logging.warn('Module [%s] not found. Will be ignored.' % validator_full_name)
 
         return validators
 

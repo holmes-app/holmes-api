@@ -70,7 +70,6 @@ class WorkerTestCase(ApiTestCase):
     def test_worker_can_create_an_instance(self):
         worker = holmes.worker.HolmesWorker()
         expect(worker.working).to_be_true()
-        expect(worker.config.VALIDATORS).to_equal([])
 
     def test_worker_can_parse_opt(self):
         worker = self.get_worker()
@@ -326,6 +325,15 @@ class WorkerTestCase(ApiTestCase):
     def test_load_validators_unknown_class(self):
         worker = self.get_worker()
         worker.config.VALIDATORS += ['holmes.validators.js_requests.ValidatorDoesNotExist']
+
+        validators = worker._load_validators()
+
+        expect(validators).not_to_be_null()
+        expect(validators).to_length(2)
+
+    def test_load_validators_unknown_module(self):
+        worker = self.get_worker()
+        worker.config.VALIDATORS += ['holmes.validators.unknown_module.ValidatorDoesNotExist']
 
         validators = worker._load_validators()
 
