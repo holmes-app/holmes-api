@@ -28,3 +28,5 @@ Config.define("MAX_KB_SINGLE_IMAGE_AFTER_GZIP", 100,
               "Maximun size of a single image after gzip", "Image Request Validator")
 Config.define("MAX_IMG_KB_PER_PAGE_AFTER_GZIP", 1000,
               "Maximun size of images per page after gzip", "Image Request Validator")
+
+Config.define("ORIGIN", "*", "Access Control Allow Origin header value", "Web")

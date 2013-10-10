@@ -3,17 +3,19 @@
 
 from uuid import UUID
 
-from tornado.web import RequestHandler
 from tornado import gen
 
 from holmes.models import Page, Domain
 from holmes.utils import get_domain_from_url
+from holmes.handlers import BaseHandler
 
 
-class PageHandler(RequestHandler):
+class PageHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+
         url = self.get_argument('url')
 
         domain_name, domain_url = get_domain_from_url(url)
@@ -39,6 +41,12 @@ class PageHandler(RequestHandler):
         self.write(str(page.uuid))
         self.finish()
 
+    #def options(self):
+        #self.set_status(200)
+        #self.clear_header('Content-Length')
+        #self.clear_header('Content-Type')
+        #self.finish()
+
     @gen.coroutine
     def get(self, uuid=""):
         uuid = UUID(uuid)
@@ -60,7 +68,7 @@ class PageHandler(RequestHandler):
         self.finish()
 
 
-class PagesHandler(RequestHandler):
+class PagesHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
@@ -121,4 +129,9 @@ class PagesHandler(RequestHandler):
             yield Page.objects.bulk_insert(pages_to_add)
 
         self.write(str(len(pages_to_add)))
+        self.finish()
+
+    def options(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.write("OK")
         self.finish()
