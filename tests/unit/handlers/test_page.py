@@ -208,3 +208,16 @@ class TestPagesHandler(ApiTestCase):
             expect(err.response.reason).to_equal("In the urls you posted there is an invalid URL: /0.html")
         else:
             assert False, "Should not have gotten this far"
+
+    @gen_test
+    def test_pages_will_return_options(self):
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='OPTIONS'
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal('OK')
+        expect('Access-Control-Allow-Origin' in response.headers).to_be_true()
+        expect(response.headers['Access-Control-Allow-Origin']).to_be_like('*')
