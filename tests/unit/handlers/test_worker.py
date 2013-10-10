@@ -3,7 +3,7 @@
 
 from uuid import uuid4
 from ujson import loads
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from preggy import expect
 from tornado.testing import gen_test
@@ -49,6 +49,29 @@ class TestWorkerHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_be_like(str(worker.uuid))
         expect(worker.last_ping).to_be_greater_than(date)
+
+    @gen_test
+    def test_worker_removal_after_long_time_without_ping(self):
+        yield Worker.objects.delete()
+
+        date = datetime.now()-timedelta(seconds=300)
+        worker_old = yield WorkerFactory.create(last_ping=date)
+        worker_new = yield WorkerFactory.create()
+
+        yield self.http_client.fetch(
+            self.get_url('/worker/%s/ping' % str(worker_new.uuid)),
+            method='POST',
+            body=''
+        )
+
+        response = yield self.http_client.fetch(
+            self.get_url('/workers/'),
+        )
+
+        returned_json = loads(response.body)
+        expect(returned_json).not_to_be_null()
+        expect(returned_json).to_length(1)
+        expect(returned_json[0]['uuid']).not_to_equal(str(worker_old.uuid))
 
     @gen_test
     def test_workers_list(self):

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
+
 from tornado.web import RequestHandler
 from tornado import gen
 from uuid import UUID
@@ -18,9 +20,13 @@ class WorkerHandler(RequestHandler):
         worker = yield Worker.objects.get(uuid=worker_uuid)
 
         if worker:
+            worker.last_ping = datetime.now()
             yield worker.save()
         else:
             yield Worker.objects.create(uuid=worker_uuid)
+
+        dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
+        yield Worker.objects.filter(last_ping__lt=dt).delete()
 
         self.write(str(worker_uuid))
         self.finish()

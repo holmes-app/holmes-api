@@ -9,7 +9,7 @@ class Worker(Document):
     __lazy__ = False
 
     uuid = UUIDField(required=True)
-    last_ping = DateTimeField(auto_now_on_update=True)
+    last_ping = DateTimeField(auto_now_on_insert=True)
     current_review = ReferenceField(reference_document_type='holmes.models.review.Review')
 
     def __str__(self):
