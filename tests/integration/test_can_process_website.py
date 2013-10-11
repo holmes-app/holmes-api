@@ -98,7 +98,7 @@ class CanProcessWebsiteTest(AsyncTestCase):
         loaded_review = self.wait(timeout=30)
 
         expect(loaded_review.facts).to_length(10)
-        expect(loaded_review.violations).to_length(5)
+        expect(loaded_review.violations).to_length(6)
 
         print
         print
