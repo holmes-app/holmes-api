@@ -97,8 +97,8 @@ class CanProcessWebsiteTest(AsyncTestCase):
         Review.objects.get(review._id, callback=self.stop)
         loaded_review = self.wait(timeout=30)
 
-        expect(loaded_review.facts).to_length(10)
-        expect(loaded_review.violations).to_length(6)
+        expect(len(loaded_review.facts)).to_be_greater_than(3)
+        expect(len(loaded_review.violations)).to_be_greater_than(3)
 
         print
         print
