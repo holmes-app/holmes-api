@@ -75,7 +75,7 @@ class LinkCrawlerValidator(Validator):
                 title='Moved Temporarily',
                 description='A link from you page to "%s" is using a %d redirect. '
                 'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. '
-                'Use 301 instead. ' % (status, url),
+                'Use 301 instead. ' % (url, status),
                 points=100
             )
 
