@@ -69,6 +69,16 @@ class LinkCrawlerValidator(Validator):
                 points=100
             )
 
+        if status == 302 or status == 307:
+            self.add_violation(
+                key='moved.temporarily',
+                title='Moved Temporarily',
+                description='A link from you page to "%s" is using a %d redirect. '
+                'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. '
+                'Use 301 instead. ' % (status, url),
+                points=100
+            )
+
     def send_url(self, url):
         self.url_buffer.append(url)
 
