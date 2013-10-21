@@ -3,7 +3,7 @@
 
 import sys
 from uuid import UUID
-from ujson import loads
+from ujson import loads, dumps
 
 from preggy import expect
 from tornado.testing import gen_test
@@ -24,7 +24,9 @@ class TestPageHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
-            body='url=%s' % 'http://globo.com'
+            body=dumps({
+                'url': 'http://globo.com'
+            })
         )
 
         expect(response.code).to_equal(200)
@@ -42,7 +44,9 @@ class TestPageHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
-            body='url=%s' % 'http://globo.com'
+            body=dumps({
+                'url': 'http://globo.com'
+            })
         )
 
         expect(response.code).to_equal(200)
@@ -61,7 +65,9 @@ class TestPageHandler(ApiTestCase):
             yield self.http_client.fetch(
                 self.get_url('/page'),
                 method='POST',
-                body='url=%s' % invalid_url
+                body=dumps({
+                    'url': invalid_url
+                })
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -80,7 +86,9 @@ class TestPageHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
-            body='url=%s' % page.url
+            body=dumps({
+                'url': page.url
+            })
         )
 
         expect(response.code).to_equal(200)
@@ -210,7 +218,6 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_pages_will_return_options(self):
-
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='OPTIONS'

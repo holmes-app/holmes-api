@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
+from ujson import loads
 
 from tornado import gen
 
@@ -14,9 +15,9 @@ class PageHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        self.set_header('Access-Control-Allow-Origin', '*')
+        post_data = loads(self.request.body)
 
-        url = self.get_argument('url')
+        url = post_data['url']
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
@@ -41,11 +42,12 @@ class PageHandler(BaseHandler):
         self.write(str(page.uuid))
         self.finish()
 
-    #def options(self):
-        #self.set_status(200)
-        #self.clear_header('Content-Length')
-        #self.clear_header('Content-Type')
-        #self.finish()
+    def options(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT')
+        self.set_header('Access-Control-Allow-Headers', 'Accept, Content-Type')
+        self.set_status(200)
+        self.finish()
 
     @gen.coroutine
     def get(self, uuid=''):
