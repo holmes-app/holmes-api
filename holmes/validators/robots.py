@@ -20,7 +20,7 @@ class RobotsValidator(Validator):
             return
 
         if not result.get('content'):
-            self.add_fact(
+            self.add_violation(
                 key='robots.empty',
                 title='Empty robots file',
                 description='',
