@@ -23,10 +23,20 @@ Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               'Number of urls to enqueue before submitting to the /pages route', 'Validators')
 
 Config.define('MAX_IMG_REQUESTS_PER_PAGE', 50,
-              'Maximun number of images per page', 'Image Request Validator')
+              'Maximum number of images per page', 'Image Request Validator')
 Config.define('MAX_KB_SINGLE_IMAGE_AFTER_GZIP', 100,
-              'Maximun size of a single image after gzip', 'Image Request Validator')
+              'Maximum size of a single image after gzip', 'Image Request Validator')
 Config.define('MAX_IMG_KB_PER_PAGE_AFTER_GZIP', 1000,
-              'Maximun size of images per page after gzip', 'Image Request Validator')
+              'Maximum size of images per page after gzip', 'Image Request Validator')
+
+Config.define('MAX_CSS_REQUESTS_PER_PAGE', 5,
+              'Maximum number of external stylesheets per page', 'CSS Request Validator')
+Config.define('MAX_CSS_KB_PER_PAGE_AFTER_GZIP', 50,
+              'Maximum size of stylesheets per page after gzip', 'CSS Request Validator')
+
+Config.define('MAX_JS_REQUESTS_PER_PAGE', 5,
+              'Maximum number of external scripts per page', 'JS Request Validator')
+Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 50,
+              'Maximum size of scripts per page after gzip', 'JS Request Validator')
 
 Config.define('ORIGIN', '*', 'Access Control Allow Origin header value', 'Web')

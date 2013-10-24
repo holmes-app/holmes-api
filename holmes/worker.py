@@ -26,11 +26,12 @@ class HolmesWorker(object):
 
         self.working = True
         self.config = None
-        self.validators = set()
 
         self._parse_opt(arguments)
         self._load_config(self.options.verbose == 3)
         self._config_logging()
+
+        self.validators = self._load_validators()
 
     def run(self):
         try:
@@ -62,14 +63,22 @@ class HolmesWorker(object):
                 page_url=job['url'],
                 review_uuid=job['review'],
                 config=self.config,
-                validators=self._load_validators()
+                validators=self.validators
                 )
             reviewer.review()
 
-    def _load_validators(self):
-        validators = []
+    def _load_validators(self, validators=None, validators_to_load=None):
+        if validators_to_load is None:
+            validators_to_load = self.config.VALIDATORS
 
-        for validator_full_name in self.config.VALIDATORS:
+        if validators is None:
+            validators = []
+
+        for validator_full_name in validators_to_load:
+            if isinstance(validator_full_name, (tuple, set, list)):
+                self._load_validators(validators, validator_full_name)
+                continue
+
             try:
                 module_name, class_name = validator_full_name.rsplit('.', 1)
                 module = __import__(module_name, globals(), locals(), class_name)

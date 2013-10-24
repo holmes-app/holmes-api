@@ -117,12 +117,13 @@ class PagesHandler(BaseHandler):
         for url in urls:
             if url in existing_pages_dict:
                 continue
-            domain_name, domain_url = get_domain_from_url(url)
+            domain_name, domain_url = get_domain_from_url(url.strip())
             domain = all_domains_dict[domain_name]
 
             pages_to_add.append(Page(url=url, domain=domain))
 
-        yield Domain.objects.bulk_insert(domains_to_add)
+        if domains_to_add:
+            yield Domain.objects.bulk_insert(domains_to_add)
 
         if pages_to_add:
             yield Page.objects.bulk_insert(pages_to_add)

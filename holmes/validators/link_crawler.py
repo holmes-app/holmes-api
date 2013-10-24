@@ -27,7 +27,7 @@ class LinkCrawlerValidator(Validator):
         num_links = 0
 
         for link in links:
-            url = link.get('href')
+            url = link.get('href').strip()
             url = REMOVE_HASH.sub('', url)
 
             if not url:
