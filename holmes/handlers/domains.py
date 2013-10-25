@@ -23,5 +23,5 @@ class DomainsHandler(BaseHandler):
             self.finish()
             return
 
-        self.write(dumps([domain.to_dict() for domain in domains]))
+        self.write_json([domain.to_dict() for domain in domains])
         self.finish()

@@ -5,6 +5,7 @@ from uuid import UUID
 from ujson import loads
 
 from tornado import gen
+from motorengine import Q
 
 from holmes.models import Page, Domain
 from holmes.utils import get_domain_from_url
@@ -25,12 +26,34 @@ class PageHandler(BaseHandler):
             self.finish()
             return
 
-        domain = yield Domain.objects.get(name=domain_name)
+        query = (
+            Q(name=domain_name) |
+            Q(name=domain_name.rstrip('/')) |
+            Q(name="%s/" % domain_name)
+        )
+
+        domains = yield Domain.objects.filter(query).find_all()
+
+        if not domains:
+            domain = None
+        else:
+            domain = domains[0]
 
         if not domain:
             domain = yield Domain.objects.create(url=domain_url, name=domain_name)
 
-        page = yield Page.objects.get(url=url)
+        query = (
+            Q(url=url) |
+            Q(url=url.rstrip('/')) |
+            Q(url="%s/" % url)
+        )
+
+        pages = yield Page.objects.filter(query).find_all()
+
+        if pages:
+            page = pages[0]
+        else:
+            page = None
 
         if page:
             self.write(str(page.uuid))
