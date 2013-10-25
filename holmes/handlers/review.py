@@ -7,6 +7,7 @@ from uuid import UUID
 from tornado.web import RequestHandler
 from tornado import gen
 from ujson import dumps
+from motorengine import Q
 
 from holmes.models import Review
 
@@ -56,6 +57,7 @@ class CompleteReviewHandler(BaseReviewHandler):
             return
 
         review.is_complete = True
+        review.is_active = True
         review.completed_date = datetime.now()
 
         yield review.load_references(['page'])
@@ -63,6 +65,12 @@ class CompleteReviewHandler(BaseReviewHandler):
         yield review.page.save()
 
         yield review.save()
+
+        query = Q(page=review.page) & Q(uuid__ne=review_uuid)
+
+        yield Review.objects.filter(query).update({
+            Review.is_active: False
+        })
 
         self.write('OK')
         self.finish()

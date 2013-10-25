@@ -52,6 +52,7 @@ class ReviewFactory(MotorEngineFactory):
     violations = factory.LazyAttribute(lambda a: [])
 
     is_complete = False
+    is_active = False
     created_date = None
     completed_date = None
     page = None
