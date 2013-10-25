@@ -134,7 +134,9 @@ class TestReview(ApiTestCase):
         else:
             assert False, 'Shouldn not have gotten this far'
 
-    def test_get_response_fills_dict(self):
+    @patch('requests.get')
+    def test_get_response_fills_dict(self, mock_get):
+        mock_get.return_value = Mock(status_code=200, text='<p>OK</p>', content='<p>OK</p>')
         page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
 
@@ -142,7 +144,7 @@ class TestReview(ApiTestCase):
 
         expect(reviewer.responses).to_include(page_url)
         expect(reviewer.responses[page_url]['status']).to_equal(200)
-        expect(reviewer.responses[page_url]['content']).to_include('btnG')
+        expect(reviewer.responses[page_url]['content']).to_include('OK')
 
         expect(reviewer.responses[page_url]['html']).not_to_be_null()
         expect(reviewer.responses[page_url]['html']).to_be_instance_of(lxml.html.HtmlElement)
