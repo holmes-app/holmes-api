@@ -7,7 +7,7 @@ from uuid import UUID
 import inspect
 
 import requests
-from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError
+from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
 import lxml.html
 import logging
 
@@ -107,7 +107,7 @@ class Reviewer(object):
                 response = requests.request(method='GET', url=url, stream=True, timeout=10.0)
                 response.iter_lines().next()
                 self.status_codes[url] = response.status_code
-            except (TooManyRedirects, Timeout, HTTPError, ConnectionError):
+            except (TooManyRedirects, Timeout, HTTPError, ConnectionError, InvalidSchema):
                 err = sys.exc_info()[1]
                 logging.warn('ERROR IN %s: %s' % (url, str(err)))
                 self.status_codes[url] = 404

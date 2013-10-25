@@ -8,7 +8,7 @@ import requests
 import lxml.html
 from preggy import expect
 from mock import patch, Mock
-from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError
+from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
 
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.config import Config
@@ -417,6 +417,13 @@ class TestReview(ApiTestCase):
     @patch("requests.request")
     def test_can_get_status_code_fail_connection_error(self, mock_request):
         mock_request.side_effect = ConnectionError
+        reviewer = self.get_reviewer()
+        reviewer.get_status_code(reviewer.page_url)
+        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
+
+    @patch("requests.request")
+    def test_can_get_status_code_fail_invalid_schema(self, mock_request):
+        mock_request.side_effect = InvalidSchema
         reviewer = self.get_reviewer()
         reviewer.get_status_code(reviewer.page_url)
         expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
