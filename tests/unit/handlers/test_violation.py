@@ -38,7 +38,7 @@ class TestViolationHandler(ApiTestCase):
             assert False, 'Should not have got this far'
 
     @gen_test
-    def test_can_save_fact(self):
+    def test_can_save_violation(self):
         domain = yield DomainFactory.create()
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
@@ -69,3 +69,94 @@ class TestViolationHandler(ApiTestCase):
         expect(violation.title).to_equal('title')
         expect(violation.description).to_equal('description')
         expect(violation.points).to_equal(20)
+
+    @gen_test
+    def test_can_save_violation_will_round_float_points(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        url = self.get_url(
+            '/page/%s/review/%s/violation' % (
+                page.uuid,
+                review.uuid
+            )
+        )
+
+        response = yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='key=test.violation&title=title&description=description&points=1.1'
+        )
+
+        response = yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='key=test.violation&title=title&description=description&points=1.9'
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal('OK')
+
+        review = yield Review.objects.get(uuid=review.uuid)
+
+        expect(review).not_to_be_null()
+        expect(review.violations).to_length(2)
+
+        violation = review.violations[0]
+        expect(violation.key).to_equal('test.violation')
+        expect(violation.title).to_equal('title')
+        expect(violation.description).to_equal('description')
+        expect(violation.points).to_equal(1)
+
+        violation = review.violations[1]
+        expect(violation.key).to_equal('test.violation')
+        expect(violation.title).to_equal('title')
+        expect(violation.description).to_equal('description')
+        expect(violation.points).to_equal(2)
+
+    @gen_test
+    def test_can_save_violation_will_add_zero_when_invalid(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        url = self.get_url(
+            '/page/%s/review/%s/violation' % (
+                page.uuid,
+                review.uuid
+            )
+        )
+
+        response = yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='key=test.violation&title=title&description=description&points='
+        )
+
+        response = yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='key=test.violation&title=title&description=description&points=a'
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal('OK')
+
+        review = yield Review.objects.get(uuid=review.uuid)
+
+        expect(review).not_to_be_null()
+        expect(review.violations).to_length(2)
+
+        violation = review.violations[0]
+        expect(violation.key).to_equal('test.violation')
+        expect(violation.title).to_equal('title')
+        expect(violation.description).to_equal('description')
+        expect(violation.points).to_equal(0)
+
+        violation = review.violations[1]
+        expect(violation.key).to_equal('test.violation')
+        expect(violation.title).to_equal('title')
+        expect(violation.description).to_equal('description')
+        expect(violation.points).to_equal(0)
+

@@ -162,7 +162,7 @@ class TestReview(ApiTestCase):
 
     @patch('requests.get')
     def test_get_response_fills_html_when_200(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text='OK')
+        mock_get.return_value = Mock(status_code=200, text='<p>OK</p>')
 
         page_url = 'http://www.google.com'
         reviewer = self.get_reviewer(page_url=page_url)
@@ -172,6 +172,37 @@ class TestReview(ApiTestCase):
         expect(result['status']).to_equal(200)
         expect(result['content']).not_to_be_null()
         expect(result['html']).not_to_be_null()
+        expect(result['html'].text_content()).to_equal('OK')
+
+    @patch('requests.get')
+    def test_get_response_add_violation_when_empty_document(self, mock_get):
+        mock_get.return_value = Mock(status_code=200, text='</html>')
+
+        page_url = 'http://www.google.com'
+        reviewer = self.get_reviewer(page_url=page_url)
+        reviewer.add_violation = Mock()
+
+        result = reviewer.get_response(page_url)
+
+        expect(result['status']).to_equal(200)
+        expect(result['content']).not_to_be_null()
+        expect(result['html']).to_be_null()
+        expect(reviewer.add_violation.called).to_be_true()
+
+    @patch('requests.get')
+    def test_get_response_add_violation_when_invalid_html(self, mock_get):
+        mock_get.return_value = Mock(status_code=200, text=' ')
+
+        page_url = 'http://www.google.com'
+        reviewer = self.get_reviewer(page_url=page_url)
+        reviewer.add_violation = Mock()
+
+        result = reviewer.get_response(page_url)
+
+        expect(result['status']).to_equal(200)
+        expect(result['content']).not_to_be_null()
+        expect(result['html']).to_be_null()
+        expect(reviewer.add_violation.called).to_be_true()
 
     @patch('requests.get')
     def test_get_response_do_not_fills_html_when_404(self, mock_get):

@@ -16,9 +16,13 @@ class CreateViolationHandler(RequestHandler):
         key = self.get_argument('key')
         title = self.get_argument('title')
         description = self.get_argument('description')
-        points = int(self.get_argument('points'))
-
         parsed_uuid = None
+
+        try:
+            points = round(float(self.get_argument('points')))
+        except ValueError:
+            points = 0
+
         try:
             parsed_uuid = UUID(review_uuid)
         except ValueError:

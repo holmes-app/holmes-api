@@ -86,7 +86,16 @@ class Reviewer(object):
             }
 
             if response.status_code < 399:
-                result['html'] = lxml.html.fromstring(response.text)
+                try:
+                    result['html'] = lxml.html.fromstring(response.text)
+                except (lxml.etree.XMLSyntaxError, lxml.etree.ParserError):
+                    result['html'] = None
+
+                    self.add_violation(
+                        key='invalid.content',
+                        title='Invalid Content',
+                        description='Fail to parse content from %s' % url,
+                        points=1000)
 
         self.responses[url] = result
 
