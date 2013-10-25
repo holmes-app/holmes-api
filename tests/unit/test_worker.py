@@ -11,6 +11,7 @@ import requests
 
 import holmes.worker
 from holmes.config import Config
+from holmes.reviewer import InvalidReviewError
 from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
@@ -235,7 +236,8 @@ class WorkerTestCase(ApiTestCase):
         worker = self.get_worker()
         worker._complete_job(self.ZERO_UUID)
         requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID))
+            'http://localhost:2368/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID),
+            data={'error': None})
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
@@ -273,6 +275,26 @@ class WorkerTestCase(ApiTestCase):
         worker._ping_api = Mock(return_value=True)
         worker._start_job = Mock()
         worker._start_reviewer = Mock()
+        worker._complete_job = Mock()
+
+        worker._do_work()
+
+        expect(worker._start_job.called).to_be_true()
+        expect(worker._complete_job.called).to_be_true()
+
+    @gen_test
+    def test_do_work_invalid_review_error(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        worker = self.get_worker()
+
+        job = {'page': str(page.uuid), 'review': str(review.uuid), 'url': page.url}
+        worker._load_next_job = Mock(return_value=job)
+        worker._ping_api = Mock(return_value=True)
+        worker._start_job = Mock()
+        worker._start_reviewer = Mock(side_effect=InvalidReviewError)
         worker._complete_job = Mock()
 
         worker._do_work()

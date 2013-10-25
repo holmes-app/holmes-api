@@ -6,6 +6,7 @@ from ujson import loads
 
 from tornado import gen
 from motorengine import Q
+import logging
 
 from holmes.models import Page, Domain
 from holmes.utils import get_domain_from_url
@@ -143,6 +144,7 @@ class PagesHandler(BaseHandler):
             domain_name, domain_url = get_domain_from_url(url.strip())
             domain = all_domains_dict[domain_name]
 
+            logging.debug("Adding URL: %s" % url)
             pages_to_add.append(Page(url=url, domain=domain))
 
         if domains_to_add:

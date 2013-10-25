@@ -4,6 +4,8 @@
 import sys
 import time
 import logging
+
+import traceback
 from uuid import uuid4
 from os.path import abspath, dirname, join
 from ujson import loads
@@ -14,7 +16,7 @@ from derpconf.config import verify_config
 from optparse import OptionParser
 
 from holmes.config import Config
-from holmes.reviewer import Reviewer
+from holmes.reviewer import Reviewer, InvalidReviewError
 
 
 class HolmesWorker(object):
@@ -51,8 +53,15 @@ class HolmesWorker(object):
             job = self._load_next_job()
             if job:
                 self._start_job(job['review'])
-                self._start_reviewer(job=job)
-                self._complete_job(job['review'])
+
+                try:
+                    self._start_reviewer(job=job)
+                except InvalidReviewError:
+                    err = sys.exc_info()[1]
+                    logging.error("Fail to review %s: %s" % (job['url'], str(err)))
+                    self._complete_job(job['review'], error=str(err))
+                else:
+                    self._complete_job(job['review'])
 
     def _start_reviewer(self, job):
         if job:
@@ -65,6 +74,7 @@ class HolmesWorker(object):
                 config=self.config,
                 validators=self.validators
                 )
+
             reviewer.review()
 
     def _load_validators(self, validators=None, validators_to_load=None):
@@ -122,13 +132,14 @@ class HolmesWorker(object):
         except ConnectionError:
             logging.error('Fail to start review.')
 
-    def _complete_job(self, review_uuid):
+    def _complete_job(self, review_uuid, error=None):
         if not review_uuid:
             return False
 
         try:
             response = requests.post('%s/worker/%s/review/%s/complete' %
-                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid))
+                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid),
+                                     data={'error': error})
             return ('OK' == response.text)
         except ConnectionError:
             logging.error('Fail to complete worker.')

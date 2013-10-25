@@ -75,3 +75,9 @@ class TestReview(ApiTestCase):
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
         else:
             assert False, 'Shouldn not have gotten this far'
+
+    def test_review_has_falied(self):
+        review = ReviewFactory.build()
+        review.failure_message = "Invalid Page"
+        expect(review.failed).to_be_true()
+

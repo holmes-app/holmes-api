@@ -6,7 +6,7 @@ from uuid import uuid4
 from motorengine import (
     Document, ReferenceField, DateTimeField,
     ListField, EmbeddedDocumentField, BooleanField,
-    UUIDField
+    UUIDField, StringField
 )
 
 
@@ -20,6 +20,7 @@ class Review(Document):
 
     created_date = DateTimeField(required=True, auto_now_on_insert=True)
     completed_date = DateTimeField()
+    failure_message = StringField(required=False)
 
     def add_fact(self, key, value, unit=None):
         if self.is_complete:
@@ -52,6 +53,10 @@ class Review(Document):
             'facts': [fact.to_dict() for fact in self.facts],
             'violations': [violation.to_dict() for violation in self.violations]
         }
+
+    @property
+    def failed(self):
+        return self.failure_message != None
 
     def __str__(self):
         return str(self.uuid)
