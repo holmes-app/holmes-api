@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ujson import dumps
-
 from tornado import gen
 from motorengine import ASCENDING
 
@@ -14,14 +12,24 @@ class DomainsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        queryset = Domain.objects.order_by(Domain.name, ASCENDING)
-
-        domains = yield queryset.find_all()
+        domains = yield Domain.objects.order_by(Domain.name, ASCENDING).find_all()
+        violations_per_domain = yield Domain.get_violations_per_domain()
+        pages_per_domain = yield Domain.get_pages_per_domain()
 
         if not domains:
             self.write("[]")
             self.finish()
             return
 
-        self.write_json([domain.to_dict() for domain in domains])
+        result = []
+
+        for domain in domains:
+            result.append({
+                "url": domain.url,
+                "name": domain.name,
+                "violationCount": violations_per_domain.get(domain.name, 0),
+                "pageCount": pages_per_domain.get(domain.name, 0)
+            })
+
+        self.write_json(result)
         self.finish()
