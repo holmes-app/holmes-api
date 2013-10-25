@@ -28,4 +28,7 @@ def get_domain_from_url(url, default_scheme='http'):
         if ':' in domain:
             domain = domain.split(':')[0]
 
-    return domain, '%s://%s/' % (scheme, domain.strip())
+    original_domain = domain.strip()
+    domain = original_domain.replace('www.', '')
+
+    return domain, '%s://%s/' % (scheme, original_domain)

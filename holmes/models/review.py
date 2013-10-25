@@ -15,6 +15,7 @@ class Review(Document):
     facts = ListField(EmbeddedDocumentField('holmes.models.fact.Fact'))
     violations = ListField(EmbeddedDocumentField('holmes.models.violation.Violation'))
 
+    is_active = BooleanField(required=True, default=False)
     is_complete = BooleanField(required=True, default=False)
     uuid = UUIDField(default=uuid4)
 

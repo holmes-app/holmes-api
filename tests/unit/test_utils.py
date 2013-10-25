@@ -64,6 +64,11 @@ class TestUtils(TestCase):
         expect(domain).to_equal('globo.com')
         expect(url).to_equal('http://globo.com/')
 
+    def test_page_with_www(self):
+        domain, url = get_domain_from_url('http://www.globo.com:80/%7Eguido/Python.html')
+        expect(domain).to_equal('globo.com')
+        expect(url).to_equal('http://www.globo.com/')
+
     def test_page_invalid_url(self):
         domain, url = get_domain_from_url('help/Python.html')
         expect(domain).to_equal('')

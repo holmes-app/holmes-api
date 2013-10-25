@@ -124,8 +124,48 @@ class TestCompleteReviewHandler(ApiTestCase):
         yield review.page.load_references(['last_review'])
 
         expect(review.is_complete).to_be_true()
+        expect(review.is_active).to_be_true()
         expect(review.completed_date).to_be_greater_or_equal_to(dt)
         expect(review.page.last_review._id).to_equal(review._id)
+
+    @gen_test
+    def test_completing_reviews_inactivates_old_reviews(self):
+        dt = datetime.now()
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        page2 = yield PageFactory.create(domain=domain)
+
+        review = yield ReviewFactory.create(page=page, is_complete=True, is_active=True)
+        review2 = yield ReviewFactory.create(page=page, is_complete=False, is_active=False)
+        review3 = yield ReviewFactory.create(page=page2, is_complete=True, is_active=True)
+
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                review2.uuid
+            )
+        )
+
+        response = yield self.http_client.fetch(url, method='POST', body='')
+
+        expect(response.code).to_equal(200)
+
+        loaded_review = yield Review.objects.get(review2._id)
+        yield loaded_review.load_references(['page'])
+        yield loaded_review.page.load_references(['last_review'])
+
+        expect(loaded_review.is_complete).to_be_true()
+        expect(loaded_review.is_active).to_be_true()
+        expect(loaded_review.completed_date).to_be_greater_or_equal_to(dt)
+        expect(loaded_review.page.last_review._id).to_equal(review2._id)
+
+        loaded_review = yield Review.objects.get(review._id)
+        expect(loaded_review.is_complete).to_be_true()
+        expect(loaded_review.is_active).to_be_false()
+
+        loaded_review = yield Review.objects.get(review3._id)
+        expect(loaded_review.is_complete).to_be_true()
+        expect(loaded_review.is_active).to_be_true()
 
     @gen_test
     def test_cant_complete_review_twice(self):
