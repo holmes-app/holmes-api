@@ -95,6 +95,44 @@ class TestPageHandler(ApiTestCase):
         expect(response.body).to_equal(str(page.uuid))
 
     @gen_test
+    def test_when_url_already_exists_with_slash(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain, url="http://test.com/whatever/")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': "http://test.com/whatever"
+            })
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
+
+        page_count = yield Page.objects.filter(url="http://test.com/whatever").count()
+        expect(page_count).to_equal(0)
+
+    @gen_test
+    def test_when_url_already_exists_without_slash(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain, url="http://test.com/whatever")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': "http://test.com/whatever/"
+            })
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
+
+        page_count = yield Page.objects.filter(url="http://test.com/whatever/").count()
+        expect(page_count).to_equal(0)
+
+    @gen_test
     def test_get_page_not_found(self):
 
         try:
