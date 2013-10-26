@@ -38,3 +38,11 @@ class TestDomain(ApiTestCase):
             domain._id: 2,
             domain2._id: 3
         })
+
+    @gen_test
+    def test_can_convert_to_dict(self):
+        domain = yield DomainFactory.create()
+        domain_dict = domain.to_dict()
+
+        expect(domain.url).to_equal(domain_dict['url'])
+        expect(domain.name).to_equal(domain_dict['name'])
