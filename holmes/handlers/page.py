@@ -72,14 +72,6 @@ class PageHandler(BaseHandler):
         self.write(str(page.uuid))
         self.finish()
 
-    def options(self):
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT')
-        self.set_header('Access-Control-Allow-Headers', 'Accept, Content-Type')
-        self.set_status(200)
-        self.write('OK')
-        self.finish()
-
     @gen.coroutine
     def get(self, uuid=''):
         uuid = UUID(uuid)
@@ -170,9 +162,4 @@ class PagesHandler(BaseHandler):
             yield Page.objects.bulk_insert(pages_to_add)
 
         self.write(str(len(pages_to_add)))
-        self.finish()
-
-    def options(self):
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.write('OK')
         self.finish()

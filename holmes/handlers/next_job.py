@@ -17,8 +17,8 @@ class NextJobHandler(RequestHandler):
     @gen.coroutine
     def post(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
-        query = Q(last_review__is_null=True) | (
-            Q(last_review__is_null=False, last_review_date__is_null=False, last_review_date__lt=dt)
+        query = Q(last_review_date__is_null=True) | (
+            Q(last_review_date__is_null=False, last_review_date__lt=dt)
         )
         pages_in_need_of_review = yield Page.objects.filter(query) \
                                                     .order_by('added_date').find_all()

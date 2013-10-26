@@ -27,9 +27,29 @@ class DomainsHandler(BaseHandler):
             result.append({
                 "url": domain.url,
                 "name": domain.name,
-                "violationCount": violations_per_domain.get(domain.name, 0),
-                "pageCount": pages_per_domain.get(domain.name, 0)
+                "violationCount": violations_per_domain.get(domain._id, 0),
+                "pageCount": pages_per_domain.get(domain._id, 0)
             })
 
         self.write_json(result)
+        self.finish()
+
+
+class DomainDetailsHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self, domain_name):
+        domain = yield Domain.objects.get(name=domain_name)
+
+        if not domain:
+            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
+            self.finish()
+            return
+
+        domain_json = {
+            "name": domain.name,
+            "url": domain.url
+        }
+
+        self.write_json(domain_json)
         self.finish()

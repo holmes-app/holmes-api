@@ -40,7 +40,7 @@ class Review(Document):
 
         from holmes.models.violation import Violation  # to avoid circular dependency
 
-        violation = Violation(key=key, title=title, description=description, points=points)
+        violation = Violation(key=key, title=title, description=description, points=int(float(points)))
 
         self.violations.append(violation)
 
