@@ -30,7 +30,10 @@ class NextJobHandler(RequestHandler):
 
         page = pages_in_need_of_review[0]
 
+        yield page.load_references(['domain'])
+
         review = yield Review.objects.create(
+            domain=page.domain,
             page=page,
             facts=[],
             violations=[]

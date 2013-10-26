@@ -4,7 +4,7 @@
 import factory
 from tornado.concurrent import return_future
 
-from holmes.models import Domain, Page, Review, Worker
+from holmes.models import Domain, Page, Review, Worker, Violation
 from uuid import uuid4
 
 
@@ -56,6 +56,28 @@ class ReviewFactory(MotorEngineFactory):
     created_date = None
     completed_date = None
     page = None
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        if 'page' in kwargs and kwargs['page'] is not None:
+            kwargs['domain'] = kwargs['page'].domain
+
+        if 'number_of_violations' in kwargs:
+            number_of_violations = kwargs['number_of_violations']
+            del kwargs['number_of_violations']
+
+            violations = []
+            for i in range(number_of_violations):
+                violations.append(Violation(
+                    key="violation.%d" % i,
+                    title="title %d" % i,
+                    description="description %d" % i,
+                    points=i
+                ))
+
+            kwargs['violations'] = violations
+
+        return kwargs
 
 
 class WorkerFactory(MotorEngineFactory):

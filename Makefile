@@ -43,5 +43,5 @@ run_daemon:
 run:
 	@holmes-api -vvv -c ./holmes/config/local.conf
 
-worker: mongo
+worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf

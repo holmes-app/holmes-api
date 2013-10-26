@@ -11,6 +11,7 @@ from motorengine import (
 
 
 class Review(Document):
+    domain = ReferenceField('holmes.models.domain.Domain', required=True)
     page = ReferenceField('holmes.models.page.Page', required=True)
     facts = ListField(EmbeddedDocumentField('holmes.models.fact.Fact'))
     violations = ListField(EmbeddedDocumentField('holmes.models.violation.Violation'))

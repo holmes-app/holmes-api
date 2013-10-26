@@ -5,6 +5,7 @@ from tornado.concurrent import return_future
 from motorengine import Document, URLField, StringField
 
 from holmes.models.page import Page
+from holmes.models.review import Review
 
 
 class Domain(Document):
@@ -18,9 +19,26 @@ class Domain(Document):
         }
 
     @classmethod
+    def handle_get_violations_per_domain(cls, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            domains = {}
+            for domain in arguments[0]:
+                domains[domain['domain']] = domain['count']
+            callback(domains)
+
+        return handle
+
+    @classmethod
     @return_future
     def get_violations_per_domain(cls, callback=None):
-        callback({})
+        Review.objects.aggregate.raw([
+            {"$match": {"is_active": True}},
+            {"$unwind": "$violations"},
+            {"$group": {"_id": {"domain": "$domain"}, "count": {"$sum": 1}}}
+        ]).fetch(callback=cls.handle_get_violations_per_domain(callback))
 
     @classmethod
     def handle_get_pages_per_domain(cls, callback):

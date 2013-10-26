@@ -8,7 +8,7 @@ from tornado.testing import gen_test
 
 from holmes.models import Domain
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory
+from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestDomain(ApiTestCase):
@@ -47,3 +47,27 @@ class TestDomain(ApiTestCase):
 
         expect(domain.url).to_equal(domain_dict['url'])
         expect(domain.name).to_equal(domain_dict['name'])
+
+    def test_can_get_violations_per_domain(self):
+        domain = yield DomainFactory.create()
+        domain2 = yield DomainFactory.create()
+        yield DomainFactory.create()
+
+        page = yield PageFactory.create(domain=domain)
+        page2 = yield PageFactory.create(domain=domain)
+        page3 = yield PageFactory.create(domain=domain2)
+        page4 = yield PageFactory.create(domain=domain2)
+        page5 = yield PageFactory.create(domain=domain2)
+
+        yield ReviewFactory.create(page=page, number_of_violations=40, is_active=True, is_complete=True)
+        yield ReviewFactory.create(page=page2, number_of_violations=20, is_active=True, is_complete=True)
+        yield ReviewFactory.create(page=page3, number_of_violations=15, is_active=True, is_complete=True)
+        yield ReviewFactory.create(page=page4, number_of_violations=25, is_active=True, is_complete=True)
+        yield ReviewFactory.create(page=page5, number_of_violations=50, is_active=True, is_complete=True)
+
+        violations_per_domain = yield Domain.get_violations_per_domain()
+
+        expect(violations_per_domain).to_be_like({
+            domain._id: 60,
+            domain2._id: 90
+        })
