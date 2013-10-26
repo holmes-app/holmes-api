@@ -25,6 +25,7 @@ class TestDomain(ApiTestCase):
     def test_can_get_pages_per_domain(self):
         domain = yield DomainFactory.create()
         domain2 = yield DomainFactory.create()
+        yield DomainFactory.create()
 
         yield PageFactory.create(domain=domain)
         yield PageFactory.create(domain=domain)
