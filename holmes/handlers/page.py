@@ -71,6 +71,7 @@ class PageHandler(BaseHandler):
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT')
         self.set_header('Access-Control-Allow-Headers', 'Accept, Content-Type')
         self.set_status(200)
+        self.write('OK')
         self.finish()
 
     @gen.coroutine
@@ -90,7 +91,7 @@ class PageHandler(BaseHandler):
             "url": page.url
         }
 
-        self.write(page_json)  # dumps(page)
+        self.write(page_json)
         self.finish()
 
 
