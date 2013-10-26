@@ -129,13 +129,15 @@ class Reviewer(object):
         if len(urls) == 1:
             post_url = self.get_url('/page')
             data = {
-                'url': urls[0]
+                'url': urls[0],
+                'origin_uuid': str(self.page_uuid)
             }
             error_message = "Could not enqueue page '" + urls[0] + "'! Status Code: %d, Error: %s"
         else:
             post_url = self.get_url('/pages')
             data = {
-                "url": urls
+                "url": urls,
+                'origin_uuid': str(self.page_uuid)
             }
             error_message = "Could not enqueue the " + str(len(urls)) + " pages sent! Status Code: %d, Error: %s"
 

@@ -442,7 +442,7 @@ class TestReview(ApiTestCase):
         reviewer.enqueue('http://globo.com')
         mock_post.assert_called_once_with(
             '%spage' % reviewer.api_url,
-            data={'url': 'http://globo.com'}
+            data={'url': 'http://globo.com', 'origin_uuid': str(reviewer.page_uuid)}
             )
 
     @patch('requests.post')
@@ -452,7 +452,8 @@ class TestReview(ApiTestCase):
         reviewer.enqueue('http://globo.com', 'http://g1.globo.com')
         mock_post.assert_called_once_with(
             '%spages' % reviewer.api_url,
-            data={'url': ('http://globo.com', 'http://g1.globo.com')}
+            data={'url': ('http://globo.com', 'http://g1.globo.com'),
+                  'origin_uuid': str(reviewer.page_uuid)}
             )
 
     @patch('requests.post')

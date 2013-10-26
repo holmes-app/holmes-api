@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
-from ujson import loads
 
+from ujson import loads
 from tornado import gen
 from motorengine import Q
 import logging
@@ -18,8 +18,8 @@ class PageHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         post_data = loads(self.request.body)
-
         url = post_data['url']
+        origin_uuid = self.get_arguments('origin_uuid', None)
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
@@ -63,6 +63,12 @@ class PageHandler(BaseHandler):
 
         page = yield Page.objects.create(url=url, domain=domain)
 
+        if origin_uuid:
+            origin = yield Page.objects.get(uuid=origin_uuid)
+            if origin:
+                page.origin = origin
+                yield page.save()
+
         self.write(str(page.uuid))
         self.finish()
 
@@ -100,6 +106,7 @@ class PagesHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
+        origin_uuid = self.get_arguments('origin_uuid', None)
 
         if not urls:
             self.set_status(200)
@@ -138,6 +145,11 @@ class PagesHandler(BaseHandler):
         existing_pages_dict = dict([(page.url, page) for page in existing_pages])
 
         pages_to_add = []
+        origin = None
+        if origin_uuid:
+            origin = yield Page.objects.get(uuid=origin_uuid)
+            if origin:
+                logging.debug("Adding URLs from Origin: %s" % origin.url)
 
         for url in urls:
             if url in existing_pages_dict:
@@ -146,7 +158,10 @@ class PagesHandler(BaseHandler):
             domain = all_domains_dict[domain_name]
 
             logging.debug("Adding URL: %s" % url)
-            pages_to_add.append(Page(url=url, domain=domain))
+            if origin:
+                pages_to_add.append(Page(url=url, domain=domain, origin=origin))
+            else:
+                pages_to_add.append(Page(url=url, domain=domain))
 
         if domains_to_add:
             yield Domain.objects.bulk_insert(domains_to_add)
