@@ -4,6 +4,7 @@
 from datetime import datetime
 from uuid import UUID
 
+import logging
 from tornado.web import RequestHandler
 from tornado import gen
 from ujson import dumps
@@ -48,11 +49,13 @@ class CompleteReviewHandler(BaseReviewHandler):
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
+            logging.debug('Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
 
         if review.is_complete:
             self.set_status(400, 'Review with uuid %s is already completed!' % review_uuid)
+            logging.debug('Review with uuid %s is already completed!' % review_uuid)
             self.finish()
             return
 

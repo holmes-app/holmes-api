@@ -68,6 +68,7 @@ class LinkCrawlerValidator(Validator):
                     'This can lead your site to lose rating with Search Engines and is misleading to users.') % url,
                 points=100
             )
+            return False
 
         if status == 302 or status == 307:
             self.add_violation(
@@ -78,9 +79,12 @@ class LinkCrawlerValidator(Validator):
                 'Use 301 instead. ' % (url, status),
                 points=100
             )
+            return False
+        return True
 
     def send_url(self, url):
-        self.url_buffer.append(url)
+        if self.test_url(url):
+            self.url_buffer.append(url)
 
         if len(self.url_buffer) > self.config.MAX_ENQUEUE_BUFFER_LENGTH:
             self.flush()
