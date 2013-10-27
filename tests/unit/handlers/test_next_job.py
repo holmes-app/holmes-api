@@ -100,6 +100,9 @@ class TestNextJobHandler(ApiTestCase):
         expect(loads(response.body)['page']).not_to_be_null()
         expect(loads(response.body)['page']).to_equal(str(page_one.uuid))
 
+        page_one.last_review_date = datetime.now()
+        yield page_one.save()
+
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',

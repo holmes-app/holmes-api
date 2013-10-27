@@ -46,9 +46,15 @@ class DomainDetailsHandler(BaseHandler):
             self.finish()
             return
 
+        page_count = yield domain.get_page_count()
+        violation_count, violation_points = yield domain.get_violation_data()
+
         domain_json = {
             "name": domain.name,
-            "url": domain.url
+            "url": domain.url,
+            "pageCount": page_count,
+            "violationCount": violation_count,
+            "violationPoints": violation_points
         }
 
         self.write_json(domain_json)

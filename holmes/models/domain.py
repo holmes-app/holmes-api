@@ -59,3 +59,44 @@ class Domain(Document):
         Page.objects.aggregate.raw([
             {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
         ]).fetch(callback=cls.handle_get_pages_per_domain(callback))
+
+    @classmethod
+    def handle_get_page_count(cls, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback(0)
+
+            callback(arguments[0][0]['count'])
+
+        return handle
+
+    @return_future
+    def get_page_count(self, callback=None):
+        Page.objects.aggregate.raw([
+            {"$match": {"domain": self._id}},
+            {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
+        ]).fetch(callback=self.handle_get_page_count(callback))
+
+    @classmethod
+    def handle_get_violation_data(cls, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback(0, 0)
+
+            callback((arguments[0][0]['count'], arguments[0][0]['points']))
+
+        return handle
+
+    @return_future
+    def get_violation_data(self, callback=None):
+        Review.objects.aggregate.raw([
+            {"$match": {"domain": self._id, "is_active": True}},
+            {"$unwind": "$violations"},
+            {"$group": {"_id": "$domain", "count": {"$sum": 1}, "points": {"$sum": "$violations.points"}}}
+        ]).fetch(callback=self.handle_get_violation_data(callback))

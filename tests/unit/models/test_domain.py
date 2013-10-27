@@ -48,6 +48,7 @@ class TestDomain(ApiTestCase):
         expect(domain.url).to_equal(domain_dict['url'])
         expect(domain.name).to_equal(domain_dict['name'])
 
+    @gen_test
     def test_can_get_violations_per_domain(self):
         domain = yield DomainFactory.create()
         domain2 = yield DomainFactory.create()
@@ -71,3 +72,40 @@ class TestDomain(ApiTestCase):
             domain._id: 60,
             domain2._id: 90
         })
+
+    @gen_test
+    def test_can_get_page_count(self):
+        domain = yield DomainFactory.create()
+        domain2 = yield DomainFactory.create()
+        yield DomainFactory.create()
+
+        yield PageFactory.create(domain=domain)
+        yield PageFactory.create(domain=domain)
+        yield PageFactory.create(domain=domain2)
+        yield PageFactory.create(domain=domain2)
+        yield PageFactory.create(domain=domain2)
+
+        pages_for_domain = yield domain.get_page_count()
+        pages_for_domain_2 = yield domain2.get_page_count()
+
+        expect(pages_for_domain).to_equal(2)
+        expect(pages_for_domain_2).to_equal(3)
+
+    @gen_test
+    def test_can_get_violation_count_and_points(self):
+        domain = yield DomainFactory.create()
+        domain2 = yield DomainFactory.create()
+        yield DomainFactory.create()
+
+        page = yield PageFactory.create(domain=domain)
+        page2 = yield PageFactory.create(domain=domain)
+        page3 = yield PageFactory.create(domain=domain2)
+
+        yield ReviewFactory.create(page=page, is_active=True, number_of_violations=20)
+        yield ReviewFactory.create(page=page2, is_active=True, number_of_violations=10)
+        yield ReviewFactory.create(page=page3, is_active=True, number_of_violations=30)
+
+        violation_count, violation_points = yield domain.get_violation_data()
+
+        expect(violation_count).to_equal(30)
+        expect(violation_points).to_equal(235)

@@ -254,7 +254,6 @@ class TestPagesHandler(ApiTestCase):
         else:
             assert False, 'Should not have gotten this far'
 
-    @gen_test
     def test_page_will_return_options(self):
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -262,7 +261,6 @@ class TestPagesHandler(ApiTestCase):
         )
 
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('OK')
         expect('Access-Control-Allow-Origin' in response.headers).to_be_true()
         expect('Access-Control-Allow-Methods' in response.headers).to_be_true()
         expect('Access-Control-Allow-Headers' in response.headers).to_be_true()
@@ -278,6 +276,5 @@ class TestPagesHandler(ApiTestCase):
         )
 
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('OK')
         expect('Access-Control-Allow-Origin' in response.headers).to_be_true()
         expect(response.headers['Access-Control-Allow-Origin']).to_be_like('*')
