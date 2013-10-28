@@ -32,3 +32,16 @@ class TestWorker(ApiTestCase):
         worker = yield WorkerFactory.create(current_review=review)
 
         expect(worker.current_review.page).to_equal(page)
+
+    def test_worker_to_dict(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+        worker = yield WorkerFactory.create(current_review=review)
+
+        worker_dict = worker.to_dict()
+
+        expect(worker_dict['uuid']).to_equal(str(worker.uuid))
+        expect(worker_dict['last_ping']).to_equal(str(self.last_ping))
+        expect(worker_dict['current_review']).to_equal(str(review.uuid))
+        expect(worker_dict['working']).to_be_true()

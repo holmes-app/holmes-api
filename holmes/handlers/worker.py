@@ -3,15 +3,15 @@
 
 from datetime import datetime, timedelta
 
-from tornado.web import RequestHandler
 from tornado import gen
 from uuid import UUID
 from ujson import dumps
 
 from holmes.models.worker import Worker
+from holmes.handlers import BaseHandler
 
 
-class WorkerHandler(RequestHandler):
+class WorkerHandler(BaseHandler):
 
     @gen.coroutine
     def post(self, uuid):
@@ -32,7 +32,7 @@ class WorkerHandler(RequestHandler):
         self.finish()
 
 
-class WorkersHandler(RequestHandler):
+class WorkersHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):

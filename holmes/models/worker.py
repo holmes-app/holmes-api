@@ -18,9 +18,14 @@ class Worker(Document):
     def __repr__(self):
         return str(self)
 
+    @property
+    def working(self):
+        return self.current_review != None
+
     def to_dict(self):
         return {
             'uuid': str(self.uuid),
             'last_ping': str(self.last_ping),
-            'current_review': self.current_review and str(self.current_review.uuid) or None
+            'current_review': self.current_review and str(self.current_review.uuid) or None,
+            'working': self.working
         }
