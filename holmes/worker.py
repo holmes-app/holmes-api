@@ -5,7 +5,7 @@ import sys
 import time
 import logging
 
-import traceback
+from ujson import dumps
 from uuid import uuid4
 from os.path import abspath, dirname, join
 from ujson import loads
@@ -50,6 +50,7 @@ class HolmesWorker(object):
 
     def _do_work(self):
         if self._ping_api():
+            err = None
             job = self._load_next_job()
             if job:
                 self._start_job(job['review'])
@@ -57,11 +58,10 @@ class HolmesWorker(object):
                 try:
                     self._start_reviewer(job=job)
                 except InvalidReviewError:
-                    err = sys.exc_info()[1]
-                    logging.error("Fail to review %s: %s" % (job['url'], str(err)))
-                    self._complete_job(job['review'], error=str(err))
-                else:
-                    self._complete_job(job['review'])
+                    err = str(sys.exc_info()[1])
+                    logging.error("Fail to review %s: %s" % (job['url'], err))
+
+                self._complete_job(job['review'], error=err)
 
     def _start_reviewer(self, job):
         if job:
@@ -139,7 +139,7 @@ class HolmesWorker(object):
         try:
             response = requests.post('%s/worker/%s/review/%s/complete' %
                                     (self.config.HOLMES_API_URL, self.uuid, review_uuid),
-                                     data={'error': error})
+                                     data=dumps({'error': error}))
             return ('OK' == response.text)
         except ConnectionError:
             logging.error('Fail to complete worker.')

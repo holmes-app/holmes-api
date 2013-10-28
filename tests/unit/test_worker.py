@@ -118,7 +118,7 @@ class WorkerTestCase(ApiTestCase):
         expect(worker._start_job.called).to_be_true()
         worker._start_job.assert_called_once_with(self.ZERO_UUID)
         worker._start_reviewer.assert_called_once_with(job=job)
-        worker._complete_job.assert_called_once_with(self.ZERO_UUID)
+        worker._complete_job.assert_called_once_with(self.ZERO_UUID, error=None)
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
@@ -237,7 +237,7 @@ class WorkerTestCase(ApiTestCase):
         worker._complete_job(self.ZERO_UUID)
         requests_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID),
-            data={'error': None})
+            data='{"error":null}')
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):

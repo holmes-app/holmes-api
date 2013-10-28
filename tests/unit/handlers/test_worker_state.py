@@ -150,3 +150,28 @@ class TestWorkerStateHandler(ApiTestCase):
             expect(err.response.reason).to_be_like('Unknown Review')
         else:
             assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_can_complete_work_to_review_with_error(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+        worker = yield WorkerFactory.create(current_review=review)
+
+        url = self.get_url(
+            '/worker/%s/review/%s/complete' % (
+                worker.uuid,
+                review.uuid
+            )
+        )
+
+        yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='{"error":"Invalid Url"}'
+        )
+
+        review = yield Review.objects.get(uuid=review.uuid)
+        expect(review).not_to_be_null()
+        expect(review.failed).to_be_true()
+        expect(review.failure_message).to_equal('Invalid Url')

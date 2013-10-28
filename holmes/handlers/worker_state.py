@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ujson import loads
 from tornado.web import RequestHandler
 from tornado import gen
 
@@ -35,6 +36,13 @@ class WorkerStateHandler(RequestHandler):
             worker.current_review = review
 
         if 'complete' == state:
+            if self.request.body:
+                post_data = loads(self.request.body)
+                error = post_data['error']
+                if error:
+                    review.failure_message = error
+                    yield review.save()
+
             worker.current_review = None
 
         yield worker.save()

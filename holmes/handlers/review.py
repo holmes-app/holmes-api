@@ -62,9 +62,6 @@ class CompleteReviewHandler(BaseReviewHandler):
         review.is_complete = True
         review.is_active = True
         review.completed_date = datetime.now()
-        error = self.get_argument('error', default=None)
-        if error:
-            review.failure_message = error
 
         yield review.load_references(['page'])
         review.page.last_review = review
