@@ -100,7 +100,7 @@ class PagesHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
-        origin_uuid = self.get_arguments('origin_uuid', None)
+        origin_uuid = self.get_argument('origin_uuid', None)
 
         if not urls:
             self.set_status(200)

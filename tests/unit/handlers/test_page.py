@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import random
 from uuid import UUID
 from ujson import loads, dumps
 
@@ -223,6 +224,35 @@ class TestPagesHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(int(response.body)).to_equal(1000)
+
+    @gen_test
+    def test_can_save_with_origin(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        origin_domain = yield DomainFactory.create()
+        origin_page = yield PageFactory.create(domain=origin_domain, url="http://globo.com/")
+
+        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
+
+        response = yield self.http_client.fetch(
+            self.get_url('/pages'),
+            method='POST',
+            body='&'.join(['url=%s' % url for url in urls]) +
+                 '&origin_uuid=%s' % str(origin_page.uuid)
+        )
+
+        expect(response.code).to_equal(200)
+        expect(int(response.body)).to_equal(1000)
+
+        random_page_int = random.randint(1, 1000)
+        random_url = 'http://%d.globo.com/%d.html' % (random_page_int, random_page_int)
+
+        random_page = yield Page.objects.get(url=random_url)
+        yield random_page.load_references(['origin'])
+
+        expect(random_page.origin).not_to_be_null()
+        expect(random_page.origin.uuid).to_equal(origin_page.uuid)
 
     @gen_test
     def test_saves_only_new_pages(self):
