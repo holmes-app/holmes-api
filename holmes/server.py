@@ -11,7 +11,7 @@ from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import CreateViolationHandler
 from holmes.handlers.review import ReviewHandler, CompleteReviewHandler
 from holmes.handlers.next_job import NextJobHandler
-from holmes.handlers.domains import DomainsHandler, DomainDetailsHandler
+from holmes.handlers.domains import DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler
 
 
 def main():
@@ -33,6 +33,7 @@ class HolmesApiServer(Server):
             (r'/pages/?', PagesHandler),
             (r'/domains/?', DomainsHandler),
             (r'/domains/([^/]+)/?', DomainDetailsHandler),
+            (r'/domains/([^/]+)/violations-per-day/?', DomainViolationsPerDayHandler),
             (r'/next/?', NextJobHandler),
         ]
 

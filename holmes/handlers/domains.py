@@ -59,3 +59,26 @@ class DomainDetailsHandler(BaseHandler):
 
         self.write_json(domain_json)
         self.finish()
+
+
+class DomainViolationsPerDayHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self, domain_name):
+        domain = yield Domain.objects.get(name=domain_name)
+
+        if not domain:
+            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
+            self.finish()
+            return
+
+        violations_per_day = yield domain.get_violations_per_day()
+
+        domain_json = {
+            "name": domain.name,
+            "url": domain.url,
+            "violations": violations_per_day
+        }
+
+        self.write_json(domain_json)
+        self.finish()

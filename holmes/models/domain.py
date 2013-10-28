@@ -60,8 +60,7 @@ class Domain(Document):
             {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
         ]).fetch(callback=cls.handle_get_pages_per_domain(callback))
 
-    @classmethod
-    def handle_get_page_count(cls, callback):
+    def handle_get_page_count(self, callback):
         def handle(*arguments, **kwargs):
             if len(arguments) > 1 and arguments[1]:
                 raise arguments[1]
@@ -80,8 +79,7 @@ class Domain(Document):
             {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
         ]).fetch(callback=self.handle_get_page_count(callback))
 
-    @classmethod
-    def handle_get_violation_data(cls, callback):
+    def handle_get_violation_data(self, callback):
         def handle(*arguments, **kwargs):
             if len(arguments) > 1 and arguments[1]:
                 raise arguments[1]
@@ -101,3 +99,48 @@ class Domain(Document):
             {"$unwind": "$violations"},
             {"$group": {"_id": "$domain", "count": {"$sum": 1}, "points": {"$sum": "$violations.points"}}}
         ]).fetch(callback=self.handle_get_violation_data(callback))
+
+    def handle_get_violations_per_day(self, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback([])
+                return
+
+            result = {}
+
+            for day in arguments[0]:
+                dt = "%d-%d-%d" % (day['year'], day['month'], day['day'])
+                result[dt] = {
+                    "violation_count": day['count'],
+                    "violation_points": day['points']
+                }
+
+            callback(result)
+
+        return handle
+
+    @return_future
+    def get_violations_per_day(self, callback=None):
+        Review.objects.aggregate.raw([
+            {"$match": {"domain": self._id, "is_complete": True}},
+            {"$project": {
+                "domain": 1,
+                "violations": 1,
+                "year": {"$year": "$completed_date"},
+                "month": {"$month": "$completed_date"},
+                "day": {"$dayOfMonth": "$completed_date"},
+            }},
+            {"$unwind": "$violations"},
+            {
+                "$group": {
+                    "_id": {
+                        "domain": "$domain", "year": "$year", "month": "$month", "day": "$day"
+                    },
+                    "count": {"$sum": 1},
+                    "points": {"$sum": "$violations.points"}
+                }
+            }
+        ]).fetch(callback=self.handle_get_violations_per_day(callback))

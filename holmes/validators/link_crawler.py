@@ -59,6 +59,7 @@ class LinkCrawlerValidator(Validator):
 
     def test_url(self, url):
         status = self.get_status_code(url)
+        raw_response = self.get_raw_response(url)
 
         if status > 399:
             self.add_violation(
@@ -80,6 +81,10 @@ class LinkCrawlerValidator(Validator):
                 points=100
             )
             return False
+
+        if raw_response.url.rstrip('/') != url.rstrip('/'):
+            return False
+
         return True
 
     def send_url(self, url):

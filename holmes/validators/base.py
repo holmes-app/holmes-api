@@ -36,6 +36,9 @@ class Validator(object):
     def get_response(self, url):
         return self.reviewer.get_response(url)
 
+    def get_raw_response(self, url):
+        return self.reviewer.raw_responses.get(url, None)
+
     def get_status_code(self, url):
         return self.reviewer.get_status_code(url)
 

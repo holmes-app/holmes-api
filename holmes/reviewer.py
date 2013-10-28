@@ -42,6 +42,7 @@ class Reviewer(object):
         self.validators = validators
 
         self.responses = {}
+        self.raw_responses = {}
         self.status_codes = {}
 
     def review(self):
@@ -70,6 +71,7 @@ class Reviewer(object):
 
         try:
             response = requests.get(url)
+            self.raw_responses[url] = response
         except Exception:
             result = {
                 'url': url,
@@ -106,6 +108,7 @@ class Reviewer(object):
             try:
                 response = requests.request(method='GET', url=url, stream=True, timeout=10.0)
                 response.iter_lines().next()
+                self.raw_responses[url] = response
                 self.status_codes[url] = response.status_code
             except (TooManyRedirects, Timeout, HTTPError, ConnectionError, InvalidSchema):
                 err = sys.exc_info()[1]
