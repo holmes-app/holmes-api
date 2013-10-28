@@ -38,6 +38,35 @@ class TestPageHandler(ApiTestCase):
         expect(page_uuid).to_equal(page.uuid)
 
     @gen_test
+    def test_can_save_with_origin(self):
+        yield Domain.objects.delete()
+        yield Page.objects.delete()
+
+        origin_domain = yield DomainFactory.create()
+        origin_page = yield PageFactory.create(domain=origin_domain, url="http://globo.com/")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': 'http://globo.com/new_page',
+                'origin_uuid': str(origin_page.uuid)
+            })
+        )
+
+        expect(response.code).to_equal(200)
+
+        page_uuid = UUID(response.body)
+        page = yield Page.objects.get(uuid=page_uuid)
+
+        expect(page).not_to_be_null()
+        expect(page_uuid).to_equal(page.uuid)
+
+        yield page.load_references(['origin'])
+        expect(page.origin).not_to_be_null()
+        expect(page.origin.uuid).to_equal(origin_page.uuid)
+
+    @gen_test
     def test_can_save_known_domain(self):
         yield Domain.objects.create(url='http://globo.com', name='globo.com')
 

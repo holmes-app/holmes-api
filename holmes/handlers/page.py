@@ -19,7 +19,9 @@ class PageHandler(BaseHandler):
     def post(self):
         post_data = loads(self.request.body)
         url = post_data['url']
-        origin_uuid = self.get_arguments('origin_uuid', None)
+        origin_uuid = None
+        if 'origin_uuid' in post_data:
+            origin_uuid = post_data['origin_uuid']
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
