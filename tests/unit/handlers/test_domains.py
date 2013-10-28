@@ -79,6 +79,42 @@ class TestDomainDetailsHandler(ApiTestCase):
         expect(domain_details['violationPoints']).to_equal(625)
 
 
+class TestDomainReviewsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_domain_reviews(self):
+        dt = datetime(2010, 11, 12, 13, 14, 15)
+        dt2 = datetime(2011, 12, 13, 14, 15, 16)
+
+        domain = yield DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
+
+        page = yield PageFactory.create(domain=domain)
+        page2 = yield PageFactory.create(domain=domain)
+
+        yield ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=20)
+        yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
+        yield ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=30)
+        yield ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/%s/reviews/' % domain.name)
+        )
+
+        expect(response.code).to_equal(200)
+
+        domain_details = loads(response.body)
+
+        expect(domain_details['domainName']).to_equal('domain-details.com')
+        expect(domain_details['domainURL']).to_equal('http://www.domain-details.com')
+        expect(domain_details['pages']).to_length(2)
+
+        expect(domain_details['pages'][0]['url']).to_equal(page.url)
+        expect(domain_details['pages'][0]['completedDate']).to_equal(dt.toordinal())
+
+        expect(domain_details['pages'][1]['url']).to_equal(page2.url)
+        expect(domain_details['pages'][1]['completedDate']).to_equal(dt2.toordinal())
+
+
 class TestViolationsPerDayHandler(ApiTestCase):
 
     @gen_test

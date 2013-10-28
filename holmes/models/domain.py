@@ -144,3 +144,20 @@ class Domain(Document):
                 }
             }
         ]).fetch(callback=self.handle_get_violations_per_day(callback))
+
+    def handle_get_active_reviews(self, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback([])
+                return
+
+            callback(arguments[0])
+
+        return handle
+
+    @return_future
+    def get_active_reviews(self, callback=None):
+        Review.objects.filter(is_active=True, domain=self).find_all(lazy=False, callback=self.handle_get_active_reviews(callback))

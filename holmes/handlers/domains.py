@@ -82,3 +82,34 @@ class DomainViolationsPerDayHandler(BaseHandler):
 
         self.write_json(domain_json)
         self.finish()
+
+
+class DomainReviewsHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self, domain_name):
+        domain = yield Domain.objects.get(name=domain_name)
+
+        if not domain:
+            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
+            self.finish()
+            return
+
+        reviews = yield domain.get_active_reviews()
+
+        result = {
+            'domainName': domain.name,
+            'domainURL': domain.url,
+            'pages': []
+        }
+
+        for review in reviews:
+            yield review.page.load_references()
+
+            result['pages'].append({
+                "url": review.page.url,
+                "completedDate": review.completed_date.toordinal()
+            })
+
+        self.write_json(result)
+        self.finish()

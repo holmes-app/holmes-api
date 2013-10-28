@@ -141,3 +141,25 @@ class TestDomain(ApiTestCase):
             "violation_count": 30,
             "violation_points": 435
         })
+
+    @gen_test
+    def test_can_get_reviews_for_domain(self):
+        dt = datetime(2013, 10, 10, 10, 10, 10)
+        dt2 = datetime(2013, 10, 11, 10, 10, 10)
+        dt3 = datetime(2013, 10, 12, 10, 10, 10)
+
+        domain = yield DomainFactory.create()
+
+        page = yield PageFactory.create(domain=domain)
+
+        yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
+        review = yield ReviewFactory.create(
+            page=page, is_active=True, is_complete=True,
+            completed_date=dt3, number_of_violations=30)
+
+        reviews = yield domain.get_active_reviews()
+
+        expect(reviews).to_length(1)
+
+        expect(reviews[0]._id).to_equal(review._id)
