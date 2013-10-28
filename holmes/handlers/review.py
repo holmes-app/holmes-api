@@ -65,6 +65,7 @@ class CompleteReviewHandler(BaseReviewHandler):
 
         yield review.load_references(['page'])
         review.page.last_review = review
+        review.page.last_review_date = review.completed_date
         yield review.page.save()
 
         yield review.save()
