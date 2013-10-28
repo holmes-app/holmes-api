@@ -151,11 +151,19 @@ class Reviewer(object):
 
     def add_fact(self, key, value, unit='value'):
         url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
-        response = requests.post(url, data={
-            'key': key,
-            'value': value,
-            'unit': unit
-        })
+
+        try:
+            response = requests.post(url, data={
+                'key': key,
+                'value': value,
+                'unit': unit
+            })
+        except ConnectionError:
+            raise InvalidReviewError("Could not add fact '%s' to review %s! ConnectionError - %s" % (
+                key,
+                self.review_uuid,
+                url
+                ))
 
         if response.status_code > 399:
             raise InvalidReviewError("Could not add fact '%s' to review %s! Status Code: %d, Error: %s" % (
@@ -167,12 +175,20 @@ class Reviewer(object):
 
     def add_violation(self, key, title, description, points):
         url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
-        response = requests.post(url, data={
-            'key': key,
-            "title": title,
-            "description": description,
-            "points": points
-        })
+
+        try:
+            response = requests.post(url, data={
+                'key': key,
+                "title": title,
+                "description": description,
+                "points": points
+            })
+        except ConnectionError:
+            raise InvalidReviewError("Could not add violation '%s' to review %s! ConnectionError - %s" % (
+                key,
+                self.review_uuid,
+                url
+                ))
 
         if response.status_code > 399:
             raise InvalidReviewError("Could not add violation '%s' to review %s! Status Code: %d, Error: %s" % (
@@ -184,7 +200,14 @@ class Reviewer(object):
 
     def complete(self):
         url = self.get_url('/page/%s/review/%s/complete' % (self.page_uuid, self.review_uuid))
-        response = requests.post(url, data={})
+
+        try:
+            response = requests.post(url, data={})
+        except ConnectionError:
+            raise InvalidReviewError("Could not complete review %s! ConnectionError - %s" % (
+                self.review_uuid,
+                url
+                ))
 
         if response.status_code > 399:
             raise InvalidReviewError("Could not complete review %s! Status Code: %d, Error: %s" % (

@@ -280,6 +280,28 @@ class TestReview(ApiTestCase):
             else:
                 assert False, 'Shouldn not have gotten this far'
 
+    def test_reviewer_add_fact_fails_connection_error(self):
+        with patch.object(requests, 'post') as post_mock:
+            post_mock.side_effect = ConnectionError
+
+            page_uuid = uuid4()
+            review_uuid = uuid4()
+
+            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+
+            try:
+                reviewer.add_fact('key', 'value', 'unit')
+            except InvalidReviewError:
+                err = sys.exc_info()[1]
+                expect(err).to_have_an_error_message_of(
+                    "Could not add fact 'key' to review %s! ConnectionError - %s" % (
+                        review_uuid,
+                        '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
+                        )
+                )
+            else:
+                assert False, 'Shouldn not have gotten this far'
+
     def test_reviewer_add_violation(self):
         with patch.object(requests, 'post') as post_mock:
             response_mock = Mock(status_code=200, text='OK')
@@ -317,6 +339,28 @@ class TestReview(ApiTestCase):
             else:
                 assert False, 'Shouldn not have gotten this far'
 
+    def test_reviewer_add_violation_fails_connection_error(self):
+        with patch.object(requests, 'post') as post_mock:
+            post_mock.side_effect = ConnectionError
+
+            page_uuid = uuid4()
+            review_uuid = uuid4()
+
+            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+
+            try:
+                reviewer.add_violation('key', 'title', 'description', 100)
+            except InvalidReviewError:
+                err = sys.exc_info()[1]
+                expect(err).to_have_an_error_message_of(
+                    "Could not add violation 'key' to review %s! ConnectionError - %s" % (
+                        review_uuid,
+                        '%s/page/%s/review/%s/violation' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
+                        )
+                )
+            else:
+                assert False, 'Shouldn not have gotten this far'
+
     def test_reviewer_complete(self):
         with patch.object(requests, 'post') as post_mock:
             response_mock = Mock(status_code=200, text='OK')
@@ -350,6 +394,28 @@ class TestReview(ApiTestCase):
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(
                     'Could not complete review %s! Status Code: 400, Error: OK' % review_uuid
+                )
+            else:
+                assert False, 'Shouldn not have gotten this far'
+
+    def test_reviewer_complete_fails_connection_error(self):
+        with patch.object(requests, 'post') as post_mock:
+            post_mock.side_effect = ConnectionError
+
+            page_uuid = uuid4()
+            review_uuid = uuid4()
+
+            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+
+            try:
+                reviewer.complete()
+            except InvalidReviewError:
+                err = sys.exc_info()[1]
+                expect(err).to_have_an_error_message_of(
+                    "Could not complete review %s! ConnectionError - %s" % (
+                        review_uuid,
+                        '%s/page/%s/review/%s/complete' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
+                        )
                 )
             else:
                 assert False, 'Shouldn not have gotten this far'
