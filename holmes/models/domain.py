@@ -87,7 +87,8 @@ class Domain(Document):
                 raise arguments[1]
 
             if not arguments[0]:
-                callback(0, 0)
+                callback((0, 0))
+                return
 
             callback((arguments[0][0]['count'], arguments[0][0]['points']))
 
