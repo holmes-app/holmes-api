@@ -108,7 +108,8 @@ class DomainReviewsHandler(BaseHandler):
 
             result['pages'].append({
                 "url": review.page.url,
-                "completedDate": review.completed_date.toordinal()
+                "uuid": str(review.page.uuid),
+                "completedDate": review.completed_date.isoformat()
             })
 
         self.write_json(result)

@@ -109,10 +109,12 @@ class TestDomainReviewsHandler(ApiTestCase):
         expect(domain_details['pages']).to_length(2)
 
         expect(domain_details['pages'][0]['url']).to_equal(page.url)
-        expect(domain_details['pages'][0]['completedDate']).to_equal(dt.toordinal())
+        expect(domain_details['pages'][0]['uuid']).to_equal(str(page.uuid))
+        expect(domain_details['pages'][0]['completedDate']).to_equal(dt.isoformat())
 
         expect(domain_details['pages'][1]['url']).to_equal(page2.url)
-        expect(domain_details['pages'][1]['completedDate']).to_equal(dt2.toordinal())
+        expect(domain_details['pages'][1]['uuid']).to_equal(str(page2.uuid))
+        expect(domain_details['pages'][1]['completedDate']).to_equal(dt2.isoformat())
 
 
 class TestViolationsPerDayHandler(ApiTestCase):
