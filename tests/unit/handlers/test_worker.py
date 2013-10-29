@@ -96,5 +96,7 @@ class TestWorkerHandler(ApiTestCase):
 
         expect(returned_json[0]['uuid']).to_equal(str(worker.uuid))
         expect(returned_json[0]['current_review']).to_equal(str(review.uuid))
-
+        expect(returned_json[0]['working']).to_be_true()
+        expect(returned_json[0]['page_url']).to_equal(page.url)
+        expect(returned_json[0]['page_uuid']).to_equal(str(page.uuid))
 

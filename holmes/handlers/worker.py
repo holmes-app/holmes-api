@@ -40,7 +40,15 @@ class WorkersHandler(BaseHandler):
 
         workers_json = []
         for worker in workers:
-            workers_json.append(worker.to_dict())
+            worker_dict = worker.to_dict()
+
+            if worker.working:
+                yield worker.current_review.load_references(['page'])
+                page = worker.current_review.page
+                if page:
+                    worker_dict['page_url'] = page.url
+                    worker_dict['page_uuid'] = str(page.uuid)
+            workers_json.append(worker_dict)
 
         self.write(dumps(workers_json))
         self.finish()
