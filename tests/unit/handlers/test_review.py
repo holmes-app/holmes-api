@@ -3,14 +3,14 @@
 
 import sys
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from ujson import loads
 
-from holmes.models import Review
+from holmes.models import Review, Page, Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -135,7 +135,12 @@ class TestCompleteReviewHandler(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         page2 = yield PageFactory.create(domain=domain)
 
-        review = yield ReviewFactory.create(page=page, is_complete=True, is_active=True)
+        review = yield ReviewFactory.create(
+            page=page,
+            is_complete=True,
+            is_active=True,
+            created_date=dt-timedelta(days=1))
+
         review2 = yield ReviewFactory.create(page=page, is_complete=False, is_active=False)
         review3 = yield ReviewFactory.create(page=page2, is_complete=True, is_active=True)
 
@@ -154,16 +159,19 @@ class TestCompleteReviewHandler(ApiTestCase):
         yield loaded_review.load_references(['page'])
         yield loaded_review.page.load_references(['last_review'])
 
+        expect(loaded_review).not_to_be_null()
         expect(loaded_review.is_complete).to_be_true()
         expect(loaded_review.is_active).to_be_true()
         expect(loaded_review.completed_date).to_be_greater_or_equal_to(dt)
         expect(loaded_review.page.last_review._id).to_equal(review2._id)
 
         loaded_review = yield Review.objects.get(review._id)
+        expect(loaded_review).not_to_be_null()
         expect(loaded_review.is_complete).to_be_true()
         expect(loaded_review.is_active).to_be_false()
 
         loaded_review = yield Review.objects.get(review3._id)
+        expect(loaded_review).not_to_be_null()
         expect(loaded_review.is_complete).to_be_true()
         expect(loaded_review.is_active).to_be_true()
 
@@ -193,3 +201,47 @@ class TestCompleteReviewHandler(ApiTestCase):
             expect(err.response.reason).to_be_like('Review with uuid %s is already completed!' % str(review.uuid))
         else:
             assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_same_day_review_removes_older(self):
+        dt = datetime.now()
+
+        yield Page.objects.delete()
+        yield Domain.objects.delete()
+        yield Review.objects.delete()
+
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review_yesterday = yield ReviewFactory.create(page=page, created_date=(dt-timedelta(days=1)))
+        review_old = yield ReviewFactory.create(page=page, created_date=dt)
+
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                str(review_old.uuid)
+            )
+        )
+        response = yield self.http_client.fetch(url, method='POST', body='')
+        expect(response.code).to_equal(200)
+
+        review_new = yield ReviewFactory.create(page=page, created_date=dt)
+
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                str(review_new.uuid)
+            )
+        )
+        response = yield self.http_client.fetch(url, method='POST', body='')
+        expect(response.code).to_equal(200)
+
+        reviews = yield Review.objects.filter(page=page).find_all()
+
+        reviews_uuids = []
+        for review in reviews:
+            reviews_uuids.append(str(review.uuid))
+
+        expect(reviews).to_length(2)
+        expect(reviews_uuids).to_include(str(review_yesterday.uuid))
+        expect(reviews_uuids).to_include(str(review_new.uuid))
+        expect(reviews_uuids).not_to_include(str(review_old.uuid))

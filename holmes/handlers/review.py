@@ -67,8 +67,9 @@ class CompleteReviewHandler(BaseReviewHandler):
         review.page.last_review = review
         review.page.last_review_date = review.completed_date
         yield review.page.save()
-
         yield review.save()
+
+        self._remove_older_reviews_with_same_day(review)
 
         query = Q(page=review.page) & Q(uuid__ne=review_uuid)
 
@@ -78,3 +79,10 @@ class CompleteReviewHandler(BaseReviewHandler):
 
         self.write('OK')
         self.finish()
+
+    @gen.coroutine
+    def _remove_older_reviews_with_same_day(self, review):
+        dt = datetime.now()
+        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        query = Q(page=review.page) & Q(uuid__ne=review.uuid) & Q(created_date__gt=dt)
+        yield Review.objects.filter(query).delete()
