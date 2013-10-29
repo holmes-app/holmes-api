@@ -45,3 +45,18 @@ run:
 
 worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf
+
+kill_workers:
+	@ps aux | awk '(/.+holmes-worker.+/ && $$0 !~ /awk/){ system("kill -9 "$$2) }'
+
+workers: kill_workers
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &
+	@holmes-worker -c ./holmes/config/local.conf &

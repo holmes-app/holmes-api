@@ -6,7 +6,7 @@ from uuid import uuid4
 from motorengine import (
     Document, ReferenceField, DateTimeField,
     ListField, EmbeddedDocumentField, BooleanField,
-    UUIDField, StringField
+    UUIDField, StringField, IntField
 )
 
 
@@ -15,6 +15,7 @@ class Review(Document):
     page = ReferenceField('holmes.models.page.Page', required=True)
     facts = ListField(EmbeddedDocumentField('holmes.models.fact.Fact'))
     violations = ListField(EmbeddedDocumentField('holmes.models.violation.Violation'))
+    violation_count = IntField(required=True, default=0, on_save=lambda doc, creating: len(doc.violations))
 
     is_active = BooleanField(required=True, default=False)
     is_complete = BooleanField(required=True, default=False)
@@ -58,7 +59,7 @@ class Review(Document):
 
     @property
     def failed(self):
-        return self.failure_message != None
+        return self.failure_message is not None
 
     def __str__(self):
         return str(self.uuid)

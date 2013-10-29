@@ -88,6 +88,9 @@ class DomainReviewsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self, domain_name):
+        current_page = int(self.get_argument('current_page', 1))
+        page_size = 10
+
         domain = yield Domain.objects.get(name=domain_name)
 
         if not domain:
@@ -95,11 +98,13 @@ class DomainReviewsHandler(BaseHandler):
             self.finish()
             return
 
-        reviews = yield domain.get_active_reviews()
+        review_count = yield domain.get_active_review_count()
+        reviews = yield domain.get_active_reviews(current_page=current_page, page_size=page_size)
 
         result = {
             'domainName': domain.name,
             'domainURL': domain.url,
+            'pageCount': review_count,
             'pages': [],
             'pagesWithoutReview': []
         }
@@ -110,15 +115,23 @@ class DomainReviewsHandler(BaseHandler):
             result['pages'].append({
                 "url": review.page.url,
                 "uuid": str(review.page.uuid),
+                "violationCount": len(review.violations),
                 "completedDate": review.completed_date.isoformat()
             })
 
-        pages = yield Page.objects.filter(domain=domain, last_review__is_null=True).find_all()
+        pages = yield Page.objects.filter(domain=domain, last_review_date__is_null=True).limit(10).find_all()
         for page in pages:
             result['pagesWithoutReview'].append({
                 'uuid': str(page.uuid),
                 'url': page.url
             })
+
+        page_count = yield Page.objects.filter(domain=domain, last_review_date__is_null=True).count()
+        page_count = page_count - len(pages)
+        if page_count <= 0:
+            page_count = 0
+
+        result['pagesWithoutReviewCount'] = page_count
 
         self.write_json(result)
         self.finish()

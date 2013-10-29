@@ -22,7 +22,7 @@ class NextJobHandler(RequestHandler):
         query = Q(last_review__is_null=True) | (
             Q(last_review_date__is_null=False, last_review_date__lt=dt)
         ) | (
-            Q(last_review_started_date__is_null=False, last_review_started_date__lt=timed_out)
+            Q(last_review_date__is_null=True, last_review_started_date__is_null=False, last_review_started_date__lt=timed_out)
         )
 
         pages_in_need_of_review = yield Page.objects.filter(query) \

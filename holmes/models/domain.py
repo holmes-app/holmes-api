@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tornado.concurrent import return_future
-from motorengine import Document, URLField, StringField
+from motorengine import Document, URLField, StringField, DESCENDING
 
 from holmes.models.page import Page
 from holmes.models.review import Review
@@ -159,5 +159,28 @@ class Domain(Document):
         return handle
 
     @return_future
-    def get_active_reviews(self, callback=None):
-        Review.objects.filter(is_active=True, domain=self).find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
+    def get_active_reviews(self, current_page=1, page_size=10, callback=None):
+        skip = (current_page - 1) * page_size
+        Review.objects \
+              .filter(is_active=True, domain=self) \
+              .order_by(Review.violation_count, DESCENDING) \
+              .skip(skip) \
+              .limit(page_size) \
+              .find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
+
+    def handle_get_active_review_count(self, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback(0)
+                return
+
+            callback(arguments[0])
+
+        return handle
+
+    @return_future
+    def get_active_review_count(self, callback=None):
+        Review.objects.filter(is_active=True, domain=self).count(callback=self.handle_get_active_review_count(callback))
