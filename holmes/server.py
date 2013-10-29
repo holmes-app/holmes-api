@@ -8,7 +8,9 @@ from holmes.handlers.worker import WorkerHandler, WorkersHandler
 from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import PageHandler, PagesHandler
 from holmes.handlers.fact import CreateFactHandler
-from holmes.handlers.violation import CreateViolationHandler
+from holmes.handlers.violation import (
+    CreateViolationHandler, MostCommonViolationsHandler
+)
 from holmes.handlers.review import ReviewHandler, CompleteReviewHandler
 from holmes.handlers.next_job import NextJobHandler
 from holmes.handlers.domains import (
@@ -24,6 +26,7 @@ def main():
 class HolmesApiServer(Server):
     def get_handlers(self):
         handlers = [
+            (r'/most-common-violations/?', MostCommonViolationsHandler),
             (r'/workers/?', WorkersHandler),
             (r'/worker/([a-z0-9-]*)/ping/?', WorkerHandler),
             (r'/worker/([a-z0-9-]*)/review/([a-z0-9-]*)/(start|complete)', WorkerStateHandler),

@@ -6,7 +6,8 @@ from uuid import UUID
 from tornado.web import RequestHandler
 from tornado import gen
 
-from holmes.models import Review
+from holmes.handlers import BaseHandler
+from holmes.models import Review, Violation
 
 
 class CreateViolationHandler(RequestHandler):
@@ -41,4 +42,18 @@ class CreateViolationHandler(RequestHandler):
         yield review.save()
 
         self.write('OK')
+        self.finish()
+
+
+class MostCommonViolationsHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self):
+        violations = yield Violation.get_most_common_violations()
+
+        result = []
+        for name, count in violations.items():
+            result.append({'name': name, 'count': count})
+
+        self.write_json(result)
         self.finish()

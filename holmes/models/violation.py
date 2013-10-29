@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
+from tornado.concurrent import return_future
 from motorengine import Document, StringField, IntField
+
+from holmes.models.review import Review
 
 
 class Violation(Document):
@@ -24,3 +26,26 @@ class Violation(Document):
             'description': self.description,
             'points': self.points
         }
+
+    @classmethod
+    def handle_get_most_common_violations(cls, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            violations = {}
+            for violation in arguments[0]:
+                violations[violation['_id']] = violation['count']
+            callback(violations)
+
+        return handle
+
+    @classmethod
+    @return_future
+    def get_most_common_violations(cls, callback=None, limit=5):
+        Review.objects.aggregate.raw([
+            {"$unwind": "$violations" },
+            {"$group": {"_id": "$violations.title", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": limit}
+        ]).fetch(callback=cls.handle_get_most_common_violations(callback))
