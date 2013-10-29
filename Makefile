@@ -1,6 +1,6 @@
 mongodatabase = holmes
 
-test: mongo_test unit integration
+test: mongo_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/

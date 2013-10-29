@@ -282,7 +282,7 @@ class TestPagesHandler(ApiTestCase):
         domain = yield DomainFactory.create(name='globo.com', url='http://globo.com')
         page = yield PageFactory.create(domain=domain, url='http://www.globo.com/')
 
-        urls = [page.url]
+        urls = [page.url, page.url]
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
@@ -292,6 +292,10 @@ class TestPagesHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(int(response.body)).to_equal(0)
+
+        pages = yield Page.objects.filter(url='http://www.globo.com/').find_all()
+        expect(pages).to_length(1)
+        expect(pages[0]._id).to_equal(page._id)
 
     @gen_test
     def test_cant_save_invalid_urls(self):

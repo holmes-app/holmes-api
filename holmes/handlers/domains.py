@@ -4,7 +4,7 @@
 from tornado import gen
 from motorengine import ASCENDING
 
-from holmes.models import Domain
+from holmes.models import Domain, Page
 from holmes.handlers import BaseHandler
 
 
@@ -100,7 +100,8 @@ class DomainReviewsHandler(BaseHandler):
         result = {
             'domainName': domain.name,
             'domainURL': domain.url,
-            'pages': []
+            'pages': [],
+            'pagesWithoutReview': []
         }
 
         for review in reviews:
@@ -110,6 +111,13 @@ class DomainReviewsHandler(BaseHandler):
                 "url": review.page.url,
                 "uuid": str(review.page.uuid),
                 "completedDate": review.completed_date.isoformat()
+            })
+
+        pages = yield Page.objects.filter(domain=domain, last_review__is_null=True).find_all()
+        for page in pages:
+            result['pagesWithoutReview'].append({
+                'uuid': str(page.uuid),
+                'url': page.url
             })
 
         self.write_json(result)
