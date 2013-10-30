@@ -94,7 +94,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of('config argument must be an instance of holmes.config.Config')
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
     def test_reviewer_fails_if_wrong_validators(self):
         validators = [Validator, "wtf"]
@@ -106,7 +106,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
         try:
             self.get_reviewer(validators=validators2)
@@ -114,7 +114,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
     def test_load_content_raises_when_invalid_status_code(self):
         page_url = 'http://page.url'
@@ -132,7 +132,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Could not load 'http://page.url'!")
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
     @patch('requests.get')
     def test_get_response_fills_dict(self, mock_get):
@@ -278,7 +278,7 @@ class TestReview(ApiTestCase):
                     "Could not add fact 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_reviewer_add_fact_fails_connection_error(self):
         with patch.object(requests, 'post') as post_mock:
@@ -300,7 +300,7 @@ class TestReview(ApiTestCase):
                         )
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_reviewer_add_violation(self):
         with patch.object(requests, 'post') as post_mock:
@@ -337,7 +337,7 @@ class TestReview(ApiTestCase):
                     "Could not add violation 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_reviewer_add_violation_fails_connection_error(self):
         with patch.object(requests, 'post') as post_mock:
@@ -359,7 +359,7 @@ class TestReview(ApiTestCase):
                         )
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_reviewer_complete(self):
         with patch.object(requests, 'post') as post_mock:
@@ -396,7 +396,7 @@ class TestReview(ApiTestCase):
                     'Could not complete review %s! Status Code: 400, Error: OK' % review_uuid
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_reviewer_complete_fails_connection_error(self):
         with patch.object(requests, 'post') as post_mock:
@@ -418,7 +418,7 @@ class TestReview(ApiTestCase):
                         )
                 )
             else:
-                assert False, 'Shouldn not have gotten this far'
+                assert False, 'Should not have gotten this far'
 
     def test_can_get_current(self):
         reviewer = self.get_reviewer()

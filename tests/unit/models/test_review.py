@@ -61,7 +61,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
     def test_cant_append_violations_after_complete(self):
         review = ReviewFactory.build()
@@ -74,7 +74,7 @@ class TestReview(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
         else:
-            assert False, 'Shouldn not have gotten this far'
+            assert False, 'Should not have gotten this far'
 
     def test_review_has_falied(self):
         review = ReviewFactory.build()
