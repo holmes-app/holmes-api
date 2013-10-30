@@ -34,3 +34,6 @@ cover
 .mr.developer.cfg
 .project
 .pydevproject
+
+#mac files
+.DS_Store

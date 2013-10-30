@@ -41,11 +41,11 @@ class ApiTestCase(CowTestCase):
         return self.server
 
 
-PAGES_ROOT_PATH = abspath(join(dirname(__file__), 'pages'))
+FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 
 
 class ValidatorTestCase(ApiTestCase):
 
-    def get_page(self, name):
-        with open(join(PAGES_ROOT_PATH.rstrip('/'), name.lstrip('/')), 'r') as page:
-            return page.read()
+    def get_file(self, name):
+        with open(join(FILES_ROOT_PATH.rstrip('/'), name.lstrip('/')), 'r') as local_file:
+            return local_file.read()

@@ -24,10 +24,10 @@ Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
 
 Config.define('MAX_IMG_REQUESTS_PER_PAGE', 50,
               'Maximum number of images per page', 'Image Request Validator')
-Config.define('MAX_KB_SINGLE_IMAGE_AFTER_GZIP', 100,
-              'Maximum size of a single image after gzip', 'Image Request Validator')
-Config.define('MAX_IMG_KB_PER_PAGE_AFTER_GZIP', 1000,
-              'Maximum size of images per page after gzip', 'Image Request Validator')
+Config.define('MAX_KB_SINGLE_IMAGE', 100,
+              'Maximum size of a single image', 'Image Request Validator')
+Config.define('MAX_IMG_KB_PER_PAGE', 1000,
+              'Maximum size of images per page', 'Image Request Validator')
 
 Config.define('MAX_CSS_REQUESTS_PER_PAGE', 5,
               'Maximum number of external stylesheets per page', 'CSS Request Validator')

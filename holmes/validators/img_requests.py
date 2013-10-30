@@ -16,22 +16,21 @@ class ImageRequestsValidator(Validator):
         results = self.process_img_requests(img_files)
 
         total_size = 0
-        total_size_gzip = 0
         for item in results.values():
             if item:
                 size_img = len(item['content']) / 1024.0
                 total_size += size_img
 
-                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP:
+                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
                     self.add_violation(
                         key='single.size.img',
                         title='Single image size in kb is too big.',
                         description='Found a image bigger then limit %d (%d over limit): %s' % (
-                            self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP,
-                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP,
-                            item
+                            self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                            item['url']
                         ),
-                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE_AFTER_GZIP
+                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
                     )
 
         self.add_fact(
@@ -44,18 +43,19 @@ class ImageRequestsValidator(Validator):
             self.add_violation(
                 key='total.requests.img',
                 title='Too many image requests.',
-                description='This page has %d image requests (%d over limit). Having too many requests impose a tax in the browser due to handshakes.' % (
-                    len(img_files), len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE
-                ),
+                description='This page has %d image requests (%d over limit). '
+                            'Having too many requests impose a tax in the browser due to handshakes.' %
+                    (len(img_files), len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE),
                 points=5 * (len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE)
             )
 
-        if total_size_gzip > self.reviewer.config.MAX_IMG_KB_PER_PAGE_AFTER_GZIP:
+        if total_size > self.reviewer.config.MAX_IMG_KB_PER_PAGE:
             self.add_violation(
                 key='total.size.img',
                 title='Total image size in kb is too big.',
-                description="There's %.2fkb of Images in this page and that adds up to more download time slowing down the page rendering to the user." % total_size_gzip,
-                points=int(total_size_gzip - self.reviewer.config.MAX_IMG_KB_PER_PAGE_AFTER_GZIP)
+                description='There`s %.2fkb of images in this page and that adds up to more download time slowing down '
+                            'the page rendering to the user.' % total_size,
+                points=int(total_size - self.reviewer.config.MAX_IMG_KB_PER_PAGE)
             )
 
     def get_img_requests(self):

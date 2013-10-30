@@ -30,7 +30,7 @@ class TestTitleValidator(ValidatorTestCase):
             validators=[]
         )
 
-        content = self.get_page('globo.html')
+        content = self.get_file('globo.html')
 
         result = {
             'url': page.url,
