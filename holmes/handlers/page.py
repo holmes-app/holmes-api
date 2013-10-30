@@ -3,8 +3,9 @@
 
 from uuid import UUID
 
-from ujson import loads
+from ujson import loads, dumps
 from tornado import gen
+import tornado.httpclient
 from motorengine import Q
 import logging
 
@@ -26,6 +27,31 @@ class PageHandler(BaseHandler):
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
             self.set_status(400, 'Invalid url [%s]' % url)
+            self.write(dumps({
+                'reason': 'invalid_url',
+                'url': url
+            }))
+            self.finish()
+            return
+
+        client = tornado.httpclient.AsyncHTTPClient()
+        response = yield tornado.gen.Task(client.fetch, url)
+        if response.code > 399:
+            self.set_status(400, 'Invalid URL [%s]' % url)
+            self.write(dumps({
+                'reason': 'invalid_url',
+                'url': url
+            }))
+            self.finish()
+            return
+
+        if response.effective_url != url:
+            self.set_status(400, 'Redirect URL [%s]' % url)
+            self.write(dumps({
+                'reason': 'redirect',
+                'url': url,
+                'effectiveUrl': response.effective_url
+            }))
             self.finish()
             return
 
