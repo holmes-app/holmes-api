@@ -17,21 +17,20 @@ class ImageRequestsValidator(Validator):
 
         total_size = 0
         for item in results.values():
-            if item:
-                size_img = len(item['content']) / 1024.0
-                total_size += size_img
+            size_img = len(item['content']) / 1024.0
+            total_size += size_img
 
-                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
-                    self.add_violation(
-                        key='single.size.img',
-                        title='Single image size in kb is too big.',
-                        description='Found a image bigger then limit %d (%d over limit): %s' % (
-                            self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                            item['url']
-                        ),
-                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
-                    )
+            if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
+                self.add_violation(
+                    key='single.size.img',
+                    title='Single image size in kb is too big.',
+                    description='Found a image bigger then limit %d (%d over limit): %s' % (
+                        self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                        size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                        item['url']
+                    ),
+                    points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
+                )
 
         self.add_fact(
             key='total.size.img',
