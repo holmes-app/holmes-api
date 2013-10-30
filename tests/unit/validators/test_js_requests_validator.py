@@ -99,7 +99,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             ))
 
     @gen_test
-    def test_can_validate_jsl_requests_zero_requests(self):
+    def test_can_validate_js_requests_zero_requests(self):
         config = Config()
 
         domain = yield DomainFactory.create()

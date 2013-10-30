@@ -48,7 +48,7 @@ class CSSRequestsValidator(Validator):
             )
 
     def get_css_requests(self):
-        return self.reviewer.current['html'].cssselect('link[href]')
+        return self.reviewer.current_html.cssselect('link[href]')
 
     def process_css_requests(self, css_files):
         results = {}
