@@ -103,6 +103,13 @@ class Reviewer(object):
 
         return result
 
+    @property
+    def current_html(self):
+        if 'html' not in self.current or self.current['html'] is None:
+            return lxml.html.HtmlElement()
+        else:
+            return self.current['html']
+
     def get_status_code(self, url):
         if not url in self.status_codes:
             try:

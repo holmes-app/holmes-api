@@ -3,8 +3,8 @@
 
 from mock import Mock, call
 from preggy import expect
-from tornado.testing import gen_test
 import lxml.html
+from tornado.testing import gen_test
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer

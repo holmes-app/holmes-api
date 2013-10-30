@@ -6,16 +6,7 @@ from holmes.validators.base import Validator
 
 class TitleValidator(Validator):
     def validate(self):
-        if 'html' not in self.reviewer.current or self.reviewer.current['html'] is None:
-            self.add_violation(
-                key='page.title.not_found',
-                title='Page title not found.',
-                description="Title was not found on %s" % self.reviewer.page_url,
-                points=50
-            )
-            return
-
-        title = self.reviewer.current['html'].cssselect('title')
+        title = self.reviewer.current_html.cssselect('title')
 
         if not title:
             self.add_violation(

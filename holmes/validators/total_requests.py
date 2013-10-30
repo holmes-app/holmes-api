@@ -17,10 +17,10 @@ class TotalRequestsValidator(Validator):
         )
 
     def get_css_requests(self):
-        return self.reviewer.current['html'].cssselect('link[href]')
+        return self.reviewer.current_html.cssselect('link[href]')
 
     def get_js_requests(self):
-        return self.reviewer.current['html'].cssselect('script[src]')
+        return self.reviewer.current_html.cssselect('script[src]')
 
     def get_img_requests(self):
-        return self.reviewer.current['html'].cssselect('img[src]')
+        return self.reviewer.current_html.cssselect('img[src]')
