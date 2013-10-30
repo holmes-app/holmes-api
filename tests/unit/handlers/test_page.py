@@ -26,7 +26,7 @@ class TestPageHandler(ApiTestCase):
             self.get_url('/page'),
             method='POST',
             body=dumps({
-                'url': 'http://globo.com'
+                'url': 'http://www.globo.com'
             })
         )
 
@@ -44,13 +44,13 @@ class TestPageHandler(ApiTestCase):
         yield Page.objects.delete()
 
         origin_domain = yield DomainFactory.create()
-        origin_page = yield PageFactory.create(domain=origin_domain, url="http://globo.com/")
+        origin_page = yield PageFactory.create(domain=origin_domain, url="http://www.globo.com/")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
             body=dumps({
-                'url': 'http://globo.com/new_page',
+                'url': 'http://www.globo.com/privacidade.html',
                 'origin_uuid': str(origin_page.uuid)
             })
         )
@@ -69,13 +69,13 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_known_domain(self):
-        yield Domain.objects.create(url='http://globo.com', name='globo.com')
+        yield Domain.objects.create(url='http://www.globo.com', name='globo.com')
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
             body=dumps({
-                'url': 'http://globo.com'
+                'url': 'http://www.globo.com'
             })
         )
 
@@ -111,7 +111,7 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists(self):
         domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -127,39 +127,39 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists_with_slash(self):
         domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://test.com/whatever/")
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
             body=dumps({
-                'url': "http://test.com/whatever"
+                'url': "http://www.globo.com"
             })
         )
 
         expect(response.code).to_equal(200)
         expect(response.body).to_equal(str(page.uuid))
 
-        page_count = yield Page.objects.filter(url="http://test.com/whatever").count()
+        page_count = yield Page.objects.filter(url="http://www.globo.com").count()
         expect(page_count).to_equal(0)
 
     @gen_test
     def test_when_url_already_exists_without_slash(self):
         domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://test.com/whatever")
+        page = yield PageFactory.create(domain=domain, url="http://www.globo.com")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
             body=dumps({
-                'url': "http://test.com/whatever/"
+                'url': "http://www.globo.com/"
             })
         )
 
         expect(response.code).to_equal(200)
         expect(response.body).to_equal(str(page.uuid))
 
-        page_count = yield Page.objects.filter(url="http://test.com/whatever/").count()
+        page_count = yield Page.objects.filter(url="http://www.globo.com/").count()
         expect(page_count).to_equal(0)
 
     @gen_test
@@ -231,7 +231,7 @@ class TestPagesHandler(ApiTestCase):
         yield Page.objects.delete()
 
         origin_domain = yield DomainFactory.create()
-        origin_page = yield PageFactory.create(domain=origin_domain, url="http://globo.com/")
+        origin_page = yield PageFactory.create(domain=origin_domain, url="http://www.globo.com/")
 
         urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
 
