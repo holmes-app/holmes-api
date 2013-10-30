@@ -48,7 +48,7 @@ class JSRequestsValidator(Validator):
             )
 
     def get_js_requests(self):
-        return self.reviewer.current['html'].cssselect('script[src]')
+        return self.reviewer.current_html.cssselect('script[src]')
 
     def process_js_requests(self, js_files):
         results = {}

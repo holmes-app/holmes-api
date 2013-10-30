@@ -1,96 +1,213 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from mock import Mock, patch
+from mock import Mock, call
 from preggy import expect
+import lxml.html
 from tornado.testing import gen_test
 
+from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.js_requests import JSRequestsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import DomainFactory, PageFactory
+from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
-#class TestValidator(ValidatorTestCase):
-    #@gen_test
-    #def test_gets_proper_facts(self):
-        #config_mock = Mock(
-            #MAX_JS_REQUESTS_PER_PAGE=1,
-            #MAX_JS_KB_PER_PAGE_AFTER_GZIP=5
-        #)
+class TestTotalRequestsValidator(ValidatorTestCase):
 
-        #with patch.object(Reviewer, 'get_response') as get_response_mock:
-            #get_response_mock.return_value = Mock(status_code=200, text=self.get_page('globo.html'))
+    @gen_test
+    def test_can_validate_js_requests_on_globo_html(self):
+        config = Config()
+        config.MAX_JS_REQUESTS_PER_PAGE = 1
+        config.MAX_JS_KB_PER_PAGE_AFTER_GZIP = 0.03
 
-            #domain = yield DomainFactory.create(url="http://www.globo.com")
-            #page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
 
-            #reviewer = Reviewer(page=page, config=config_mock)
-            #review = reviewer.review()
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            review_uuid=review.uuid,
+            config=config,
+            validators=[]
+        )
 
-        #validator = JSRequestsValidator(reviewer, review)
+        content = self.get_file('globo.html')
 
-        #validator.validate()
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
 
-        #expect(review.facts).to_length(3)
+        validator = JSRequestsValidator(reviewer)
+        script = {
+            'url': 'some_script.js',
+            'status': 200,
+            'content': 'var test=1;',
+            'html': None
+        }
+        validator.get_response = Mock(return_value=script)
 
-        #expect(review.facts[0].key).to_equal('total.requests.js')
-        #expect(review.facts[0].value).to_equal(2)
-        #expect(review.facts[0].unit).to_equal('value')
+        validator.add_fact = Mock()
+        validator.add_violation = Mock()
 
-        #expect(review.facts[1].key).to_equal('total.size.js')
-        #expect(review.facts[1].value).to_be_like(38.3701171875)
-        #expect(review.facts[1].unit).to_equal('kb')
+        validator.validate()
 
-        #expect(review.facts[2].key).to_equal('total.size.js.gzipped')
-        #expect(review.facts[2].value).to_be_like(13.3212890625)
-        #expect(review.facts[2].unit).to_equal('kb')
+        expect(validator.add_fact.call_args_list).to_length(3)
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.requests.js',
+                value=2
+            ))
 
-        #expect(review.violations).to_length(2)
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js',
+                value=0.021484375,
+                unit='kb'
+            ))
 
-        #expect(review.violations[0].key).to_equal('total.requests.js')
-        #expect(review.violations[0].title).to_equal('Too many javascript requests.')
-        #expect(review.violations[0].description).to_equal('This page has 2 javascript request (1 over limit). Having too many requests impose a tax in the browser due to handshakes.')
-        #expect(review.violations[0].points).to_equal(5)  # number of js requests over the limit * 5
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js.gzipped',
+                value=0.037109375,
+                unit='kb'
+            ))
 
-        #expect(review.violations[1].key).to_equal('total.size.js')
-        #expect(review.violations[1].title).to_equal('Javascript size in kb is too big.')
-        #expect(review.violations[1].description).to_equal("There's 13.32kb of Javascript in this page and that adds up to more download time slowing down the page rendering to the user.")
-        #expect(review.violations[1].points).to_equal(8)  # size over the limit rounded down
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='total.requests.js',
+                title='Too many javascript requests.',
+                description='This page has 2 javascript request (1 over limit). '
+                            'Having too many requests impose a tax in the browser due to handshakes.',
+                points=5
+            ))
 
-    #@gen_test
-    #def test_gets_proper_facts_no_violations(self):
-        #config_mock = Mock(
-            #MAX_JS_REQUESTS_PER_PAGE=2,
-            #MAX_JS_KB_PER_PAGE_AFTER_GZIP=15
-        #)
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='total.size.js',
+                title='Javascript size in kb is too big.',
+                description="There's 0.04kb of Javascript in this page and that adds up to more download "
+                            "time slowing down the page rendering to the user.",
+                points=0
+            ))
 
-        #with patch.object(Reviewer, 'get_response') as get_response_mock:
-            #get_response_mock.return_value = Mock(status_code=200, text=self.get_page('globo.html'))
+    @gen_test
+    def test_can_validate_jsl_requests_zero_requests(self):
+        config = Config()
 
-            #domain = yield DomainFactory.create(url="http://www.globo.com")
-            #page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
 
-            #reviewer = Reviewer(page=page, config=config_mock)
-            #review = reviewer.review()
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            review_uuid=review.uuid,
+            config=config,
+            validators=[]
+        )
 
-        #validator = JSRequestsValidator(reviewer, review)
+        content = "<html></html>"
 
-        #validator.validate()
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
 
-        #expect(review.facts).to_length(3)
+        validator = JSRequestsValidator(reviewer)
 
-        #expect(review.facts[0].key).to_equal('total.requests.js')
-        #expect(review.facts[0].value).to_equal(2)
-        #expect(review.facts[0].unit).to_equal('value')
+        validator.add_fact = Mock()
+        validator.add_violation = Mock()
 
-        #expect(review.facts[1].key).to_equal('total.size.js')
-        #expect(review.facts[1].value).to_be_like(38.3701171875)
-        #expect(review.facts[1].unit).to_equal('kb')
+        validator.validate()
 
-        #expect(review.facts[2].key).to_equal('total.size.js.gzipped')
-        #expect(review.facts[2].value).to_be_like(13.3212890625)
-        #expect(review.facts[2].unit).to_equal('kb')
+        expect(validator.add_fact.call_args_list).to_length(3)
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.requests.js',
+                value=0
+            ))
 
-        #expect(review.violations).to_length(0)
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js',
+                value=0,
+                unit='kb'
+            ))
 
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js.gzipped',
+                value=0,
+                unit='kb'
+            ))
+
+        expect(validator.add_violation.called).to_be_false()
+
+    @gen_test
+    def test_can_validate_js_requests_empty_html(self):
+        config = Config()
+
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+        review = yield ReviewFactory.create(page=page)
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            review_uuid=review.uuid,
+            config=config,
+            validators=[]
+        )
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': None,
+            'html': None
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = JSRequestsValidator(reviewer)
+
+        validator.add_fact = Mock()
+        validator.add_violation = Mock()
+
+        validator.validate()
+
+        expect(validator.add_fact.call_args_list).to_length(3)
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.requests.js',
+                value=0
+            ))
+
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js',
+                value=0,
+                unit='kb'
+            ))
+
+        expect(validator.add_fact.call_args_list).to_include(
+            call(
+                key='total.size.js.gzipped',
+                value=0,
+                unit='kb'
+            ))
+
+        expect(validator.add_violation.called).to_be_false()
