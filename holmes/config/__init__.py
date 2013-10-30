@@ -39,4 +39,7 @@ Config.define('MAX_JS_REQUESTS_PER_PAGE', 5,
 Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 50,
               'Maximum size of scripts per page after gzip', 'JS Request Validator')
 
+Config.define('MAX_TITLE_SIZE', 80,
+              'Title tags longer than 80 characters may be truncated in the results', 'Title Validator')
+
 Config.define('ORIGIN', '*', 'Access Control Allow Origin header value', 'Web')
