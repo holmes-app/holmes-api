@@ -20,25 +20,24 @@ class TestBaseValidator(ApiTestCase):
 
     def test_can_get_response(self):
         mock_reviewer = Mock()
-
         Validator(mock_reviewer).get_response('some url')
-
         mock_reviewer.get_response.assert_called_once_with('some url')
+
+    def test_can_get_raw_response(self):
+        mock_reviewer = Mock()
+        Validator(mock_reviewer).get_raw_response('some url')
+        mock_reviewer.raw_responses.get.assert_called_once_with('some url', None)
 
     @gen_test
     def test_can_add_fact(self):
         mock_reviewer = Mock()
-
         Validator(mock_reviewer).add_fact('test', 10, 'unit')
-
         mock_reviewer.add_fact.assert_called_once_with('test', 10, 'unit')
 
     @gen_test
     def test_can_add_violation(self):
         mock_reviewer = Mock()
-
         Validator(mock_reviewer).add_violation('test', 'title', 'description', 100)
-
         mock_reviewer.add_violation.assert_called_once_with('test', 'title', 'description', 100)
 
     @gen_test
