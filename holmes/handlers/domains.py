@@ -39,13 +39,7 @@ class DomainDetailsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self, domain_name):
-        domain = yield Domain.objects.get(name=domain_name)
-
-        if not domain:
-            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
-            self.finish()
-            return
-
+        domain = yield Domain.get_domain_by_name(domain_name)
         page_count = yield domain.get_page_count()
         violation_count, violation_points = yield domain.get_violation_data()
 
@@ -65,12 +59,8 @@ class DomainViolationsPerDayHandler(BaseHandler):
 
     @gen.coroutine
     def get(self, domain_name):
-        domain = yield Domain.objects.get(name=domain_name)
 
-        if not domain:
-            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
-            self.finish()
-            return
+        domain = yield Domain.get_domain_by_name(domain_name)
 
         violations_per_day = yield domain.get_violations_per_day()
 
@@ -91,12 +81,7 @@ class DomainReviewsHandler(BaseHandler):
         current_page = int(self.get_argument('current_page', 1))
         page_size = 10
 
-        domain = yield Domain.objects.get(name=domain_name)
-
-        if not domain:
-            self.set_status(404, 'Domain with name "%s" was not found!' % domain_name)
-            self.finish()
-            return
+        domain = yield Domain.get_domain_by_name(domain_name)
 
         review_count = yield domain.get_active_review_count()
         reviews = yield domain.get_active_reviews(current_page=current_page, page_size=page_size)

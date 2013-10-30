@@ -184,3 +184,22 @@ class Domain(Document):
     @return_future
     def get_active_review_count(self, callback=None):
         Review.objects.filter(is_active=True, domain=self).count(callback=self.handle_get_active_review_count(callback))
+
+    @classmethod
+    def handle_get_domain_by_name(self, domain_name, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                from tornado import web
+                raise web.HTTPError(404, reason='Domain with name "%s" was not found!' % domain_name)
+
+            callback(arguments[0])
+
+        return handle
+
+    @classmethod
+    @return_future
+    def get_domain_by_name(self, domain_name, callback=None):
+        Domain.objects.get(name=domain_name, callback=self.handle_get_domain_by_name(domain_name, callback))

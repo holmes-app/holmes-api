@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
+import sys
 from datetime import datetime
 
 from preggy import expect
 from tornado.testing import gen_test
+from tornado.web import HTTPError
 
 from holmes.models import Domain
 from tests.unit.base import ApiTestCase
@@ -163,3 +164,16 @@ class TestDomain(ApiTestCase):
         expect(reviews).to_length(1)
 
         expect(reviews[0]._id).to_equal(review._id)
+
+    @gen_test
+    def test_invalid_domain_returns_404(self):
+        try:
+            domain_name = 'domain-details.com'
+            yield Domain.get_domain_by_name(domain_name)
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.status_code).to_equal(404)
+            expect(err.reason).to_be_like('Domain with name "%s" was not found!' % domain_name)
+        else:
+            assert False, 'Should not have got this far'
