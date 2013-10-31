@@ -5,15 +5,14 @@ from datetime import datetime
 from uuid import UUID
 
 import logging
-from tornado.web import RequestHandler
 from tornado import gen
-from ujson import dumps
 from motorengine import Q
 
 from holmes.models import Review
+from holmes.handlers import BaseHandler
 
 
-class BaseReviewHandler(RequestHandler):
+class BaseReviewHandler(BaseHandler):
     def _parse_uuid(self, uuid):
         try:
             return UUID(uuid)
@@ -36,7 +35,13 @@ class ReviewHandler(BaseReviewHandler):
         yield review.load_references(['page'])
         yield review.page.load_references(['domain'])
 
-        self.write(dumps(review.to_dict()))
+        result = review.to_dict()
+        result.update({
+            'violationPoints': review.get_violation_points(),
+            'violationCount': review.violation_count
+        })
+
+        self.write_json(result)
         self.finish()
 
 

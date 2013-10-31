@@ -66,3 +66,9 @@ class Review(Document):
 
     def __repr__(self):
         return str(self)
+
+    def get_violation_points(self):
+        points = 0
+        for violation in self.violations:
+            points += violation.points
+        return points

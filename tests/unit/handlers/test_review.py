@@ -72,7 +72,9 @@ class TestReviewHandler(ApiTestCase):
                 {u'points': 100, u'description': u'description', u'key': u'violation', u'title': u'title'}
             ],
             'createdAt': dt,
-            'completedAt': None
+            'completedAt': None,
+            'violationPoints': 100,
+            'violationCount': 1
         }
 
         expect(loads(response.body)).to_be_like(expected)

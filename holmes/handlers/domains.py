@@ -101,7 +101,8 @@ class DomainReviewsHandler(BaseHandler):
                 "url": review.page.url,
                 "uuid": str(review.page.uuid),
                 "violationCount": len(review.violations),
-                "completedDate": review.completed_date.isoformat()
+                "completedDate": review.completed_date.isoformat(),
+                "reviewId": str(review.uuid)
             })
 
         pages = yield Page.objects.filter(domain=domain, last_review_date__is_null=True).limit(10).find_all()
