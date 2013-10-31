@@ -4,7 +4,10 @@ test: mongo_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
-	@coverage report -m --fail-under=80
+	@coverage report -m --fail-under=90
+
+coverage-html: mongo_test unit
+	@coverage html -d cover
 
 integration: mongo kill_run run_daemon
 	@`which nosetests` -vv --with-yanc -s tests/integration/
