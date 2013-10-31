@@ -53,12 +53,19 @@ class WorkerTestCase(ApiTestCase):
         worker.run()
         worker_sleep.assert_called_once_with(1)
 
-    def test_worker_working_flag(self):
+    @patch('requests.post')
+    def test_worker_working_flag(self, requests_mock):
         worker = self.get_worker()
 
         expect(worker.working).to_be_true()
         worker.stop_work()
         expect(worker.working).to_be_false()
+
+        expect(requests_mock.called).to_be_true()
+        requests_mock.assert_called_once_with(
+            'http://localhost:2368/worker/%s/dead' % worker.uuid,
+            data={'worker_uuid': worker.uuid}
+        )
 
     @patch.object(holmes.worker.HolmesWorker, '_do_work')
     def test_worker_run_keyboard_interrupt(self, do_work_mock):
@@ -133,7 +140,7 @@ class WorkerTestCase(ApiTestCase):
         worker._ping_api()
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/ping' % worker.uuid,
+            'http://localhost:2368/worker/%s/alive' % worker.uuid,
             data={'worker_uuid': worker.uuid}
         )
 

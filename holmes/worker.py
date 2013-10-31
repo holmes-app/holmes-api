@@ -43,9 +43,13 @@ class HolmesWorker(object):
                 time.sleep(self.config.WORKER_SLEEP_TIME)
         except KeyboardInterrupt:
             logging.info('Bye.')
-            self.working = False
+            self.stop_work()
 
     def stop_work(self):
+        try:
+            requests.post('%s/worker/%s/dead' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
+        except ConnectionError:
+            pass
         self.working = False
 
     def _do_work(self):
@@ -104,11 +108,11 @@ class HolmesWorker(object):
 
     def _ping_api(self):
         try:
-            requests.post('%s/worker/%s/ping' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
+            requests.post('%s/worker/%s/alive' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
             return True
         except ConnectionError:
             logging.fatal('Fail to ping API [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
-            self.working = False
+            self.stop_work()
             return False
 
     def _load_next_job(self):
@@ -118,7 +122,7 @@ class HolmesWorker(object):
                 return loads(response.text)
         except ConnectionError:
             logging.fatal('Fail to get next review from [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
-            self.working = False
+            self.stop_work()
 
     def _start_job(self, review_uuid):
         if not review_uuid:
