@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from random import choice
 from datetime import datetime, timedelta
 
 from tornado.web import RequestHandler
@@ -33,7 +34,7 @@ class NextJobHandler(RequestHandler):
             self.finish()
             return
 
-        page = pages_in_need_of_review[0]
+        page = choice(pages_in_need_of_review)
         yield page.load_references(['domain', 'last_review'])
 
         if page.last_review and page.last_review_started_date and page.last_review_started_date < timed_out:
