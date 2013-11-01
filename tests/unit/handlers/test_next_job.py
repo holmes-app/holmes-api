@@ -79,7 +79,7 @@ class TestNextJobHandler(ApiTestCase):
         expect(loaded_review.page.uuid).to_equal(page.uuid)
 
     @gen_test
-    def test_call_next_job_two_times_will_give_two_different_pages_order_by_page_creation(self):
+    def test_call_next_job_two_times_will_give_two_different_random_pages(self):
         domain = yield DomainFactory.create()
 
         yield Page.objects.delete()
@@ -94,22 +94,17 @@ class TestNextJobHandler(ApiTestCase):
             method='POST',
             body=''
         )
-
         expect(response.code).to_equal(200)
         expect(response.body).not_to_be_empty()
-        expect(loads(response.body)['page']).not_to_be_null()
-        expect(loads(response.body)['page']).to_equal(str(page_one.uuid))
-
-        page_one.last_review_date = datetime.now()
-        yield page_one.save()
+        first_request_page = loads(response.body)['page']
 
         response = yield self.http_client.fetch(
             self.get_url('/next'),
             method='POST',
             body=''
         )
-
         expect(response.code).to_equal(200)
         expect(response.body).not_to_be_empty()
-        expect(loads(response.body)['page']).not_to_be_null()
-        expect(loads(response.body)['page']).to_equal(str(page_two.uuid))
+        second_request_page = loads(response.body)['page']
+
+        expect(second_request_page).not_to_equal(first_request_page)
