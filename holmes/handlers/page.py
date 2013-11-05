@@ -221,3 +221,24 @@ class PagesHandler(BaseHandler):
 
         self.write(str(len(pages_to_add)))
         self.finish()
+
+
+class PageViolationsPerDayHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self, uuid):
+        page = yield Page.objects.get(uuid=uuid)
+
+        if not page:
+            self.set_status(404, 'Page UUID [%s] not found' % uuid)
+            self.finish()
+            return
+
+        violations_per_day = yield page.get_violations_per_day()
+
+        page_json = {
+            "violations": violations_per_day
+        }
+
+        self.write_json(page_json)
+        self.finish()

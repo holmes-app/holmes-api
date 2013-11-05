@@ -6,7 +6,9 @@ from cow.plugins.motorengine_plugin import MotorEnginePlugin
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler
 from holmes.handlers.worker_state import WorkerStateHandler
-from holmes.handlers.page import PageHandler, PagesHandler, PageReviewsHandler
+from holmes.handlers.page import (
+    PageHandler, PagesHandler, PageReviewsHandler, PageViolationsPerDayHandler
+)
 from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import (
     CreateViolationHandler, MostCommonViolationsHandler
@@ -35,6 +37,7 @@ class HolmesApiServer(Server):
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/reviews/?', PageReviewsHandler),
+            (r'/page/([a-z0-9-]*)/violations-per-day/?', PageViolationsPerDayHandler),
             (r'/page/([a-z0-9-]*)/?', PageHandler),
             (r'/page/?', PageHandler),
             (r'/pages/?', PagesHandler),
