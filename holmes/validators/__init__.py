@@ -10,4 +10,5 @@ BASE_VALIDATORS = [
     'holmes.validators.css_requests.CSSRequestsValidator',
     'holmes.validators.js_requests.JSRequestsValidator',
     'holmes.validators.link_crawler.LinkCrawlerValidator',
+    'holmes.validators.meta_tags.MetaTagsValidator',
 ]

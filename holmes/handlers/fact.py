@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
+from ujson import loads
 
 from tornado.web import RequestHandler
 from tornado import gen
@@ -32,6 +33,9 @@ class CreateFactHandler(RequestHandler):
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
+
+        if unit and unit == 'values':
+            value = loads(value)
 
         review.add_fact(key=key, unit=unit, value=value, title=title)
         yield review.save()
