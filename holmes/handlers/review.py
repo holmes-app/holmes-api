@@ -89,5 +89,5 @@ class CompleteReviewHandler(BaseReviewHandler):
     def _remove_older_reviews_with_same_day(self, review):
         dt = datetime.now()
         dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        query = Q(page=review.page) & Q(uuid__ne=review.uuid) & Q(created_date__gt=dt)
+        query = Q(page=review.page) & Q(uuid__ne=review.uuid) & Q(created_date__gte=dt)
         yield Review.objects.filter(query).delete()
