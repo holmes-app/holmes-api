@@ -43,7 +43,7 @@ class TestReviewHandler(ApiTestCase):
         page = yield PageFactory.create(domain=domain)
         review = yield ReviewFactory.create(page=page)
 
-        review.add_fact('fact', 'kb', 'value')
+        review.add_fact('fact', 'value', 'title', 'kb')
         review.add_violation('violation', 'title', 'description', 100)
         yield review.save()
 
@@ -66,7 +66,7 @@ class TestReviewHandler(ApiTestCase):
             'uuid': str(review.uuid),
             'isComplete': False,
             'facts': [
-                {'key': 'fact', 'unit': 'value', 'value': 'kb'}
+                {u'key': u'fact', u'value': u'value', u'title': u'title', u'unit': u'kb'}
             ],
             'violations': [
                 {u'points': 100, u'description': u'description', u'key': u'violation', u'title': u'title'}

@@ -63,21 +63,24 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.js',
-                value=2
+                value=2,
+                title='Total JS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js',
                 value=0.021484375,
-                unit='kb'
+                unit='kb',
+                title='Total JS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js.gzipped',
                 value=0.037109375,
-                unit='kb'
+                unit='kb',
+                title='Total JS size gzipped'
             ))
 
         expect(validator.add_violation.call_args_list).to_include(
@@ -137,21 +140,24 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.js',
-                value=0
+                value=0,
+                title='Total JS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js',
                 value=0,
-                unit='kb'
+                unit='kb',
+                title='Total JS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js.gzipped',
                 value=0,
-                unit='kb'
+                unit='kb',
+                title='Total JS size gzipped'
             ))
 
         expect(validator.add_violation.called).to_be_false()
@@ -193,21 +199,24 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.js',
-                value=0
+                value=0,
+                title='Total JS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js',
                 value=0,
-                unit='kb'
+                unit='kb',
+                title='Total JS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js.gzipped',
                 value=0,
-                unit='kb'
+                unit='kb',
+                title='Total JS size gzipped'
             ))
 
         expect(validator.add_violation.called).to_be_false()

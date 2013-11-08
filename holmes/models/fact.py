@@ -6,12 +6,14 @@ from motorengine import Document, StringField, JsonField
 
 
 class Fact(Document):
+    title = StringField(required=True)
     key = StringField(required=True)
     unit = StringField(required=True, default='value')
     value = JsonField(required=True)
 
     def to_dict(self):
         return {
+            'title': self.title,
             'key': self.key,
             'unit': self.unit,
             'value': self.value

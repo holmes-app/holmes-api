@@ -13,7 +13,8 @@ class TotalRequestsValidator(Validator):
 
         self.add_fact(
             key='total.requests',
-            value=len(css_files) + len(js_files) + len(img_files)
+            value=len(css_files) + len(js_files) + len(img_files),
+            title='Total requests'
         )
 
     def get_css_requests(self):

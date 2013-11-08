@@ -10,7 +10,8 @@ class CSSRequestsValidator(Validator):
 
         self.add_fact(
             key='total.requests.css',
-            value=len(css_files)
+            value=len(css_files),
+            title='Total CSS requests'
         )
 
         results = self.process_css_requests(css_files)
@@ -19,14 +20,16 @@ class CSSRequestsValidator(Validator):
         self.add_fact(
             key='total.size.css',
             value=total_size,
-            unit='kb'
+            unit='kb',
+            title='Total CSS size'
         )
 
         total_size_gzip = sum([len(self.to_gzip(item['content'])) for item in results.values()]) / 1024.0
         self.add_fact(
             key='total.size.css.gzipped',
             value=total_size_gzip,
-            unit='kb'
+            unit='kb',
+            title='Total CSS size gzipped'
         )
 
         if len(css_files) > self.reviewer.config.MAX_CSS_REQUESTS_PER_PAGE:

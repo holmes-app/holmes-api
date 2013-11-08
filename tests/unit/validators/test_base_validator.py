@@ -31,8 +31,8 @@ class TestBaseValidator(ApiTestCase):
     @gen_test
     def test_can_add_fact(self):
         mock_reviewer = Mock()
-        Validator(mock_reviewer).add_fact('test', 10, 'unit')
-        mock_reviewer.add_fact.assert_called_once_with('test', 10, 'unit')
+        Validator(mock_reviewer).add_fact('test', 10, 'title', 'unit')
+        mock_reviewer.add_fact.assert_called_once_with('test', 10, 'title', 'unit')
 
     @gen_test
     def test_can_add_violation(self):
@@ -128,8 +128,8 @@ class TestBaseValidator(ApiTestCase):
         reviewer.add_fact = Mock()
 
         validator = Validator(reviewer)
-        validator.add_fact('random.fact', 'random', 'value')
-        reviewer.add_fact.assert_called_once_with('random.fact', 'random', 'value')
+        validator.add_fact('random.fact', 'random', 'value', 'title')
+        reviewer.add_fact.assert_called_once_with('random.fact', 'random', 'value', 'title')
 
     @gen_test
     def test_will_call_reviewer_add_violation(self):

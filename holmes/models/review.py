@@ -25,13 +25,13 @@ class Review(Document):
     completed_date = DateTimeField()
     failure_message = StringField(required=False)
 
-    def add_fact(self, key, value, unit=None):
+    def add_fact(self, key, value, title, unit=None):
         if self.is_complete:
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.fact import Fact  # to avoid circular dependency
 
-        fact = Fact(key=key, value=value, unit=unit)
+        fact = Fact(key=key, value=value, title=title, unit=unit)
 
         self.facts.append(fact)
 

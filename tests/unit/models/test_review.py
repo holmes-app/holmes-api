@@ -33,11 +33,12 @@ class TestReview(ApiTestCase):
         review = ReviewFactory.build()
         expect(review.facts).to_length(0)
 
-        review.add_fact('a', 'b', 'c')
+        review.add_fact('a', 'b', 'c', 'd')
         expect(review.facts).to_length(1)
         expect(review.facts[0].key).to_equal('a')
         expect(review.facts[0].value).to_equal('b')
-        expect(review.facts[0].unit).to_equal('c')
+        expect(review.facts[0].title).to_equal('c')
+        expect(review.facts[0].unit).to_equal('d')
 
     def test_can_append_violations(self):
         review = ReviewFactory.build()
@@ -56,7 +57,7 @@ class TestReview(ApiTestCase):
         review.is_complete = True
 
         try:
-            review.add_fact('a', 'b', 'c')
+            review.add_fact('a', 'b', 'c', 'd')
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")

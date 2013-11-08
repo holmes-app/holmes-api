@@ -253,11 +253,11 @@ class TestReview(ApiTestCase):
 
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
-            reviewer.add_fact('key', 'value', 'unit')
+            reviewer.add_fact('key', 'value', 'title', 'unit')
 
             post_mock.assert_called_once_with(
                 '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                data={'unit': 'unit', 'value': 'value', 'key': 'key'}
+                data={'unit': 'unit', 'value': 'value', 'key': 'key', 'title':'title'}
             )
 
     def test_reviewer_add_fact_fails_if_wrong_status(self):
@@ -271,7 +271,7 @@ class TestReview(ApiTestCase):
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
             try:
-                reviewer.add_fact('key', 'value', 'unit')
+                reviewer.add_fact('key', 'value', 'title', 'unit')
             except InvalidReviewError:
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(
@@ -290,7 +290,7 @@ class TestReview(ApiTestCase):
             reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
 
             try:
-                reviewer.add_fact('key', 'value', 'unit')
+                reviewer.add_fact('key', 'value', 'title', 'unit')
             except InvalidReviewError:
                 err = sys.exc_info()[1]
                 expect(err).to_have_an_error_message_of(

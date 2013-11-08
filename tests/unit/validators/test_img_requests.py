@@ -63,12 +63,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_length(2)
         expect(validator.add_fact.call_args_list[0]).to_equal(
             call(key='total.requests.img',
-                 value=60))
+                 value=60,
+                 title='Total images requests'))
 
         expect(validator.add_fact.call_args_list[1]).to_equal(
             call(key='total.size.img',
                  value=374.73046875,
-                 unit='kb'))
+                 unit='kb',
+                 title='Total images size'))
 
         expect(validator.add_violation.call_args_list).to_include(
             call(key='total.requests.img',
@@ -192,12 +194,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_length(2)
         expect(validator.add_fact.call_args_list[0]).to_equal(
             call(key='total.requests.img',
-                 value=1))
+                 value=1,
+                 title='Total images requests'))
 
         expect(validator.add_fact.call_args_list[1]).to_equal(
             call(key='total.size.img',
                  value=0.12109375,
-                 unit='kb'))
+                 unit='kb',
+                 title='Total images size'))
 
     @gen_test
     def test_can_validate_html_without_images(self):
@@ -242,12 +246,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_length(2)
         expect(validator.add_fact.call_args_list[0]).to_equal(
             call(key='total.requests.img',
-                 value=0))
+                 value=0,
+                 title='Total images requests'))
 
         expect(validator.add_fact.call_args_list[1]).to_equal(
             call(key='total.size.img',
                  value=0.0,
-                 unit='kb'))
+                 unit='kb',
+                 title='Total images size'))
 
     @gen_test
     def test_can_validate_without_img_src(self):
@@ -292,9 +298,11 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_length(2)
         expect(validator.add_fact.call_args_list[0]).to_equal(
             call(key='total.requests.img',
-                 value=1))
+                 value=1,
+                 title='Total images requests'))
 
         expect(validator.add_fact.call_args_list[1]).to_equal(
             call(key='total.size.img',
                  value=0.0,
-                 unit='kb'))
+                 unit='kb',
+                 title='Total images size'))

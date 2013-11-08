@@ -159,13 +159,14 @@ class Reviewer(object):
                 response.text
             ))
 
-    def add_fact(self, key, value, unit='value'):
+    def add_fact(self, key, value, title, unit='value'):
         url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
 
         try:
             response = requests.post(url, data={
                 'key': key,
                 'value': value,
+                'title': title,
                 'unit': unit
             })
         except ConnectionError:

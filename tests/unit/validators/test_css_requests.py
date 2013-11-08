@@ -63,21 +63,24 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.css',
-                value=7
+                value=7,
+                title='Total CSS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css',
                 value=0.033203125,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css.gzipped',
                 value=0.048828125,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size gzipped'
             ))
 
         expect(validator.add_violation.call_args_list).to_include(
@@ -137,21 +140,24 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.css',
-                value=0
+                value=0,
+                title='Total CSS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css',
                 value=0.0,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css.gzipped',
                 value=0.0,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size gzipped'
             ))
 
         expect(validator.add_violation.called).to_be_false()
@@ -193,21 +199,24 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.css',
-                value=0
+                value=0,
+                title='Total CSS requests'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css',
                 value=0.0,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size'
             ))
 
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css.gzipped',
                 value=0.0,
-                unit='kb'
+                unit='kb',
+                title='Total CSS size gzipped'
             ))
 
         expect(validator.add_violation.called).to_be_false()

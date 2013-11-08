@@ -16,6 +16,7 @@ class CreateFactHandler(RequestHandler):
         key = self.get_argument('key')
         unit = self.get_argument('unit', None)
         value = self.get_argument('value')
+        title = self.get_argument('title')
 
         parsed_uuid = None
         try:
@@ -32,7 +33,7 @@ class CreateFactHandler(RequestHandler):
             self.finish()
             return
 
-        review.add_fact(key=key, unit=unit, value=value)
+        review.add_fact(key=key, unit=unit, value=value, title=title)
         yield review.save()
 
         self.write('OK')

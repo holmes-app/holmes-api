@@ -52,7 +52,8 @@ class LinkCrawlerValidator(Validator):
 
         self.add_fact(
             key='total.number.links',
-            value=num_links
+            value=num_links,
+            title='Links'
         )
 
         self.flush()

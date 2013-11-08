@@ -54,7 +54,8 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests',
-                value=69
+                value=69,
+                title='Total requests'
             ))
 
         expect(validator.add_violation.called).to_be_false()
@@ -98,7 +99,8 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests',
-                value=0
+                value=0,
+                title='Total requests'
             ))
 
         expect(validator.add_violation.called).to_be_false()
@@ -140,7 +142,8 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_fact.call_args_list).to_include(
             call(
                 key='total.requests',
-                value=0
+                value=0,
+                title='Total requests'
             ))
 
         expect(validator.add_violation.called).to_be_false()

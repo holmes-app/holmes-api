@@ -10,7 +10,8 @@ class JSRequestsValidator(Validator):
 
         self.add_fact(
             key='total.requests.js',
-            value=len(js_files)
+            value=len(js_files),
+            title='Total JS requests'
         )
 
         results = self.process_js_requests(js_files)
@@ -19,14 +20,16 @@ class JSRequestsValidator(Validator):
         self.add_fact(
             key='total.size.js',
             value=total_size,
-            unit='kb'
+            unit='kb',
+            title='Total JS size'
         )
 
         total_size_gzip = sum([len(self.to_gzip(item['content'])) for item in results.values()]) / 1024.0
         self.add_fact(
             key='total.size.js.gzipped',
             value=total_size_gzip,
-            unit='kb'
+            unit='kb',
+            title='Total JS size gzipped'
         )
 
         if len(js_files) > self.reviewer.config.MAX_JS_REQUESTS_PER_PAGE:

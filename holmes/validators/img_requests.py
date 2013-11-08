@@ -10,7 +10,8 @@ class ImageRequestsValidator(Validator):
 
         self.add_fact(
             key='total.requests.img',
-            value=len(img_files)
+            value=len(img_files),
+            title='Total images requests'
         )
 
         results = self.process_img_requests(img_files)
@@ -35,7 +36,8 @@ class ImageRequestsValidator(Validator):
         self.add_fact(
             key='total.size.img',
             value=total_size,
-            unit='kb'
+            unit='kb',
+            title='Total images size'
         )
 
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:

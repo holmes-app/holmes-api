@@ -27,7 +27,7 @@ class TestFactHandler(ApiTestCase):
             yield self.http_client.fetch(
                 url,
                 method='POST',
-                body='key=test.fact&unit=kb&value=10'
+                body='key=test.fact&unit=kb&title=test&value=10'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -53,7 +53,7 @@ class TestFactHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             url,
             method='POST',
-            body='key=test.fact&unit=kb&value=10'
+            body='key=test.fact&unit=kb&title=test&value=10'
         )
 
         expect(response.code).to_equal(200)
@@ -68,3 +68,4 @@ class TestFactHandler(ApiTestCase):
         expect(fact.key).to_equal('test.fact')
         expect(fact.unit).to_equal('kb')
         expect(fact.value).to_equal('10')
+        expect(fact.title).to_equal('test')
