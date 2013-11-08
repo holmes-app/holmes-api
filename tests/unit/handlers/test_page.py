@@ -341,3 +341,34 @@ class TestPagesHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect('Access-Control-Allow-Origin' in response.headers).to_be_true()
         expect(response.headers['Access-Control-Allow-Origin']).to_be_like('*')
+
+
+class TestPageReviewsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_page_reviews(self):
+        dt1 = datetime(2010, 11, 12, 13, 14, 15)
+        dt2 = datetime(2011, 12, 13, 14, 15, 16)
+
+        domain = yield DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
+
+        page = yield PageFactory.create(domain=domain)
+
+        review1 = yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt1, number_of_violations=20)
+        review2 = yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page/%s/reviews/' % page.uuid)
+        )
+
+        expect(response.code).to_equal(200)
+
+        page_details = loads(response.body)
+
+        expect(page_details[0]['violationCount']).to_equal(30)
+        expect(page_details[0]['uuid']).to_equal(str(review2.uuid))
+        expect(page_details[0]['completedDate']).to_equal(dt2.isoformat())
+
+        expect(page_details[1]['violationCount']).to_equal(20)
+        expect(page_details[1]['uuid']).to_equal(str(review1.uuid))
+        expect(page_details[1]['completedDate']).to_equal(dt1.isoformat())

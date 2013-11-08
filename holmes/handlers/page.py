@@ -6,10 +6,10 @@ from uuid import UUID
 from ujson import loads, dumps
 from tornado import gen
 import tornado.httpclient
-from motorengine import Q
+from motorengine import Q, DESCENDING
 import logging
 
-from holmes.models import Page, Domain
+from holmes.models import Page, Domain, Review
 from holmes.utils import get_domain_from_url
 from holmes.handlers import BaseHandler
 
@@ -120,6 +120,36 @@ class PageHandler(BaseHandler):
         self.write(page_json)
         self.finish()
 
+
+class PageReviewsHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self, uuid='', limit=10):
+        uuid = UUID(uuid)
+
+        page = yield Page.objects.get(uuid=uuid)
+
+        if not page:
+            self.set_status(404, 'Page UUID [%s] not found' % uuid)
+            self.finish()
+            return
+
+        reviews = yield Review.objects \
+            .filter(page=page, is_complete=True) \
+            .limit(limit) \
+            .order_by(Review.completed_date, DESCENDING) \
+            .find_all()
+
+        result = []
+        for review in reviews:
+            result.append({
+                'uuid': str(review.uuid),
+                'completedDate': review.completed_date.isoformat(),
+                'violationCount': review.violation_count
+            })
+
+        self.write_json(result)
+        self.finish()
 
 class PagesHandler(BaseHandler):
 
