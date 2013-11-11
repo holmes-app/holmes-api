@@ -57,10 +57,18 @@ class Reviewer(object):
             }
 
     def _get(self, url):
-        return requests.get(url, proxies=self.proxies)
+        if self.proxies:
+            logging.debug('Getting "%s" using proxy "%s:%s"...' % self.proxies.get('http', None))
+            return requests.get(url, proxies=self.proxies)
+
+        return requests.get(url)
 
     def _post(self, url, data):
-        return requests.post(url, data=data, proxies=self.proxies)
+        if self.proxies:
+            logging.debug('Posting to "%s" using proxy "%s:%s"...' % self.proxies.get('http', None))
+            return requests.post(url, data=data, proxies=self.proxies)
+
+        return requests.post(url, data=data)
 
     def review(self):
         self.load_content()
