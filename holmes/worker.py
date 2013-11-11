@@ -112,7 +112,7 @@ class HolmesWorker(Shepherd):
             return False
 
         try:
-            url = '/worker/%s/review/%s/complete' % (self.uuid, review_uuid),
+            url = '/worker/%s/review/%s/complete' % (self.uuid, review_uuid)
             response = self.post(url, data=dumps({'error': error}))
             return ('OK' == response.text)
         except ConnectionError:
