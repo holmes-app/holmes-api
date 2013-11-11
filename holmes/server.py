@@ -3,6 +3,7 @@
 
 from cow.server import Server
 from cow.plugins.motorengine_plugin import MotorEnginePlugin
+from tornado.httpclient import AsyncHTTPClient
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler
 from holmes.handlers.worker_state import WorkerStateHandler
@@ -22,6 +23,7 @@ from holmes.handlers.domains import (
 
 
 def main():
+    AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
     HolmesApiServer.run()
 
 

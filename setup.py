@@ -49,6 +49,7 @@ Holmes is a service to investigate your website health.
         'lxml',
         'cssselect',
         'sheep==0.3.1',
+        'pycurl',
     ],
     extras_require={
         'tests': tests_require,
