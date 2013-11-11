@@ -27,6 +27,10 @@ class HolmesWorker(Shepherd):
 
         self.validators = self._load_validators()
 
+    def post(self, url, data={}):
+        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
+        return requests.post(url, data=data)
+
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (
             Fore.BLUE,
@@ -40,7 +44,7 @@ class HolmesWorker(Shepherd):
 
     def stop_work(self):
         try:
-            requests.post('%s/worker/%s/dead' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
+            self.post('/worker/%s/dead' % self.uuid, data={'worker_uuid': self.uuid})
         except ConnectionError:
             pass
         self.working = False
@@ -76,7 +80,7 @@ class HolmesWorker(Shepherd):
 
     def _ping_api(self):
         try:
-            requests.post('%s/worker/%s/alive' % (self.config.HOLMES_API_URL, self.uuid), data={'worker_uuid': self.uuid})
+            self.post('/worker/%s/alive' % self.uuid, data={'worker_uuid': self.uuid})
             return True
         except ConnectionError:
             logging.fatal('Fail to ping API [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
@@ -85,7 +89,7 @@ class HolmesWorker(Shepherd):
 
     def _load_next_job(self):
         try:
-            response = requests.post('%s/next' % self.config.HOLMES_API_URL, data={})
+            response = self.post('/next')
             if response and response.text:
                 return loads(response.text)
         except ConnectionError:
@@ -97,8 +101,7 @@ class HolmesWorker(Shepherd):
             return False
 
         try:
-            response = requests.post('%s/worker/%s/review/%s/start' %
-                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid))
+            response = self.post('/worker/%s/review/%s/start' % (self.uuid, review_uuid))
             return ('OK' == response.text)
 
         except ConnectionError:
@@ -109,9 +112,8 @@ class HolmesWorker(Shepherd):
             return False
 
         try:
-            response = requests.post('%s/worker/%s/review/%s/complete' %
-                                    (self.config.HOLMES_API_URL, self.uuid, review_uuid),
-                                     data=dumps({'error': error}))
+            url = '/worker/%s/review/%s/complete' % (self.uuid, review_uuid),
+            response = self.post(url, data=dumps({'error': error}))
             return ('OK' == response.text)
         except ConnectionError:
             logging.error('Fail to complete worker.')
