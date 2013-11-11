@@ -22,7 +22,7 @@ class HolmesWorker(Shepherd):
         super(HolmesWorker, self).__init__(*args, **kw)
 
         self.root_path = abspath(join(dirname(__file__), '..'))
-        self.uuid = uuid4().hex
+        self.uuid = None
         self.working = True
 
         self.validators = self._load_validators()
@@ -50,6 +50,9 @@ class HolmesWorker(Shepherd):
         self.working = False
 
     def do_work(self):
+        if self.uuid is None:
+            self.uuid = uuid4().hex
+
         if self._ping_api():
             err = None
             job = self._load_next_job()
