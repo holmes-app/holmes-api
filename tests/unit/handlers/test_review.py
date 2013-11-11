@@ -74,7 +74,8 @@ class TestReviewHandler(ApiTestCase):
             'createdAt': dt,
             'completedAt': None,
             'violationPoints': 100,
-            'violationCount': 1
+            'violationCount': 1,
+            'completedDateISO': None
         }
 
         expect(loads(response.body)).to_be_like(expected)

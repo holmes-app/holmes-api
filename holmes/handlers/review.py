@@ -35,10 +35,16 @@ class ReviewHandler(BaseReviewHandler):
         yield review.load_references(['page'])
         yield review.page.load_references(['domain'])
 
+        if review.completed_date:
+            completed_data_iso = review.completed_date.isoformat()
+        else:
+            completed_data_iso = None
+
         result = review.to_dict()
         result.update({
             'violationPoints': review.get_violation_points(),
-            'violationCount': review.violation_count
+            'violationCount': review.violation_count,
+            'completedDateISO': completed_data_iso
         })
 
         self.write_json(result)
