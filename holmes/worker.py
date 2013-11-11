@@ -29,7 +29,19 @@ class HolmesWorker(Shepherd):
 
     def post(self, url, data={}):
         url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.post(url, data=data)
+
+        proxies = None
+        if self.config.HTTP_PROXY_HOST is not None:
+            proxy = "%s:%s" % (self.config.HTTP_PROXY_HOST, self.config.HTTP_PROXY_PORT)
+            http_proxy = proxy
+            https_proxy = proxy
+
+            proxies = {
+                "http": http_proxy,
+                "https": https_proxy,
+            }
+
+        return requests.post(url, data=data, proxies=proxies)
 
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (

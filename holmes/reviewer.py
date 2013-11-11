@@ -45,6 +45,23 @@ class Reviewer(object):
         self.raw_responses = {}
         self.status_codes = {}
 
+        self.proxies = None
+        if self.config.HTTP_PROXY_HOST is not None:
+            proxy = "%s:%s" % (self.config.HTTP_PROXY_HOST, self.config.HTTP_PROXY_PORT)
+            http_proxy = proxy
+            https_proxy = proxy
+
+            self.proxies = {
+                "http": http_proxy,
+                "https": https_proxy,
+            }
+
+    def _get(self, url):
+        return requests.get(url, proxies=self.proxies)
+
+    def _post(self, url, data):
+        return requests.post(url, data=data, proxies=self.proxies)
+
     def review(self):
         self.load_content()
         self.run_validators()
@@ -70,7 +87,7 @@ class Reviewer(object):
         self.responses[url] = {}
 
         try:
-            response = requests.get(url)
+            response = self._get(url)
             self.raw_responses[url] = response
         except Exception:
             result = {
@@ -113,7 +130,7 @@ class Reviewer(object):
     def get_status_code(self, url):
         if not url in self.status_codes:
             try:
-                response = requests.request(method='GET', url=url, stream=True, timeout=10.0)
+                response = requests.request(method='GET', url=url, stream=True, timeout=10.0, proxies=self.proxies)
                 response.iter_lines().next()
                 self.raw_responses[url] = response
                 self.status_codes[url] = response.status_code
@@ -151,7 +168,7 @@ class Reviewer(object):
             }
             error_message = "Could not enqueue the " + str(len(urls)) + " pages sent! Status Code: %d, Error: %s"
 
-        response = requests.post(post_url, data=data)
+        response = self._post(post_url, data=data)
 
         if response.status_code > 399:
             raise InvalidReviewError(error_message % (
@@ -163,7 +180,7 @@ class Reviewer(object):
         url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
 
         try:
-            response = requests.post(url, data={
+            response = self._post(url, data={
                 'key': key,
                 'value': value,
                 'title': title,
@@ -188,7 +205,7 @@ class Reviewer(object):
         url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
 
         try:
-            response = requests.post(url, data={
+            response = self._post(url, data={
                 'key': key,
                 "title": title,
                 "description": description,
@@ -213,7 +230,7 @@ class Reviewer(object):
         url = self.get_url('/page/%s/review/%s/complete' % (self.page_uuid, self.review_uuid))
 
         try:
-            response = requests.post(url, data={})
+            response = self._post(url, data={})
         except ConnectionError:
             raise InvalidReviewError("Could not complete review %s! ConnectionError - %s" % (
                 self.review_uuid,
