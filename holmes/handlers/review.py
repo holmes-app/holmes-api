@@ -96,3 +96,23 @@ class CompleteReviewHandler(BaseReviewHandler):
         dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
         query = Q(page=review.page) & Q(uuid__ne=review.uuid) & Q(created_date__gte=dt)
         yield Review.objects.filter(query).delete()
+
+
+class LastReviewsHandler(BaseReviewHandler):
+    @gen.coroutine
+    def get(self):
+        reviews = yield Review.get_last_reviews()
+
+        reviews_json = []
+        for review in reviews:
+            yield review.load_references(['page', 'domain'])
+            review_dict = review.to_dict()
+            data = {
+                'violationCount': review.violation_count,
+                'completedDateISO': review.completed_date.isoformat()
+            }
+            review_dict.update(data)
+            reviews_json.append(review_dict)
+
+        self.write_json(reviews_json)
+        self.finish()

@@ -14,7 +14,9 @@ from holmes.handlers.fact import CreateFactHandler
 from holmes.handlers.violation import (
     CreateViolationHandler, MostCommonViolationsHandler
 )
-from holmes.handlers.review import ReviewHandler, CompleteReviewHandler
+from holmes.handlers.review import (
+    ReviewHandler, CompleteReviewHandler, LastReviewsHandler
+)
 from holmes.handlers.next_job import NextJobHandler
 from holmes.handlers.domains import (
     DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler,
@@ -31,6 +33,7 @@ class HolmesApiServer(Server):
     def get_handlers(self):
         handlers = [
             (r'/most-common-violations/?', MostCommonViolationsHandler),
+            (r'/last-reviews/?', LastReviewsHandler),
             (r'/workers/?', WorkersHandler),
             (r'/worker/([a-z0-9-]*)/(alive|dead)/?', WorkerHandler),
             (r'/worker/([a-z0-9-]*)/review/([a-z0-9-]*)/(start|complete)', WorkerStateHandler),

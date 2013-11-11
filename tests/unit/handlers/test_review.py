@@ -248,3 +248,52 @@ class TestCompleteReviewHandler(ApiTestCase):
         expect(reviews_uuids).to_include(str(review_yesterday.uuid))
         expect(reviews_uuids).to_include(str(review_new.uuid))
         expect(reviews_uuids).not_to_include(str(review_old.uuid))
+
+
+class TestLastReviewsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_last_reviews(self):
+        domain = yield DomainFactory.create()
+        page = yield PageFactory.create(domain=domain)
+
+        date_now = datetime(2013, 11, 12, 13, 25, 27)
+
+        review = yield ReviewFactory.create(page=page,
+                                            is_active=True,
+                                            is_complete=False,
+                                            completed_date=date_now,
+                                            created_date=date_now)
+
+        review.add_fact('fact', 'value', 'title', 'kb')
+        review.add_violation('violation', 'title', 'description', 100)
+        review.is_complete = True
+        yield review.save()
+
+        url = self.get_url('/last-reviews')
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        dt = calendar.timegm(date_now.utctimetuple())
+
+        expected = [{
+            'domain': domain.name,
+            'page': page.to_dict(),
+            'uuid': str(review.uuid),
+            'isComplete': True,
+            'facts': [
+                {u'key': u'fact', u'value': u'value', u'title': u'title',
+                 u'unit': u'kb'}
+            ],
+            'violations': [
+                {u'points': 100, u'description': u'description',
+                 u'key': u'violation', u'title': u'title'}
+            ],
+            'createdAt': dt,
+            'completedAt': dt,
+            'violationCount': 1,
+            'completedDateISO': date_now.isoformat()
+        }]
+
+        expect(loads(response.body)).to_be_like(expected)

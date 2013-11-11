@@ -3,6 +3,8 @@
 
 from uuid import uuid4
 
+from tornado.concurrent import return_future
+from motorengine import DESCENDING
 from motorengine import (
     Document, ReferenceField, DateTimeField,
     ListField, EmbeddedDocumentField, BooleanField,
@@ -72,3 +74,26 @@ class Review(Document):
         for violation in self.violations:
             points += violation.points
         return points
+
+    @classmethod
+    def handle_get_last_reviews(cls, callback):
+        def handle(*arguments, **kwargs):
+            if len(arguments) > 1 and arguments[1]:
+                raise arguments[1]
+
+            if not arguments[0]:
+                callback([])
+                return
+
+            callback(arguments[0])
+
+        return handle
+
+    @classmethod
+    @return_future
+    def get_last_reviews(cls, limit=12, callback=None):
+        Review.objects \
+            .filter(is_active=True) \
+            .order_by(Review.completed_date, DESCENDING) \
+            .limit(limit) \
+            .find_all(callback=cls.handle_get_last_reviews(callback))
