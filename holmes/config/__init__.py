@@ -43,3 +43,6 @@ Config.define('MAX_TITLE_SIZE', 80,
               'Title tags longer than 80 characters may be truncated in the results', 'Title Validator')
 
 Config.define('ORIGIN', '*', 'Access Control Allow Origin header value', 'Web')
+
+Config.define('HTTP_PROXY_HOST', None, 'HTTP Proxy Host to use', 'Web')
+Config.define('HTTP_PROXY_PORT', None, 'HTTP Proxy Port to use', 'Web')

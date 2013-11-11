@@ -35,7 +35,12 @@ class PageHandler(BaseHandler):
             return
 
         client = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(client.fetch, url)
+        request = tornado.httpclient.HTTPRequest(
+            url=url,
+            proxy_host=self.application.config.HTTP_PROXY_HOST,
+            proxy_port=self.application.config.HTTP_PROXY_PORT
+        )
+        response = yield tornado.gen.Task(client.fetch, request)
         if response.code > 399:
             self.set_status(400, 'Invalid URL [%s]' % url)
             self.write(dumps({
