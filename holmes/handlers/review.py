@@ -32,8 +32,7 @@ class ReviewHandler(BaseReviewHandler):
             self.finish()
             return
 
-        yield review.load_references(['page'])
-        yield review.page.load_references(['domain'])
+        yield review.load_references(['page', 'domain'])
 
         if review.completed_date:
             completed_data_iso = review.completed_date.isoformat()
