@@ -12,7 +12,7 @@ class Validator(object):
         return bool(urlparse.urlparse(url).scheme)
 
     def rebase(self, url):
-        return urlparse.urljoin(self.page_url.rstrip('/'))
+        return urlparse.urljoin(self.page_url.rstrip('/'), url)
 
     @property
     def page_uuid(self):
