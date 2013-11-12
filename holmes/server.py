@@ -22,6 +22,10 @@ from holmes.handlers.domains import (
     DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler,
     DomainReviewsHandler
 )
+from holmes.handlers.search import (
+    SearchHandler
+)
+
 
 
 def main():
@@ -44,6 +48,7 @@ class HolmesApiServer(Server):
             (r'/page/([a-z0-9-]*)/reviews/?', PageReviewsHandler),
             (r'/page/([a-z0-9-]*)/violations-per-day/?', PageViolationsPerDayHandler),
             (r'/page/([a-z0-9-]*)/?', PageHandler),
+            (r'/search/?', SearchHandler),
             (r'/page/?', PageHandler),
             (r'/pages/?', PagesHandler),
             (r'/domains/?', DomainsHandler),
