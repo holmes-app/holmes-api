@@ -27,7 +27,7 @@ class WorkerTestCase(ApiTestCase):
     root_path = abspath(join(dirname(__file__), '..', '..'))
 
     def get_worker(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = holmes.worker.HolmesWorker([])
         worker.config = Config(**self.get_config())
         return worker
 
@@ -40,19 +40,6 @@ class WorkerTestCase(ApiTestCase):
                              ]
         return cfg
 
-    @patch('holmes.worker.HolmesWorker')
-    def test_worker_main_function(self, worker_mock):
-        holmes.worker.main()
-        expect(worker_mock().run.called).to_be_true()
-
-    @patch('time.sleep')
-    def test_worker_sleep_time(self, worker_sleep):
-        worker = self.get_worker()
-        worker._do_work = Mock()
-        worker_sleep.side_effect = lambda *args: worker.stop_work()
-        worker.run()
-        worker_sleep.assert_called_once_with(1)
-
     @patch('requests.post')
     def test_worker_working_flag(self, requests_mock):
         worker = self.get_worker()
@@ -64,49 +51,13 @@ class WorkerTestCase(ApiTestCase):
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/dead' % worker.uuid,
+            proxies=None,
             data={'worker_uuid': worker.uuid}
         )
 
-    @patch.object(holmes.worker.HolmesWorker, '_do_work')
-    def test_worker_run_keyboard_interrupt(self, do_work_mock):
-        do_work_mock.side_effect = KeyboardInterrupt()
-
-        worker = self.get_worker()
-        worker.run()
-        expect(worker.working).to_be_false()
-
     def test_worker_can_create_an_instance(self):
-        worker = holmes.worker.HolmesWorker()
+        worker = holmes.worker.HolmesWorker([])
         expect(worker.working).to_be_true()
-
-    def test_worker_can_parse_opt(self):
-        worker = self.get_worker()
-        expect(worker.options.conf).not_to_equal('test.conf')
-        expect(worker.options.verbose).to_equal(0)
-
-        worker._parse_opt(arguments=['-c', 'test.conf', '-vv'])
-        expect(worker.options.conf).to_equal('test.conf')
-        expect(worker.options.verbose).to_equal(2)
-
-    def test_worker_can_create_an_instance_with_config_file(self):
-        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/unit/config/test_one_validator.conf')])
-        expect(worker.config.VALIDATORS).to_length(1)
-
-    @patch('holmes.worker.verify_config')
-    def test_worker_validating_config_load(self, verify_config_mock):
-        worker = self.get_worker()
-        worker._load_config(verify=True)
-        expect(verify_config_mock.called).to_be_true()
-
-    def test_worker_logging_config_from_arguments(self):
-        worker = holmes.worker.HolmesWorker(['', '-v'])
-        log_level = worker._config_logging()
-        expect(log_level).to_equal('WARNING')
-
-    def test_worker_logging_config_from_file(self):
-        worker = holmes.worker.HolmesWorker(['-c', join(self.root_path, './tests/unit/config/test_one_validator.conf')])
-        log_level = worker._config_logging()
-        expect(log_level).to_equal('INFO')
 
     def test_worker_do_work(self):
         worker = self.get_worker()
@@ -118,7 +69,7 @@ class WorkerTestCase(ApiTestCase):
         worker._start_reviewer = Mock()
         worker._complete_job = Mock()
 
-        worker._do_work()
+        worker.do_work()
 
         expect(worker._ping_api.called).to_be_true()
         expect(worker._load_next_job.called).to_be_true()
@@ -129,9 +80,9 @@ class WorkerTestCase(ApiTestCase):
 
     @patch.object(holmes.worker.HolmesWorker, '_ping_api')
     def test_worker_do_work_calling_ping_api(self, ping_api_mock):
-        worker = holmes.worker.HolmesWorker()
+        worker = holmes.worker.HolmesWorker([])
         worker._load_next_job = Mock(return_value=None)
-        worker._do_work()
+        worker.do_work()
         expect(ping_api_mock.called).to_be_true()
 
     @patch('requests.post')
@@ -141,14 +92,15 @@ class WorkerTestCase(ApiTestCase):
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/alive' % worker.uuid,
-            data={'worker_uuid': worker.uuid}
+            data={'worker_uuid': worker.uuid},
+            proxies=None
         )
 
     @patch('requests.post')
     def test_worker_ping_api_connection_error(self, ping_api_mock):
         ping_api_mock.side_effect = ConnectionError()
         worker = self.get_worker()
-        worker._do_work()
+        worker.do_work()
         expect(worker.working).to_be_false()
 
     @patch('requests.post')
@@ -166,7 +118,10 @@ class WorkerTestCase(ApiTestCase):
         worker._load_next_job()
 
         expect(load_next_job_mock.called).to_be_true()
-        load_next_job_mock.assert_called_once_with('http://localhost:2368/next', data={})
+        load_next_job_mock.assert_called_once_with(
+            'http://localhost:2368/next',
+            data={},
+            proxies=None)
 
     @patch('requests.post')
     def test_worker_load_next_job_without_jobs(self, load_next_job_mock):
@@ -193,7 +148,7 @@ class WorkerTestCase(ApiTestCase):
 
         requests.post = Mock(return_value=response)
 
-        worker = holmes.worker.HolmesWorker()
+        worker = holmes.worker.HolmesWorker([])
         next_job = worker._load_next_job()
 
         expect(next_job).not_to_be_null()
@@ -216,7 +171,9 @@ class WorkerTestCase(ApiTestCase):
         result = worker._start_job(self.ZERO_UUID)
         expect(requests_mock.called).to_be_true()
         requests_mock.assert_called_once_with(
-            'http://localhost:2368/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID)
+            'http://localhost:2368/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID),
+            proxies=None,
+            data={}
         )
         expect(result).to_be_true()
 
@@ -244,7 +201,8 @@ class WorkerTestCase(ApiTestCase):
         worker._complete_job(self.ZERO_UUID)
         requests_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID),
-            data='{"error":null}')
+            data='{"error":null}',
+            proxies=None)
 
     @patch('requests.post')
     def test_worker_complete_null_job(self, requests_mock):
@@ -264,7 +222,7 @@ class WorkerTestCase(ApiTestCase):
         worker._start_job = Mock()
         worker._complete_job = Mock()
 
-        worker._do_work()
+        worker.do_work()
 
         expect(worker._start_job.called).to_be_false()
         expect(worker._complete_job.called).to_be_false()
@@ -284,7 +242,7 @@ class WorkerTestCase(ApiTestCase):
         worker._start_reviewer = Mock()
         worker._complete_job = Mock()
 
-        worker._do_work()
+        worker.do_work()
 
         expect(worker._start_job.called).to_be_true()
         expect(worker._complete_job.called).to_be_true()
@@ -304,7 +262,7 @@ class WorkerTestCase(ApiTestCase):
         worker._start_reviewer = Mock(side_effect=InvalidReviewError)
         worker._complete_job = Mock()
 
-        worker._do_work()
+        worker.do_work()
 
         expect(worker._start_job.called).to_be_true()
         expect(worker._complete_job.called).to_be_true()

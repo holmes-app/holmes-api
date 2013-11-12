@@ -18,9 +18,7 @@ from holmes.reviewer import Reviewer, InvalidReviewError
 
 
 class HolmesWorker(Shepherd):
-    def __init__(self, *args, **kw):
-        super(HolmesWorker, self).__init__(*args, **kw)
-
+    def initialize(self):
         self.root_path = abspath(join(dirname(__file__), '..'))
         self.uuid = None
         self.working = True
