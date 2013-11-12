@@ -85,7 +85,6 @@ class TestBaseValidator(ApiTestCase):
             validators=[]
         )
 
-        _, domain_url = get_domain_from_url(page.url)
         validator = Validator(reviewer)
 
         expect(validator.rebase('index.png')).to_equal('http://globoi.com/test/index.png')
