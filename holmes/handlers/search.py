@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ujson import dumps
 from tornado import gen
 
 from holmes.models import Page
@@ -16,11 +15,6 @@ class SearchHandler(BaseHandler):
 
         pages = yield Page.objects.filter(url=term, last_review_date__is_null=False).find_all()
 
-        if not pages:
-            self.set_status(404)
-            self.finish()
-            return
-
         pages_json = []
 
         for page in pages:
@@ -33,5 +27,5 @@ class SearchHandler(BaseHandler):
                 "reviewId": str(page.last_review.uuid)
             })
 
-        self.write(dumps(pages_json))
+        self.write_json(pages_json)
         self.finish()
