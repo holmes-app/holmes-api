@@ -73,7 +73,7 @@ class TestBaseValidator(ApiTestCase):
     @gen_test
     def test_can_rebase(self):
         domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+        page = yield PageFactory.create(domain=domain, url='http://globoi.com/test/index.html')
         review = yield ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
@@ -88,7 +88,8 @@ class TestBaseValidator(ApiTestCase):
         _, domain_url = get_domain_from_url(page.url)
         validator = Validator(reviewer)
 
-        expect(validator.rebase('index.html')).to_equal('%s%s' % (domain_url, 'index.html'))
+        expect(validator.rebase('index.png')).to_equal('http://globoi.com/test/index.png')
+        expect(validator.rebase('/index.png')).to_equal('http://globoi.com/index.png')
 
     @gen_test
     def test_will_call_reviewer_enqueue(self):
