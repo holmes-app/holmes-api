@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 from tornado import gen
 from uuid import UUID
-from ujson import dumps
 
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
@@ -57,5 +56,5 @@ class WorkersHandler(BaseHandler):
                     worker_dict['page_uuid'] = str(page.uuid)
             workers_json.append(worker_dict)
 
-        self.write(dumps(workers_json))
+        self.write_json(workers_json)
         self.finish()

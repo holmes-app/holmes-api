@@ -4,16 +4,15 @@
 from random import choice
 from datetime import datetime, timedelta
 
-from tornado.web import RequestHandler
 from tornado import gen
-from ujson import dumps
 from motorengine import Q
 
+from holmes.handlers import BaseHandler
 from holmes.models.page import Page
 from holmes.models.review import Review
 
 
-class NextJobHandler(RequestHandler):
+class NextJobHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
@@ -54,10 +53,10 @@ class NextJobHandler(RequestHandler):
         page.last_review_started_date = datetime.now()
         yield page.save()
 
-        self.write(dumps({
+        self.write_json({
             'page': str(page.uuid),
             'review': str(review.uuid),
             'url': page.url
-        }))
+        })
 
         self.finish()
