@@ -11,7 +11,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Page, Domain
+from holmes.models import Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -39,7 +39,6 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_can_save_known_domain(self):
         DomainFactory.create(url='http://www.globo.com', name='globo.com')
-        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -81,7 +80,6 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists(self):
         page = PageFactory.create(url="http://www.globo.com")
-        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -97,7 +95,6 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists_with_slash(self):
         page = PageFactory.create(url="http://www.globo.com/")
-        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -116,7 +113,6 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists_without_slash(self):
         page = PageFactory.create(url="http://www.globo.com")
-        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -150,7 +146,6 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_get_page_get_info(self):
         page = PageFactory.create()
-        self.db.flush()
 
         response = yield self.http_client.fetch(self.get_url('/page/%s' % page.uuid))
 
@@ -192,8 +187,6 @@ class TestPagesHandler(ApiTestCase):
     def test_saves_only_new_pages(self):
         domain = DomainFactory.create(name='globo.com', url='http://globo.com')
         page = PageFactory.create(domain=domain, url='http://www.globo.com/')
-
-        self.db.flush()
 
         urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(10)]
         urls.append(page.url)
@@ -314,8 +307,6 @@ class TestViolationsPerDayHandler(ApiTestCase):
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
         ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
-
-        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page/%s/violations-per-day/' % page.uuid)
