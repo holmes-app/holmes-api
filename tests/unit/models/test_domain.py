@@ -170,15 +170,16 @@ class TestDomain(ApiTestCase):
 
         expect(reviews[0].id).to_equal(review.id)
 
-    #@gen_test
-    #def test_invalid_domain_returns_404(self):
-        #try:
-            #domain_name = 'domain-details.com'
-            #yield Domain.get_domain_by_name(domain_name)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.status_code).to_equal(404)
-            #expect(err.reason).to_be_like('Domain with name "%s" was not found!' % domain_name)
-        #else:
-            #assert False, 'Should not have got this far'
+    def test_invalid_domain_returns_None(self):
+        domain_name = 'domain-details.com'
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        expect(domain).to_be_null()
+
+    def test_can_get_domain_by_name(self):
+        domain = DomainFactory.create()
+        self.db.flush()
+
+        loaded_domain = Domain.get_domain_by_name(domain.name, self.db)
+
+        expect(loaded_domain.id).to_equal(domain.id)

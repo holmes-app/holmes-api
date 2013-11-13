@@ -105,6 +105,9 @@ class Domain(Base):
 
         return db.query(Review).filter(Review.is_active == True).filter(Review.domain == self)[lower_bound:upper_bound]
 
+    @classmethod
+    def get_domain_by_name(self, domain_name, db):
+        return db.query(Domain).filter(Domain.name == domain_name).first()
 
 #class Domain(Document):
     #url = URLField(required=True)
