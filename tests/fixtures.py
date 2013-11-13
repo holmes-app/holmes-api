@@ -5,7 +5,7 @@ import factory
 import factory.alchemy
 from tornado.concurrent import return_future
 
-from holmes.models import Domain, Page, Review, Worker, Violation
+from holmes.models import Domain, Page, Review, Worker, Violation, Fact
 from uuid import uuid4
 
 
@@ -43,7 +43,7 @@ class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
     last_review_started_date = None
     last_review_date = None
 
-    domain = None
+    domain = factory.SubFactory(DomainFactory)
     #last_review = None
 
 
@@ -57,13 +57,12 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
     is_active = False
     created_date = None
     completed_date = None
-    page = None
+
+    domain = factory.SubFactory(DomainFactory)
+    page = factory.SubFactory(PageFactory)
 
     @classmethod
     def _adjust_kwargs(cls, **kwargs):
-        if 'page' in kwargs and kwargs['page'] is not None:
-            kwargs['domain'] = kwargs['page'].domain
-
         #if 'number_of_violations' in kwargs:
             #number_of_violations = kwargs['number_of_violations']
             #del kwargs['number_of_violations']
@@ -82,11 +81,29 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
         return kwargs
 
 
+class FactFactory(factory.alchemy.SQLAlchemyModelFactory):
+    FACTORY_FOR = Fact
+
+    title = factory.Sequence(lambda n: 'fact-{0}'.format(n))
+    key = factory.Sequence(lambda n: 'fact-key-{0}'.format(n))
+    unit = "value"
+    value = None
+    review = factory.SubFactory(ReviewFactory)
+
+
+class ViolationFactory(factory.alchemy.SQLAlchemyModelFactory):
+    FACTORY_FOR = Violation
+
+    title = factory.Sequence(lambda n: 'violation-{0}'.format(n))
+    key = factory.Sequence(lambda n: 'violation-key-{0}'.format(n))
+    description = factory.Sequence(lambda n: 'violation-description-{0}'.format(n))
+    points = 0
+    review = factory.SubFactory(ReviewFactory)
+
+
 class WorkerFactory(MotorEngineFactory):
     FACTORY_FOR = Worker
 
     uuid = factory.LazyAttribute(lambda a: uuid4())
     last_ping = None
     current_review = None
-
-

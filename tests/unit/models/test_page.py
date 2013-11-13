@@ -7,14 +7,13 @@ from preggy import expect
 from tornado.testing import gen_test
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory
 
 
 class TestPage(ApiTestCase):
     @gen_test
     def test_can_create_page(self):
-        domain = DomainFactory.create()
-        page = PageFactory.create(domain=domain)
+        page = PageFactory.create()
 
         self.db.flush()
 
@@ -27,8 +26,7 @@ class TestPage(ApiTestCase):
         expect(page.last_review_date).to_be_null()
 
     def test_can_convert_page_to_dict(self):
-        domain = DomainFactory.create()
-        page = PageFactory.create(domain=domain)
+        page = PageFactory.create()
 
         page_dict = page.to_dict()
 

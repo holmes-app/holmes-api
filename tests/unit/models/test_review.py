@@ -9,21 +9,20 @@ from preggy import expect
 
 from holmes.models import Review
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import ReviewFactory
 
 
 class TestReview(ApiTestCase):
     def test_can_create_review(self):
-        domain = DomainFactory.create()
-        page = PageFactory.create(domain=domain)
-        review = ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
 
         self.db.flush()
 
         expect(review.id).not_to_be_null()
         expect(review.created_date).to_be_like(datetime.now())
 
-        expect(review.page.id).to_equal(page.id)
+        expect(review.page).not_to_be_null()
+        expect(review.domain).not_to_be_null()
 
         loaded = self.db.query(Review).get(review.id)
 
@@ -83,4 +82,3 @@ class TestReview(ApiTestCase):
         #review = ReviewFactory.build()
         #review.failure_message = "Invalid Page"
         #expect(review.failed).to_be_true()
-

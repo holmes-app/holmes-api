@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
 from holmes.models import Base
-#from holmes.models.page import Page
+from holmes.models.page import Page
 #from holmes.models.review import Review
 
 
@@ -27,6 +27,10 @@ class Domain(Base):
             "url": self.url,
             "name": self.name
         }
+
+    @classmethod
+    def get_pages_per_domain(cls, db):
+        return dict(db.query(Page.domain_id, sa.func.count(Page.id)).group_by(Page.domain_id).all())
 
 
 #class Domain(Document):

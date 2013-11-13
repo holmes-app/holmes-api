@@ -23,24 +23,24 @@ class TestDomain(ApiTestCase):
         expect(domain.url).to_include('http://my-site-')
         expect(domain.name).to_include('domain-')
 
-    #def test_can_get_pages_per_domain(self):
-        #domain = DomainFactory.create()
-        #domain2 = DomainFactory.create()
-        #DomainFactory.create()
-        #self.db.flush()
+    def test_can_get_pages_per_domain(self):
+        domain = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        DomainFactory.create()
+        self.db.flush()
 
-        #yield PageFactory.create(domain=domain)
-        #yield PageFactory.create(domain=domain)
-        #yield PageFactory.create(domain=domain2)
-        #yield PageFactory.create(domain=domain2)
-        #yield PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain)
+        PageFactory.create(domain=domain)
+        PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain2)
 
-        #pages_per_domain = yield Domain.get_pages_per_domain()
+        pages_per_domain = Domain.get_pages_per_domain(self.db)
 
-        #expect(pages_per_domain).to_be_like({
-            #domain._id: 2,
-            #domain2._id: 3
-        #})
+        expect(pages_per_domain).to_be_like({
+            domain.id: 2,
+            domain2.id: 3
+        })
 
     def test_can_convert_to_dict(self):
         domain = DomainFactory.create()
