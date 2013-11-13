@@ -38,7 +38,7 @@ class TitleValidator(Validator):
         self.add_fact(
             key='page.title',
             value=title[0].text,
-            title='Title'
+            title='Page Title'
         )
 
         if len(title[0].text) > self.reviewer.config.MAX_TITLE_SIZE:

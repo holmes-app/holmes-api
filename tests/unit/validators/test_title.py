@@ -51,7 +51,7 @@ class TestTitleValidator(ValidatorTestCase):
         validator.add_fact.assert_called_once_with(
             key='page.title',
             value=u'globo.com - Absolutamente tudo sobre not\xedcias, esportes e entretenimento',
-            title='Title')
+            title='Page Title')
 
         expect(validator.add_violation.called).to_be_false()
 
@@ -91,7 +91,7 @@ class TestTitleValidator(ValidatorTestCase):
         validator.add_fact.assert_called_once_with(
             key='page.title',
             value='%s' % ('*' * reviewer.config.MAX_TITLE_SIZE) + '*',
-            title='Title')
+            title='Page Title')
 
         validator.add_violation.assert_called_once_with(
             key='page.title.exceed',
