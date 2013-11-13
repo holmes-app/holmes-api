@@ -76,23 +76,22 @@ class TestDomain(ApiTestCase):
             #domain2._id: 90
         #})
 
-    #@gen_test
-    #def test_can_get_page_count(self):
-        #domain = yield DomainFactory.create()
-        #domain2 = yield DomainFactory.create()
-        #yield DomainFactory.create()
+    def test_can_get_page_count(self):
+        domain = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        DomainFactory.create()
 
-        #yield PageFactory.create(domain=domain)
-        #yield PageFactory.create(domain=domain)
-        #yield PageFactory.create(domain=domain2)
-        #yield PageFactory.create(domain=domain2)
-        #yield PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain)
+        PageFactory.create(domain=domain)
+        PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain2)
+        PageFactory.create(domain=domain2)
 
-        #pages_for_domain = yield domain.get_page_count()
-        #pages_for_domain_2 = yield domain2.get_page_count()
+        pages_for_domain = domain.get_page_count(self.db)
+        pages_for_domain_2 = domain2.get_page_count(self.db)
 
-        #expect(pages_for_domain).to_equal(2)
-        #expect(pages_for_domain_2).to_equal(3)
+        expect(pages_for_domain).to_equal(2)
+        expect(pages_for_domain_2).to_equal(3)
 
     #@gen_test
     #def test_can_get_violation_count_and_points(self):

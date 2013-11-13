@@ -32,6 +32,13 @@ class Domain(Base):
     def get_pages_per_domain(cls, db):
         return dict(db.query(Page.domain_id, sa.func.count(Page.id)).group_by(Page.domain_id).all())
 
+    def get_page_count(self, db):
+        return db.query(Page).filter(Page.domain_id == self.id).count()
+        #Page.objects.aggregate.raw([
+            #{"$match": {"domain": self._id}},
+            #{"$group": {"_id": "$domain", "count": {"$sum": 1}}}
+        #]).fetch(callback=self.handle_get_page_count(callback))
+
 
 #class Domain(Document):
     #url = URLField(required=True)
