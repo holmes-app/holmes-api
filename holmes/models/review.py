@@ -90,6 +90,10 @@ class Review(Base):
     def by_uuid(cls, uuid, db):
         return db.query(Review).filter(Review.uuid == uuid).first()
 
+    @property
+    def violation_count(self):
+        return len(self.violations)
+
 
 #class Review(Document):
     #domain = ReferenceField('holmes.models.domain.Domain', required=True)

@@ -8,6 +8,7 @@ from tornado import gen
 import tornado.httpclient
 from motorengine import Q, DESCENDING
 import logging
+from sqlalchemy import or_
 
 from holmes.models import Page, Domain, Review
 from holmes.utils import get_domain_from_url
@@ -20,9 +21,6 @@ class PageHandler(BaseHandler):
     def post(self):
         post_data = loads(self.request.body)
         url = post_data['url']
-        origin_uuid = None
-        if 'origin_uuid' in post_data:
-            origin_uuid = post_data['origin_uuid']
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
@@ -66,13 +64,11 @@ class PageHandler(BaseHandler):
             self.finish()
             return
 
-        query = (
-            Q(name=domain_name) |
-            Q(name=domain_name.rstrip('/')) |
-            Q(name="%s/" % domain_name)
-        )
-
-        domains = yield Domain.objects.filter(query).find_all()
+        domains = self.db.query(Domain).filter(or_(
+            Domain.name == domain_name,
+            Domain.name == domain_name.rstrip('/'),
+            Domain.name == "%s/" % domain_name
+        )).all()
 
         if not domains:
             domain = None
@@ -80,15 +76,15 @@ class PageHandler(BaseHandler):
             domain = domains[0]
 
         if not domain:
-            domain = yield Domain.objects.create(url=domain_url, name=domain_name)
+            domain = Domain(url=domain_url, name=domain_name)
+            self.db.add(domain)
+            self.db.flush()
 
-        query = (
-            Q(url=url) |
-            Q(url=url.rstrip('/')) |
-            Q(url="%s/" % url)
-        )
-
-        pages = yield Page.objects.filter(query).find_all()
+        pages = self.db.query(Page).filter(or_(
+            Page.url == url,
+            Page.url == url.rstrip('/'),
+            Page.url == "%s/" % url
+        )).all()
 
         if pages:
             page = pages[0]
@@ -100,13 +96,9 @@ class PageHandler(BaseHandler):
             self.finish()
             return
 
-        page = yield Page.objects.create(url=url, domain=domain)
-
-        if origin_uuid:
-            origin = yield Page.objects.get(uuid=origin_uuid)
-            if origin:
-                page.origin = origin
-                yield page.save()
+        page = Page(url=url, domain=domain)
+        self.db.add(page)
+        self.db.flush()
 
         self.write(str(page.uuid))
         self.finish()
@@ -115,7 +107,7 @@ class PageHandler(BaseHandler):
     def get(self, uuid=''):
         uuid = UUID(uuid)
 
-        page = yield Page.objects.get(uuid=uuid)
+        page = Page.by_uuid(uuid, self.db)
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
@@ -124,7 +116,6 @@ class PageHandler(BaseHandler):
 
         page_json = {
             "uuid": str(page.uuid),
-            "title": page.title,
             "url": page.url
         }
 
@@ -138,18 +129,17 @@ class PageReviewsHandler(BaseHandler):
     def get(self, uuid='', limit=10):
         uuid = UUID(uuid)
 
-        page = yield Page.objects.get(uuid=uuid)
+        page = Page.by_uuid(uuid, self.db)
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
             self.finish()
             return
 
-        reviews = yield Review.objects \
-            .filter(page=page, is_complete=True) \
-            .limit(limit) \
-            .order_by(Review.completed_date, DESCENDING) \
-            .find_all()
+        reviews = self.db.query(Review) \
+            .filter(Review.page == page) \
+            .filter(Review.is_complete == True) \
+            .order_by(Review.completed_date.desc())[:limit]
 
         result = []
         for review in reviews:
@@ -186,7 +176,7 @@ class PagesHandler(BaseHandler):
                 return
             all_domains.append((domain_name, domain_url))
 
-        existing_domains = yield Domain.objects.filter(name__in=[domain[0] for domain in all_domains]).find_all()
+        existing_domains = self.db.query(Domain).filter(Domain.name.in_([domain[0] for domain in all_domains])).all()
         existing_domains_dict = dict([(domain.name, domain) for domain in existing_domains])
 
         domains_to_add = [
@@ -200,18 +190,12 @@ class PagesHandler(BaseHandler):
         all_domains_dict.update(existing_domains_dict)
         all_domains_dict.update(domains_to_add_dict)
 
-        existing_pages = yield Page.objects.filter(url__in=urls).find_all()
+        existing_pages = self.db.query(Page).filter(Page.url.in_(urls)).all()
         if not existing_pages:
             existing_pages = []
         existing_pages_dict = dict([(page.url, page) for page in existing_pages])
 
         pages_to_add = []
-        origin = None
-        if origin_uuid:
-            origin = yield Page.objects.get(uuid=origin_uuid)
-            if origin:
-                logging.debug("Adding URLs from Origin: %s" % origin.url)
-
         for url in urls:
             if url in existing_pages_dict:
                 continue
@@ -219,16 +203,15 @@ class PagesHandler(BaseHandler):
             domain = all_domains_dict[domain_name]
 
             logging.debug("Adding URL: %s" % url)
-            if origin:
-                pages_to_add.append(Page(url=url, domain=domain, origin=origin))
-            else:
-                pages_to_add.append(Page(url=url, domain=domain))
+            pages_to_add.append(Page(url=url, domain=domain))
 
         if domains_to_add:
-            yield Domain.objects.bulk_insert(domains_to_add)
+            for domain in domains_to_add:
+                self.db.add(domain)
 
         if pages_to_add:
-            yield Page.objects.bulk_insert(pages_to_add)
+            for page in pages_to_add:
+                self.db.add(page)
 
         self.write(str(len(pages_to_add)))
         self.finish()
@@ -236,16 +219,15 @@ class PagesHandler(BaseHandler):
 
 class PageViolationsPerDayHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self, uuid):
-        page = yield Page.objects.get(uuid=uuid)
+        page = Page.by_uuid(uuid, self.db)
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
             self.finish()
             return
 
-        violations_per_day = yield page.get_violations_per_day()
+        violations_per_day = page.get_violations_per_day(self.db)
 
         page_json = {
             "violations": violations_per_day

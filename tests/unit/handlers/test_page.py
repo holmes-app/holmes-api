@@ -20,9 +20,6 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
@@ -34,43 +31,15 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
 
         page_uuid = UUID(response.body)
-        page = yield Page.objects.get(uuid=page_uuid)
+        page = Page.by_uuid(page_uuid, self.db)
 
         expect(page).not_to_be_null()
-        expect(page_uuid).to_equal(page.uuid)
-
-    @gen_test
-    def test_can_save_with_origin(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
-        origin_domain = yield DomainFactory.create()
-        origin_page = yield PageFactory.create(domain=origin_domain, url="http://www.globo.com/")
-
-        response = yield self.http_client.fetch(
-            self.get_url('/page'),
-            method='POST',
-            body=dumps({
-                'url': 'http://www.globo.com/privacidade.html',
-                'origin_uuid': str(origin_page.uuid)
-            })
-        )
-
-        expect(response.code).to_equal(200)
-
-        page_uuid = UUID(response.body)
-        page = yield Page.objects.get(uuid=page_uuid)
-
-        expect(page).not_to_be_null()
-        expect(page_uuid).to_equal(page.uuid)
-
-        yield page.load_references(['origin'])
-        expect(page.origin).not_to_be_null()
-        expect(page.origin.uuid).to_equal(origin_page.uuid)
+        expect(str(page_uuid)).to_equal(page.uuid)
 
     @gen_test
     def test_can_save_known_domain(self):
-        yield Domain.objects.create(url='http://www.globo.com', name='globo.com')
+        DomainFactory.create(url='http://www.globo.com', name='globo.com')
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -83,10 +52,10 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
 
         page_uuid = UUID(response.body)
-        page = yield Page.objects.get(uuid=page_uuid)
+        page = Page.by_uuid(page_uuid, self.db)
 
         expect(page).not_to_be_null()
-        expect(page_uuid).to_equal(page.uuid)
+        expect(str(page_uuid)).to_equal(page.uuid)
 
     @gen_test
     def test_error_when_invalid_url(self):
@@ -111,8 +80,8 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_when_url_already_exists(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com")
+        page = PageFactory.create(url="http://www.globo.com")
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -127,8 +96,8 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_when_url_already_exists_with_slash(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/")
+        page = PageFactory.create(url="http://www.globo.com/")
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -141,13 +110,13 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal(str(page.uuid))
 
-        page_count = yield Page.objects.filter(url="http://www.globo.com").count()
+        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com").count()
         expect(page_count).to_equal(0)
 
     @gen_test
     def test_when_url_already_exists_without_slash(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com")
+        page = PageFactory.create(url="http://www.globo.com")
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -160,12 +129,11 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal(str(page.uuid))
 
-        page_count = yield Page.objects.filter(url="http://www.globo.com/").count()
+        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com/").count()
         expect(page_count).to_equal(0)
 
     @gen_test
     def test_get_page_not_found(self):
-
         try:
             yield self.http_client.fetch(
                 self.get_url('/page/%s' % self.ZERO_UUID),
@@ -181,8 +149,8 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_get_page_get_info(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+        page = PageFactory.create()
+        self.db.flush()
 
         response = yield self.http_client.fetch(self.get_url('/page/%s' % page.uuid))
 
@@ -198,9 +166,6 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_with_no_urls(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
             method='POST',
@@ -212,9 +177,6 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
         urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
 
         response = yield self.http_client.fetch(
@@ -227,41 +189,11 @@ class TestPagesHandler(ApiTestCase):
         expect(int(response.body)).to_equal(1000)
 
     @gen_test
-    def test_can_save_with_origin(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
-        origin_domain = yield DomainFactory.create()
-        origin_page = yield PageFactory.create(domain=origin_domain, url="http://www.globo.com/")
-
-        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
-
-        response = yield self.http_client.fetch(
-            self.get_url('/pages'),
-            method='POST',
-            body='&'.join(['url=%s' % url for url in urls]) +
-                 '&origin_uuid=%s' % str(origin_page.uuid)
-        )
-
-        expect(response.code).to_equal(200)
-        expect(int(response.body)).to_equal(1000)
-
-        random_page_int = random.randint(1, 1000)
-        random_url = 'http://%d.globo.com/%d.html' % (random_page_int, random_page_int)
-
-        random_page = yield Page.objects.get(url=random_url)
-        yield random_page.load_references(['origin'])
-
-        expect(random_page.origin).not_to_be_null()
-        expect(random_page.origin.uuid).to_equal(origin_page.uuid)
-
-    @gen_test
     def test_saves_only_new_pages(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
+        domain = DomainFactory.create(name='globo.com', url='http://globo.com')
+        page = PageFactory.create(domain=domain, url='http://www.globo.com/')
 
-        domain = yield DomainFactory.create(name='globo.com', url='http://globo.com')
-        page = yield PageFactory.create(domain=domain, url='http://www.globo.com/')
+        self.db.flush()
 
         urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(10)]
         urls.append(page.url)
@@ -277,11 +209,8 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_saves_does_nothing_if_all_pages_already_there(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
-        domain = yield DomainFactory.create(name='globo.com', url='http://globo.com')
-        page = yield PageFactory.create(domain=domain, url='http://www.globo.com/')
+        domain = DomainFactory.create(name='globo.com', url='http://globo.com')
+        page = PageFactory.create(domain=domain, url='http://www.globo.com/')
 
         urls = [page.url, page.url]
 
@@ -294,15 +223,12 @@ class TestPagesHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(int(response.body)).to_equal(0)
 
-        pages = yield Page.objects.filter(url='http://www.globo.com/').find_all()
+        pages = self.db.query(Page).filter(Page.url == 'http://www.globo.com/').all()
         expect(pages).to_length(1)
-        expect(pages[0]._id).to_equal(page._id)
+        expect(pages[0].id).to_equal(page.id)
 
     @gen_test
     def test_cant_save_invalid_urls(self):
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
-
         urls = ['/%d.html' % num for num in range(1000)]
 
         try:
@@ -351,12 +277,12 @@ class TestPageReviewsHandler(ApiTestCase):
         dt1 = datetime(2010, 11, 12, 13, 14, 15)
         dt2 = datetime(2011, 12, 13, 14, 15, 16)
 
-        domain = yield DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
+        domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
-        page = yield PageFactory.create(domain=domain)
+        page = PageFactory.create(domain=domain)
 
-        review1 = yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt1, number_of_violations=20)
-        review2 = yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
+        review1 = ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt1, number_of_violations=20)
+        review2 = ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
 
         response = yield self.http_client.fetch(
             self.get_url('/page/%s/reviews/' % page.uuid)
@@ -383,13 +309,13 @@ class TestViolationsPerDayHandler(ApiTestCase):
         dt2 = datetime(2013, 10, 11, 10, 10, 10)
         dt3 = datetime(2013, 10, 12, 10, 10, 10)
 
-        domain = yield DomainFactory.create()
+        page = PageFactory.create()
 
-        page = yield PageFactory.create(domain=domain)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
+        ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
 
-        yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
-        yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
-        yield ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/page/%s/violations-per-day/' % page.uuid)
