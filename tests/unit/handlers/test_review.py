@@ -169,122 +169,115 @@ class TestCompleteReviewHandler(ApiTestCase):
         expect(loaded_review.is_complete).to_be_true()
         expect(loaded_review.is_active).to_be_true()
 
-    #@gen_test
-    #def test_cant_complete_review_twice(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review = yield ReviewFactory.create(page=page, is_complete=True)
+    @gen_test
+    def test_cant_complete_review_twice(self):
+        review = ReviewFactory.create(is_complete=True)
 
-        #url = self.get_url(
-            #'/page/%s/review/%s/complete' % (
-                #page.uuid,
-                #review.uuid
-            #)
-        #)
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                review.page.uuid,
+                review.uuid
+            )
+        )
 
-        #try:
-            #yield self.http_client.fetch(
-                #url,
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(400)
-            #expect(err.response.reason).to_be_like('Review with uuid %s is already completed!' % str(review.uuid))
-        #else:
-            #assert False, 'Should not have got this far'
+        try:
+            yield self.http_client.fetch(
+                url,
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_be_like('Review with uuid %s is already completed!' % str(review.uuid))
+        else:
+            assert False, 'Should not have got this far'
 
-    #@gen_test
-    #def test_same_day_review_removes_older(self):
-        #dt = datetime.now()
+    @gen_test
+    def test_same_day_review_removes_older(self):
+        dt = datetime.now()
 
-        #yield Page.objects.delete()
-        #yield Domain.objects.delete()
-        #yield Review.objects.delete()
+        page = PageFactory.create()
+        review_yesterday = ReviewFactory.create(page=page, created_date=(dt-timedelta(days=1)))
+        review_old = ReviewFactory.create(page=page, created_date=dt)
 
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review_yesterday = yield ReviewFactory.create(page=page, created_date=(dt-timedelta(days=1)))
-        #review_old = yield ReviewFactory.create(page=page, created_date=dt)
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                str(review_old.uuid)
+            )
+        )
+        response = yield self.http_client.fetch(url, method='POST', body='')
+        expect(response.code).to_equal(200)
 
-        #url = self.get_url(
-            #'/page/%s/review/%s/complete' % (
-                #page.uuid,
-                #str(review_old.uuid)
-            #)
-        #)
-        #response = yield self.http_client.fetch(url, method='POST', body='')
-        #expect(response.code).to_equal(200)
+        review_new = ReviewFactory.create(page=page, created_date=dt)
 
-        #review_new = yield ReviewFactory.create(page=page, created_date=dt)
+        url = self.get_url(
+            '/page/%s/review/%s/complete' % (
+                page.uuid,
+                str(review_new.uuid)
+            )
+        )
+        response = yield self.http_client.fetch(url, method='POST', body='')
+        expect(response.code).to_equal(200)
 
-        #url = self.get_url(
-            #'/page/%s/review/%s/complete' % (
-                #page.uuid,
-                #str(review_new.uuid)
-            #)
-        #)
-        #response = yield self.http_client.fetch(url, method='POST', body='')
-        #expect(response.code).to_equal(200)
+        reviews = self.db.query(Review).filter(Review.page_id == page.id).all()
 
-        #reviews = yield Review.objects.filter(page=page).find_all()
+        reviews_uuids = []
+        for review in reviews:
+            reviews_uuids.append(str(review.uuid))
 
-        #reviews_uuids = []
-        #for review in reviews:
-            #reviews_uuids.append(str(review.uuid))
-
-        #expect(reviews).to_length(2)
-        #expect(reviews_uuids).to_include(str(review_yesterday.uuid))
-        #expect(reviews_uuids).to_include(str(review_new.uuid))
-        #expect(reviews_uuids).not_to_include(str(review_old.uuid))
+        expect(reviews).to_length(2)
+        expect(reviews_uuids).to_include(str(review_yesterday.uuid))
+        expect(reviews_uuids).to_include(str(review_new.uuid))
+        expect(reviews_uuids).not_to_include(str(review_old.uuid))
 
 
-#class TestLastReviewsHandler(ApiTestCase):
+class TestLastReviewsHandler(ApiTestCase):
 
-    #@gen_test
-    #def test_can_get_last_reviews(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
+    @gen_test
+    def test_can_get_last_reviews(self):
+        page = PageFactory.create()
 
-        #date_now = datetime(2013, 11, 12, 13, 25, 27)
+        date_now = datetime(2013, 11, 12, 13, 25, 27)
 
-        #review = yield ReviewFactory.create(page=page,
-                                            #is_active=True,
-                                            #is_complete=False,
-                                            #completed_date=date_now,
-                                            #created_date=date_now)
+        review = ReviewFactory.create(
+            page=page,
+            is_active=True,
+            is_complete=False,
+            completed_date=date_now,
+            created_date=date_now)
 
-        #review.add_fact('fact', 'value', 'title', 'kb')
-        #review.add_violation('violation', 'title', 'description', 100)
-        #review.is_complete = True
-        #yield review.save()
+        review.add_fact('fact', 'value', 'title', 'kb')
+        review.add_violation('violation', 'title', 'description', 100)
+        review.is_complete = True
+        self.db.flush()
 
-        #url = self.get_url('/last-reviews')
-        #response = yield self.http_client.fetch(url, method='GET')
+        url = self.get_url('/last-reviews')
+        response = yield self.http_client.fetch(url, method='GET')
 
-        #expect(response.code).to_equal(200)
+        expect(response.code).to_equal(200)
 
-        #dt = calendar.timegm(date_now.utctimetuple())
+        dt = calendar.timegm(date_now.utctimetuple())
 
-        #expected = [{
-            #'domain': domain.name,
-            #'page': page.to_dict(),
-            #'uuid': str(review.uuid),
-            #'isComplete': True,
-            #'facts': [
-                #{u'key': u'fact', u'value': u'value', u'title': u'title',
-                 #u'unit': u'kb'}
-            #],
-            #'violations': [
-                #{u'points': 100, u'description': u'description',
-                 #u'key': u'violation', u'title': u'title'}
-            #],
-            #'createdAt': dt,
-            #'completedAt': dt,
-            #'violationCount': 1,
-            #'completedDateISO': date_now.isoformat()
-        #}]
+        expected = [{
+            'domain': review.domain.name,
+            'page': page.to_dict(),
+            'uuid': str(review.uuid),
+            'isComplete': True,
+            'facts': [
+                {u'key': u'fact', u'value': u'value', u'title': u'title',
+                 u'unit': u'kb'}
+            ],
+            'violations': [
+                {u'points': 100, u'description': u'description',
+                 u'key': u'violation', u'title': u'title'}
+            ],
+            'createdAt': dt,
+            'completedAt': dt,
+            'violationCount': 1,
+            'completedDateISO': date_now.isoformat()
+        }]
 
-        #expect(loads(response.body)).to_be_like(expected)
+        expect(loads(response.body)).to_be_like(expected)

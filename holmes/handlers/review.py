@@ -98,20 +98,18 @@ class CompleteReviewHandler(BaseReviewHandler):
         self.db.query(Review) \
             .filter(Review.page == review.page) \
             .filter(Review.uuid != review.uuid) \
-            .filter(Review.created_date <= dt) \
+            .filter(Review.created_date >= dt) \
             .delete()
 
         self.db.flush()
 
 
 class LastReviewsHandler(BaseReviewHandler):
-    @gen.coroutine
     def get(self):
-        reviews = yield Review.get_last_reviews()
+        reviews = Review.get_last_reviews(self.db)
 
         reviews_json = []
         for review in reviews:
-            yield review.load_references(['page', 'domain'])
             review_dict = review.to_dict()
             data = {
                 'violationCount': review.violation_count,
