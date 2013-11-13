@@ -3,14 +3,13 @@
 
 from uuid import UUID
 
-from tornado.web import RequestHandler
 from tornado import gen
 
 from holmes.handlers import BaseHandler
 from holmes.models import Review, Violation
 
 
-class CreateViolationHandler(RequestHandler):
+class CreateViolationHandler(BaseHandler):
 
     @gen.coroutine
     def post(self, page_uuid, review_uuid):
@@ -31,7 +30,7 @@ class CreateViolationHandler(RequestHandler):
 
         review = None
         if parsed_uuid:
-            review = yield Review.objects.get(uuid=parsed_uuid)
+            review = Review.by_uuid(parsed_uuid, self.db)
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
@@ -39,7 +38,7 @@ class CreateViolationHandler(RequestHandler):
             return
 
         review.add_violation(key=key, title=title, description=description, points=points)
-        yield review.save()
+        self.db.flush()
 
         self.write('OK')
         self.finish()
@@ -49,11 +48,11 @@ class MostCommonViolationsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        violations = yield Violation.get_most_common_violations()
+        violations = Violation.get_most_common_violations(self.db)
 
         result = []
-        for name, count in violations.items():
-            result.append({'name': name, 'count': count})
+        for item in violations:
+            result.append({'name': item['title'], 'count': item['count']})
 
         self.write_json(result)
         self.finish()

@@ -17,8 +17,8 @@ class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_invalid_review_returns_404(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+        page = PageFactory.create()
+        self.db.flush()
 
         url = self.get_url(
             '/page/%s/review/invalid/violation' % page.uuid
@@ -40,13 +40,12 @@ class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_violation(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
+        self.db.flush()
 
         url = self.get_url(
             '/page/%s/review/%s/violation' % (
-                page.uuid,
+                review.page.uuid,
                 review.uuid
             )
         )
@@ -60,7 +59,7 @@ class TestViolationHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal('OK')
 
-        review = yield Review.objects.get(uuid=review.uuid)
+        review = Review.by_uuid(review.uuid, self.db)
 
         expect(review).not_to_be_null()
         expect(review.violations).to_length(1)
@@ -73,13 +72,12 @@ class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_violation_will_round_float_points(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
+        self.db.flush()
 
         url = self.get_url(
             '/page/%s/review/%s/violation' % (
-                page.uuid,
+                review.page.uuid,
                 review.uuid
             )
         )
@@ -99,7 +97,7 @@ class TestViolationHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal('OK')
 
-        review = yield Review.objects.get(uuid=review.uuid)
+        review = Review.by_uuid(review.uuid, self.db)
 
         expect(review).not_to_be_null()
         expect(review.violations).to_length(2)
@@ -118,13 +116,12 @@ class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_violation_will_add_zero_when_invalid(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
+        self.db.flush()
 
         url = self.get_url(
             '/page/%s/review/%s/violation' % (
-                page.uuid,
+                review.page.uuid,
                 review.uuid
             )
         )
@@ -144,7 +141,7 @@ class TestViolationHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal('OK')
 
-        review = yield Review.objects.get(uuid=review.uuid)
+        review = Review.by_uuid(review.uuid, self.db)
 
         expect(review).not_to_be_null()
         expect(review.violations).to_length(2)
@@ -166,13 +163,12 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_most_common_violations(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
+        self.db.flush()
 
         url = self.get_url(
             '/page/%s/review/%s/violation' % (
-                page.uuid,
+                review.page.uuid,
                 review.uuid
             )
         )
@@ -186,7 +182,7 @@ class TestMostCommonViolationsHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal('OK')
 
-        review = yield Review.objects.get(uuid=review.uuid)
+        review = Review.by_uuid(review.uuid, self.db)
 
         expect(review).not_to_be_null()
         expect(review.violations).to_length(1)
