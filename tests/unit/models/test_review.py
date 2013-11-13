@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from uuid import uuid4
 from datetime import datetime
 
 from preggy import expect
@@ -130,5 +131,5 @@ class TestReview(ApiTestCase):
         loaded = Review.by_uuid(review.uuid, self.db)
         expect(loaded.id).to_equal(review.id)
 
-        invalid = Review.by_uuid(review.uuid, self.db)
+        invalid = Review.by_uuid(uuid4(), self.db)
         expect(invalid).to_be_null()
