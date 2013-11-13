@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import factory
+import factory.alchemy
 from tornado.concurrent import return_future
 
 from holmes.models import Domain, Page, Review, Worker, Violation
@@ -25,24 +26,25 @@ class MotorEngineFactory(factory.base.Factory):
         instance.save(callback=callback)
 
 
-class DomainFactory(MotorEngineFactory):
+class DomainFactory(factory.alchemy.SQLAlchemyModelFactory):
     FACTORY_FOR = Domain
 
     name = factory.Sequence(lambda n: 'domain-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
 
 
-class PageFactory(MotorEngineFactory):
+class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
     FACTORY_FOR = Page
 
-    title = factory.Sequence(lambda n: 'page-{0}'.format(n))
+    #title = factory.Sequence(lambda n: 'page-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
 
-    added_date = None
-    updated_date = None
+    created_date = None
+    last_review_started_date = None
+    last_review_date = None
 
     domain = None
-    last_review = None
+    #last_review = None
 
 
 class ReviewFactory(MotorEngineFactory):
@@ -86,3 +88,5 @@ class WorkerFactory(MotorEngineFactory):
     uuid = factory.LazyAttribute(lambda a: uuid4())
     last_ping = None
     current_review = None
+
+

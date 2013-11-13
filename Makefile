@@ -1,6 +1,6 @@
 mongodatabase = holmes
 
-test: mongo_test unit integration kill_run
+test: drop_test data mongo_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
@@ -36,6 +36,25 @@ mongo_test: kill_mongo_test
 	@rm -rf /tmp/$(mongodatabase)/mongotestdata && mkdir -p /tmp/$(mongodatabase)/mongotestdata
 	@mongod --dbpath /tmp/$(mongodatabase)/mongotestdata --logpath /tmp/$(mongodatabase)/mongotestlog --port 6686 --quiet &
 	@sleep 3
+
+drop:
+	@-cd holmes/ && alembic downgrade base
+	@mysql -u root -e "DROP DATABASE IF EXISTS holmes; CREATE DATABASE IF NOT EXISTS holmes"
+	@echo "DB RECREATED"
+
+drop_test:
+	@-cd tests/ && alembic downgrade base
+	@mysql -u root -e "DROP DATABASE IF EXISTS test_holmes; CREATE DATABASE IF NOT EXISTS test_holmes"
+	@echo "DB RECREATED"
+
+data:
+	@cd holmes/ && alembic upgrade head
+
+data_test:
+	@cd tests/ && alembic upgrade head
+
+migration:
+	@cd holmes/ && alembic revision -m "$(DESC)"
 
 kill_run:
 	@ps aux | awk '(/.+holmes-api.+/ && $$0 !~ /awk/){ system("kill -9 "$$2) }'

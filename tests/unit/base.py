@@ -8,6 +8,7 @@ from cow.testing import CowTestCase
 from holmes.config import Config
 from holmes.server import HolmesApiServer
 from holmes.models import Domain, Page, Review, Worker
+from tests.fixtures import DomainFactory, PageFactory
 
 
 class ApiTestCase(CowTestCase):
@@ -19,13 +20,24 @@ class ApiTestCase(CowTestCase):
 
     def setUp(self):
         super(ApiTestCase, self).setUp()
-        self.drop_collection(Domain)
-        self.drop_collection(Page)
-        self.drop_collection(Review)
-        self.drop_collection(Worker)
+        self.db = self.server.application.sqlalchemy_db
+        DomainFactory.FACTORY_SESSION = self.db
+        PageFactory.FACTORY_SESSION = self.db
+        #self.drop_collection(Domain)
+        #self.drop_collection(Page)
+        #self.drop_collection(Review)
+        #self.drop_collection(Worker)
+
+    def tearDown(self):
+        super(ApiTestCase, self).tearDown()
+        self.db.rollback()
 
     def get_config(self):
         return dict(
+            SQLALCHEMY_CONNECTION_STRING="mysql+mysqldb://root@localhost:3306/test_holmes",
+            SQLALCHEMY_POOL_SIZE=20,
+            SQLALCHEMY_POOL_MAX_OVERFLOW=10,
+            SQLALCHEMY_AUTO_FLUSH=True,
             MONGO_DATABASES={
                 'default': {
                     'host': 'localhost',

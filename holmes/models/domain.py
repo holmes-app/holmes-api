@@ -1,16 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from tornado.concurrent import return_future
-from motorengine import Document, URLField, StringField, DESCENDING
+#from tornado.concurrent import return_future
+#from motorengine import Document, URLField, StringField, DESCENDING
 
-from holmes.models.page import Page
-from holmes.models.review import Review
+import sqlalchemy as sa
+from sqlalchemy.orm import relationship
+
+from holmes.models import Base
+#from holmes.models.page import Page
+#from holmes.models.review import Review
 
 
-class Domain(Document):
-    url = URLField(required=True)
-    name = StringField(required=True)
+class Domain(Base):
+    __tablename__ = "domains"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    url = sa.Column('url', sa.String(2000), nullable=False)
+    name = sa.Column('name', sa.String(2000), nullable=False)
+
+    pages = relationship("Page", backref="domain")
 
     def to_dict(self):
         return {
@@ -18,188 +27,199 @@ class Domain(Document):
             "name": self.name
         }
 
-    @classmethod
-    def handle_get_violations_per_domain(cls, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
 
-            domains = {}
-            for domain in arguments[0]:
-                domains[domain['domain']] = domain['count']
-            callback(domains)
+#class Domain(Document):
+    #url = URLField(required=True)
+    #name = StringField(required=True)
 
-        return handle
+    #def to_dict(self):
+        #return {
+            #"url": self.url,
+            #"name": self.name
+        #}
 
-    @classmethod
-    @return_future
-    def get_violations_per_domain(cls, callback=None):
-        Review.objects.aggregate.raw([
-            {"$match": {"is_active": True}},
-            {"$unwind": "$violations"},
-            {"$group": {"_id": {"domain": "$domain"}, "count": {"$sum": 1}}}
-        ]).fetch(callback=cls.handle_get_violations_per_domain(callback))
+    #@classmethod
+    #def handle_get_violations_per_domain(cls, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @classmethod
-    def handle_get_pages_per_domain(cls, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #domains = {}
+            #for domain in arguments[0]:
+                #domains[domain['domain']] = domain['count']
+            #callback(domains)
 
-            domains = {}
-            for domain in arguments[0]:
-                domains[domain['_id']] = domain['count']
-            callback(domains)
+        #return handle
 
-        return handle
+    #@classmethod
+    #@return_future
+    #def get_violations_per_domain(cls, callback=None):
+        #Review.objects.aggregate.raw([
+            #{"$match": {"is_active": True}},
+            #{"$unwind": "$violations"},
+            #{"$group": {"_id": {"domain": "$domain"}, "count": {"$sum": 1}}}
+        #]).fetch(callback=cls.handle_get_violations_per_domain(callback))
 
-    @classmethod
-    @return_future
-    def get_pages_per_domain(cls, callback=None):
-        Page.objects.aggregate.raw([
-            {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
-        ]).fetch(callback=cls.handle_get_pages_per_domain(callback))
+    #@classmethod
+    #def handle_get_pages_per_domain(cls, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    def handle_get_page_count(self, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #domains = {}
+            #for domain in arguments[0]:
+                #domains[domain['_id']] = domain['count']
+            #callback(domains)
 
-            if not arguments[0]:
-                callback(0)
+        #return handle
 
-            callback(arguments[0][0]['count'])
+    #@classmethod
+    #@return_future
+    #def get_pages_per_domain(cls, callback=None):
+        #Page.objects.aggregate.raw([
+            #{"$group": {"_id": "$domain", "count": {"$sum": 1}}}
+        #]).fetch(callback=cls.handle_get_pages_per_domain(callback))
 
-        return handle
+    #def handle_get_page_count(self, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @return_future
-    def get_page_count(self, callback=None):
-        Page.objects.aggregate.raw([
-            {"$match": {"domain": self._id}},
-            {"$group": {"_id": "$domain", "count": {"$sum": 1}}}
-        ]).fetch(callback=self.handle_get_page_count(callback))
+            #if not arguments[0]:
+                #callback(0)
 
-    def handle_get_violation_data(self, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #callback(arguments[0][0]['count'])
 
-            if not arguments[0]:
-                callback((0, 0))
-                return
+        #return handle
 
-            callback((arguments[0][0]['count'], arguments[0][0]['points']))
+    #@return_future
+    #def get_page_count(self, callback=None):
+        #Page.objects.aggregate.raw([
+            #{"$match": {"domain": self._id}},
+            #{"$group": {"_id": "$domain", "count": {"$sum": 1}}}
+        #]).fetch(callback=self.handle_get_page_count(callback))
 
-        return handle
+    #def handle_get_violation_data(self, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @return_future
-    def get_violation_data(self, callback=None):
-        Review.objects.aggregate.raw([
-            {"$match": {"domain": self._id, "is_active": True}},
-            {"$unwind": "$violations"},
-            {"$group": {"_id": "$domain", "count": {"$sum": 1}, "points": {"$sum": "$violations.points"}}}
-        ]).fetch(callback=self.handle_get_violation_data(callback))
+            #if not arguments[0]:
+                #callback((0, 0))
+                #return
 
-    def handle_get_violations_per_day(self, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #callback((arguments[0][0]['count'], arguments[0][0]['points']))
 
-            if not arguments[0]:
-                callback([])
-                return
+        #return handle
 
-            result = {}
+    #@return_future
+    #def get_violation_data(self, callback=None):
+        #Review.objects.aggregate.raw([
+            #{"$match": {"domain": self._id, "is_active": True}},
+            #{"$unwind": "$violations"},
+            #{"$group": {"_id": "$domain", "count": {"$sum": 1}, "points": {"$sum": "$violations.points"}}}
+        #]).fetch(callback=self.handle_get_violation_data(callback))
 
-            for day in arguments[0]:
-                dt = "%d-%d-%d" % (day['year'], day['month'], day['day'])
-                result[dt] = {
-                    "violation_count": day['count'],
-                    "violation_points": day['points']
-                }
+    #def handle_get_violations_per_day(self, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-            callback(result)
+            #if not arguments[0]:
+                #callback([])
+                #return
 
-        return handle
+            #result = {}
 
-    @return_future
-    def get_violations_per_day(self, callback=None):
-        Review.objects.aggregate.raw([
-            {"$match": {"domain": self._id, "is_complete": True}},
-            {"$project": {
-                "domain": 1,
-                "violations": 1,
-                "year": {"$year": "$completed_date"},
-                "month": {"$month": "$completed_date"},
-                "day": {"$dayOfMonth": "$completed_date"},
-            }},
-            {"$unwind": "$violations"},
-            {
-                "$group": {
-                    "_id": {
-                        "domain": "$domain", "year": "$year", "month": "$month", "day": "$day"
-                    },
-                    "count": {"$sum": 1},
-                    "points": {"$sum": "$violations.points"}
-                }
-            }
-        ]).fetch(callback=self.handle_get_violations_per_day(callback))
+            #for day in arguments[0]:
+                #dt = "%d-%d-%d" % (day['year'], day['month'], day['day'])
+                #result[dt] = {
+                    #"violation_count": day['count'],
+                    #"violation_points": day['points']
+                #}
 
-    def handle_get_active_reviews(self, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #callback(result)
 
-            if not arguments[0]:
-                callback([])
-                return
+        #return handle
 
-            callback(arguments[0])
+    #@return_future
+    #def get_violations_per_day(self, callback=None):
+        #Review.objects.aggregate.raw([
+            #{"$match": {"domain": self._id, "is_complete": True}},
+            #{"$project": {
+                #"domain": 1,
+                #"violations": 1,
+                #"year": {"$year": "$completed_date"},
+                #"month": {"$month": "$completed_date"},
+                #"day": {"$dayOfMonth": "$completed_date"},
+            #}},
+            #{"$unwind": "$violations"},
+            #{
+                #"$group": {
+                    #"_id": {
+                        #"domain": "$domain", "year": "$year", "month": "$month", "day": "$day"
+                    #},
+                    #"count": {"$sum": 1},
+                    #"points": {"$sum": "$violations.points"}
+                #}
+            #}
+        #]).fetch(callback=self.handle_get_violations_per_day(callback))
 
-        return handle
+    #def handle_get_active_reviews(self, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @return_future
-    def get_active_reviews(self, current_page=1, page_size=10, callback=None):
-        skip = (current_page - 1) * page_size
-        Review.objects \
-              .filter(is_active=True, domain=self) \
-              .order_by(Review.violation_count, DESCENDING) \
-              .skip(skip) \
-              .limit(page_size) \
-              .find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
+            #if not arguments[0]:
+                #callback([])
+                #return
 
-    def handle_get_active_review_count(self, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #callback(arguments[0])
 
-            if not arguments[0]:
-                callback(0)
-                return
+        #return handle
 
-            callback(arguments[0])
+    #@return_future
+    #def get_active_reviews(self, current_page=1, page_size=10, callback=None):
+        #skip = (current_page - 1) * page_size
+        #Review.objects \
+              #.filter(is_active=True, domain=self) \
+              #.order_by(Review.violation_count, DESCENDING) \
+              #.skip(skip) \
+              #.limit(page_size) \
+              #.find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
 
-        return handle
+    #def handle_get_active_review_count(self, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @return_future
-    def get_active_review_count(self, callback=None):
-        Review.objects.filter(is_active=True, domain=self).count(callback=self.handle_get_active_review_count(callback))
+            #if not arguments[0]:
+                #callback(0)
+                #return
 
-    @classmethod
-    def handle_get_domain_by_name(self, domain_name, callback):
-        def handle(*arguments, **kwargs):
-            if len(arguments) > 1 and arguments[1]:
-                raise arguments[1]
+            #callback(arguments[0])
 
-            if not arguments[0]:
-                from tornado import web
-                raise web.HTTPError(404, reason='Domain with name "%s" was not found!' % domain_name)
+        #return handle
 
-            callback(arguments[0])
+    #@return_future
+    #def get_active_review_count(self, callback=None):
+        #Review.objects.filter(is_active=True, domain=self).count(callback=self.handle_get_active_review_count(callback))
 
-        return handle
+    #@classmethod
+    #def handle_get_domain_by_name(self, domain_name, callback):
+        #def handle(*arguments, **kwargs):
+            #if len(arguments) > 1 and arguments[1]:
+                #raise arguments[1]
 
-    @classmethod
-    @return_future
-    def get_domain_by_name(self, domain_name, callback=None):
-        Domain.objects.get(name=domain_name, callback=self.handle_get_domain_by_name(domain_name, callback))
+            #if not arguments[0]:
+                #from tornado import web
+                #raise web.HTTPError(404, reason='Domain with name "%s" was not found!' % domain_name)
+
+            #callback(arguments[0])
+
+        #return handle
+
+    #@classmethod
+    #@return_future
+    #def get_domain_by_name(self, domain_name, callback=None):
+        #Domain.objects.get(name=domain_name, callback=self.handle_get_domain_by_name(domain_name, callback))

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from cow.server import Server
-from cow.plugins.motorengine_plugin import MotorEnginePlugin
+#from cow.plugins.motorengine_plugin import MotorEnginePlugin
+from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from tornado.httpclient import AsyncHTTPClient
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler
@@ -62,7 +63,8 @@ class HolmesApiServer(Server):
 
     def get_plugins(self):
         return [
-            MotorEnginePlugin,
+            #MotorEnginePlugin,
+            SQLAlchemyPlugin
         ]
 
 
