@@ -55,16 +55,16 @@ class TestReview(ApiTestCase):
         expect(review.facts[0].title).to_equal('c')
         expect(review.facts[0].unit).to_equal('d')
 
-    #def test_can_append_violations(self):
-        #review = ReviewFactory.build()
-        #expect(review.violations).to_length(0)
+    def test_can_append_violations(self):
+        review = ReviewFactory.build()
+        expect(review.violations).to_length(0)
 
-        #review.add_violation('a', 'b', 'c', 100)
-        #expect(review.violations).to_length(1)
-        #expect(review.violations[0].key).to_equal('a')
-        #expect(review.violations[0].title).to_equal('b')
-        #expect(review.violations[0].description).to_equal('c')
-        #expect(review.violations[0].points).to_equal(100)
+        review.add_violation('a', 'b', 'c', 100)
+        expect(review.violations).to_length(1)
+        expect(review.violations[0].key).to_equal('a')
+        expect(review.violations[0].title).to_equal('b')
+        expect(review.violations[0].description).to_equal('c')
+        expect(review.violations[0].points).to_equal(100)
 
     def test_cant_append_facts_after_complete(self):
         review = ReviewFactory.build()
@@ -79,20 +79,42 @@ class TestReview(ApiTestCase):
         else:
             assert False, 'Should not have gotten this far'
 
-    #def test_cant_append_violations_after_complete(self):
-        #review = ReviewFactory.build()
-        #expect(review.facts).to_length(0)
-        #review.is_complete = True
+    def test_cant_append_violations_after_complete(self):
+        review = ReviewFactory.build()
+        expect(review.facts).to_length(0)
+        review.is_complete = True
 
-        #try:
-            #review.add_violation('a', 'b', 'c', 10)
-        #except ValueError:
-            #err = sys.exc_info()[1]
-            #expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
-        #else:
-            #assert False, 'Should not have gotten this far'
+        try:
+            review.add_violation('a', 'b', 'c', 10)
+        except ValueError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
+        else:
+            assert False, 'Should not have gotten this far'
 
     def test_review_has_failed(self):
         review = ReviewFactory.build()
         review.failure_message = "Invalid Page"
         expect(review.failed).to_be_true()
+
+    def test_can_get_last_reviews(self):
+        dt = datetime(2010, 10, 10, 10, 10, 10)
+        dt2 = datetime(2010, 10, 11, 10, 10, 10)
+        dt3 = datetime(2010, 10, 12, 10, 10, 10)
+
+        review = ReviewFactory.create(is_active=True, is_complete=True, completed_date=dt3)
+        review2 = ReviewFactory.create(is_active=True, is_complete=True, completed_date=dt2)
+        ReviewFactory.create(is_active=True, is_complete=True, completed_date=dt)
+        ReviewFactory.create(is_active=False, is_complete=True, completed_date=dt)
+        ReviewFactory.create(is_active=False, is_complete=True, completed_date=dt)
+        ReviewFactory.create(is_active=False, is_complete=True, completed_date=dt)
+        ReviewFactory.create(is_active=False, is_complete=True, completed_date=dt)
+        ReviewFactory.create(is_active=False, is_complete=True, completed_date=dt)
+
+        self.db.flush()
+
+        last_reviews = Review.get_last_reviews(self.db, limit=2)
+        expect(last_reviews).to_length(2)
+
+        expect(last_reviews[0].id).to_equal(review.id)
+        expect(last_reviews[1].id).to_equal(review2.id)

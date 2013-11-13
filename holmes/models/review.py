@@ -61,9 +61,24 @@ class Review(Base):
 
         self.facts.append(fact)
 
+    def add_violation(self, key, title, description, points):
+        if self.is_complete:
+            raise ValueError("Can't add anything to a completed review.")
+
+        from holmes.models.violation import Violation  # to avoid circular dependency
+
+        violation = Violation(key=key, title=title, description=description, points=int(float(points)))
+
+        self.violations.append(violation)
+
     @property
     def failed(self):
         return self.failure_message is not None
+
+    @classmethod
+    def get_last_reviews(cls, db, limit=12):
+        return db.query(Review).filter(Review.is_active == True) \
+                               .order_by(Review.completed_date.desc())[:limit]
 
 
 #class Review(Document):
