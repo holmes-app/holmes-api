@@ -104,7 +104,7 @@ class ViolationFactory(factory.alchemy.SQLAlchemyModelFactory):
     review = factory.SubFactory(ReviewFactory)
 
 
-class WorkerFactory(MotorEngineFactory):
+class WorkerFactory(factory.alchemy.SQLAlchemyModelFactory):
     FACTORY_FOR = Worker
 
     uuid = factory.LazyAttribute(lambda a: uuid4())

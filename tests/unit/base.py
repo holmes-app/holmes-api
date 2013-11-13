@@ -7,8 +7,7 @@ from cow.testing import CowTestCase
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
-from holmes.models import Domain, Page, Review, Worker
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, FactFactory, ViolationFactory
+from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, FactFactory, ViolationFactory, WorkerFactory
 
 
 class ApiTestCase(CowTestCase):
@@ -26,6 +25,7 @@ class ApiTestCase(CowTestCase):
         ReviewFactory.FACTORY_SESSION = self.db
         FactFactory.FACTORY_SESSION = self.db
         ViolationFactory.FACTORY_SESSION = self.db
+        WorkerFactory.FACTORY_SESSION = self.db
         #self.drop_collection(Domain)
         #self.drop_collection(Page)
         #self.drop_collection(Review)
