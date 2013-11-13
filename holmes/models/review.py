@@ -50,6 +50,20 @@ class Review(Base):
     def __repr__(self):
         return str(self)
 
+    def add_fact(self, key, value, title, unit=None):
+        if self.is_complete:
+            raise ValueError("Can't add anything to a completed review.")
+
+        from holmes.models.fact import Fact  # to avoid circular dependency
+
+        fact = Fact(key=key, value=value, title=title, unit=unit)
+
+        self.facts.append(fact)
+
+    @property
+    def failed(self):
+        return self.failure_message is not None
+
 
 #class Review(Document):
     #domain = ReferenceField('holmes.models.domain.Domain', required=True)

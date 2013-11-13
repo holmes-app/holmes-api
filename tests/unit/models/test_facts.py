@@ -22,23 +22,6 @@ class TestFacts(ApiTestCase):
         expect(loaded_fact.title).to_equal(fact.title)
 
     #@gen_test
-    #def test_can_create_facts_float(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review = yield ReviewFactory.create(page=page)
-
-        #review.add_fact(key="some.random.fact", value=1203.01, title="title", unit="kb")
-        #yield review.save()
-
-        #loaded_review = yield Review.objects.get(review._id)
-
-        #expect(loaded_review.facts).to_length(1)
-        #expect(loaded_review.facts[0].key).to_equal("some.random.fact")
-        #expect(loaded_review.facts[0].value).to_equal(1203.01)
-        #expect(loaded_review.facts[0].unit).to_equal("kb")
-        #expect(loaded_review.facts[0].title).to_equal("title")
-
-    #@gen_test
     #def test_fact_str_kb(self):
         #domain = yield DomainFactory.create()
         #page = yield PageFactory.create(domain=domain)

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-#import sys
+import sys
 from datetime import datetime
 
 from preggy import expect
@@ -30,16 +30,30 @@ class TestReview(ApiTestCase):
         expect(loaded.is_complete).to_be_like(review.is_complete)
         expect(loaded.uuid).not_to_be_null()
 
-    #def test_can_append_facts(self):
-        #review = ReviewFactory.build()
-        #expect(review.facts).to_length(0)
+    def test_can_create_facts_float(self):
+        review = ReviewFactory.create()
 
-        #review.add_fact('a', 'b', 'c', 'd')
-        #expect(review.facts).to_length(1)
-        #expect(review.facts[0].key).to_equal('a')
-        #expect(review.facts[0].value).to_equal('b')
-        #expect(review.facts[0].title).to_equal('c')
-        #expect(review.facts[0].unit).to_equal('d')
+        review.add_fact(key="some.random.fact", value=1203.01, title="title", unit="kb")
+        self.db.flush()
+
+        loaded_review = self.db.query(Review).get(review.id)
+
+        expect(loaded_review.facts).to_length(1)
+        expect(loaded_review.facts[0].key).to_equal("some.random.fact")
+        expect(loaded_review.facts[0].value).to_equal(1203.01)
+        expect(loaded_review.facts[0].unit).to_equal("kb")
+        expect(loaded_review.facts[0].title).to_equal("title")
+
+    def test_can_append_facts(self):
+        review = ReviewFactory.build()
+        expect(review.facts).to_length(0)
+
+        review.add_fact('a', 'b', 'c', 'd')
+        expect(review.facts).to_length(1)
+        expect(review.facts[0].key).to_equal('a')
+        expect(review.facts[0].value).to_equal('b')
+        expect(review.facts[0].title).to_equal('c')
+        expect(review.facts[0].unit).to_equal('d')
 
     #def test_can_append_violations(self):
         #review = ReviewFactory.build()
@@ -52,18 +66,18 @@ class TestReview(ApiTestCase):
         #expect(review.violations[0].description).to_equal('c')
         #expect(review.violations[0].points).to_equal(100)
 
-    #def test_cant_append_facts_after_complete(self):
-        #review = ReviewFactory.build()
-        #expect(review.facts).to_length(0)
-        #review.is_complete = True
+    def test_cant_append_facts_after_complete(self):
+        review = ReviewFactory.build()
+        expect(review.facts).to_length(0)
+        review.is_complete = True
 
-        #try:
-            #review.add_fact('a', 'b', 'c', 'd')
-        #except ValueError:
-            #err = sys.exc_info()[1]
-            #expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
-        #else:
-            #assert False, 'Should not have gotten this far'
+        try:
+            review.add_fact('a', 'b', 'c', 'd')
+        except ValueError:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
+        else:
+            assert False, 'Should not have gotten this far'
 
     #def test_cant_append_violations_after_complete(self):
         #review = ReviewFactory.build()
@@ -78,7 +92,7 @@ class TestReview(ApiTestCase):
         #else:
             #assert False, 'Should not have gotten this far'
 
-    #def test_review_has_falied(self):
-        #review = ReviewFactory.build()
-        #review.failure_message = "Invalid Page"
-        #expect(review.failed).to_be_true()
+    def test_review_has_failed(self):
+        review = ReviewFactory.build()
+        review.failure_message = "Invalid Page"
+        expect(review.failed).to_be_true()
