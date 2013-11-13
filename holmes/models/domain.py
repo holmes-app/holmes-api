@@ -114,16 +114,6 @@ class Domain(Base):
 
         return [item[0] for item in items]
 
-        #skip = (current_page - 1) * page_size
-        #Review.objects \
-              #.filter(is_active=True, domain=self) \
-              #.order_by(Review.violation_count, DESCENDING) \
-              #.skip(skip) \
-              #.limit(page_size) \
-              #.find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
-
-
-
     @classmethod
     def get_domain_by_name(self, domain_name, db):
         return db.query(Domain).filter(Domain.name == domain_name).first()

@@ -60,9 +60,9 @@ class DomainViolationsPerDayHandler(BaseHandler):
     @gen.coroutine
     def get(self, domain_name):
 
-        domain = yield Domain.get_domain_by_name(domain_name)
+        domain = Domain.get_domain_by_name(domain_name, self.db)
 
-        violations_per_day = yield domain.get_violations_per_day()
+        violations_per_day = domain.get_violations_per_day(self.db)
 
         domain_json = {
             "name": domain.name,
