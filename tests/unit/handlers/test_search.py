@@ -7,9 +7,8 @@ from ujson import loads
 from preggy import expect
 from tornado.testing import gen_test
 
-from holmes.models import Page, Domain
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestSearchHandler(ApiTestCase):
@@ -18,18 +17,17 @@ class TestSearchHandler(ApiTestCase):
     def test_can_search(self):
         dt = datetime.now()
 
-        yield Domain.objects.delete()
-        yield Page.objects.delete()
+        page = PageFactory.create(url="http://www.globo.com")
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com")
-        review1 = yield ReviewFactory.create(
+        review1 = ReviewFactory.create(
             page=page, is_active=True, is_complete=True,
             completed_date=dt, number_of_violations=20
         )
+        self.db.flush()
+
         page.last_review = review1
         page.last_review_date = dt
-        yield page.save()
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/search?term=http://www.globo.com'),

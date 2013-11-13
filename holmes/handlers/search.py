@@ -13,16 +13,16 @@ class SearchHandler(BaseHandler):
     def get(self):
         term = self.get_argument('term')
 
-        pages = yield Page.objects.filter(url=term, last_review_date__is_null=False).find_all()
+        pages = self.db.query(Page) \
+            .filter(Page.url == term) \
+            .filter(Page.last_review_date != None) \
+            .all()
 
         pages_json = []
 
         for page in pages:
-            yield page.load_references(['last_review'])
-
             pages_json.append({
                 "uuid": str(page.uuid),
-                "title": page.title,
                 "url": page.url,
                 "reviewId": str(page.last_review.uuid)
             })
