@@ -35,6 +35,22 @@ class Violation(Base):
             'points': self.points
         }
 
+    @classmethod
+    def get_most_common_violations(cls, db, limit=5):
+        violations = []
+        results = db.query(Violation.key, Violation.title, sa.func.count(Violation.id).label('count')) \
+                    .group_by(Violation.key) \
+                    .order_by('count desc')[:limit]
+
+        for item in results:
+            violations.append({
+                "key": item.key,
+                "title": item.title,
+                "count": item.count
+            })
+
+        return violations
+
 
 #class Violation(Document):
     #key = StringField(required=True)

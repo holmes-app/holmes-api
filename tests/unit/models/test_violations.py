@@ -27,3 +27,25 @@ class TestViolations(ApiTestCase):
             violation.points,
             violation.description
         ))
+
+    def test_can_get_most_common_violations(self):
+        for i in range(3):
+            for j in range(2):
+                ViolationFactory.create(
+                    key='some.random.fact.%s' % i, title='test title', description='test description', points=1203
+                )
+
+        self.db.flush()
+
+        expect(Violation.get_most_common_violations(self.db, limit=2)).to_be_like([
+            {
+                'title': u'test title',
+                'count': 2,
+                'key': 'some.random.fact.0'
+            },
+            {
+                'title': u'test title',
+                'count': 2,
+                'key': 'some.random.fact.1'
+            }
+        ])
