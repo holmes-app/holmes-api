@@ -30,6 +30,7 @@ class LinkFacter(Facter):
         links = self.get_links()
 
         self.review.data['page.links'] = set()
+        self.review.data['page.all_links'] = links
 
         self.add_fact(
             key='page.links',
