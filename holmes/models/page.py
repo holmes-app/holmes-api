@@ -7,6 +7,7 @@ from datetime import datetime
 
 #from motorengine import Document, URLField, StringField, ReferenceField, DateTimeField, UUIDField
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
 from holmes.models import Base
 #from holmes.models.review import Review
@@ -24,6 +25,8 @@ class Page(Base):
     last_review_date = sa.Column('last_review_started_date', sa.DateTime, nullable=True)
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
+
+    reviews = relationship("Review", backref="page")
 
     def to_dict(self):
         return {

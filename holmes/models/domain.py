@@ -20,6 +20,7 @@ class Domain(Base):
     name = sa.Column('name', sa.String(2000), nullable=False)
 
     pages = relationship("Page", backref="domain")
+    reviews = relationship("Review", backref="domain")
 
     def to_dict(self):
         return {

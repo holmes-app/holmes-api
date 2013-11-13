@@ -47,11 +47,11 @@ class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
     #last_review = None
 
 
-class ReviewFactory(MotorEngineFactory):
+class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
     FACTORY_FOR = Review
 
-    facts = factory.LazyAttribute(lambda a: [])
-    violations = factory.LazyAttribute(lambda a: [])
+    #facts = factory.LazyAttribute(lambda a: [])
+    #violations = factory.LazyAttribute(lambda a: [])
 
     is_complete = False
     is_active = False
@@ -64,20 +64,20 @@ class ReviewFactory(MotorEngineFactory):
         if 'page' in kwargs and kwargs['page'] is not None:
             kwargs['domain'] = kwargs['page'].domain
 
-        if 'number_of_violations' in kwargs:
-            number_of_violations = kwargs['number_of_violations']
-            del kwargs['number_of_violations']
+        #if 'number_of_violations' in kwargs:
+            #number_of_violations = kwargs['number_of_violations']
+            #del kwargs['number_of_violations']
 
-            violations = []
-            for i in range(number_of_violations):
-                violations.append(Violation(
-                    key="violation.%d" % i,
-                    title="title %d" % i,
-                    description="description %d" % i,
-                    points=i
-                ))
+            #violations = []
+            #for i in range(number_of_violations):
+                #violations.append(Violation(
+                    #key="violation.%d" % i,
+                    #title="title %d" % i,
+                    #description="description %d" % i,
+                    #points=i
+                #))
 
-            kwargs['violations'] = violations
+            #kwargs['violations'] = violations
 
         return kwargs
 
