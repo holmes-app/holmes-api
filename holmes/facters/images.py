@@ -11,6 +11,7 @@ class ImageFacter(Facter):
     def get_facts(self):
         img_files = self.get_images()
 
+        self.review.data['page.all_images'] = img_files
         self.review.data['page.images'] = set()
         self.review.data['total.size.img'] = 0
 
@@ -63,4 +64,4 @@ class ImageFacter(Facter):
         self.review.data['total.size.img'] += size_img
 
     def get_images(self):
-        return self.reviewer.current['html'].cssselect('img[src]')
+        return self.reviewer.current['html'].cssselect(':not(script) img[src]')
