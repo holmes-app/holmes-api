@@ -63,20 +63,20 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     @classmethod
     def _adjust_kwargs(cls, **kwargs):
-        #if 'number_of_violations' in kwargs:
-            #number_of_violations = kwargs['number_of_violations']
-            #del kwargs['number_of_violations']
+        if 'number_of_violations' in kwargs:
+            number_of_violations = kwargs['number_of_violations']
+            del kwargs['number_of_violations']
 
-            #violations = []
-            #for i in range(number_of_violations):
-                #violations.append(Violation(
-                    #key="violation.%d" % i,
-                    #title="title %d" % i,
-                    #description="description %d" % i,
-                    #points=i
-                #))
+            violations = []
+            for i in range(number_of_violations):
+                violations.append(Violation(
+                    key="violation.%d" % i,
+                    title="title %d" % i,
+                    description="description %d" % i,
+                    points=i
+                ))
 
-            #kwargs['violations'] = violations
+            kwargs['violations'] = violations
 
         return kwargs
 
