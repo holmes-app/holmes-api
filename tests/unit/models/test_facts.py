@@ -21,6 +21,16 @@ class TestFacts(ApiTestCase):
         expect(loaded_fact.unit).to_equal(fact.unit)
         expect(loaded_fact.title).to_equal(fact.title)
 
+    def test_to_dict(self):
+        fact = FactFactory.build()
+
+        expect(fact.to_dict()).to_be_like({
+            'title': fact.title,
+            'key': fact.key,
+            'unit': fact.unit,
+            'value': fact.value
+        })
+
     def test_fact_str_kb(self):
         fact = FactFactory.create(key="some.random.fact", value=1203, title="title", unit="kb")
         self.db.flush()

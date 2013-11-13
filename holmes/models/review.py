@@ -37,6 +37,7 @@ class Review(Base):
     page_id = sa.Column('page_id', sa.Integer, sa.ForeignKey('pages.id'))
 
     facts = relationship("Fact", backref="review")
+    violations = relationship("Violation", backref="review")
 
     def to_dict(self):
         return {

@@ -19,6 +19,14 @@ class Fact(Base):
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))
 
+    def to_dict(self):
+        return {
+            'title': self.title,
+            'key': self.key,
+            'unit': self.unit,
+            'value': self.value
+        }
+
     def __str__(self):
         unit = self.unit != 'value' and self.unit or ''
         value = self.value
