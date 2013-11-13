@@ -21,30 +21,18 @@ class TestFacts(ApiTestCase):
         expect(loaded_fact.unit).to_equal(fact.unit)
         expect(loaded_fact.title).to_equal(fact.title)
 
-    #@gen_test
-    #def test_fact_str_kb(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review = yield ReviewFactory.create(page=page)
+    def test_fact_str_kb(self):
+        fact = FactFactory.create(key="some.random.fact", value=1203, title="title", unit="kb")
+        self.db.flush()
 
-        #review.add_fact(key="some.random.fact", value=1203, title="title", unit="kb")
-        #yield review.save()
+        loaded_fact = self.db.query(Fact).get(fact.id)
 
-        #loaded_review = yield Review.objects.get(review._id)
+        expect(str(loaded_fact)).to_be_like('some.random.fact: 1203.00kb')
 
-        #expect(loaded_review.facts).to_length(1)
-        #expect(str(loaded_review.facts[0])).to_be_like('some.random.fact: 1203.00kb')
+    def test_fact_str(self):
+        fact = FactFactory.create(key="some.random.fact", value=1203, title="title", unit="kms")
+        self.db.flush()
 
-    #@gen_test
-    #def test_fact_str(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review = yield ReviewFactory.create(page=page)
+        loaded_fact = self.db.query(Fact).get(fact.id)
 
-        #review.add_fact(key="some.random.fact", value=1203, title="title", unit="kms")
-        #yield review.save()
-
-        #loaded_review = yield Review.objects.get(review._id)
-
-        #expect(loaded_review.facts).to_length(1)
-        #expect(str(loaded_review.facts[0])).to_be_like('some.random.fact: 1203kms')
+        expect(str(loaded_fact)).to_be_like('some.random.fact: 1203kms')
