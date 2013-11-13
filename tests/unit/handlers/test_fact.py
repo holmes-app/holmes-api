@@ -9,15 +9,14 @@ from tornado.httpclient import HTTPError
 
 from holmes.models import Review
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestFactHandler(ApiTestCase):
 
     @gen_test
     def test_invalid_review_returns_404(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
+        page = PageFactory.create()
 
         url = self.get_url(
             '/page/%s/review/invalid/fact' % page.uuid
@@ -39,13 +38,11 @@ class TestFactHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_fact(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
 
         url = self.get_url(
             '/page/%s/review/%s/fact' % (
-                page.uuid,
+                review.page.uuid,
                 review.uuid
             )
         )
@@ -59,7 +56,7 @@ class TestFactHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal('OK')
 
-        review = yield Review.objects.get(uuid=review.uuid)
+        review = Review.by_uuid(review.uuid, self.db)
 
         expect(review).not_to_be_null()
         expect(review.facts).to_length(1)

@@ -4,13 +4,13 @@
 from uuid import UUID
 from ujson import loads
 
-from tornado.web import RequestHandler
 from tornado import gen
 
 from holmes.models import Review
+from holmes.handlers import BaseHandler
 
 
-class CreateFactHandler(RequestHandler):
+class CreateFactHandler(BaseHandler):
 
     @gen.coroutine
     def post(self, page_uuid, review_uuid):
@@ -27,7 +27,7 @@ class CreateFactHandler(RequestHandler):
 
         review = None
         if parsed_uuid:
-            review = yield Review.objects.get(uuid=parsed_uuid)
+            review = Review.by_uuid(parsed_uuid, self.db)
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
@@ -38,7 +38,7 @@ class CreateFactHandler(RequestHandler):
             value = loads(value)
 
         review.add_fact(key=key, unit=unit, value=value, title=title)
-        yield review.save()
+        self.db.flush()
 
         self.write('OK')
         self.finish()

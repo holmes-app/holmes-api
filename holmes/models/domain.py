@@ -8,7 +8,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
 from holmes.models import Base
-from holmes.models.page import Page
 #from holmes.models.review import Review
 
 
@@ -30,9 +29,11 @@ class Domain(Base):
 
     @classmethod
     def get_pages_per_domain(cls, db):
+        from holmes.models import Page
         return dict(db.query(Page.domain_id, sa.func.count(Page.id)).group_by(Page.domain_id).all())
 
     def get_page_count(self, db):
+        from holmes.models import Page
         return db.query(Page).filter(Page.domain_id == self.id).count()
 
     @classmethod
@@ -98,16 +99,40 @@ class Domain(Base):
         return result
 
     def get_active_reviews(self, db, current_page=1, page_size=10):
-        from holmes.models import Review  # Prevent circular dependency
+        from holmes.models import Review, Violation  # Prevent circular dependency
 
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
-        return db.query(Review).filter(Review.is_active == True).filter(Review.domain == self)[lower_bound:upper_bound]
+        items = db \
+            .query(Review, sa.func.count(Violation.id).label('violation_count')) \
+            .outerjoin(Violation, Violation.review_id == Review.id) \
+            .filter(Review.is_active == True) \
+            .filter(Review.domain == self) \
+            .group_by(Review.id) \
+            .order_by('violation_count desc')[lower_bound:upper_bound]
+
+        return [item[0] for item in items]
+
+        #skip = (current_page - 1) * page_size
+        #Review.objects \
+              #.filter(is_active=True, domain=self) \
+              #.order_by(Review.violation_count, DESCENDING) \
+              #.skip(skip) \
+              #.limit(page_size) \
+              #.find_all(lazy=False, callback=self.handle_get_active_reviews(callback))
+
+
 
     @classmethod
     def get_domain_by_name(self, domain_name, db):
         return db.query(Domain).filter(Domain.name == domain_name).first()
+
+    def get_active_review_count(self, db):
+        from holmes.models import Review
+
+        return db.query(Review).filter(Review.is_active == True, Review.domain == self).count()
+
 
 #class Domain(Document):
     #url = URLField(required=True)
