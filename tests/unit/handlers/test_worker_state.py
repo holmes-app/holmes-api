@@ -33,143 +33,138 @@ class TestWorkerStateHandler(ApiTestCase):
         expect(response.body).to_be_like('OK')
         expect(str(worker.current_review)).to_equal(str(review.uuid))
 
-    #@gen_test
-    #def test_worker_start_working_invalid_worker(self):
-        #try:
-            #yield self.http_client.fetch(
-                #self.get_url('/worker/%s/review/%s/start' % (self.ZERO_UUID, self.ZERO_UUID)),
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(404)
-            #expect(err.response.reason).to_be_like('Unknown Worker')
-        #else:
-            #assert False, 'Should not have got this far'
+    @gen_test
+    def test_worker_start_working_invalid_worker(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/worker/%s/review/%s/start' % (self.ZERO_UUID, self.ZERO_UUID)),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Unknown Worker')
+        else:
+            assert False, 'Should not have got this far'
 
-    #@gen_test
-    #def test_worker_start_working_invalid_review(self):
+    @gen_test
+    def test_worker_start_working_invalid_review(self):
+        worker = WorkerFactory.create()
+        self.db.flush()
 
-        #worker = yield WorkerFactory.create()
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID)),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Unknown Review')
+        else:
+            assert False, 'Should not have got this far'
 
-        #try:
-            #yield self.http_client.fetch(
-                #self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), self.ZERO_UUID)),
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(404)
-            #expect(err.response.reason).to_be_like('Unknown Review')
-        #else:
-            #assert False, 'Should not have got this far'
+    @gen_test
+    def test_worker_start_working_already_complete_review(self):
+        review = ReviewFactory.create(is_complete=True)
+        worker = WorkerFactory.create()
 
-    #@gen_test
-    #def test_worker_start_working_already_complete_review(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
+        self.db.flush()
 
-        #review = yield ReviewFactory.create(page=page, is_complete=True)
-        #worker = yield WorkerFactory.create()
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), str(review.uuid))),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_be_like('Review already completed')
+        else:
+            assert False, 'Should not have got this far'
 
-        #try:
-            #yield self.http_client.fetch(
-                #self.get_url('/worker/%s/review/%s/start' % (str(worker.uuid), str(review.uuid))),
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(400)
-            #expect(err.response.reason).to_be_like('Review already completed')
-        #else:
-            #assert False, 'Should not have got this far'
+    @gen_test
+    def test_worker_complete_work(self):
+        review = ReviewFactory.create()
+        worker = WorkerFactory.create(current_review=review)
+        self.db.flush()
 
-    #@gen_test
-    #def test_worker_complete_work(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
+        response = yield self.http_client.fetch(
+            self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), str(review.uuid))),
+            method='POST',
+            body=''
+        )
 
-        #review = yield ReviewFactory.create(page=page)
-        #worker = yield WorkerFactory.create(current_review=review)
+        worker = Worker.by_uuid(worker.uuid, self.db)
+        page = Page.by_uuid(review.page.uuid, self.db)
+        review = Review.by_uuid(review.uuid, self.db)
 
-        #response = yield self.http_client.fetch(
-            #self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), str(review.uuid))),
-            #method='POST',
-            #body=''
-        #)
+        expect(worker).not_to_be_null()
+        expect(response.code).to_equal(200)
+        expect(response.body).to_be_like('OK')
+        expect(worker.current_review).to_be_null()
 
-        #worker = yield Worker.objects.get(uuid=worker.uuid)
-        #page = yield Page.objects.get(uuid=page.uuid)
-        #page.load_references(['last_review'])
-        #review = yield Review.objects.get(uuid=review.uuid)
+        expect(page.last_review.id).to_equal(review.id)
 
-        #expect(worker).not_to_be_null()
-        #expect(response.code).to_equal(200)
-        #expect(response.body).to_be_like('OK')
-        #expect(worker.current_review).to_be_null()
+    @gen_test
+    def test_worker_complete_work_invalid_worker(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/worker/%s/review/%s/complete' % (self.ZERO_UUID, self.ZERO_UUID)),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Unknown Worker')
+        else:
+            assert False, 'Should not have got this far'
 
-    #@gen_test
-    #def test_worker_complete_work_invalid_worker(self):
-        #try:
-            #yield self.http_client.fetch(
-                #self.get_url('/worker/%s/review/%s/complete' % (self.ZERO_UUID, self.ZERO_UUID)),
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(404)
-            #expect(err.response.reason).to_be_like('Unknown Worker')
-        #else:
-            #assert False, 'Should not have got this far'
+    @gen_test
+    def test_worker_complete_work_invalid_review(self):
+        worker = WorkerFactory.create()
 
-    #@gen_test
-    #def test_worker_complete_work_invalid_review(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID)),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Unknown Review')
+        else:
+            assert False, 'Should not have got this far'
 
-        #worker = yield WorkerFactory.create()
+    @gen_test
+    def test_can_complete_work_to_review_with_error(self):
+        review = ReviewFactory.create()
+        worker = WorkerFactory.create(current_review=review)
 
-        #try:
-            #yield self.http_client.fetch(
-                #self.get_url('/worker/%s/review/%s/complete' % (str(worker.uuid), self.ZERO_UUID)),
-                #method='POST',
-                #body=''
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(404)
-            #expect(err.response.reason).to_be_like('Unknown Review')
-        #else:
-            #assert False, 'Should not have got this far'
+        url = self.get_url(
+            '/worker/%s/review/%s/complete' % (
+                worker.uuid,
+                review.uuid
+            )
+        )
 
-    #@gen_test
-    #def test_can_complete_work_to_review_with_error(self):
-        #domain = yield DomainFactory.create()
-        #page = yield PageFactory.create(domain=domain)
-        #review = yield ReviewFactory.create(page=page)
-        #worker = yield WorkerFactory.create(current_review=review)
+        yield self.http_client.fetch(
+            url,
+            method='POST',
+            body='{"error":"Invalid Url"}'
+        )
 
-        #url = self.get_url(
-            #'/worker/%s/review/%s/complete' % (
-                #worker.uuid,
-                #review.uuid
-            #)
-        #)
-
-        #yield self.http_client.fetch(
-            #url,
-            #method='POST',
-            #body='{"error":"Invalid Url"}'
-        #)
-
-        #review = yield Review.objects.get(uuid=review.uuid)
-        #expect(review).not_to_be_null()
-        #expect(review.failed).to_be_true()
-        #expect(review.failure_message).to_equal('Invalid Url')
+        review = Review.by_uuid(review.uuid, self.db)
+        expect(review).not_to_be_null()
+        expect(review.failed).to_be_true()
+        expect(review.failure_message).to_equal('Invalid Url')

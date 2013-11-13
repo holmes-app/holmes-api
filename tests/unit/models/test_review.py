@@ -129,3 +129,6 @@ class TestReview(ApiTestCase):
 
         loaded = Review.by_uuid(review.uuid, self.db)
         expect(loaded.id).to_equal(review.id)
+
+        invalid = Review.by_uuid(review.uuid, self.db)
+        expect(invalid).to_be_null()

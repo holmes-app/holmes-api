@@ -41,7 +41,7 @@ class Worker(Base):
 
     @classmethod
     def by_uuid(cls, uuid, db):
-        return db.query(Worker).filter(Worker.uuid == uuid).one()
+        return db.query(Worker).filter(Worker.uuid == uuid).first()
 
 #class Worker(Document):
     #__lazy__ = False

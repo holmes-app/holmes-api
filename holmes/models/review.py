@@ -88,7 +88,7 @@ class Review(Base):
 
     @classmethod
     def by_uuid(cls, uuid, db):
-        return db.query(Review).filter(Review.uuid == uuid).one()
+        return db.query(Review).filter(Review.uuid == uuid).first()
 
 
 #class Review(Document):

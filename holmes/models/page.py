@@ -75,6 +75,10 @@ class Page(Base):
 
         return result
 
+    @classmethod
+    def by_uuid(cls, uuid, db):
+        return db.query(Page).filter(Page.uuid == uuid).first()
+
 
 #class Page(Document):
     #uuid = UUIDField(default=uuid4)

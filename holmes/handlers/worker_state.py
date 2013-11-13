@@ -40,6 +40,11 @@ class WorkerStateHandler(BaseHandler):
                 if error:
                     review.failure_message = error
 
+            self.db.flush()
+
+            worker.current_review.page.last_review = review
+            self.db.flush()
+
             worker.current_review = None
 
         self.db.flush()

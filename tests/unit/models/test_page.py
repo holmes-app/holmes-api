@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from uuid import uuid4
 from datetime import datetime
 
 from preggy import expect
 from tornado.testing import gen_test
 
+from holmes.models import Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import PageFactory, ReviewFactory
 
@@ -62,3 +64,14 @@ class TestPage(ApiTestCase):
             "violation_count": 30,
             "violation_points": 435
         })
+
+    def test_can_get_page_by_uuid(self):
+        page = PageFactory.create()
+        PageFactory.create()
+        self.db.flush()
+
+        loaded_page = Page.by_uuid(page.uuid, self.db)
+        expect(loaded_page.id).to_equal(page.id)
+
+        invalid_page = Page.by_uuid(uuid4(), self.db)
+        expect(invalid_page).to_be_null()

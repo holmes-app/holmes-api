@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from uuid import uuid4
 
 from preggy import expect
 
@@ -60,3 +61,6 @@ class TestWorker(ApiTestCase):
 
         loaded_worker = Worker.by_uuid(worker.uuid, self.db)
         expect(loaded_worker.id).to_equal(worker.id)
+
+        invalid_worker = Worker.by_uuid(uuid4(), self.db)
+        expect(invalid_worker).to_be_null()
