@@ -56,6 +56,7 @@ class TestWorkerHandler(ApiTestCase):
         date = datetime.now()-timedelta(seconds=300)
         worker_old = WorkerFactory.create(last_ping=date)
         worker_new = WorkerFactory.create()
+        self.db.flush()
 
         yield self.http_client.fetch(
             self.get_url('/worker/%s/alive' % str(worker_new.uuid)),
@@ -76,6 +77,7 @@ class TestWorkerHandler(ApiTestCase):
     def test_worker_removal_when_ping_will_die(self):
         worker_old = WorkerFactory.create()
         worker_dead = WorkerFactory.create()
+        self.db.flush()
 
         yield self.http_client.fetch(
             self.get_url('/worker/%s/dead' % str(worker_dead.uuid)),
