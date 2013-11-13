@@ -53,3 +53,5 @@ Config.define('COMMIT_ON_REQUEST_END', True, 'Commit on request end', 'DB')
 Config.define('REDISHOST', 'localhost', 'Redis host', 'Redis')
 Config.define('REDISPORT', 7575, 'Redis port', 'Redis')
 Config.define('REDISPASS', None, 'Redis password in case of auth', 'Redis')
+
+Config.define('REQUIRED_META_TAGS', [], 'List of required meta tags', 'Meta tag Validator')
