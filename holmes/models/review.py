@@ -80,6 +80,12 @@ class Review(Base):
         return db.query(Review).filter(Review.is_active == True) \
                                .order_by(Review.completed_date.desc())[:limit]
 
+    def get_violation_points(self):
+        points = 0
+        for violation in self.violations:
+            points += violation.points
+        return points
+
 
 #class Review(Document):
     #domain = ReferenceField('holmes.models.domain.Domain', required=True)

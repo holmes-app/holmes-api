@@ -50,8 +50,8 @@ class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
 class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
     FACTORY_FOR = Review
 
-    #facts = factory.LazyAttribute(lambda a: [])
-    #violations = factory.LazyAttribute(lambda a: [])
+    facts = factory.LazyAttribute(lambda a: [])
+    violations = factory.LazyAttribute(lambda a: [])
 
     is_complete = False
     is_active = False

@@ -8,7 +8,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.web import HTTPError
 
-from holmes.models import Domain
+from holmes.models import Domain, Page, Review
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -51,30 +51,31 @@ class TestDomain(ApiTestCase):
         expect(domain_dict['url']).to_equal(domain.url)
         expect(domain_dict['name']).to_equal(domain.name)
 
-    #@gen_test
-    #def test_can_get_violations_per_domain(self):
-        #domain = yield DomainFactory.create()
-        #domain2 = yield DomainFactory.create()
-        #yield DomainFactory.create()
+    def test_can_get_violations_per_domain(self):
+        domain = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        DomainFactory.create()
 
-        #page = yield PageFactory.create(domain=domain)
-        #page2 = yield PageFactory.create(domain=domain)
-        #page3 = yield PageFactory.create(domain=domain2)
-        #page4 = yield PageFactory.create(domain=domain2)
-        #page5 = yield PageFactory.create(domain=domain2)
+        page = PageFactory.create(domain=domain)
+        page2 = PageFactory.create(domain=domain)
+        page3 = PageFactory.create(domain=domain2)
+        page4 = PageFactory.create(domain=domain2)
+        page5 = PageFactory.create(domain=domain2)
 
-        #yield ReviewFactory.create(page=page, number_of_violations=40, is_active=True, is_complete=True)
-        #yield ReviewFactory.create(page=page2, number_of_violations=20, is_active=True, is_complete=True)
-        #yield ReviewFactory.create(page=page3, number_of_violations=15, is_active=True, is_complete=True)
-        #yield ReviewFactory.create(page=page4, number_of_violations=25, is_active=True, is_complete=True)
-        #yield ReviewFactory.create(page=page5, number_of_violations=50, is_active=True, is_complete=True)
+        ReviewFactory.create(domain=domain, page=page, number_of_violations=40, is_active=True, is_complete=True)
+        ReviewFactory.create(domain=domain, page=page2, number_of_violations=20, is_active=True, is_complete=True)
+        ReviewFactory.create(domain=domain2, page=page3, number_of_violations=15, is_active=True, is_complete=True)
+        ReviewFactory.create(domain=domain2, page=page4, number_of_violations=25, is_active=True, is_complete=True)
+        ReviewFactory.create(domain=domain2, page=page5, number_of_violations=50, is_active=True, is_complete=True)
 
-        #violations_per_domain = yield Domain.get_violations_per_domain()
+        self.db.flush()
 
-        #expect(violations_per_domain).to_be_like({
-            #domain._id: 60,
-            #domain2._id: 90
-        #})
+        violations_per_domain = Domain.get_violations_per_domain(self.db)
+
+        expect(violations_per_domain).to_be_like({
+            domain.id: 60,
+            domain2.id: 90
+        })
 
     def test_can_get_page_count(self):
         domain = DomainFactory.create()

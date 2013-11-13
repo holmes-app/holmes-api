@@ -118,3 +118,7 @@ class TestReview(ApiTestCase):
 
         expect(last_reviews[0].id).to_equal(review.id)
         expect(last_reviews[1].id).to_equal(review2.id)
+
+    def test_can_get_violation_points(self):
+        review = ReviewFactory.create(number_of_violations=20)
+        expect(review.get_violation_points()).to_equal(190)

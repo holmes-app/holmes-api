@@ -35,6 +35,23 @@ class Domain(Base):
     def get_page_count(self, db):
         return db.query(Page).filter(Page.domain_id == self.id).count()
 
+    @classmethod
+    def get_violations_per_domain(cls, db):
+        from holmes.models import Review, Violation
+
+        violations = db \
+            .query(Review.domain_id, sa.func.count(Violation.id).label('count')) \
+            .filter(Violation.review_id == Review.id) \
+            .filter(Review.is_active == True) \
+            .group_by(Review.domain_id) \
+            .all()
+
+        domains = {}
+        for domain in violations:
+            domains[domain.domain_id] = domain.count
+
+        return domains
+
 
 #class Domain(Document):
     #url = URLField(required=True)
