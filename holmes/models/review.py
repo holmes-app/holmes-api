@@ -12,6 +12,7 @@ from datetime import datetime
     #UUIDField, StringField, IntField
 #)
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
 from holmes.models import Base
 
@@ -34,6 +35,8 @@ class Review(Base):
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
     page_id = sa.Column('page_id', sa.Integer, sa.ForeignKey('pages.id'))
+
+    facts = relationship("Fact", backref="review")
 
     def to_dict(self):
         return {
