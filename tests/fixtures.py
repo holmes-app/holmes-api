@@ -44,7 +44,7 @@ class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
     last_review_date = None
 
     domain = factory.SubFactory(DomainFactory)
-    #last_review = None
+    last_review = None
 
 
 class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):

@@ -25,7 +25,10 @@ class Page(Base):
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
 
-    reviews = relationship("Review", backref="page")
+    reviews = relationship("Review", backref="page", foreign_keys='[Review.page_id]')
+
+    last_review_id = sa.Column('last_review_id', sa.Integer, sa.ForeignKey('reviews.id'))
+    last_review = relationship("Review", foreign_keys=[last_review_id])
 
     def to_dict(self):
         return {
