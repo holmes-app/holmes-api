@@ -122,3 +122,10 @@ class TestReview(ApiTestCase):
     def test_can_get_violation_points(self):
         review = ReviewFactory.create(number_of_violations=20)
         expect(review.get_violation_points()).to_equal(190)
+
+    def test_can_get_review_by_uuid(self):
+        review = ReviewFactory.create()
+        self.db.flush()
+
+        loaded = Review.by_uuid(review.uuid, self.db)
+        expect(loaded.id).to_equal(review.id)

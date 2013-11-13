@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from cow.plugins.motorengine_plugin import MotorEnginePlugin
+from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from preggy import expect
 from mock import patch
 
@@ -26,7 +26,7 @@ class ApiServerTestCase(ApiTestCase):
         srv = holmes.server.HolmesApiServer()
         plugins = srv.get_plugins()
         expect(plugins).to_length(1)
-        expect(plugins[0]).to_equal(MotorEnginePlugin)
+        expect(plugins[0]).to_equal(SQLAlchemyPlugin)
 
     @patch('holmes.server.HolmesApiServer')
     def test_server_main_function(self, server_mock):

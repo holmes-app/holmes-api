@@ -86,6 +86,10 @@ class Review(Base):
             points += violation.points
         return points
 
+    @classmethod
+    def by_uuid(cls, uuid, db):
+        return db.query(Review).filter(Review.uuid == uuid).one()
+
 
 #class Review(Document):
     #domain = ReferenceField('holmes.models.domain.Domain', required=True)

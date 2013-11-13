@@ -52,3 +52,11 @@ class TestWorker(ApiTestCase):
 
         expect(worker.working).to_be_false()
         expect(worker2.working).to_be_true()
+
+    def test_can_get_worker_by_uuid(self):
+        worker = WorkerFactory.create()
+        WorkerFactory.create()
+        self.db.flush()
+
+        loaded_worker = Worker.by_uuid(worker.uuid, self.db)
+        expect(loaded_worker.id).to_equal(worker.id)

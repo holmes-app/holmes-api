@@ -39,6 +39,9 @@ class Worker(Base):
             'working': self.working
         }
 
+    @classmethod
+    def by_uuid(cls, uuid, db):
+        return db.query(Worker).filter(Worker.uuid == uuid).one()
 
 #class Worker(Document):
     #__lazy__ = False

@@ -2,25 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from ujson import loads
-from tornado.web import RequestHandler
-from tornado import gen
 
 from holmes.models.worker import Worker
 from holmes.models.review import Review
+from holmes.handlers import BaseHandler
 
 
-class WorkerStateHandler(RequestHandler):
+class WorkerStateHandler(BaseHandler):
 
-    @gen.coroutine
     def post(self, worker_uuid, review_uuid, state):
-        worker = yield Worker.objects.get(uuid=worker_uuid)
+        worker = Worker.by_uuid(worker_uuid, self.db)
 
         if not worker:
             self.set_status(404, 'Unknown Worker')
             self.finish()
             return
 
-        review = yield Review.objects.get(uuid=review_uuid)
+        review = Review.by_uuid(review_uuid, self.db)
 
         if not review:
             self.set_status(404, 'Unknown Review')
@@ -41,13 +39,10 @@ class WorkerStateHandler(RequestHandler):
                 error = post_data['error']
                 if error:
                     review.failure_message = error
-                    yield review.save()
 
             worker.current_review = None
 
-        yield worker.save()
+        self.db.flush()
 
         self.write('OK')
         self.finish()
-
-

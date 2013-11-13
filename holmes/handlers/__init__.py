@@ -21,3 +21,7 @@ class BaseHandler(RequestHandler):
     def write_json(self, obj):
         self.set_header("Content-Type", "application/json")
         self.write(dumps(obj))
+
+    @property
+    def db(self):
+        return self.application.sqlalchemy_db
