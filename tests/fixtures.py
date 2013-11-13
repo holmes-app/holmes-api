@@ -63,6 +63,9 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     @classmethod
     def _adjust_kwargs(cls, **kwargs):
+        if 'page' in kwargs:
+            kwargs['domain'] = kwargs['page'].domain
+
         if 'number_of_violations' in kwargs:
             number_of_violations = kwargs['number_of_violations']
             del kwargs['number_of_violations']

@@ -52,6 +52,59 @@ class Domain(Base):
 
         return domains
 
+    def get_violation_data(self, db):
+        from holmes.models import Review, Violation
+
+        result = db.query(sa.func.count(Violation.id).label('count'), sa.func.sum(Violation.points).label('points')) \
+            .join(Review, Violation.review_id == Review.id) \
+            .filter(Review.domain_id == self.id) \
+            .one()
+
+        return (
+            result.count, result.points
+        )
+
+    def get_violations_per_day(self, db):
+        from holmes.models import Review, Violation  # Prevent circular dependency
+
+        violations = db \
+            .query(
+                sa.func.year(Review.completed_date).label('year'),
+                sa.func.month(Review.completed_date).label('month'),
+                sa.func.day(Review.completed_date).label('day'),
+                sa.func.count(Violation.id).label('violation_count'),
+                sa.func.sum(Violation.points).label('violation_points')
+            ).join(
+                Domain, Domain.id == Review.domain_id
+            ).join(
+                Violation, Violation.review_id == Review.id
+            ).filter(Review.is_complete == True).filter(Review.domain_id == self.id) \
+            .group_by(
+                sa.func.year(Review.completed_date),
+                sa.func.month(Review.completed_date),
+                sa.func.day(Review.completed_date),
+            ) \
+            .all()
+
+        result = {}
+
+        for day in violations:
+            dt = "%d-%d-%d" % (day.year, day.month, day.day)
+            result[dt] = {
+                "violation_count": int(day.violation_count),
+                "violation_points": int(day.violation_points)
+            }
+
+        return result
+
+    def get_active_reviews(self, db, current_page=1, page_size=10):
+        from holmes.models import Review  # Prevent circular dependency
+
+        lower_bound = (current_page - 1) * page_size
+        upper_bound = lower_bound + page_size
+
+        return db.query(Review).filter(Review.is_active == True).filter(Review.domain == self)[lower_bound:upper_bound]
+
 
 #class Domain(Document):
     #url = URLField(required=True)

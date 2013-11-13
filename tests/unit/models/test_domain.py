@@ -94,77 +94,81 @@ class TestDomain(ApiTestCase):
         expect(pages_for_domain).to_equal(2)
         expect(pages_for_domain_2).to_equal(3)
 
-    #@gen_test
-    #def test_can_get_violation_count_and_points(self):
-        #domain = yield DomainFactory.create()
-        #domain2 = yield DomainFactory.create()
-        #yield DomainFactory.create()
+    def test_can_get_violation_count_and_points(self):
+        domain = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        DomainFactory.create()
 
-        #page = yield PageFactory.create(domain=domain)
-        #page2 = yield PageFactory.create(domain=domain)
-        #page3 = yield PageFactory.create(domain=domain2)
+        page = PageFactory.create(domain=domain)
+        page2 = PageFactory.create(domain=domain)
+        page3 = PageFactory.create(domain=domain2)
 
-        #yield ReviewFactory.create(page=page, is_active=True, number_of_violations=20)
-        #yield ReviewFactory.create(page=page2, is_active=True, number_of_violations=10)
-        #yield ReviewFactory.create(page=page3, is_active=True, number_of_violations=30)
+        ReviewFactory.create(domain=domain, page=page, is_active=True, number_of_violations=20)
+        ReviewFactory.create(domain=domain, page=page2, is_active=True, number_of_violations=10)
+        ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=30)
 
-        #violation_count, violation_points = yield domain.get_violation_data()
+        self.db.flush()
 
-        #expect(violation_count).to_equal(30)
-        #expect(violation_points).to_equal(235)
+        violation_count, violation_points = domain.get_violation_data(self.db)
 
-    #@gen_test
-    #def test_can_get_violations_per_day(self):
-        #dt = datetime(2013, 10, 10, 10, 10, 10)
-        #dt2 = datetime(2013, 10, 11, 10, 10, 10)
-        #dt3 = datetime(2013, 10, 12, 10, 10, 10)
+        expect(violation_count).to_equal(30)
+        expect(violation_points).to_equal(235)
 
-        #domain = yield DomainFactory.create()
+    def test_can_get_violations_per_day(self):
+        dt = datetime(2013, 10, 10, 10, 10, 10)
+        dt2 = datetime(2013, 10, 11, 10, 10, 10)
+        dt3 = datetime(2013, 10, 12, 10, 10, 10)
 
-        #page = yield PageFactory.create(domain=domain)
+        domain = DomainFactory.create()
 
-        #yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
-        #yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
-        #yield ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
+        page = PageFactory.create(domain=domain)
 
-        #violations = yield domain.get_violations_per_day()
+        ReviewFactory.create(domain=domain, page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        ReviewFactory.create(domain=domain, page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
+        ReviewFactory.create(domain=domain, page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
 
-        #expect(violations["2013-10-10"]).to_be_like({
-            #"violation_count": 20,
-            #"violation_points": 190
-        #})
+        self.db.flush()
 
-        #expect(violations["2013-10-11"]).to_be_like({
-            #"violation_count": 10,
-            #"violation_points": 45
-        #})
+        violations = domain.get_violations_per_day(self.db)
 
-        #expect(violations["2013-10-12"]).to_be_like({
-            #"violation_count": 30,
-            #"violation_points": 435
-        #})
+        expect(violations["2013-10-10"]).to_be_like({
+            "violation_count": 20,
+            "violation_points": 190
+        })
 
-    #@gen_test
-    #def test_can_get_reviews_for_domain(self):
-        #dt = datetime(2013, 10, 10, 10, 10, 10)
-        #dt2 = datetime(2013, 10, 11, 10, 10, 10)
-        #dt3 = datetime(2013, 10, 12, 10, 10, 10)
+        expect(violations["2013-10-11"]).to_be_like({
+            "violation_count": 10,
+            "violation_points": 45
+        })
 
-        #domain = yield DomainFactory.create()
+        expect(violations["2013-10-12"]).to_be_like({
+            "violation_count": 30,
+            "violation_points": 435
+        })
 
-        #page = yield PageFactory.create(domain=domain)
+    @gen_test
+    def test_can_get_reviews_for_domain(self):
+        dt = datetime(2013, 10, 10, 10, 10, 10)
+        dt2 = datetime(2013, 10, 11, 10, 10, 10)
+        dt3 = datetime(2013, 10, 12, 10, 10, 10)
 
-        #yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
-        #yield ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
-        #review = yield ReviewFactory.create(
-            #page=page, is_active=True, is_complete=True,
-            #completed_date=dt3, number_of_violations=30)
+        domain = DomainFactory.create()
 
-        #reviews = yield domain.get_active_reviews()
+        page = PageFactory.create(domain=domain)
 
-        #expect(reviews).to_length(1)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
+        review = ReviewFactory.create(
+            page=page, is_active=True, is_complete=True,
+            completed_date=dt3, number_of_violations=30)
 
-        #expect(reviews[0]._id).to_equal(review._id)
+        self.db.flush()
+
+        reviews = domain.get_active_reviews(self.db)
+
+        expect(reviews).to_length(1)
+
+        expect(reviews[0].id).to_equal(review.id)
 
     #@gen_test
     #def test_invalid_domain_returns_404(self):
