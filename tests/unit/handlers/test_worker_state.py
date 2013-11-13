@@ -9,7 +9,7 @@ from tornado.httpclient import HTTPError
 
 from holmes.models import Worker, Page, Review
 from tests.unit.base import ApiTestCase
-from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import WorkerFactory, ReviewFactory
 
 
 class TestWorkerStateHandler(ApiTestCase):
@@ -131,6 +131,7 @@ class TestWorkerStateHandler(ApiTestCase):
     @gen_test
     def test_worker_complete_work_invalid_review(self):
         worker = WorkerFactory.create()
+        self.db.flush()
 
         try:
             yield self.http_client.fetch(
@@ -150,6 +151,7 @@ class TestWorkerStateHandler(ApiTestCase):
     def test_can_complete_work_to_review_with_error(self):
         review = ReviewFactory.create()
         worker = WorkerFactory.create(current_review=review)
+        self.db.flush()
 
         url = self.get_url(
             '/worker/%s/review/%s/complete' % (

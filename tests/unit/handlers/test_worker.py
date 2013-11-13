@@ -10,7 +10,7 @@ from tornado.testing import gen_test
 
 from holmes.models import Worker
 from tests.unit.base import ApiTestCase
-from tests.fixtures import WorkerFactory, DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import WorkerFactory, PageFactory, ReviewFactory
 
 
 class TestWorkerHandler(ApiTestCase):
@@ -25,7 +25,7 @@ class TestWorkerHandler(ApiTestCase):
             body=''
         )
 
-        worker = yield Worker.objects.get(uuid=worker_uuid)
+        worker = Worker.by_uuid(worker_uuid, self.db)
 
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
@@ -35,7 +35,8 @@ class TestWorkerHandler(ApiTestCase):
     def test_worker_alive_can_ping_existing_worker(self):
         date = datetime.now()
 
-        worker = yield WorkerFactory.create(last_ping=date)
+        worker = WorkerFactory.create(last_ping=date)
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/worker/%s/alive' % str(worker.uuid)),
@@ -43,7 +44,7 @@ class TestWorkerHandler(ApiTestCase):
             body='current_review=%s' % str(worker.current_review)
         )
 
-        worker = yield Worker.objects.get(uuid=worker.uuid)
+        worker = Worker.by_uuid(worker.uuid, self.db)
 
         expect(worker).not_to_be_null()
         expect(response.code).to_equal(200)
@@ -52,11 +53,9 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_worker_removal_after_long_time_without_ping_alive(self):
-        yield Worker.objects.delete()
-
         date = datetime.now()-timedelta(seconds=300)
-        worker_old = yield WorkerFactory.create(last_ping=date)
-        worker_new = yield WorkerFactory.create()
+        worker_old = WorkerFactory.create(last_ping=date)
+        worker_new = WorkerFactory.create()
 
         yield self.http_client.fetch(
             self.get_url('/worker/%s/alive' % str(worker_new.uuid)),
@@ -75,10 +74,8 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_worker_removal_when_ping_will_die(self):
-        yield Worker.objects.delete()
-
-        worker_old = yield WorkerFactory.create()
-        worker_dead = yield WorkerFactory.create()
+        worker_old = WorkerFactory.create()
+        worker_dead = WorkerFactory.create()
 
         yield self.http_client.fetch(
             self.get_url('/worker/%s/dead' % str(worker_dead.uuid)),
@@ -98,13 +95,11 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_workers_list(self):
-        yield Worker.objects.delete()
+        page = PageFactory.create()
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-
-        review = yield ReviewFactory.create(page=page)
-        worker = yield WorkerFactory.create(current_review=review)
+        review = ReviewFactory.create(page=page)
+        worker = WorkerFactory.create(current_review=review)
+        self.db.flush()
 
         response = yield self.http_client.fetch(
             self.get_url('/workers/'),
@@ -112,7 +107,7 @@ class TestWorkerHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
 
-        workers = yield Worker.objects.find_all()
+        workers = self.db.query(Worker).all()
 
         returned_json = loads(response.body)
         expect(returned_json).to_length(len(workers))
@@ -122,4 +117,3 @@ class TestWorkerHandler(ApiTestCase):
         expect(returned_json[0]['working']).to_be_true()
         expect(returned_json[0]['page_url']).to_equal(page.url)
         expect(returned_json[0]['page_uuid']).to_equal(str(page.uuid))
-
