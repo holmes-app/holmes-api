@@ -12,7 +12,6 @@ from tests.fixtures import FactFactory
 class TestFacts(ApiTestCase):
     def test_can_create_facts(self):
         fact = FactFactory.create(value="whatever")
-        self.db.flush()
 
         loaded_fact = self.db.query(Fact).get(fact.id)
 
@@ -33,7 +32,6 @@ class TestFacts(ApiTestCase):
 
     def test_fact_str_kb(self):
         fact = FactFactory.create(key="some.random.fact", value=1203, title="title", unit="kb")
-        self.db.flush()
 
         loaded_fact = self.db.query(Fact).get(fact.id)
 
@@ -41,7 +39,6 @@ class TestFacts(ApiTestCase):
 
     def test_fact_str(self):
         fact = FactFactory.create(key="some.random.fact", value=1203, title="title", unit="kms")
-        self.db.flush()
 
         loaded_fact = self.db.query(Fact).get(fact.id)
 

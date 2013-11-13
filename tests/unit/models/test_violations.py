@@ -13,7 +13,6 @@ class TestViolations(ApiTestCase):
         violation = ViolationFactory.create(
             key='some.random.fact', title='test title', description='test description', points=1203
         )
-        self.db.flush()
 
         loaded_violation = self.db.query(Violation).get(violation.id)
 
@@ -34,8 +33,6 @@ class TestViolations(ApiTestCase):
                 ViolationFactory.create(
                     key='some.random.fact.%s' % i, title='test title', description='test description', points=1203
                 )
-
-        self.db.flush()
 
         expect(Violation.get_most_common_violations(self.db, limit=2)).to_be_like([
             {

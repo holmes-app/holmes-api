@@ -17,7 +17,6 @@ class TestDomain(ApiTestCase):
 
     def test_can_create_domain(self):
         domain = DomainFactory.create()
-        self.db.flush()
 
         expect(domain.id).not_to_be_null()
         expect(domain.url).to_include('http://my-site-')
@@ -27,7 +26,6 @@ class TestDomain(ApiTestCase):
         domain = DomainFactory.create()
         domain2 = DomainFactory.create()
         DomainFactory.create()
-        self.db.flush()
 
         PageFactory.create(domain=domain)
         PageFactory.create(domain=domain)
@@ -44,7 +42,6 @@ class TestDomain(ApiTestCase):
 
     def test_can_convert_to_dict(self):
         domain = DomainFactory.create()
-        self.db.flush()
 
         domain_dict = domain.to_dict()
 
@@ -67,8 +64,6 @@ class TestDomain(ApiTestCase):
         ReviewFactory.create(domain=domain2, page=page3, number_of_violations=15, is_active=True, is_complete=True)
         ReviewFactory.create(domain=domain2, page=page4, number_of_violations=25, is_active=True, is_complete=True)
         ReviewFactory.create(domain=domain2, page=page5, number_of_violations=50, is_active=True, is_complete=True)
-
-        self.db.flush()
 
         violations_per_domain = Domain.get_violations_per_domain(self.db)
 
@@ -107,8 +102,6 @@ class TestDomain(ApiTestCase):
         ReviewFactory.create(domain=domain, page=page2, is_active=True, number_of_violations=10)
         ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=30)
 
-        self.db.flush()
-
         violation_count, violation_points = domain.get_violation_data(self.db)
 
         expect(violation_count).to_equal(30)
@@ -126,8 +119,6 @@ class TestDomain(ApiTestCase):
         ReviewFactory.create(domain=domain, page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
         ReviewFactory.create(domain=domain, page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
         ReviewFactory.create(domain=domain, page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
-
-        self.db.flush()
 
         violations = domain.get_violations_per_day(self.db)
 
@@ -162,8 +153,6 @@ class TestDomain(ApiTestCase):
             page=page, is_active=True, is_complete=True,
             completed_date=dt3, number_of_violations=30)
 
-        self.db.flush()
-
         reviews = domain.get_active_reviews(self.db)
 
         expect(reviews).to_length(1)
@@ -178,7 +167,6 @@ class TestDomain(ApiTestCase):
 
     def test_can_get_domain_by_name(self):
         domain = DomainFactory.create()
-        self.db.flush()
 
         loaded_domain = Domain.get_domain_by_name(domain.name, self.db)
 

@@ -41,8 +41,14 @@ class Review(Base):
 
     def to_dict(self):
         return {
+            'page': self.page and self.page.to_dict() or None,
+            'domain': self.domain and self.domain.name or None,
+            'isComplete': self.is_complete,
             'uuid': str(self.uuid),
-            'url': self.url
+            'createdAt': self.created_date,
+            'completedAt': self.completed_date,
+            'facts': [fact.to_dict() for fact in self.facts],
+            'violations': [violation.to_dict() for violation in self.violations]
         }
 
     def __str__(self):

@@ -17,8 +17,6 @@ class TestPage(ApiTestCase):
     def test_can_create_page(self):
         page = PageFactory.create()
 
-        self.db.flush()
-
         expect(page.uuid).not_to_be_null()
         expect(page.id).not_to_be_null()
         expect(page.url).to_include('http://my-site.com/')
@@ -46,8 +44,6 @@ class TestPage(ApiTestCase):
         ReviewFactory.create(page=page, domain=page.domain, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
         ReviewFactory.create(page=page, domain=page.domain, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
 
-        self.db.flush()
-
         violations = page.get_violations_per_day(self.db)
 
         expect(violations["1997-10-10"]).to_be_like({
@@ -68,7 +64,6 @@ class TestPage(ApiTestCase):
     def test_can_get_page_by_uuid(self):
         page = PageFactory.create()
         PageFactory.create()
-        self.db.flush()
 
         loaded_page = Page.by_uuid(page.uuid, self.db)
         expect(loaded_page.id).to_equal(page.id)

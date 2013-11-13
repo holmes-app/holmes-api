@@ -26,18 +26,28 @@ class MotorEngineFactory(factory.base.Factory):
         instance.save(callback=callback)
 
 
-class DomainFactory(factory.alchemy.SQLAlchemyModelFactory):
+class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
+    @classmethod
+    def _create(cls, target_class, *args, **kwargs):
+        instance = super(BaseFactory, cls)._create(target_class, *args, **kwargs)
+        if hasattr(cls, 'FACTORY_SESSION') and cls.FACTORY_SESSION is not None:
+            cls.FACTORY_SESSION.flush()
+        return instance
+
+
+class DomainFactory(BaseFactory):
     FACTORY_FOR = Domain
 
     name = factory.Sequence(lambda n: 'domain-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
 
 
-class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
+class PageFactory(BaseFactory):
     FACTORY_FOR = Page
 
     #title = factory.Sequence(lambda n: 'page-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
+    uuid = factory.LazyAttribute(lambda a: uuid4())
 
     created_date = None
     last_review_started_date = None
@@ -47,7 +57,7 @@ class PageFactory(factory.alchemy.SQLAlchemyModelFactory):
     last_review = None
 
 
-class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
+class ReviewFactory(BaseFactory):
     FACTORY_FOR = Review
 
     facts = factory.LazyAttribute(lambda a: [])
@@ -57,6 +67,7 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
     is_active = False
     created_date = None
     completed_date = None
+    uuid = factory.LazyAttribute(lambda a: uuid4())
 
     domain = factory.SubFactory(DomainFactory)
     page = factory.SubFactory(PageFactory)
@@ -84,7 +95,7 @@ class ReviewFactory(factory.alchemy.SQLAlchemyModelFactory):
         return kwargs
 
 
-class FactFactory(factory.alchemy.SQLAlchemyModelFactory):
+class FactFactory(BaseFactory):
     FACTORY_FOR = Fact
 
     title = factory.Sequence(lambda n: 'fact-{0}'.format(n))
@@ -94,7 +105,7 @@ class FactFactory(factory.alchemy.SQLAlchemyModelFactory):
     review = factory.SubFactory(ReviewFactory)
 
 
-class ViolationFactory(factory.alchemy.SQLAlchemyModelFactory):
+class ViolationFactory(BaseFactory):
     FACTORY_FOR = Violation
 
     title = factory.Sequence(lambda n: 'violation-{0}'.format(n))
@@ -104,7 +115,7 @@ class ViolationFactory(factory.alchemy.SQLAlchemyModelFactory):
     review = factory.SubFactory(ReviewFactory)
 
 
-class WorkerFactory(factory.alchemy.SQLAlchemyModelFactory):
+class WorkerFactory(BaseFactory):
     FACTORY_FOR = Worker
 
     uuid = factory.LazyAttribute(lambda a: uuid4())

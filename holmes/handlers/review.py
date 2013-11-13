@@ -25,14 +25,12 @@ class ReviewHandler(BaseReviewHandler):
     def get(self, page_uuid, review_uuid):
         review = None
         if self._parse_uuid(review_uuid):
-            review = yield Review.objects.get(uuid=review_uuid)
+            review = Review.by_uuid(review_uuid, self.db)
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             self.finish()
             return
-
-        yield review.load_references(['page', 'domain'])
 
         if review.completed_date:
             completed_data_iso = review.completed_date.isoformat()
@@ -55,7 +53,7 @@ class CompleteReviewHandler(BaseReviewHandler):
     def post(self, page_uuid, review_uuid):
         review = None
         if self._parse_uuid(review_uuid):
-            review = yield Review.objects.get(uuid=review_uuid)
+            review = Review.by_uuid(review_uuid, self.db)
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
@@ -73,29 +71,37 @@ class CompleteReviewHandler(BaseReviewHandler):
         review.is_active = True
         review.completed_date = datetime.now()
 
-        yield review.load_references(['page'])
+        self.db.flush()
+
         review.page.last_review = review
         review.page.last_review_date = review.completed_date
-        yield review.page.save()
-        yield review.save()
+
+        self.db.flush()
 
         self._remove_older_reviews_with_same_day(review)
 
-        query = Q(page=review.page) & Q(uuid__ne=review_uuid)
-
-        yield Review.objects.filter(query).update({
-            Review.is_active: False
+        self.db.query(Review).filter(
+            Review.page_id == review.page_id,
+            Review.id != review.id
+        ).update({
+            'is_active': False
         })
+
+        self.db.flush()
 
         self.write('OK')
         self.finish()
 
-    @gen.coroutine
     def _remove_older_reviews_with_same_day(self, review):
         dt = datetime.now()
         dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        query = Q(page=review.page) & Q(uuid__ne=review.uuid) & Q(created_date__gte=dt)
-        yield Review.objects.filter(query).delete()
+        self.db.query(Review) \
+            .filter(Review.page == review.page) \
+            .filter(Review.uuid != review.uuid) \
+            .filter(Review.created_date <= dt) \
+            .delete()
+
+        self.db.flush()
 
 
 class LastReviewsHandler(BaseReviewHandler):
