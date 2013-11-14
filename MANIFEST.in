@@ -1,0 +1,2 @@
+prune *
+recursive-include holmes *.py *.ini *.conf
