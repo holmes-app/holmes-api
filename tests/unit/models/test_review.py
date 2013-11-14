@@ -147,7 +147,7 @@ class TestReview(ApiTestCase):
                 {'points': 100, 'description': 'c', 'key': 'a', 'title': 'b'}
             ],
             'page': {
-                'url': 'http://my-site.com/47/',
+                'url': page.url,
                 'uuid': str(page_id)
             },
             'createdAt': None,
