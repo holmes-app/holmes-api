@@ -35,9 +35,11 @@ class WorkerTestCase(ApiTestCase):
         cfg = super(WorkerTestCase, self).get_config()
         cfg['WORKER_SLEEP_TIME'] = 1
         cfg['HOLMES_API_URL'] = 'http://localhost:2368'
-        cfg['VALIDATORS'] = ['holmes.validators.js_requests.JSRequestsValidator',
-                             'holmes.validators.total_requests.TotalRequestsValidator',
-                             ]
+        cfg['VALIDATORS'] = [
+            'holmes.validators.js_requests.JSRequestsValidator',
+            'holmes.validators.total_requests.TotalRequestsValidator',
+        ]
+
         return cfg
 
     @patch('requests.post')
@@ -134,14 +136,12 @@ class WorkerTestCase(ApiTestCase):
 
     @gen_test
     def test_worker_load_next_job(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
 
         expected = '{"page": "%s", "review": "%s", "url": "%s"}' % (
-            str(page.uuid),
+            str(review.page.uuid),
             str(review.uuid),
-            page.url
+            review.page.url
         )
 
         response = MockResponse(200, expected)
@@ -152,9 +152,9 @@ class WorkerTestCase(ApiTestCase):
         next_job = worker._load_next_job()
 
         expect(next_job).not_to_be_null()
-        expect(next_job['page']).to_equal(str(page.uuid))
+        expect(next_job['page']).to_equal(str(review.page.uuid))
         expect(next_job['review']).to_equal(str(review.uuid))
-        expect(next_job['url']).to_equal(str(page.url))
+        expect(next_job['url']).to_equal(str(review.page.url))
 
     @patch('requests.post')
     def test_worker_start_error(self, load_start_job_mock):
@@ -229,13 +229,11 @@ class WorkerTestCase(ApiTestCase):
 
     @gen_test
     def test_do_work_with_next_job(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
 
         worker = self.get_worker()
 
-        job = {'page': str(page.uuid), 'review': str(review.uuid), 'url': page.url}
+        job = {'page': str(review.page.uuid), 'review': str(review.uuid), 'url': review.page.url}
         worker._load_next_job = Mock(return_value=job)
         worker._ping_api = Mock(return_value=True)
         worker._start_job = Mock()
@@ -249,13 +247,11 @@ class WorkerTestCase(ApiTestCase):
 
     @gen_test
     def test_do_work_invalid_review_error(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        review = ReviewFactory.create()
 
         worker = self.get_worker()
 
-        job = {'page': str(page.uuid), 'review': str(review.uuid), 'url': page.url}
+        job = {'page': str(review.page.uuid), 'review': str(review.uuid), 'url': review.page.url}
         worker._load_next_job = Mock(return_value=job)
         worker._ping_api = Mock(return_value=True)
         worker._start_job = Mock()

@@ -4,7 +4,6 @@
 from mock import Mock, call
 from preggy import expect
 import lxml.html
-from tornado.testing import gen_test
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -15,13 +14,11 @@ from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 class TestTotalRequestsValidator(ValidatorTestCase):
 
-    @gen_test
     def test_can_validate_total_requests_on_globo_html(self):
         config = Config()
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -60,13 +57,11 @@ class TestTotalRequestsValidator(ValidatorTestCase):
 
         expect(validator.add_violation.called).to_be_false()
 
-    @gen_test
     def test_can_validate_total_requests_zero_requests(self):
         config = Config()
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -105,13 +100,11 @@ class TestTotalRequestsValidator(ValidatorTestCase):
 
         expect(validator.add_violation.called).to_be_false()
 
-    @gen_test
     def test_can_validate_total_requests_empty_html(self):
         config = Config()
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
