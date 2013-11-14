@@ -63,7 +63,6 @@ class HolmesApiServer(Server):
 
     def get_plugins(self):
         return [
-            #MotorEnginePlugin,
             SQLAlchemyPlugin
         ]
 

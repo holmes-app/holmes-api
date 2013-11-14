@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import random
 from datetime import datetime
 from uuid import UUID
 from ujson import loads, dumps
