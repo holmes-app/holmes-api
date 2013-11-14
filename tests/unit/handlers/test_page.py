@@ -9,6 +9,7 @@ from ujson import loads, dumps
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
+from mock import Mock
 
 from holmes.models import Page
 from tests.unit.base import ApiTestCase
@@ -16,9 +17,23 @@ from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestPageHandler(ApiTestCase):
+    def mock_request(self, code, effective_url):
+        def handle(*args, **kw):
+            response_mock = Mock(code=code, effective_url=effective_url)
+            kw['callback'](response_mock)
+
+        client = Mock()
+        self.server.application.http_client = client
+        client.fetch.side_effect = handle
 
     @gen_test
     def test_can_save(self):
+        def side_effect(*args, **kw):
+            response_mock = Mock(code=200, effective_url="http://www.globo.com")
+            kw['callback'](response_mock)
+
+        self.mock_request(code=200, effective_url="http://www.globo.com")
+
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
@@ -38,6 +53,8 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_can_save_known_domain(self):
         DomainFactory.create(url='http://www.globo.com', name='globo.com')
+
+        self.mock_request(code=200, effective_url="http://www.globo.com")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -80,6 +97,8 @@ class TestPageHandler(ApiTestCase):
     def test_when_url_already_exists(self):
         page = PageFactory.create(url="http://www.globo.com")
 
+        self.mock_request(code=200, effective_url="http://www.globo.com")
+
         response = yield self.http_client.fetch(
             self.get_url('/page'),
             method='POST',
@@ -94,6 +113,8 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists_with_slash(self):
         page = PageFactory.create(url="http://www.globo.com/")
+
+        self.mock_request(code=200, effective_url="http://www.globo.com")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -112,6 +133,8 @@ class TestPageHandler(ApiTestCase):
     @gen_test
     def test_when_url_already_exists_without_slash(self):
         page = PageFactory.create(url="http://www.globo.com")
+
+        self.mock_request(code=200, effective_url="http://www.globo.com/")
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),

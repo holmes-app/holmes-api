@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 from cow.server import Server
 #from cow.plugins.motorengine_plugin import MotorEnginePlugin
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
@@ -66,6 +67,8 @@ class HolmesApiServer(Server):
             SQLAlchemyPlugin
         ]
 
+    def after_start(self, io_loop):
+        self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
 
 if __name__ == '__main__':
     main()

@@ -18,15 +18,21 @@ from holmes.validators.css_requests import CSSRequestsValidator
 from holmes.validators.link_crawler import LinkCrawlerValidator
 from holmes.validators.img_requests import ImageRequestsValidator
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.unit.base import ApiTestCase
 
 
-class CanProcessWebsiteTest(AsyncTestCase):
-    def setUp(self):
-        super(CanProcessWebsiteTest, self).setUp()
-        connect('holmes', host='localhost', port=6685, io_loop=self.io_loop)
+class CanProcessWebsiteTest(ApiTestCase):
+    #def setUp(self):
+        #super(CanProcessWebsiteTest, self).setUp()
+        #connect('holmes', host='localhost', port=6685, io_loop=self.io_loop)
 
     def get_config(self):
-        conf = {}
+        conf = dict(
+            SQLALCHEMY_CONNECTION_STRING="mysql+mysqldb://root@localhost:3306/test_holmes",
+            SQLALCHEMY_POOL_SIZE=20,
+            SQLALCHEMY_POOL_MAX_OVERFLOW=10,
+            SQLALCHEMY_AUTO_FLUSH=True
+        )
         conf['MAX_JS_REQUESTS_PER_PAGE'] = 0
         conf['MAX_JS_KB_PER_PAGE_AFTER_GZIP'] = 0
         conf['MAX_CSS_REQUESTS_PER_PAGE'] = 0
@@ -69,21 +75,17 @@ class CanProcessWebsiteTest(AsyncTestCase):
         )
 
     def test_can_process_globo_com(self):
-        Review.objects.delete(callback=self.stop)
-        self.wait()
-        Page.objects.delete(callback=self.stop)
-        self.wait()
-        Domain.objects.delete(callback=self.stop)
-        self.wait()
+        self.db.query(Review).delete()
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
 
-        DomainFactory.create(name='globo.com', url='http://www.globo.com', callback=self.stop)
-        domain = self.wait()
+        domain = DomainFactory.create(name='globo.com', url='http://www.globo.com')
 
-        PageFactory.create(domain=domain, url='http://www.globo.com/', callback=self.stop)
-        page = self.wait()
+        page = PageFactory.create(domain=domain, url='http://www.globo.com/')
 
-        ReviewFactory.create(page=page, callback=self.stop)
-        review = self.wait()
+        review = ReviewFactory.create(page=page)
+
+        self.db.flush()
 
         reviewer = self.get_reviewer(
             api_url='http://localhost:2368',

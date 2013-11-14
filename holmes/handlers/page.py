@@ -6,7 +6,7 @@ from uuid import UUID
 from ujson import loads
 from tornado import gen
 import tornado.httpclient
-from motorengine import Q, DESCENDING
+#from motorengine import Q, DESCENDING
 import logging
 from sqlalchemy import or_
 
@@ -32,7 +32,6 @@ class PageHandler(BaseHandler):
             self.finish()
             return
 
-        client = tornado.httpclient.AsyncHTTPClient()
         phost = self.application.config.HTTP_PROXY_HOST
         pport = self.application.config.HTTP_PROXY_PORT
 
@@ -44,7 +43,7 @@ class PageHandler(BaseHandler):
 
         logging.info('Obtaining "%s" using proxy "%s:%s"...' % (url, phost, pport))
 
-        response = yield tornado.gen.Task(client.fetch, request)
+        response = yield tornado.gen.Task(self.application.http_client.fetch, request)
         if response.code > 399:
             self.set_status(400, 'Invalid URL [%s]' % url)
             self.write_json({
@@ -152,12 +151,12 @@ class PageReviewsHandler(BaseHandler):
         self.write_json(result)
         self.finish()
 
+
 class PagesHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
-        origin_uuid = self.get_argument('origin_uuid', None)
 
         if not urls:
             self.set_status(200)

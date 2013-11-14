@@ -4,6 +4,7 @@
 from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
+from tornado.httpclient import AsyncHTTPClient
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
@@ -55,6 +56,10 @@ class ApiTestCase(CowTestCase):
         self.server = HolmesApiServer(config=cfg)
         return self.server
 
+    def get_app(self):
+        app = super(ApiTestCase, self).get_app()
+        app.http_client = AsyncHTTPClient(self.io_loop)
+        return app
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 

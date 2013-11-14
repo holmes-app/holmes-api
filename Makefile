@@ -9,8 +9,8 @@ unit:
 coverage-html: mongo_test unit
 	@coverage html -d cover
 
-integration: mongo kill_run run_daemon
-	@`which nosetests` -vv --with-yanc -s tests/integration/
+integration: kill_run run_daemon
+	@`which nosetests` -vv --with-yanc -s tests/integration/;EXIT_CODE=$$?;$(MAKE) kill_run;exit $(EXIT_CODE)
 
 tox:
 	@PATH=$$PATH:~/.pythonbrew/pythons/Python-2.6.*/bin/:~/.pythonbrew/pythons/Python-2.7.*/bin/:~/.pythonbrew/pythons/Python-3.0.*/bin/:~/.pythonbrew/pythons/Python-3.1.*/bin/:~/.pythonbrew/pythons/Python-3.2.3/bin/:~/.pythonbrew/pythons/Python-3.3.0/bin/ tox
