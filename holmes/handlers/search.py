@@ -14,7 +14,7 @@ class SearchHandler(BaseHandler):
         term = self.get_argument('term')
 
         pages = self.db.query(Page) \
-            .filter(Page.url == term) \
+            .filter(Page.url.like('%%%s%%' % term)) \
             .filter(Page.last_review_date != None) \
             .all()
 
