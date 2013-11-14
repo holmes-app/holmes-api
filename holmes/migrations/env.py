@@ -1,4 +1,6 @@
 from __future__ import with_statement
+import os
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
@@ -22,6 +24,7 @@ target_metadata = None
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -40,23 +43,65 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
+#def run_migrations_online():
+    #"""Run migrations in 'online' mode.
+
+    #In this scenario we need to create an Engine
+    #and associate a connection with the context.
+
+    #"""
+    #engine = engine_from_config(
+                #config.get_section(config.config_ini_section),
+                #prefix='sqlalchemy.',
+                #poolclass=pool.NullPool)
+
+    #connection = engine.connect()
+    #context.configure(
+                #connection=connection,
+                #target_metadata=target_metadata
+                #)
+
+    #try:
+        #with context.begin_transaction():
+            #context.run_migrations()
+    #finally:
+        #connection.close()
+
+
 def run_migrations_online():
-    """Run migrations in 'online' mode.
+    # Override sqlalchemy.url value to application's value
+    alembic_config = config.get_section(config.config_ini_section)
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    username = os.environ.get('MYSQL_USER', 'root')
+    password = os.environ.get('MYSQL_PASSWORD', None)
 
-    """
+    if password is not None:
+        user_id = "%s:%s@" % (username, password)
+    else:
+        user_id = "%s@" % username
+
+    database = alembic_config['sqlalchemy.url'].split('/')[-1]
+
+    sqlalchemy_connection_string = "mysql+mysqldb://%s%s:%d/%s" % (
+        user_id,
+        os.environ.get('MYSQL_HOST', 'localhost'),
+        int(os.environ.get('MYSQL_PORT', 3306)),
+        os.environ.get('MYSQL_DATABASE_NAME', database),
+    )
+
+    alembic_config['sqlalchemy.url'] = sqlalchemy_connection_string
+
     engine = engine_from_config(
-                config.get_section(config.config_ini_section),
-                prefix='sqlalchemy.',
-                poolclass=pool.NullPool)
+        alembic_config,
+        prefix='sqlalchemy.',
+        poolclass=pool.NullPool)
 
     connection = engine.connect()
     context.configure(
-                connection=connection,
-                target_metadata=target_metadata
-                )
+        connection=connection,
+        target_metadata=target_metadata
+    )
 
     try:
         with context.begin_transaction():
@@ -68,4 +113,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
