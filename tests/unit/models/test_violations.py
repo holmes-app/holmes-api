@@ -28,6 +28,8 @@ class TestViolations(ApiTestCase):
         ))
 
     def test_can_get_most_common_violations(self):
+        self.db.query(Violation).delete()
+
         for i in range(3):
             for j in range(2):
                 ViolationFactory.create(

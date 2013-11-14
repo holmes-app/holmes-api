@@ -42,6 +42,7 @@ class ApiTestCase(CowTestCase):
             SQLALCHEMY_POOL_SIZE=20,
             SQLALCHEMY_POOL_MAX_OVERFLOW=10,
             SQLALCHEMY_AUTO_FLUSH=True,
+            COMMIT_ON_REQUEST_END=False,
             MONGO_DATABASES={
                 'default': {
                     'host': 'localhost',

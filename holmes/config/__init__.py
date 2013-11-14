@@ -46,3 +46,5 @@ Config.define('ORIGIN', '*', 'Access Control Allow Origin header value', 'Web')
 
 Config.define('HTTP_PROXY_HOST', None, 'HTTP Proxy Host to use', 'Web')
 Config.define('HTTP_PROXY_PORT', None, 'HTTP Proxy Port to use', 'Web')
+
+Config.define('COMMIT_ON_REQUEST_END', True, 'Commit on request end', 'DB')

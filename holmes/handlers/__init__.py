@@ -8,10 +8,11 @@ from tornado.web import RequestHandler
 
 class BaseHandler(RequestHandler):
     def on_finish(self):
-        if self.get_status() > 399:
-            self.db.rollback()
-        else:
-            self.db.commit()
+        if self.application.config.COMMIT_ON_REQUEST_END:
+            if self.get_status() > 399:
+                self.db.rollback()
+            else:
+                self.db.commit()
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
