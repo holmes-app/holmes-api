@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
+
 from ujson import dumps
 
 from tornado.web import RequestHandler
@@ -10,8 +12,10 @@ class BaseHandler(RequestHandler):
     def on_finish(self):
         if self.application.config.COMMIT_ON_REQUEST_END:
             if self.get_status() > 399:
+                logging.debug('ROLLING BACK TRANSACTION')
                 self.db.rollback()
             else:
+                logging.debug('COMMITTING TRANSACTION')
                 self.db.commit()
 
     def options(self):
