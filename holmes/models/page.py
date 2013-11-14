@@ -17,6 +17,7 @@ class Page(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     url = sa.Column('url', sa.String(2000), nullable=False)
+    url_hash = sa.Column('url_hash', sa.String(128), nullable=False)
     uuid = sa.Column('uuid', sa.String(36), default=uuid4, nullable=False)
     created_date = sa.Column('created_date', sa.DateTime, default=datetime.now, nullable=False)
 

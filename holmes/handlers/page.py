@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
+import hashlib
 
 from ujson import loads
 from tornado import gen
@@ -75,7 +76,8 @@ class PageHandler(BaseHandler):
             domain = domains[0]
 
         if not domain:
-            domain = Domain(url=domain_url, name=domain_name)
+            url_hash = hashlib.sha512(domain_url).hexdigest()
+            domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             self.db.add(domain)
             self.db.flush()
 
@@ -95,7 +97,9 @@ class PageHandler(BaseHandler):
             self.finish()
             return
 
-        page = Page(url=url, domain=domain)
+        url_hash = hashlib.sha512(url).hexdigest()
+
+        page = Page(url=url, url_hash=url_hash, domain=domain)
         self.db.add(page)
         self.db.flush()
 
@@ -195,14 +199,15 @@ class PagesHandler(BaseHandler):
         existing_pages_dict = dict([(page.url, page) for page in existing_pages])
 
         pages_to_add = []
-        for url in urls:
+        for url in set(urls):
             if url in existing_pages_dict:
                 continue
             domain_name, domain_url = get_domain_from_url(url.strip())
             domain = all_domains_dict[domain_name]
 
             logging.debug("Adding URL: %s" % url)
-            pages_to_add.append(Page(url=url, domain=domain))
+            url_hash = hashlib.sha512(url).hexdigest()
+            pages_to_add.append(Page(url=url, url_hash=url_hash, domain=domain))
 
         if domains_to_add:
             for domain in domains_to_add:

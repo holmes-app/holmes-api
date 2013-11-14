@@ -6,7 +6,6 @@ from uuid import UUID
 
 import logging
 from tornado import gen
-from motorengine import Q
 
 from holmes.models import Review
 from holmes.handlers import BaseHandler
