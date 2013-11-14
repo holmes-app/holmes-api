@@ -4,27 +4,24 @@
 from mock import Mock, call
 from preggy import expect
 import lxml.html
-from tornado.testing import gen_test
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.img_requests import ImageRequestsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestImageRequestsValidator(ValidatorTestCase):
 
-    @gen_test
     def test_can_validate_image_requests_on_globo_html(self):
         config = Config()
         config.MAX_IMG_REQUESTS_PER_PAGE = 50
         config.MAX_KB_SINGLE_IMAGE = 6
         config.MAX_IMG_KB_PER_PAGE = 100
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -92,16 +89,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
                              'Having too many requests impose a tax in the browser due to handshakes.',
                  points=50))
 
-    @gen_test
     def test_can_validate_image_404(self):
         config = Config()
         config.MAX_IMG_REQUESTS_PER_PAGE = 50
         config.MAX_KB_SINGLE_IMAGE = 6
         config.MAX_IMG_KB_PER_PAGE = 100
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://globo.com")
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create(url="http://globo.com")
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -144,16 +139,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
                              "could not be found or took more than 10 seconds to load.",
                  points=50))
 
-    @gen_test
     def test_can_validate_single_image_html(self):
         config = Config()
         config.MAX_IMG_REQUESTS_PER_PAGE = 50
         config.MAX_KB_SINGLE_IMAGE = 6
         config.MAX_IMG_KB_PER_PAGE = 100
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://globo.com")
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create(url="http://globo.com")
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -203,16 +196,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
                  unit='kb',
                  title='Total images size'))
 
-    @gen_test
     def test_can_validate_html_without_images(self):
         config = Config()
         config.MAX_IMG_REQUESTS_PER_PAGE = 50
         config.MAX_KB_SINGLE_IMAGE = 6
         config.MAX_IMG_KB_PER_PAGE = 100
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://globo.com")
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create(url="http://globo.com")
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -255,16 +246,14 @@ class TestImageRequestsValidator(ValidatorTestCase):
                  unit='kb',
                  title='Total images size'))
 
-    @gen_test
     def test_can_validate_without_img_src(self):
         config = Config()
         config.MAX_IMG_REQUESTS_PER_PAGE = 50
         config.MAX_KB_SINGLE_IMAGE = 6
         config.MAX_IMG_KB_PER_PAGE = 100
 
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://globo.com")
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create(url="http://globo.com")
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',

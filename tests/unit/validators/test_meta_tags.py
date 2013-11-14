@@ -2,24 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import lxml.html
-from tornado.testing import gen_test
 from mock import Mock
-from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.meta_tags import MetaTagsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestMetaTagsValidator(ValidatorTestCase):
 
-    @gen_test
     def test_get_meta_tags(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',

@@ -3,22 +3,19 @@
 
 from mock import Mock
 from preggy import expect
-from tornado.testing import gen_test
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.robots import RobotsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestRobotsValidator(ValidatorTestCase):
 
-    @gen_test
     def test_get_robots_from_domain(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain, url="http://www.globo.com/index.html")
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create(url="http://www.globo.com/index.html")
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -35,11 +32,9 @@ class TestRobotsValidator(ValidatorTestCase):
 
         validator.get_response.assert_called_once_with('http://www.globo.com/robots.txt')
 
-    @gen_test
     def test_add_violation_when_404(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -69,11 +64,9 @@ class TestRobotsValidator(ValidatorTestCase):
             description='',
             points=100)
 
-    @gen_test
     def test_add_violation_when_empty(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -103,11 +96,9 @@ class TestRobotsValidator(ValidatorTestCase):
             description='',
             points=100)
 
-    @gen_test
     def test_add_fact_when_agent_found(self):
-        domain = yield DomainFactory.create()
-        page = yield PageFactory.create(domain=domain)
-        review = yield ReviewFactory.create(page=page)
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
