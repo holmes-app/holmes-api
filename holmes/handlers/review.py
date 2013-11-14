@@ -81,7 +81,8 @@ class CompleteReviewHandler(BaseReviewHandler):
         self._remove_older_reviews_with_same_day(review)
 
         self.db.query(Review).filter(
-            Review.page_id == review.page_id,
+            Review.page_id == review.page_id
+        ).filter(
             Review.id != review.id
         ).update({
             'is_active': False

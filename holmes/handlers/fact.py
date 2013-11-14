@@ -34,9 +34,6 @@ class CreateFactHandler(BaseHandler):
             self.finish()
             return
 
-        if unit and unit == 'values':
-            value = loads(value)
-
         review.add_fact(key=key, unit=unit, value=value, title=title)
         self.db.flush()
 

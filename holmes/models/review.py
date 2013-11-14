@@ -13,6 +13,8 @@ from datetime import datetime
 #)
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+import six
+from ujson import dumps
 
 from holmes.models import Base
 
@@ -62,6 +64,9 @@ class Review(Base):
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.fact import Fact  # to avoid circular dependency
+
+        if not isinstance(value, six.string_types):
+            value = dumps(value)
 
         fact = Fact(key=key, value=value, title=title, unit=unit)
 
