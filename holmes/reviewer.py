@@ -3,13 +3,13 @@
 
 import sys
 from os.path import join
-from uuid import UUID
 import inspect
 
 import requests
 from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
 import lxml.html
 import logging
+from ujson import dumps
 
 from holmes.config import Config
 from holmes.validators.base import Validator
@@ -19,18 +19,46 @@ class InvalidReviewError(RuntimeError):
     pass
 
 
+class ReviewDAO(object):
+    def __init__(self, page_uuid, page_url):
+        self.page_uuid = page_uuid
+        self.page_url = page_url
+        self.facts = []
+        self.violations = []
+
+    def add_fact(self, key, title, value, unit=None):
+        self.facts.append({
+            'key': key,
+            'value': value,
+            'title': title,
+            'unit': unit
+        })
+
+    def add_violation(self, key, title, description, points):
+        self.violations.append({
+            'key': key,
+            'title': title,
+            'description': description,
+            'points': points
+        })
+
+    def to_dict(self):
+        return {
+            'page_uuid': self.page_uuid,
+            'page_url': self.page_url,
+            'facts': self.facts,
+            'violations': self.violations
+        }
+
+
 class Reviewer(object):
-    def __init__(self, api_url, page_uuid, page_url, review_uuid, config=None, validators=[]):
+    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[]):
         self.api_url = api_url
 
         self.page_uuid = page_uuid
-        if not isinstance(self.page_uuid, UUID):
-            self.page_uuid = UUID(page_uuid)
-
         self.page_url = page_url
-        self.review_uuid = review_uuid
-        if not isinstance(self.review_uuid, UUID):
-            self.review_uuid = UUID(review_uuid)
+
+        self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
 
         assert isinstance(config, Config), 'config argument must be an instance of holmes.config.Config'
         self.config = config
@@ -73,7 +101,8 @@ class Reviewer(object):
     def review(self):
         self.load_content()
         self.run_validators()
-        self.complete()
+        self.save_review()
+        #self.complete()
 
     def load_content(self):
         self.get_response(self.page_url)
@@ -185,51 +214,76 @@ class Reviewer(object):
             ))
 
     def add_fact(self, key, value, title, unit='value'):
-        url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
+        self.review_dao.add_fact(key, title, value, unit)
 
-        try:
-            response = self._post(url, data={
-                'key': key,
-                'value': value,
-                'title': title,
-                'unit': unit
-            })
-        except ConnectionError:
-            raise InvalidReviewError("Could not add fact '%s' to review %s! ConnectionError - %s" % (
-                key,
-                self.review_uuid,
-                url
-                ))
+        #url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
 
-        if response.status_code > 399:
-            raise InvalidReviewError("Could not add fact '%s' to review %s! Status Code: %d, Error: %s" % (
-                key,
-                self.review_uuid,
-                response.status_code,
-                response.text
-            ))
+        #try:
+            #response = self._post(url, data={
+                #'key': key,
+                #'value': value,
+                #'title': title,
+                #'unit': unit
+            #})
+        #except ConnectionError:
+            #raise InvalidReviewError("Could not add fact '%s' to review %s! ConnectionError - %s" % (
+                #key,
+                #self.review_uuid,
+                #url
+                #))
+
+        #if response.status_code > 399:
+            #raise InvalidReviewError("Could not add fact '%s' to review %s! Status Code: %d, Error: %s" % (
+                #key,
+                #self.review_uuid,
+                #response.status_code,
+                #response.text
+            #))
 
     def add_violation(self, key, title, description, points):
-        url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
+        self.review_dao.add_violation(key, title, description, points)
+
+        #url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
+
+        #try:
+            #response = self._post(url, data={
+                #'key': key,
+                #"title": title,
+                #"description": description,
+                #"points": points
+            #})
+        #except ConnectionError:
+            #raise InvalidReviewError("Could not add violation '%s' to review %s! ConnectionError - %s" % (
+                #key,
+                #self.review_uuid,
+                #url
+                #))
+
+        #if response.status_code > 399:
+            #raise InvalidReviewError("Could not add violation '%s' to review %s! Status Code: %d, Error: %s" % (
+                #key,
+                #self.review_uuid,
+                #response.status_code,
+                #response.text
+            #))
+
+    def save_review(self):
+        url = self.get_url('/page/%s/review/' % (self.page_uuid))
 
         try:
+            data = dumps(self.review_dao.to_dict())
             response = self._post(url, data={
-                'key': key,
-                "title": title,
-                "description": description,
-                "points": points
+                'review': data
             })
         except ConnectionError:
-            raise InvalidReviewError("Could not add violation '%s' to review %s! ConnectionError - %s" % (
-                key,
-                self.review_uuid,
-                url
-                ))
+            err = sys.exc_info()[1]
+            raise InvalidReviewError("Could not save review! ConnectionError - %s (%s)" % (
+                url,
+                str(err)
+            ))
 
         if response.status_code > 399:
-            raise InvalidReviewError("Could not add violation '%s' to review %s! Status Code: %d, Error: %s" % (
-                key,
-                self.review_uuid,
+            raise InvalidReviewError("Could not save review! Status Code: %d, Error: %s" % (
                 response.status_code,
                 response.text
             ))

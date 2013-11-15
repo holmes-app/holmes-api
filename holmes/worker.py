@@ -25,9 +25,8 @@ class HolmesWorker(Shepherd):
 
         self.validators = self._load_validators()
 
-    def post(self, url, data={}):
-        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-
+    @property
+    def proxies(self):
         proxies = None
         if self.config.HTTP_PROXY_HOST is not None:
             proxy = "%s:%s" % (self.config.HTTP_PROXY_HOST, self.config.HTTP_PROXY_PORT)
@@ -39,7 +38,15 @@ class HolmesWorker(Shepherd):
                 "https": https_proxy,
             }
 
-        return requests.post(url, data=data, proxies=proxies)
+        return proxies
+
+    def get(self, url):
+        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
+        return requests.get(url, proxies=self.proxies)
+
+    def post(self, url, data={}):
+        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
+        return requests.post(url, data=data, proxies=self.proxies)
 
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (
@@ -67,7 +74,7 @@ class HolmesWorker(Shepherd):
             err = None
             job = self._load_next_job()
             if job:
-                self._start_job(job['review'])
+                #self._start_job(job['review'])
 
                 try:
                     self._start_reviewer(job=job)
@@ -75,7 +82,7 @@ class HolmesWorker(Shepherd):
                     err = str(sys.exc_info()[1])
                     logging.error("Fail to review %s: %s" % (job['url'], err))
 
-                self._complete_job(job['review'], error=err)
+                #self._complete_job(job['review'], error=err)
 
     def _start_reviewer(self, job):
         if job:
@@ -84,10 +91,9 @@ class HolmesWorker(Shepherd):
                 api_url=self.config.HOLMES_API_URL,
                 page_uuid=job['page'],
                 page_url=job['url'],
-                review_uuid=job['review'],
                 config=self.config,
                 validators=self.validators
-                )
+            )
 
             reviewer.review()
 
@@ -102,7 +108,7 @@ class HolmesWorker(Shepherd):
 
     def _load_next_job(self):
         try:
-            response = self.post('/next')
+            response = self.get('/next')
             if response and response.text:
                 return loads(response.text)
         except ConnectionError:

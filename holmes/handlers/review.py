@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import logging
 from tornado import gen
+from ujson import loads
 
-from holmes.models import Review
+from holmes.models import Review, Page
 from holmes.handlers import BaseHandler
 
 
@@ -45,6 +46,62 @@ class ReviewHandler(BaseReviewHandler):
 
         self.write_json(result)
         self.finish()
+
+    def post(self, page_uuid, review_uuid=None):
+        page = Page.by_uuid(page_uuid, self.db)
+
+        review_data = loads(self.get_argument('review'))
+
+        review = Review(
+            domain=page.domain,
+            page=page,
+            is_active=True,
+            is_complete=False,
+            completed_date=datetime.now(),
+            uuid=uuid4(),
+        )
+
+        self.db.add(review)
+        self.db.flush()
+
+        for fact in review_data['facts']:
+            review.add_fact(fact['key'], fact['value'], fact['title'], fact['unit'])
+        self.db.flush()
+
+        for violation in review_data['violations']:
+            review.add_violation(violation['key'], violation['title'], violation['description'], violation['points'])
+        self.db.flush()
+
+        review.is_complete = True
+        self.db.flush()
+
+        page.last_review = review
+        page.last_review_date = review.completed_date
+
+        self.db.flush()
+
+        self._remove_older_reviews_with_same_day(review)
+
+        self.db.query(Review).filter(
+            Review.page_id == review.page_id
+        ).filter(
+            Review.id != review.id
+        ).update({
+            'is_active': False
+        })
+
+        self.db.flush()
+
+    def _remove_older_reviews_with_same_day(self, review):
+        dt = datetime.now()
+        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        self.db.query(Review) \
+            .filter(Review.page == review.page) \
+            .filter(Review.uuid != review.uuid) \
+            .filter(Review.created_date >= dt) \
+            .delete()
+
+        self.db.flush()
 
 
 class CompleteReviewHandler(BaseReviewHandler):

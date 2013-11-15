@@ -66,7 +66,7 @@ class LinkCrawlerValidator(Validator):
             self.add_violation(
                 key='broken.link',
                 title='A link is broken',
-                description=('A link from your page to "%s" is broken or the page failed to load in under 3 seconds. '
+                description=('A link from your page to "%s" is broken or the page failed to load in under 10 seconds. '
                     'This can lead your site to lose rating with Search Engines and is misleading to users.') % url,
                 points=100
             )
