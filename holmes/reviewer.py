@@ -23,16 +23,16 @@ class ReviewDAO(object):
     def __init__(self, page_uuid, page_url):
         self.page_uuid = page_uuid
         self.page_url = page_url
-        self.facts = []
+        self.facts = {}
         self.violations = []
 
     def add_fact(self, key, title, value, unit=None):
-        self.facts.append({
+        self.facts[key] = {
             'key': key,
             'value': value,
             'title': title,
             'unit': unit
-        })
+        }
 
     def add_violation(self, key, title, description, points):
         self.violations.append({
@@ -46,7 +46,7 @@ class ReviewDAO(object):
         return {
             'page_uuid': self.page_uuid,
             'page_url': self.page_url,
-            'facts': self.facts,
+            'facts': self.facts.values(),
             'violations': self.violations
         }
 
@@ -102,7 +102,6 @@ class Reviewer(object):
         self.load_content()
         self.run_validators()
         self.save_review()
-        #self.complete()
 
     def load_content(self):
         self.get_response(self.page_url)
@@ -216,56 +215,8 @@ class Reviewer(object):
     def add_fact(self, key, value, title, unit='value'):
         self.review_dao.add_fact(key, title, value, unit)
 
-        #url = self.get_url('/page/%s/review/%s/fact' % (self.page_uuid, self.review_uuid))
-
-        #try:
-            #response = self._post(url, data={
-                #'key': key,
-                #'value': value,
-                #'title': title,
-                #'unit': unit
-            #})
-        #except ConnectionError:
-            #raise InvalidReviewError("Could not add fact '%s' to review %s! ConnectionError - %s" % (
-                #key,
-                #self.review_uuid,
-                #url
-                #))
-
-        #if response.status_code > 399:
-            #raise InvalidReviewError("Could not add fact '%s' to review %s! Status Code: %d, Error: %s" % (
-                #key,
-                #self.review_uuid,
-                #response.status_code,
-                #response.text
-            #))
-
     def add_violation(self, key, title, description, points):
         self.review_dao.add_violation(key, title, description, points)
-
-        #url = self.get_url('/page/%s/review/%s/violation' % (self.page_uuid, self.review_uuid))
-
-        #try:
-            #response = self._post(url, data={
-                #'key': key,
-                #"title": title,
-                #"description": description,
-                #"points": points
-            #})
-        #except ConnectionError:
-            #raise InvalidReviewError("Could not add violation '%s' to review %s! ConnectionError - %s" % (
-                #key,
-                #self.review_uuid,
-                #url
-                #))
-
-        #if response.status_code > 399:
-            #raise InvalidReviewError("Could not add violation '%s' to review %s! Status Code: %d, Error: %s" % (
-                #key,
-                #self.review_uuid,
-                #response.status_code,
-                #response.text
-            #))
 
     def save_review(self):
         url = self.get_url('/page/%s/review/' % (self.page_uuid))
@@ -284,24 +235,6 @@ class Reviewer(object):
 
         if response.status_code > 399:
             raise InvalidReviewError("Could not save review! Status Code: %d, Error: %s" % (
-                response.status_code,
-                response.text
-            ))
-
-    def complete(self):
-        url = self.get_url('/page/%s/review/%s/complete' % (self.page_uuid, self.review_uuid))
-
-        try:
-            response = self._post(url, data={})
-        except ConnectionError:
-            raise InvalidReviewError("Could not complete review %s! ConnectionError - %s" % (
-                self.review_uuid,
-                url
-                ))
-
-        if response.status_code > 399:
-            raise InvalidReviewError("Could not complete review %s! Status Code: %d, Error: %s" % (
-                self.review_uuid,
                 response.status_code,
                 response.text
             ))
