@@ -11,6 +11,7 @@ from ujson import dumps, loads
 from requests.exceptions import ConnectionError
 from sheep import Shepherd
 from colorama import Fore, Style
+from octopus import Octopus
 
 from holmes import __version__
 from holmes.config import Config
@@ -27,6 +28,13 @@ class HolmesWorker(Shepherd):
         self.facters = self._load_facters()
         self.validators = self._load_validators()
 
+        logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
+        self.otto = Octopus(concurrency=self.options.concurrency, cache=True)
+        self.otto.start()
+
+    def config_parser(self, parser):
+        parser.add_argument('--concurrency', '-t', type=int, help='Number of threads to use for Octopus (doing GETs concurrently)')
+
     @property
     def proxies(self):
         proxies = None
@@ -41,6 +49,13 @@ class HolmesWorker(Shepherd):
             }
 
         return proxies
+
+    def async_get(self, url, handler, method='GET', **kw):
+        if self.proxies:
+            kw['proxies'] = self.proxies
+
+        logging.debug('Enqueueing %s for %s...' % (method, url))
+        self.otto.enqueue(url, handler, method, **kw)
 
     def get(self, url):
         url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
@@ -95,7 +110,10 @@ class HolmesWorker(Shepherd):
                 page_url=job['url'],
                 config=self.config,
                 validators=self.validators,
-                facters=self.facters
+                facters=self.facters,
+                async_get=self.async_get,
+                wait=self.otto.wait,
+                wait_timeout=self.config.ZOMBIE_WORKER_TIME  # max time to wait for all requests to finish
             )
 
             reviewer.review()

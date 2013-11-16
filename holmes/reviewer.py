@@ -53,7 +53,7 @@ class ReviewDAO(object):
 
 
 class Reviewer(object):
-    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[], facters=[]):
+    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[], facters=[], async_get=None, wait=None, wait_timeout=None):
         self.api_url = api_url
 
         self.page_uuid = page_uuid
@@ -92,6 +92,14 @@ class Reviewer(object):
                 "https": https_proxy,
             }
 
+        self.async_get_func = async_get
+        self._wait_for_async_requests = wait
+        self._wait_timeout = wait_timeout
+
+    def _async_get(self, url, handler, method='GET', **kw):
+        if self.async_get_func:
+            self.async_get_func(url, handler, method, **kw)
+
     def _get(self, url):
         if self.proxies:
             logging.debug('Getting "%s" using proxy "%s:%s"...' % self.proxies.get('http', None))
@@ -110,6 +118,7 @@ class Reviewer(object):
         self.load_content()
         self.run_facters()
         self.run_validators()
+        self.wait_for_async_requests()
         self.save_review()
 
     def load_content(self):
@@ -252,3 +261,6 @@ class Reviewer(object):
                 response.status_code,
                 response.text
             ))
+
+    def wait_for_async_requests(self):
+        self._wait_for_async_requests(self._wait_timeout)
