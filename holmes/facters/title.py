@@ -11,11 +11,7 @@ class TitleFacter(Facter):
         if not titles:
             return
 
-        self.add_fact(
-            key='page.title.count',
-            value=len(titles),
-            title='Page Title Count'
-        )
+        self.review.data['page.title.count'] = len(titles)
 
         self.add_fact(
             key='page.title',

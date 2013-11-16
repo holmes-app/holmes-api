@@ -26,6 +26,7 @@ class ReviewDAO(object):
         self.page_url = page_url
         self.facts = {}
         self.violations = []
+        self.data = {}
 
     def add_fact(self, key, title, value, unit=None):
         self.facts[key] = {

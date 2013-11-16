@@ -9,7 +9,7 @@ class TitleValidator(Validator):
         return ("holmes.facters.title.Title", )
 
     def validate(self):
-        title_count = self.review.facts.get('page.title.count', 0)
+        title_count = self.review.data.get('page.title.count', 0)
         title = self.review.facts.get('page.title', None)
 
         if not title_count:

@@ -22,6 +22,8 @@ class LinkFacter(Facter):
     def get_facts(self):
         links = self.get_links()
 
+        self.review.data['page.links'] = set()
+
         self.add_fact(
             key='page.links',
             value=set(),
@@ -70,7 +72,8 @@ class LinkFacter(Facter):
 
     def handle_url_loaded(self, url, response):
         logging.debug('Got response (%s) from %s!' % (response.status_code, url))
-        self.review.facts['page.links']['value'].add((url, response))
+        self.review.facts['page.links']['value'].add(url)
+        self.review.data['page.links'].add((url, response))
 
     def get_links(self):
         return self.reviewer.current['html'].cssselect('a[href]')
