@@ -5,7 +5,7 @@
 #from motorengine import Document, StringField, JsonField
 import sqlalchemy as sa
 
-from holmes.models import Base
+from holmes.models import Base, JsonType
 
 
 class Fact(Base):
@@ -15,7 +15,7 @@ class Fact(Base):
     title = sa.Column('title', sa.String(2000), nullable=False)
     key = sa.Column('key', sa.String(2000), nullable=False)
     unit = sa.Column('unit', sa.String(2000), nullable=False)
-    value = sa.Column('value', sa.String(4000), nullable=False)
+    value = sa.Column('value', JsonType, nullable=False)
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))
 

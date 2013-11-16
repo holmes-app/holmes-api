@@ -69,4 +69,4 @@ worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf -t 1
 
 workers:
-	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 10
+	@holmes-worker -vvv -c ./holmes/config/local.conf -t 50 -w 5

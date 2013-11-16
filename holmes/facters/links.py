@@ -8,6 +8,13 @@ from holmes.facters import Facter
 from holmes.utils import get_domain_from_url
 
 REMOVE_HASH = re.compile('([#].*)$')
+URL_RE = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 class LinkFacter(Facter):
@@ -50,15 +57,14 @@ class LinkFacter(Facter):
             should_get = False
             if not is_absolute:
                 url = self.rebase(url)
-                num_links += 1
                 should_get = True
             else:
                 domain, domain_url = get_domain_from_url(url)
                 if domain in self.page_url:
                     should_get = True
-                num_links += 1
 
-            if should_get:
+            if should_get and URL_RE.match(url):
+                num_links += 1
                 links_to_get.add(url)
 
         for url in links_to_get:
@@ -67,7 +73,7 @@ class LinkFacter(Facter):
         self.add_fact(
             key='total.number.links',
             value=num_links,
-            title='Links'
+            title='Link Count'
         )
 
     def handle_url_loaded(self, url, response):

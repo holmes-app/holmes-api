@@ -118,6 +118,7 @@ class Reviewer(object):
     def review(self):
         self.load_content()
         self.run_facters()
+        self.wait_for_async_requests()
         self.run_validators()
         self.wait_for_async_requests()
         self.save_review()
@@ -198,11 +199,13 @@ class Reviewer(object):
 
     def run_facters(self):
         for facter in self.facters:
+            logging.debug('---------- Started running facter %s ---------' % facter.__name__)
             facter_instance = facter(self)
             facter_instance.get_facts()
 
     def run_validators(self):
         for validator in self.validators:
+            logging.debug('---------- Started running validator %s ---------' % validator.__name__)
             validator_instance = validator(self)
             validator_instance.validate()
 
@@ -215,10 +218,10 @@ class Reviewer(object):
 
         if len(urls) == 1:
             post_url = self.get_url('/page')
-            data = {
+            data = dumps({
                 'url': urls[0],
                 'origin_uuid': str(self.page_uuid)
-            }
+            })
             error_message = "Could not enqueue page '" + urls[0] + "'! Status Code: %d, Error: %s"
         else:
             post_url = self.get_url('/pages')
