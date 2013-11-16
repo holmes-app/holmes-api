@@ -16,6 +16,7 @@ Config.define('LOG_FORMAT', '%(asctime)s:%(levelname)s %(module)s - %(message)s'
 Config.define('LOG_DATE_FORMAT', '%Y-%m-%d %H:%M:%S',
               'Date Format to be used when writing log messages.', 'Logging')
 
+Config.define('FACTERS', [], 'List of classes to get facts about a website', 'Review')
 Config.define('VALIDATORS', [], 'List of classes to validate a website', 'Review')
 Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, 'Number of seconds that a review expires in.', 'Review')
 

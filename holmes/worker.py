@@ -15,6 +15,7 @@ from colorama import Fore, Style
 from holmes import __version__
 from holmes.config import Config
 from holmes.reviewer import Reviewer, InvalidReviewError
+from holmes.utils import load_classes
 
 
 class HolmesWorker(Shepherd):
@@ -23,6 +24,7 @@ class HolmesWorker(Shepherd):
         self.uuid = None
         self.working = True
 
+        self.facters = self._load_facters()
         self.validators = self._load_validators()
 
     @property
@@ -92,7 +94,8 @@ class HolmesWorker(Shepherd):
                 page_uuid=job['page'],
                 page_url=job['url'],
                 config=self.config,
-                validators=self.validators
+                validators=self.validators,
+                facters=self.facters
             )
 
             reviewer.review()
@@ -137,30 +140,11 @@ class HolmesWorker(Shepherd):
         except ConnectionError:
             logging.error('Fail to complete worker.')
 
-    def _load_validators(self, validators=None, validators_to_load=None):
-        if validators_to_load is None:
-            validators_to_load = self.config.VALIDATORS
+    def _load_validators(self):
+        return load_classes(default=self.config.VALIDATORS)
 
-        if validators is None:
-            validators = []
-
-        for validator_full_name in validators_to_load:
-            if isinstance(validator_full_name, (tuple, set, list)):
-                self._load_validators(validators, validator_full_name)
-                continue
-
-            try:
-                module_name, class_name = validator_full_name.rsplit('.', 1)
-                module = __import__(module_name, globals(), locals(), class_name)
-                validators.append(getattr(module, class_name))
-            except ValueError:
-                logging.warn('Invalid validator name [%s]. Will be ignored.' % validator_full_name)
-            except AttributeError:
-                logging.warn('Validator [%s] not found. Will be ignored.' % validator_full_name)
-            except ImportError:
-                logging.warn('Module [%s] not found. Will be ignored.' % validator_full_name)
-
-        return validators
+    def _load_facters(self):
+        return load_classes(default=self.config.FACTERS)
 
 
 def main():

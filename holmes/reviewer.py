@@ -12,6 +12,7 @@ import logging
 from ujson import dumps
 
 from holmes.config import Config
+from holmes.facters import Facter
 from holmes.validators.base import Validator
 
 
@@ -52,7 +53,7 @@ class ReviewDAO(object):
 
 
 class Reviewer(object):
-    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[]):
+    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[], facters=[]):
         self.api_url = api_url
 
         self.page_uuid = page_uuid
@@ -63,11 +64,18 @@ class Reviewer(object):
         assert isinstance(config, Config), 'config argument must be an instance of holmes.config.Config'
         self.config = config
 
+        for facter in facters:
+            message = 'All facters must subclass holmes.facters.Facter (Error: %s)' % facter.__class__.__name__
+            assert inspect.isclass(facter), message
+            assert issubclass(facter, Facter), message
+
         for validator in validators:
-            assert inspect.isclass(validator), 'All validators must subclass holmes.validators.base.Validator'
-            assert issubclass(validator, Validator), 'All validators must subclass holmes.validators.base.Validator'
+            message = 'All validators must subclass holmes.validators.base.Validator (Error: %s)' % validator.__class__.__name__
+            assert inspect.isclass(validator), message
+            assert issubclass(validator, Validator), message
 
         self.validators = validators
+        self.facters = facters
 
         self.responses = {}
         self.raw_responses = {}
@@ -100,6 +108,7 @@ class Reviewer(object):
 
     def review(self):
         self.load_content()
+        self.run_facters()
         self.run_validators()
         self.save_review()
 
@@ -176,6 +185,11 @@ class Reviewer(object):
                 self.status_codes[url] = 404
 
         return self.status_codes[url]
+
+    def run_facters(self):
+        for facter in self.facters:
+            facter_instance = facter(self)
+            facter_instance.get_facts()
 
     def run_validators(self):
         for validator in self.validators:

@@ -23,8 +23,8 @@ class Validator(object):
         return self.reviewer.page_url
 
     @property
-    def review_uuid(self):
-        return self.reviewer.review_uuid
+    def review(self):
+        return self.reviewer.review_dao
 
     @property
     def config(self):

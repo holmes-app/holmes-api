@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from preggy import expect
 
-from holmes.utils import get_domain_from_url
+from holmes.utils import get_domain_from_url, get_class, load_classes
 
 
 class TestUtils(TestCase):
@@ -83,3 +83,32 @@ class TestUtils(TestCase):
         domain, url = get_domain_from_url('http://localhost/Python.html')
         expect(domain).to_equal('localhost')
         expect(url).to_equal('http://localhost/')
+
+    def test_can_get_class(self):
+        from Queue import Queue
+
+        loaded = get_class("Queue.Queue")
+        expect(loaded).to_equal(Queue)
+
+    def test_can_get_class_with_more_levels(self):
+        from holmes.models.review import Review
+
+        loaded = get_class("holmes.models.review.Review")
+
+        expect(loaded).to_equal(Review)
+
+    def test_can_load_classes(self):
+        from holmes.models.domain import Domain
+        from holmes.models.page import Page
+        from holmes.models.review import Review
+
+        classes = load_classes(default=[
+            'holmes.models.domain.Domain',
+            'holmes.models.page.Page',
+            'holmes.models.review.Review',
+        ])
+
+        expect(classes).to_length(3)
+        expect(classes[0]).to_equal(Domain)
+        expect(classes[1]).to_equal(Page)
+        expect(classes[2]).to_equal(Review)
