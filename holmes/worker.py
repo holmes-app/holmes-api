@@ -21,7 +21,6 @@ from holmes.utils import load_classes
 
 class HolmesWorker(Shepherd):
     def initialize(self):
-        self.root_path = abspath(join(dirname(__file__), '..'))
         self.uuid = None
         self.working = True
 
