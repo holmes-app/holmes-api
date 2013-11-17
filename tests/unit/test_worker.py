@@ -46,6 +46,14 @@ class WorkerTestCase(ApiTestCase):
             help='Number of threads to use for Octopus (doing GETs concurrently)'
         )
 
+    def test_proxies_property(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        expect(worker.proxies).to_be_like({
+            'http': 'proxy:8080',
+            'https': 'proxy:8080'
+        })
+
 
 #class WorkerTestCase(ApiTestCase):
     #root_path = abspath(join(dirname(__file__), '..', '..'))

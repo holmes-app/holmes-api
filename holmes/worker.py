@@ -32,7 +32,12 @@ class HolmesWorker(Shepherd):
         self.otto.start()
 
     def config_parser(self, parser):
-        parser.add_argument('--concurrency', '-t', type=int, help='Number of threads to use for Octopus (doing GETs concurrently)')
+        parser.add_argument(
+            '--concurrency',
+            '-t',
+            type=int,
+            help='Number of threads to use for Octopus (doing GETs concurrently)'
+        )
 
     @property
     def proxies(self):
