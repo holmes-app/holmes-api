@@ -7,6 +7,7 @@ from preggy import expect
 from mock import patch, Mock
 from octopus import Octopus
 
+import holmes.worker
 from holmes.worker import HolmesWorker
 from tests.unit.base import ApiTestCase
 
@@ -54,6 +55,22 @@ class WorkerTestCase(ApiTestCase):
             'https': 'proxy:8080'
         })
 
+    def test_async_get(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        otto_mock = Mock()
+        worker.otto = otto_mock
+
+        worker.async_get("url", "handler", 'GET', test="test")
+        otto_mock.enqueue.assert_called_once_with('url', 'handler', 'GET', test='test', proxies={'http': 'proxy:8080', 'https': 'proxy:8080'})
+
+    @patch.object(holmes.worker.requests, 'get')
+    def test_get(self, get_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        worker.get('url')
+
+        get_mock.assert_called_once_with('http://localhost:2368/url', proxies={'http': 'proxy:8080', 'https': 'proxy:8080'})
 
 #class WorkerTestCase(ApiTestCase):
     #root_path = abspath(join(dirname(__file__), '..', '..'))
