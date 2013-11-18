@@ -95,7 +95,7 @@ class HolmesWorker(Shepherd):
             err = None
             job = self._load_next_job()
             if job:
-                #self._start_job(job['review'])
+                self._start_job(job['url'])
 
                 try:
                     self._start_reviewer(job=job)

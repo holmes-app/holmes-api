@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from os.path import abspath, dirname, join
+from uuid import uuid4
 
 from preggy import expect
 from mock import patch, Mock
 from octopus import Octopus
 
 import holmes.worker
+from holmes import __version__
 from holmes.worker import HolmesWorker
+from holmes.config import Config
+from holmes.reviewer import InvalidReviewError
 from tests.unit.base import ApiTestCase
 
 
@@ -71,6 +75,142 @@ class WorkerTestCase(ApiTestCase):
         worker.get('url')
 
         get_mock.assert_called_once_with('http://localhost:2368/url', proxies={'http': 'proxy:8080', 'https': 'proxy:8080'})
+
+    @patch.object(holmes.worker.requests, 'post')
+    def test_post(self, post_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        worker.post('url', data={'test': 'test'})
+
+        post_mock.assert_called_once_with(
+            'http://localhost:2368/url',
+            data={'test': 'test'},
+            proxies={'http': 'proxy:8080', 'https': 'proxy:8080'})
+
+    def test_description(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        expected = "holmes-worker (holmes-api v%s)" % (
+            __version__
+        )
+
+        expect(worker.get_description()).to_be_like(expected)
+
+    def test_config_class(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        expect(worker.get_config_class()).to_equal(Config)
+
+    @patch.object(holmes.worker.requests, 'post')
+    def test_stop_work(self, post_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+
+        worker.stop_work()
+
+        post_mock.assert_called_once_with(
+            'http://localhost:2368/worker/%s/dead' % str(worker.uuid),
+            proxies={'http': 'proxy:8080', 'https': 'proxy:8080'},
+            data={'worker_uuid': worker.uuid}
+        )
+
+    @patch.object(HolmesWorker, '_ping_api')
+    def test_do_work_works_even_if_api_is_down(self, ping_api_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+        worker.initialize()
+
+        ping_api_mock.return_value = False
+
+        worker.do_work()
+
+        expect(worker.uuid).not_to_be_null()
+
+    @patch.object(HolmesWorker, '_start_job')
+    @patch.object(HolmesWorker, '_load_next_job')
+    @patch.object(HolmesWorker, '_ping_api')
+    def test_do_work_if_api_is_up_but_no_job_to_do(self, ping_api_mock, load_next_job_mock, start_job_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+        worker.initialize()
+
+        ping_api_mock.return_value = True
+        load_next_job_mock.return_value = None
+
+        worker.do_work()
+
+        expect(worker.uuid).not_to_be_null()
+        start_job_mock.assert_has_calls([])
+
+    @patch.object(HolmesWorker, '_start_reviewer')
+    @patch.object(HolmesWorker, '_start_job')
+    @patch.object(HolmesWorker, '_load_next_job')
+    @patch.object(HolmesWorker, '_ping_api')
+    def test_do_work_if_api_is_up_and_job_available(
+        self,
+        ping_api_mock,
+        load_next_job_mock,
+        start_job_mock,
+        start_reviewer_mock
+    ):
+
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+        worker.initialize()
+
+        job = {
+            'url': 'some-url',
+            'page': 'some-uuid'
+        }
+
+        ping_api_mock.return_value = True
+        load_next_job_mock.return_value = job
+
+        worker.do_work()
+
+        expect(worker.uuid).not_to_be_null()
+
+        start_job_mock.assert_called_once_with(
+            'some-url'
+        )
+
+        start_reviewer_mock.assert_called_once_with(
+            job=job
+        )
+
+    @patch.object(HolmesWorker, '_start_reviewer')
+    @patch.object(HolmesWorker, '_start_job')
+    @patch.object(HolmesWorker, '_load_next_job')
+    @patch.object(HolmesWorker, '_ping_api')
+    @patch.object(holmes.worker, 'logging')
+    def test_do_work_if_api_is_up_and_job_available_but_reviewer_fails(
+        self,
+        logging_mock,
+        ping_api_mock,
+        load_next_job_mock,
+        start_job_mock,
+        start_reviewer_mock
+    ):
+
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+        worker.initialize()
+
+        job = {
+            'url': 'some-url',
+            'page': 'some-uuid'
+        }
+
+        ping_api_mock.return_value = True
+        load_next_job_mock.return_value = job
+        start_reviewer_mock.side_effect = InvalidReviewError()
+
+        worker.do_work()
+
+        expect(worker.uuid).not_to_be_null()
+
+        start_job_mock.assert_called_once_with(
+            'some-url'
+        )
+
+        logging_mock.error.assert_called_once_with('Fail to review some-url: ')
+
 
 #class WorkerTestCase(ApiTestCase):
     #root_path = abspath(join(dirname(__file__), '..', '..'))
