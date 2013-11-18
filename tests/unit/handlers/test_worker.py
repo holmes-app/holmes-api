@@ -10,7 +10,7 @@ from tornado.testing import gen_test
 
 from holmes.models import Worker
 from tests.unit.base import ApiTestCase
-from tests.fixtures import WorkerFactory, PageFactory, ReviewFactory
+from tests.fixtures import WorkerFactory
 
 
 class TestWorkerHandler(ApiTestCase):
@@ -41,7 +41,7 @@ class TestWorkerHandler(ApiTestCase):
         response = yield self.http_client.fetch(
             self.get_url('/worker/%s/alive' % str(worker.uuid)),
             method='POST',
-            body='current_review=%s' % str(worker.current_review)
+            body=''
         )
 
         worker = Worker.by_uuid(worker.uuid, self.db)
@@ -97,10 +97,7 @@ class TestWorkerHandler(ApiTestCase):
 
     @gen_test
     def test_workers_list(self):
-        page = PageFactory.create()
-
-        review = ReviewFactory.create(page=page)
-        worker = WorkerFactory.create(current_review=review)
+        worker = WorkerFactory.create(current_url='http://www.globo.com/')
         self.db.flush()
 
         response = yield self.http_client.fetch(
@@ -115,7 +112,5 @@ class TestWorkerHandler(ApiTestCase):
         expect(returned_json).to_length(len(workers))
 
         expect(returned_json[0]['uuid']).to_equal(str(worker.uuid))
-        expect(returned_json[0]['current_review']).to_equal(str(review.uuid))
+        expect(returned_json[0]['current_url']).to_equal('http://www.globo.com/')
         expect(returned_json[0]['working']).to_be_true()
-        expect(returned_json[0]['page_url']).to_equal(page.url)
-        expect(returned_json[0]['page_uuid']).to_equal(str(page.uuid))

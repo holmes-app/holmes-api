@@ -43,16 +43,6 @@ class WorkersHandler(BaseHandler):
     def get(self):
         workers = self.db.query(Worker).all()
 
-        workers_json = []
-        for worker in workers:
-            worker_dict = worker.to_dict()
-
-            if worker.working:
-                page = worker.current_review.page
-                if page:
-                    worker_dict['page_url'] = page.url
-                    worker_dict['page_uuid'] = str(page.uuid)
-            workers_json.append(worker_dict)
-
+        workers_json = [worker.to_dict() for worker in workers]
         self.write_json(workers_json)
         self.finish()
