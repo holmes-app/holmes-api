@@ -41,3 +41,6 @@ class Facter(object):
 
     def rebase(self, url):
         return urlparse.urljoin(self.page_url.rstrip('/'), url)
+
+    def to_gzip(self, content):
+        return content.encode('zip')
