@@ -4,7 +4,7 @@
 import sys
 import logging
 from uuid import uuid4
-from os.path import abspath, dirname, join
+from os.path import join
 
 import requests
 from ujson import dumps, loads
@@ -21,7 +21,7 @@ from holmes.utils import load_classes
 
 class HolmesWorker(Shepherd):
     def initialize(self):
-        self.uuid = None
+        self.uuid = uuid4().hex
         self.working = True
 
         self.facters = self._load_facters()
@@ -88,9 +88,6 @@ class HolmesWorker(Shepherd):
         self.working = False
 
     def do_work(self):
-        if self.uuid is None:
-            self.uuid = uuid4().hex
-
         if self._ping_api():
             err = None
             job = self._load_next_job()
@@ -103,7 +100,7 @@ class HolmesWorker(Shepherd):
                     err = str(sys.exc_info()[1])
                     logging.error("Fail to review %s: %s" % (job['url'], err))
 
-                #self._complete_job(job['review'], error=err)
+                self._complete_job(error=err)
 
     def _start_reviewer(self, job):
         if job:
@@ -124,7 +121,7 @@ class HolmesWorker(Shepherd):
 
     def _ping_api(self):
         try:
-            self.post('/worker/%s/alive' % self.uuid, data={'worker_uuid': self.uuid})
+            self.post('/worker/%s/alive' % self.uuid)
             return True
         except ConnectionError:
             logging.fatal('Fail to ping API [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)

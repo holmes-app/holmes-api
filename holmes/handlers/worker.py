@@ -4,7 +4,6 @@
 from datetime import datetime, timedelta
 
 from tornado import gen
-from uuid import UUID
 
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
@@ -12,9 +11,7 @@ from holmes.handlers import BaseHandler
 
 class WorkerHandler(BaseHandler):
 
-    def post(self, uuid, i_am='alive'):
-        worker_uuid = UUID(uuid)
-
+    def post(self, worker_uuid, i_am='alive'):
         worker = Worker.by_uuid(worker_uuid, self.db)
 
         if worker:
@@ -25,13 +22,14 @@ class WorkerHandler(BaseHandler):
         else:
             self.db.add(Worker(uuid=worker_uuid))
 
+        self.db.flush()
+
         self._remove_zombies_workers()
         self.db.flush()
 
         self.write(str(worker_uuid))
         self.finish()
 
-    @gen.coroutine
     def _remove_zombies_workers(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
         self.db.query(Worker).filter(Worker.last_ping < dt).delete()
