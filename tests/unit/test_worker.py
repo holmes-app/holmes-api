@@ -7,6 +7,7 @@ from uuid import uuid4
 from preggy import expect
 from mock import patch, Mock
 from octopus import Octopus
+from requests.exceptions import ConnectionError
 
 import holmes.worker
 from holmes import __version__
@@ -210,6 +211,65 @@ class WorkerTestCase(ApiTestCase):
         )
 
         logging_mock.error.assert_called_once_with('Fail to review some-url: ')
+
+    @patch.object(holmes.worker.requests, 'post')
+    def test_ping_api(self, post_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+
+        worker._ping_api()
+
+        post_mock.assert_called_once_with(
+            'http://localhost:2368/worker/%s/alive' % str(worker.uuid),
+            proxies={'http': 'proxy:8080', 'https': 'proxy:8080'},
+            data={'worker_uuid': worker.uuid}
+        )
+
+    @patch.object(holmes.worker.HolmesWorker, 'stop_work')
+    @patch.object(holmes.worker.requests, 'post')
+    def test_ping_api_when_post_fails(self, post_mock, stop_work_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+        post_mock.side_effect = ConnectionError()
+
+        expect(worker._ping_api()).to_be_false()
+        stop_work_mock.assert_calls([])
+
+    @patch.object(holmes.worker.HolmesWorker, 'get')
+    def test_load_next_job_when_no_job_available(self, get_mock):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+        get_mock.return_value = None
+
+        expect(worker._load_next_job()).to_be_null()
+
+    @patch.object(holmes.worker.HolmesWorker, 'get')
+    def test_load_next_job_when_job_available_but_no_text(self, get_mock):
+        response_mock = Mock(text=None)
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+        get_mock.return_value = response_mock
+
+        expect(worker._load_next_job()).to_be_null()
+
+    @patch.object(holmes.worker.HolmesWorker, 'get')
+    def test_load_next_job_when_job_available_with_text(self, get_mock):
+        response_mock = Mock(text="[0, 1, 2]")
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+        get_mock.return_value = response_mock
+
+        expect(worker._load_next_job()).to_be_like([0, 1, 2])
+    @patch.object(holmes.worker.HolmesWorker, 'stop_work')
+    @patch.object(holmes.worker.HolmesWorker, 'get')
+    def test_load_next_job_when_connection_error(self, get_mock, stop_work_mock):
+        response_mock = Mock(text="[0, 1, 2]")
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+        worker.uuid = uuid4()
+        get_mock.side_effect = ConnectionError()
+
+        expect(worker._load_next_job()).to_be_null()
+        stop_work_mock.assert_calls([])
 
 
 #class WorkerTestCase(ApiTestCase):

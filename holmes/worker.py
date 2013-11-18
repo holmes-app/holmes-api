@@ -140,6 +140,8 @@ class HolmesWorker(Shepherd):
             logging.fatal('Fail to get next review from [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
             self.stop_work()
 
+        return None
+
     def _start_job(self, review_uuid):
         if not review_uuid:
             return False
