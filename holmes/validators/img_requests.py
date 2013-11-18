@@ -5,21 +5,23 @@ from holmes.validators.base import Validator
 
 
 class ImageRequestsValidator(Validator):
+
     def validate(self):
-        img_files = self.get_img_requests()
+        img_files = self.get_images()
+        total_size = self.get_images_size()
 
-        self.add_fact(
-            key='total.requests.img',
-            value=len(img_files),
-            title='Total images requests'
-        )
+        for url, response in img_files:
 
-        results = self.process_img_requests(img_files)
+            if response.status_code > 399:
+                self.add_violation(
+                    key='broken.img',
+                    title='Image not found.',
+                    description='The image in "%s" could not be found or took'
+                                'more than 10 seconds to load.' % url,
+                    points=50
+                )
 
-        total_size = 0
-        for item in results.values():
-            size_img = len(item['content']) / 1024.0
-            total_size += size_img
+            size_img = len(response.content) / 1024.0
 
             if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
                 self.add_violation(
@@ -28,17 +30,10 @@ class ImageRequestsValidator(Validator):
                     description='Found a image bigger then limit %d (%d over limit): %s' % (
                         self.reviewer.config.MAX_KB_SINGLE_IMAGE,
                         size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                        item['url']
+                        url
                     ),
                     points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
                 )
-
-        self.add_fact(
-            key='total.size.img',
-            value=total_size,
-            unit='kb',
-            title='Total images size'
-        )
 
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
             self.add_violation(
@@ -59,31 +54,8 @@ class ImageRequestsValidator(Validator):
                 points=int(total_size - self.reviewer.config.MAX_IMG_KB_PER_PAGE)
             )
 
-    def get_img_requests(self):
-        return self.reviewer.current['html'].cssselect('img[src]')
+    def get_images(self):
+        return self.review.data.get('page.images', None)
 
-    def process_img_requests(self, img_files):
-        results = {}
-        for img_file in img_files:
-            src = img_file.get('src')
-            if not src:
-                continue
-
-            is_absolute = self.is_absolute(src)
-
-            if not is_absolute:
-                src = self.rebase(src)
-
-            response = self.get_response(src)
-
-            if response['status'] > 399:
-                self.add_violation(
-                    key='broken.img',
-                    title='Image not found.',
-                    description="The image in '%s' could not be found or took more than 10 seconds to load." % src,
-                    points=50
-                )
-            else:
-                results[src] = response
-
-        return results
+    def get_images_size(self):
+        return self.review.data.get('total.size.img', 0)
