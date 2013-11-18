@@ -29,7 +29,6 @@ from holmes.handlers.search import (
 )
 
 
-
 def main():
     AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
     HolmesApiServer.run()
@@ -42,7 +41,7 @@ class HolmesApiServer(Server):
             (r'/last-reviews/?', LastReviewsHandler),
             (r'/workers/?', WorkersHandler),
             (r'/worker/([a-z0-9-]*)/(alive|dead)/?', WorkerHandler),
-            (r'/worker/([a-z0-9-]*)/review/([a-z0-9-]*)/(start|complete)', WorkerStateHandler),
+            (r'/worker/([a-z0-9-]*)/(start|complete)/?', WorkerStateHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/complete/?', CompleteReviewHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/fact/?', CreateFactHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
