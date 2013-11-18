@@ -142,27 +142,28 @@ class HolmesWorker(Shepherd):
 
         return None
 
-    def _start_job(self, review_uuid):
-        if not review_uuid:
+    def _start_job(self, url):
+        if not url:
             return False
 
         try:
-            response = self.post('/worker/%s/review/%s/start' % (self.uuid, review_uuid))
+            response = self.post('/worker/%s/start' % self.uuid, data=url)
             return ('OK' == response.text)
 
         except ConnectionError:
             logging.error('Fail to start review.')
 
-    def _complete_job(self, review_uuid, error=None):
-        if not review_uuid:
-            return False
+        return False
 
+    def _complete_job(self, error=None):
         try:
-            url = '/worker/%s/review/%s/complete' % (self.uuid, review_uuid)
+            url = '/worker/%s/complete' % self.uuid
             response = self.post(url, data=dumps({'error': error}))
             return ('OK' == response.text)
         except ConnectionError:
             logging.error('Fail to complete worker.')
+
+        return False
 
     def _load_validators(self):
         return load_classes(default=self.config.VALIDATORS)
