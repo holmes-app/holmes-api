@@ -120,4 +120,4 @@ class WorkerFactory(BaseFactory):
 
     uuid = factory.LazyAttribute(lambda a: uuid4())
     last_ping = None
-    current_review = None
+    current_url = None

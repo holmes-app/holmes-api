@@ -17,6 +17,11 @@ class WorkerStateHandler(BaseHandler):
 
         if 'start' == state:
             url = self.request.body
+            if not url:
+                self.set_status(400, 'Invalid URL')
+                self.finish()
+                return
+
             worker.current_url = url
 
         if 'complete' == state:
