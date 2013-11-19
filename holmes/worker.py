@@ -114,7 +114,7 @@ class HolmesWorker(Shepherd):
                 facters=self.facters,
                 async_get=self.async_get,
                 wait=self.otto.wait,
-                wait_timeout=self.config.ZOMBIE_WORKER_TIME  # max time to wait for all requests to finish
+                wait_timeout=0  # max time to wait for all requests to finish
             )
 
             reviewer.review()

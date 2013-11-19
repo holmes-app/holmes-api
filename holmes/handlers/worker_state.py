@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from ujson import dumps
+
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
 
@@ -28,6 +30,11 @@ class WorkerStateHandler(BaseHandler):
             worker.current_url = None
 
         self.db.flush()
+
+        self.application.event_bus.publish(dumps({
+            'type': 'worker-status',
+            'workerId': str(worker.uuid)
+        }))
 
         self.write('OK')
         self.finish()

@@ -17,6 +17,7 @@ class BaseHandler(RequestHandler):
             else:
                 logging.debug('COMMITTING TRANSACTION')
                 self.db.commit()
+                self.application.event_bus.flush()
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)

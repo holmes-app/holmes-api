@@ -4,6 +4,7 @@
 from datetime import datetime, timedelta
 
 from tornado import gen
+from ujson import dumps
 
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
@@ -20,12 +21,18 @@ class WorkerHandler(BaseHandler):
             elif i_am == 'dead':
                 self.db.delete(worker)
         else:
-            self.db.add(Worker(uuid=worker_uuid))
+            worker = Worker(uuid=worker_uuid)
+            self.db.add(worker)
 
         self.db.flush()
 
         self._remove_zombies_workers()
         self.db.flush()
+
+        self.application.event_bus.publish(dumps({
+            'type': 'worker-status',
+            'workerId': str(worker.uuid)
+        }))
 
         self.write(str(worker_uuid))
         self.finish()

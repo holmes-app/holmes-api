@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 import logging
 from tornado import gen
-from ujson import loads
+from ujson import loads, dumps
 
 from holmes.models import Review, Page
 from holmes.handlers import BaseHandler
@@ -91,6 +91,11 @@ class ReviewHandler(BaseReviewHandler):
         })
 
         self.db.flush()
+
+        self.application.event_bus.publish(dumps({
+            'type': 'new-review',
+            'reviewId': str(review.uuid)
+        }))
 
     def _remove_older_reviews_with_same_day(self, review):
         dt = datetime.now()

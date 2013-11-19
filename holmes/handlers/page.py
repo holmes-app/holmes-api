@@ -4,7 +4,7 @@
 from uuid import UUID
 import hashlib
 
-from ujson import loads
+from ujson import loads, dumps
 from tornado import gen
 import tornado.httpclient
 #from motorengine import Q, DESCENDING
@@ -81,6 +81,11 @@ class PageHandler(BaseHandler):
             self.db.add(domain)
             self.db.flush()
 
+            self.application.event_bus.publish(dumps({
+                'type': 'new-domain',
+                'domainUrl': str(domain_url)
+            }))
+
         pages = self.db.query(Page).filter(or_(
             Page.url == url,
             Page.url == url.rstrip('/'),
@@ -102,6 +107,11 @@ class PageHandler(BaseHandler):
         page = Page(url=url, url_hash=url_hash, domain=domain)
         self.db.add(page)
         self.db.flush()
+
+        self.application.event_bus.publish(dumps({
+            'type': 'new-page',
+            'pageUrl': str(url)
+        }))
 
         self.write(str(page.uuid))
         self.finish()
@@ -183,7 +193,7 @@ class PagesHandler(BaseHandler):
         existing_domains_dict = dict([(domain.name, domain) for domain in existing_domains])
 
         domains_to_add = [
-            Domain(name=domain[0], url=domain[1])
+            Domain(name=domain[0], url=domain[1], url_hash=hashlib.sha512(domain[1]).hexdigest())
             for domain in all_domains
             if not domain[0] in existing_domains_dict
         ]
@@ -213,9 +223,19 @@ class PagesHandler(BaseHandler):
             for domain in domains_to_add:
                 self.db.add(domain)
 
+            self.application.event_bus.publish(dumps({
+                'type': 'new-domain',
+                'domainUrl': str(domains_to_add[0].url)
+            }))
+
         if pages_to_add:
             for page in pages_to_add:
                 self.db.add(page)
+
+            self.application.event_bus.publish(dumps({
+                'type': 'new-page',
+                'pageUrl': str(pages_to_add[0].url)
+            }))
 
         self.write(str(len(pages_to_add)))
         self.finish()

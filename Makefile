@@ -1,12 +1,10 @@
-mongodatabase = holmes
-
-test: drop_test data_test unit integration kill_run
+test: redis drop_test data_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
 	@coverage report -m --fail-under=90
 
-coverage-html: mongo_test unit
+coverage-html: unit
 	@coverage html -d cover
 
 integration: kill_run run_daemon
@@ -18,24 +16,12 @@ tox:
 setup:
 	@pip install -U -e .\[tests\]
 
-drop_mongo:
-	@rm -rf /tmp/$(mongodatabase)/mongodata
+kill_redis:
+	-redis-cli -p 7575 shutdown
 
-kill_mongo:
-	@ps aux | awk '(/mongod/ && $$0 !~ /awk/){ system("kill -9 "$$2) }'
-
-mongo: kill_mongo
-	@mkdir -p /tmp/$(mongodatabase)/mongodata
-	@mongod --dbpath /tmp/$(mongodatabase)/mongodata --logpath /tmp/$(mongodatabase)/mongolog --port 6685 --quiet &
-	@sleep 3
-
-kill_mongo_test:
-	@ps aux | awk '(/mongod.+test/ && $$0 !~ /awk/){ system("kill -9 "$$2) }'
-
-mongo_test: kill_mongo_test
-	@rm -rf /tmp/$(mongodatabase)/mongotestdata && mkdir -p /tmp/$(mongodatabase)/mongotestdata
-	@mongod --dbpath /tmp/$(mongodatabase)/mongotestdata --logpath /tmp/$(mongodatabase)/mongotestlog --port 6686 --quiet &
-	@sleep 3
+redis: kill_redis
+	redis-server ./redis.conf; sleep 1
+	redis-cli -p 7575 info > /dev/null
 
 drop:
 	@-cd holmes/ && alembic downgrade base
@@ -69,4 +55,4 @@ worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf -t 1
 
 workers:
-	@holmes-worker -vvv -c ./holmes/config/local.conf -t 50 -w 5
+	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 8

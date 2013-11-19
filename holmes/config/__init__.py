@@ -49,3 +49,7 @@ Config.define('HTTP_PROXY_HOST', None, 'HTTP Proxy Host to use', 'Web')
 Config.define('HTTP_PROXY_PORT', None, 'HTTP Proxy Port to use', 'Web')
 
 Config.define('COMMIT_ON_REQUEST_END', True, 'Commit on request end', 'DB')
+
+Config.define('REDISHOST', 'localhost', 'Redis host', 'Redis')
+Config.define('REDISPORT', 7575, 'Redis port', 'Redis')
+Config.define('REDISPASS', None, 'Redis password in case of auth', 'Redis')
