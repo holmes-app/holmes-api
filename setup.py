@@ -44,7 +44,6 @@ Holmes is a service to investigate your website health.
     install_requires=[
         'cow-framework',
         'ujson',
-        'motorengine',
         'requests',
         'lxml',
         'cssselect',
