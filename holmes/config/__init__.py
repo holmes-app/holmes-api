@@ -63,3 +63,5 @@ Config.define('REDISPASS', None, 'Redis password in case of auth', 'Redis')
 Config.define('REQUIRED_META_TAGS', [], 'List of required meta tags', 'Meta tag Validator')
 
 Config.define('SCHEMA_ORG_ITEMTYPE', [], 'List of Schema.Org ItemType', 'Schema.Org ItemType')
+
+Config.define('FORCE_CANONICAL', False, 'Force canonical', 'Force canonical')
