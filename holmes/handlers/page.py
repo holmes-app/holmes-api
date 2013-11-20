@@ -170,6 +170,8 @@ class PagesHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
+        # TODO: Refactor this method to use smarter queries
+
         urls = self.get_arguments('url')
 
         if not urls:
@@ -177,8 +179,6 @@ class PagesHandler(BaseHandler):
             self.write('0')
             self.finish()
             return
-
-        pages_to_add = []
 
         all_domains = []
         for url in urls:
@@ -189,56 +189,91 @@ class PagesHandler(BaseHandler):
                 return
             all_domains.append((domain_name, domain_url))
 
-        existing_domains = self.db.query(Domain).filter(Domain.name.in_([domain[0] for domain in all_domains])).all()
-        existing_domains_dict = dict([(domain.name, domain) for domain in existing_domains])
+        domains = self.add_domains(all_domains)
+        pages = self.add_pages(urls, domains)
 
-        domains_to_add = [
-            Domain(name=domain[0], url=domain[1], url_hash=hashlib.sha512(domain[1]).hexdigest())
-            for domain in all_domains
-            if not domain[0] in existing_domains_dict
-        ]
-        domains_to_add_dict = dict([(domain.name, domain) for domain in domains_to_add])
+        self.write(str(len(pages)))
+        self.finish()
 
-        all_domains_dict = {}
-        all_domains_dict.update(existing_domains_dict)
-        all_domains_dict.update(domains_to_add_dict)
+    def add_domains(self, domains):
+        resulting_domains = {}
 
+        #existing_domains = self.db.query(Domain.id, Domain.url).filter(
+            #or_(
+                #Domain.url.in_([
+                    #domain[1] for domain in domains
+                #]),
+                #Domain.url.in_([
+                    #domain[1].rstrip('/') for domain in domains
+                #]),
+                #Domain.url.in_([
+                    #"%s/" % domain[1] for domain in domains
+                #])
+            #)
+        #).all()
+        #existing_domain_dict = dict([(domain[0], domain[1]) for domain in existing_domains])
+
+        for domain_name, domain_url in domains:
+            domain = self.db.query(Domain).filter(Domain.url == domain_url).first()
+
+            if domain:
+                resulting_domains[domain_name] = domain
+                continue
+
+            key = domain_url.rstrip('/')
+            domain = self.db.query(Domain).filter(Domain.url == key).first()
+            if domain:
+                resulting_domains[domain_name] = domain
+                continue
+
+            key = ("%s/" % domain_url)
+            domain = self.db.query(Domain).filter(Domain.url == key).first()
+            if domain:
+                resulting_domains[domain_name] = domain
+                continue
+
+            resulting_domains[domain_url] = Domain(
+                name=domain_name,
+                url=domain_url,
+                url_hash=hashlib.sha512(domain_url).hexdigest())
+
+            self.db.add(resulting_domains[domain_url])
+
+            self.application.event_bus.publish(dumps({
+                'type': 'new-domain',
+                'domainUrl': domain_url
+            }))
+
+        self.db.flush()
+        return resulting_domains
+
+    def add_pages(self, urls, domains):
         existing_pages = self.db.query(Page).filter(Page.url.in_(urls)).all()
         if not existing_pages:
             existing_pages = []
         existing_pages_dict = dict([(page.url, page) for page in existing_pages])
 
-        pages_to_add = []
+        added_pages = []
         for url in set(urls):
             if url in existing_pages_dict:
                 continue
             domain_name, domain_url = get_domain_from_url(url.strip())
-            domain = all_domains_dict[domain_name]
 
             logging.debug("Adding URL: %s" % url)
-            url_hash = hashlib.sha512(url).hexdigest()
-            pages_to_add.append(Page(url=url, url_hash=url_hash, domain=domain))
+            url_hash = hashlib.sha512(str(url)).hexdigest()
 
-        if domains_to_add:
-            for domain in domains_to_add:
-                self.db.add(domain)
+            page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_name])
+            self.db.add(page)
+            added_pages.append(page)
 
-            self.application.event_bus.publish(dumps({
-                'type': 'new-domain',
-                'domainUrl': str(domains_to_add[0].url)
-            }))
-
-        if pages_to_add:
-            for page in pages_to_add:
-                self.db.add(page)
-
+        if added_pages:
             self.application.event_bus.publish(dumps({
                 'type': 'new-page',
-                'pageUrl': str(pages_to_add[0].url)
+                'pageUrl': added_pages[0].url
             }))
 
-        self.write(str(len(pages_to_add)))
-        self.finish()
+        self.db.flush()
+        return added_pages
 
 
 class PageViolationsPerDayHandler(BaseHandler):

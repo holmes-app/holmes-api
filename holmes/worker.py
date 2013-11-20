@@ -11,7 +11,7 @@ from ujson import dumps, loads
 from requests.exceptions import ConnectionError
 from sheep import Shepherd
 from colorama import Fore, Style
-from octopus import Octopus
+from octopus import Octopus, TornadoOctopus
 
 from holmes import __version__
 from holmes.config import Config
@@ -28,7 +28,7 @@ class HolmesWorker(Shepherd):
         self.validators = self._load_validators()
 
         logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
-        self.otto = Octopus(concurrency=self.options.concurrency, cache=True)
+        self.otto = TornadoOctopus(concurrency=self.options.concurrency, cache=True)
         self.otto.start()
 
     def config_parser(self, parser):

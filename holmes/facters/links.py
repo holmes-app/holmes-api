@@ -83,4 +83,4 @@ class LinkFacter(Facter):
         self.review.data['page.links'].add((url, response))
 
     def get_links(self):
-        return self.reviewer.current['html'].cssselect('a[href]')
+        return self.reviewer.current_html.cssselect('a[href]')

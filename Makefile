@@ -49,10 +49,10 @@ run_daemon:
 	@holmes-api -vvv -c ./holmes/config/local.conf &
 
 run:
-	@holmes-api -vvv -c ./holmes/config/local.conf
+	@holmes-api -vvv --debug -c ./holmes/config/local.conf
 
 worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf -t 1
 
 workers:
-	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 8
+	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 20

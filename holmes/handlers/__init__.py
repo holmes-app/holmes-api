@@ -4,20 +4,28 @@
 import logging
 
 from ujson import dumps
-
 from tornado.web import RequestHandler
 
 
 class BaseHandler(RequestHandler):
+    def initialize(self, *args, **kw):
+        super(BaseHandler, self).initialize(*args, **kw)
+
+        self._session = None
+
     def on_finish(self):
         if self.application.config.COMMIT_ON_REQUEST_END:
-            if self.get_status() > 399:
-                logging.debug('ROLLING BACK TRANSACTION')
-                self.db.rollback()
-            else:
-                logging.debug('COMMITTING TRANSACTION')
-                self.db.commit()
-                self.application.event_bus.flush()
+            try:
+                if self.get_status() > 399:
+                    logging.debug('ROLLING BACK TRANSACTION')
+                    self.db.rollback()
+                else:
+                    logging.debug('COMMITTING TRANSACTION')
+                    self.db.commit()
+                    self.application.event_bus.flush()
+            finally:
+                self.db.close()
+                self._session = None
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
@@ -36,4 +44,7 @@ class BaseHandler(RequestHandler):
 
     @property
     def db(self):
-        return self.application.sqlalchemy_db
+        if self._session is None:
+            self._session = self.application.get_sqlalchemy_session()
+
+        return self._session

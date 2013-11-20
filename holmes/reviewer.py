@@ -27,6 +27,7 @@ class ReviewDAO(object):
         self.facts = {}
         self.violations = []
         self.data = {}
+        self._current = None
 
     def add_fact(self, key, title, value, unit=None):
         self.facts[key] = {
@@ -116,25 +117,41 @@ class Reviewer(object):
         return requests.post(url, data=data)
 
     def review(self):
-        self.load_content()
+        self.load_content(self.content_loaded)
+        self.wait_for_async_requests()
+
+    def load_content(self, callback):
+        self._async_get(self.page_url, self.content_loaded)
+
+    def content_loaded(self, url, response):
+        if response.status_code > 399:
+            logging.error("Could not load '%s' (%s)!" % (url, response.status_code))
+            return
+
+        self._current = response
+
+        try:
+            self._current.html = lxml.html.fromstring(response.text)
+        except (lxml.etree.XMLSyntaxError, lxml.etree.ParserError):
+            self._current.html = None
+
+            self.add_violation(
+                key='invalid.content',
+                title='Invalid Content',
+                description='Fail to parse content from %s' % url,
+                points=1000)
+
         self.run_facters()
         self.wait_for_async_requests()
+
         self.run_validators()
         self.wait_for_async_requests()
+
         self.save_review()
-
-    def load_content(self):
-        self.get_response(self.page_url)
-
-        if self.responses[self.page_url]['status'] > 399:
-            raise InvalidReviewError("Could not load '%s'!" % self.page_url)
 
     @property
     def current(self):
-        if not self.page_url in self.responses:
-            self.load_content()
-
-        return self.responses[self.page_url]
+        return self._current
 
     def get_response(self, url):
         if url in self.responses:
@@ -178,10 +195,10 @@ class Reviewer(object):
 
     @property
     def current_html(self):
-        if 'html' not in self.current or self.current['html'] is None:
+        if not hasattr(self.current, 'html') or self.current.html is None:
             return lxml.html.HtmlElement()
         else:
-            return self.current['html']
+            return self.current.html
 
     def get_status_code(self, url):
         if not url in self.status_codes:
@@ -234,7 +251,7 @@ class Reviewer(object):
         response = self._post(post_url, data=data)
 
         if response.status_code > 399:
-            raise InvalidReviewError(error_message % (
+            logging.error(error_message % (
                 response.status_code,
                 response.text
             ))
@@ -255,13 +272,13 @@ class Reviewer(object):
             })
         except ConnectionError:
             err = sys.exc_info()[1]
-            raise InvalidReviewError("Could not save review! ConnectionError - %s (%s)" % (
+            logging.error("Could not save review! ConnectionError - %s (%s)" % (
                 url,
                 str(err)
             ))
 
         if response.status_code > 399:
-            raise InvalidReviewError("Could not save review! Status Code: %d, Error: %s" % (
+            logging.error("Could not save review! Status Code: %d, Error: %s" % (
                 response.status_code,
                 response.text
             ))
