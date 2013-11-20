@@ -16,7 +16,7 @@ class Violation(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     key = sa.Column('key', sa.String(2000), nullable=False)
     title = sa.Column('title', sa.String(2000), nullable=False)
-    description = sa.Column('description', sa.String(2000), nullable=False)
+    description = sa.Column('description', sa.Text, nullable=False)
     points = sa.Column('points', sa.Integer, nullable=False)
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))

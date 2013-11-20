@@ -48,7 +48,7 @@ kill_run:
 run_daemon:
 	@holmes-api -vvv -c ./holmes/config/local.conf &
 
-run:
+run: redis
 	@holmes-api -vvv --debug -c ./holmes/config/local.conf
 
 worker:

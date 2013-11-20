@@ -65,11 +65,16 @@ class JSFacter(Facter):
         self.review.facts['page.js']['value'].add(url)
         self.review.data['page.js'].add((url, response))
 
-        size_js = len(response.content) / 1024.0
+        if response.text is not None:
+            size_js = len(response.text) / 1024.0
+            size_gzip = len(self.to_gzip(response.text)) / 1024.0
+        else:
+            size_js = 0
+            size_gzip = 0
+
         self.review.facts['total.size.js']['value'] += size_js
         self.review.data['total.size.js'] += size_js
 
-        size_gzip = len(self.to_gzip(response.content)) / 1024.0
         self.review.facts['total.size.js.gzipped']['value'] += size_gzip
         self.review.data['total.size.js.gzipped'] += size_gzip
 

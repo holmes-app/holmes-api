@@ -32,6 +32,9 @@ class EventBus(object):
         self.publish_items = []
 
     def on_message(self, message):
+        if message is None:
+            return
+
         msg_type, msg_channel, msg_value = message
 
         logging.debug("%s on %s for %s" % (msg_type, msg_channel, msg_value))

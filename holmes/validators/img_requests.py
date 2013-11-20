@@ -21,19 +21,20 @@ class ImageRequestsValidator(Validator):
                     points=50
                 )
 
-            size_img = len(response.content) / 1024.0
+            if response.text is not None:
+                size_img = len(response.text) / 1024.0
 
-            if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
-                self.add_violation(
-                    key='single.size.img',
-                    title='Single image size in kb is too big.',
-                    description='Found a image bigger then limit %d (%d over limit): %s' % (
-                        self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                        size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                        url
-                    ),
-                    points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
-                )
+                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
+                    self.add_violation(
+                        key='single.size.img',
+                        title='Single image size in kb is too big.',
+                        description='Found a image bigger then limit %d (%d over limit): %s' % (
+                            self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                            url
+                        ),
+                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
+                    )
 
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
             self.add_violation(

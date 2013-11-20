@@ -91,9 +91,7 @@ class HolmesWorker(Shepherd):
         if self._ping_api():
             err = None
             job = self._load_next_job()
-            if job:
-                self._start_job(job['url'])
-
+            if job and self._start_job(job['url']):
                 try:
                     self._start_reviewer(job=job)
                 except InvalidReviewError:
@@ -101,6 +99,8 @@ class HolmesWorker(Shepherd):
                     logging.error("Fail to review %s: %s" % (job['url'], err))
 
                 self._complete_job(error=err)
+            elif job:
+                logging.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
 
     def _start_reviewer(self, job):
         if job:
@@ -145,8 +145,12 @@ class HolmesWorker(Shepherd):
 
         try:
             response = self.post('/worker/%s/start' % self.uuid, data=url)
-            return ('OK' == response.text)
+            if response.text == 'OK':
+                return True
 
+            if response.text == 'NOK':
+                logging.debug('Failed to acquire lock on %s.' % url)
+                return False
         except ConnectionError:
             logging.error('Fail to start review.')
 

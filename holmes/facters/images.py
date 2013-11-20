@@ -59,9 +59,9 @@ class ImageFacter(Facter):
         self.review.facts['page.images']['value'].add(url)
         self.review.data['page.images'].add((url, response))
 
-        size_img = len(response.content) / 1024.0
+        size_img = len(response.text) / 1024.0
         self.review.facts['total.size.img']['value'] += size_img
         self.review.data['total.size.img'] += size_img
 
     def get_images(self):
-        return self.reviewer.current['html'].cssselect(':not(script) img[src]')
+        return self.reviewer.current_html.cssselect(':not(script) img[src]')
