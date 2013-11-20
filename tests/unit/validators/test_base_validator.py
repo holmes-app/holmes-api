@@ -42,7 +42,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=review.page.uuid,
             page_url=review.page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -51,7 +50,6 @@ class TestBaseValidator(ApiTestCase):
 
         expect(validator.page_uuid).to_equal(review.page.uuid)
         expect(validator.page_url).to_equal(review.page.url)
-        expect(validator.review_uuid).to_equal(review.uuid)
         expect(validator.config).to_equal(reviewer.config)
 
     def test_is_absolute(self):
@@ -70,7 +68,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -88,7 +85,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -107,7 +103,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -125,7 +120,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -143,7 +137,6 @@ class TestBaseValidator(ApiTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )

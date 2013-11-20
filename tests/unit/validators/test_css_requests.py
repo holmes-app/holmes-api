@@ -9,7 +9,7 @@ from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.css_requests import CSSRequestsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory
 
 
 class TestCSSRequestsValidator(ValidatorTestCase):
@@ -20,13 +20,11 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP = 0.0
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -51,34 +49,13 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         }
         validator.get_response = Mock(return_value=css)
 
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
 
+        validator.review.data = {
+            'total.requests.css': 7,
+            'total.size.css.gzipped': 0.05
+        }
         validator.validate()
-
-        expect(validator.add_fact.call_args_list).to_length(3)
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.requests.css',
-                value=7,
-                title='Total CSS requests'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css',
-                value=0.033203125,
-                unit='kb',
-                title='Total CSS size'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css.gzipped',
-                value=0.048828125,
-                unit='kb',
-                title='Total CSS size gzipped'
-            ))
 
         expect(validator.add_violation.call_args_list).to_include(
             call(
@@ -102,13 +79,11 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -126,34 +101,9 @@ class TestCSSRequestsValidator(ValidatorTestCase):
 
         validator = CSSRequestsValidator(reviewer)
 
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
 
         validator.validate()
-
-        expect(validator.add_fact.call_args_list).to_length(3)
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.requests.css',
-                value=0,
-                title='Total CSS requests'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css',
-                value=0.0,
-                unit='kb',
-                title='Total CSS size'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css.gzipped',
-                value=0.0,
-                unit='kb',
-                title='Total CSS size gzipped'
-            ))
 
         expect(validator.add_violation.called).to_be_false()
 
@@ -161,13 +111,11 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -183,33 +131,8 @@ class TestCSSRequestsValidator(ValidatorTestCase):
 
         validator = CSSRequestsValidator(reviewer)
 
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
 
         validator.validate()
-
-        expect(validator.add_fact.call_args_list).to_length(3)
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.requests.css',
-                value=0,
-                title='Total CSS requests'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css',
-                value=0.0,
-                unit='kb',
-                title='Total CSS size'
-            ))
-
-        expect(validator.add_fact.call_args_list).to_include(
-            call(
-                key='total.size.css.gzipped',
-                value=0.0,
-                unit='kb',
-                title='Total CSS size gzipped'
-            ))
 
         expect(validator.add_violation.called).to_be_false()

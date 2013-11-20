@@ -8,7 +8,7 @@ from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.required_meta_tags import RequiredMetaTagsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory
 
 
 class TestRequiredMetaTagsValidator(ValidatorTestCase):
@@ -18,13 +18,11 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
         config.REQUIRED_META_TAGS = ['description']
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -41,8 +39,11 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
         reviewer.get_response = Mock(return_value=result)
 
         validator = RequiredMetaTagsValidator(reviewer)
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
+        validator.review.data = {
+            'meta.tags': [{'key': None}]
+        }
+
         validator.validate()
 
         for tag in reviewer.config.REQUIRED_META_TAGS:
@@ -51,4 +52,5 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
                 title='Meta not present',
                 description='Not having meta tag for "%s" is '
                             'damaging for Search Engines.' % tag,
-                points=20)
+                points=20
+            )

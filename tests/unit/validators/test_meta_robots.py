@@ -8,7 +8,7 @@ from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.meta_robots import MetaRobotsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory
 
 
 class TestMetaRobotsValidator(ValidatorTestCase):
@@ -17,13 +17,11 @@ class TestMetaRobotsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -40,9 +38,10 @@ class TestMetaRobotsValidator(ValidatorTestCase):
         reviewer.get_response = Mock(return_value=result)
 
         validator = MetaRobotsValidator(reviewer)
-
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
+        validator.review.data = {
+            'meta.tags': [{'key': 'robots', 'content': 'noindex'}]
+        }
 
         validator.validate()
 
@@ -52,19 +51,18 @@ class TestMetaRobotsValidator(ValidatorTestCase):
             description='A meta tag with the robots="noindex" '
                         'attribute tells the search engines that '
                         'they should not index this page.',
-            points=80)
+            points=80
+        )
 
     def test_can_validate_meta_robots_nofollow(self):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -81,9 +79,10 @@ class TestMetaRobotsValidator(ValidatorTestCase):
         reviewer.get_response = Mock(return_value=result)
 
         validator = MetaRobotsValidator(reviewer)
-
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
+        validator.review.data = {
+            'meta.tags': [{'key': 'robots', 'content': 'nofollow'}]
+        }
 
         validator.validate()
 

@@ -15,10 +15,7 @@ from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
     PageHandler, PagesHandler, PageReviewsHandler, PageViolationsPerDayHandler
 )
-from holmes.handlers.fact import CreateFactHandler
-from holmes.handlers.violation import (
-    CreateViolationHandler, MostCommonViolationsHandler
-)
+from holmes.handlers.violation import MostCommonViolationsHandler
 from holmes.handlers.review import (
     ReviewHandler, CompleteReviewHandler, LastReviewsHandler
 )
@@ -48,8 +45,6 @@ class HolmesApiServer(Server):
             (r'/worker/([a-z0-9-]*)/(alive|dead)/?', WorkerHandler),
             (r'/worker/([a-z0-9-]*)/(start|complete)/?', WorkerStateHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/complete/?', CompleteReviewHandler),
-            (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/fact/?', CreateFactHandler),
-            (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/violation/?', CreateViolationHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/reviews/?', PageReviewsHandler),
             (r'/page/([a-z0-9-]*)/violations-per-day/?', PageViolationsPerDayHandler),

@@ -121,7 +121,7 @@ class Reviewer(object):
         self.wait_for_async_requests()
 
     def load_content(self, callback):
-        self._async_get(self.page_url, self.content_loaded)
+        self._async_get(self.page_url, callback)
 
     def content_loaded(self, url, response):
         if response.status_code > 399:

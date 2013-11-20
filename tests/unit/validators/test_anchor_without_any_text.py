@@ -25,7 +25,6 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -41,9 +40,13 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         reviewer.responses[page.url] = result
         reviewer.get_response = Mock(return_value=result)
 
+        link = Mock(text='')
+        link.get.return_value = 'http://globo.com'
+
         validator = AnchorWithoutAnyTextValidator(reviewer)
         validator.add_fact = Mock()
         validator.add_violation = Mock()
+        validator.review.data = {'page.all_links': [link]}
         validator.validate()
 
         validator.add_violation.assert_called_once_with(

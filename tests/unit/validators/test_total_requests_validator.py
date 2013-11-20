@@ -9,7 +9,7 @@ from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.validators.total_requests import TotalRequestsValidator
 from tests.unit.base import ValidatorTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory
 
 
 class TestTotalRequestsValidator(ValidatorTestCase):
@@ -18,13 +18,11 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -38,7 +36,9 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             'html': lxml.html.fromstring(content)
         }
         reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
 
         validator = TotalRequestsValidator(reviewer)
 
@@ -61,13 +61,11 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -81,7 +79,9 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             'html': lxml.html.fromstring(content)
         }
         reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
 
         validator = TotalRequestsValidator(reviewer)
 
@@ -104,13 +104,11 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         config = Config()
 
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=config,
             validators=[]
         )
@@ -122,7 +120,9 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             'html': None
         }
         reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=''))
 
         validator = TotalRequestsValidator(reviewer)
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import uuid4
+from mock import Mock
 
 from preggy import expect
 from tornado.testing import AsyncTestCase
@@ -42,16 +43,13 @@ class CanProcessWebsiteTest(ApiTestCase):
 
     def get_reviewer(
             self, api_url=None, page_uuid=None, page_url='http://page.url',
-            review_uuid=None, config=None, validators=None):
+            config=None, validators=None):
 
         if api_url is None:
             api_url = self.get_url('/')
 
         if page_uuid is None:
             page_uuid = str(uuid4())
-
-        if review_uuid is None:
-            review_uuid = uuid4()
 
         if config is None:
             config = Config(**self.get_config())
@@ -69,7 +67,6 @@ class CanProcessWebsiteTest(ApiTestCase):
             api_url=api_url,
             page_uuid=str(page_uuid),
             page_url=page_url,
-            review_uuid=str(review_uuid),
             config=config,
             validators=validators
         )
@@ -90,9 +87,10 @@ class CanProcessWebsiteTest(ApiTestCase):
         reviewer = self.get_reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
-            page_url='http://www.globo.com/',
-            review_uuid=review.uuid
+            page_url='http://www.globo.com/'
         )
+
+        reviewer._wait_for_async_requests = Mock()
 
         reviewer.review()
 

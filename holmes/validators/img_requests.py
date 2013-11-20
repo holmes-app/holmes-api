@@ -16,7 +16,7 @@ class ImageRequestsValidator(Validator):
                 self.add_violation(
                     key='broken.img',
                     title='Image not found.',
-                    description='The image in "%s" could not be found or took'
+                    description='The image in "%s" could not be found or took '
                                 'more than 10 seconds to load.' % url,
                     points=50
                 )

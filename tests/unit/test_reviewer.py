@@ -3,14 +3,16 @@
 
 import sys
 from uuid import uuid4
+from ujson import dumps
 
 import requests
 import lxml.html
 from preggy import expect
 from mock import patch, Mock
-from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
+from requests.exceptions import (
+    HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema)
 
-from holmes.reviewer import Reviewer, InvalidReviewError, ReviewDAO
+from holmes.reviewer import Reviewer, ReviewDAO
 from holmes.config import Config
 from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
@@ -55,16 +57,13 @@ class TestReviewDAO(ApiTestCase):
 class TestReview(ApiTestCase):
     def get_reviewer(
             self, api_url=None, page_uuid=None, page_url='http://page.url',
-            review_uuid=None, config=None, validators=[Validator]):
+            config=None, validators=[Validator]):
 
         if api_url is None:
             api_url = self.get_url('/')
 
         if page_uuid is None:
             page_uuid = uuid4()
-
-        if review_uuid is None:
-            review_uuid = uuid4()
 
         if config is None:
             config = Config()
@@ -73,53 +72,44 @@ class TestReview(ApiTestCase):
             api_url=api_url,
             page_uuid=page_uuid,
             page_url=page_url,
-            review_uuid=review_uuid,
             config=config,
             validators=validators
         )
 
     def test_can_create_reviewer(self):
         page_uuid = uuid4()
-        review_uuid = uuid4()
         config = Config()
         validators = [Validator]
-        reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid, config=config, validators=validators)
+        reviewer = self.get_reviewer(page_uuid=page_uuid, config=config, validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
         expect(reviewer.page_url).to_equal('http://page.url')
-        expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
 
     def test_can_create_reviewer_with_page_string_uuid(self):
         page_uuid = uuid4()
-        review_uuid = uuid4()
         config = Config()
         validators = [Validator]
-        reviewer = self.get_reviewer(page_uuid=str(page_uuid),
-                                     review_uuid=review_uuid,
+        reviewer = self.get_reviewer(page_uuid=page_uuid,
                                      config=config,
                                      validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
         expect(reviewer.page_url).to_equal('http://page.url')
-        expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
 
     def test_can_create_reviewer_with_review_string_uuid(self):
         page_uuid = uuid4()
-        review_uuid = uuid4()
         config = Config()
         validators = [Validator]
         reviewer = self.get_reviewer(page_uuid=page_uuid,
-                                     review_uuid=str(review_uuid),
                                      config=config,
                                      validators=validators)
 
         expect(reviewer.page_uuid).to_equal(page_uuid)
         expect(reviewer.page_url).to_equal('http://page.url')
-        expect(reviewer.review_uuid).to_equal(review_uuid)
         expect(reviewer.config).to_equal(config)
         expect(reviewer.validators).to_equal(validators)
 
@@ -140,7 +130,7 @@ class TestReview(ApiTestCase):
             self.get_reviewer(validators=validators)
         except AssertionError:
             err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
+            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator (Error: str)')
         else:
             assert False, 'Should not have gotten this far'
 
@@ -148,11 +138,12 @@ class TestReview(ApiTestCase):
             self.get_reviewer(validators=validators2)
         except AssertionError:
             err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator')
+            expect(err).to_have_an_error_message_of('All validators must subclass holmes.validators.base.Validator (Error: type)')
         else:
             assert False, 'Should not have gotten this far'
 
-    def test_load_content_raises_when_invalid_status_code(self):
+    @patch.object(Reviewer, '_async_get')
+    def test_load_content_call_async_get(self, get_mock):
         page_url = 'http://page.url'
         reviewer = self.get_reviewer()
 
@@ -162,13 +153,11 @@ class TestReview(ApiTestCase):
             'html': None
         }
 
-        try:
-            reviewer.load_content()
-        except InvalidReviewError:
-            err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of("Could not load 'http://page.url'!")
-        else:
-            assert False, 'Should not have gotten this far'
+        mock_callback = Mock()
+
+        reviewer.load_content(mock_callback)
+        get_mock.assert_called_once_with(page_url, mock_callback)
+
 
     @patch('requests.get')
     def test_get_response_fills_dict(self, mock_get):
@@ -271,212 +260,53 @@ class TestReview(ApiTestCase):
             'html': None
         }
 
+        reviewer._wait_timeout = 1
+        reviewer._wait_for_async_requests = Mock()
+
         with patch.object(requests, 'post') as post_mock:
             response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             reviewer.review()
+            reviewer.run_validators()
 
+        reviewer._wait_for_async_requests.assert_called_once_with(1)
         expect(test_class['has_validated']).to_be_true()
 
-    def test_reviewer_add_fact(self):
-        with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text='OK')
-            post_mock.return_value = response_mock
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            reviewer.add_fact('key', 'value', 'title', 'unit')
-
-            post_mock.assert_called_once_with(
-                '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                data={'unit': 'unit', 'value': 'value', 'key': 'key', 'title':'title'}
-            )
-
-    def test_reviewer_add_fact_fails_if_wrong_status(self):
+    @patch.object(ReviewDAO, 'add_fact')
+    def test_reviewer_add_fact(self, fact_dao):
         with patch.object(requests, 'post') as post_mock:
             response_mock = Mock(status_code=400, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
-            review_uuid = uuid4()
 
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+            reviewer = self.get_reviewer(page_uuid=page_uuid)
 
-            try:
-                reviewer.add_fact('key', 'value', 'title', 'unit')
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    "Could not add fact 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
-                )
-            else:
-                assert False, 'Should not have gotten this far'
+            reviewer.add_fact('key', 'value', 'title', 'unit')
+            fact_dao.assert_called_once_with('key', 'title', 'value', 'unit')
 
-    def test_reviewer_add_fact_fails_connection_error(self):
-        with patch.object(requests, 'post') as post_mock:
-            post_mock.side_effect = ConnectionError
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            try:
-                reviewer.add_fact('key', 'value', 'title', 'unit')
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    "Could not add fact 'key' to review %s! ConnectionError - %s" % (
-                        review_uuid,
-                        '%s/page/%s/review/%s/fact' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                        )
-                )
-            else:
-                assert False, 'Should not have gotten this far'
-
-    def test_reviewer_add_violation(self):
+    @patch.object(ReviewDAO, 'add_violation')
+    def test_reviewer_add_violation(self, violation_mock):
         with patch.object(requests, 'post') as post_mock:
             response_mock = Mock(status_code=200, text='OK')
             post_mock.return_value = response_mock
 
             page_uuid = uuid4()
-            review_uuid = uuid4()
 
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
+            reviewer = self.get_reviewer(page_uuid=page_uuid)
 
             reviewer.add_violation('key', 'title', 'description', 100)
 
-            post_mock.assert_called_once_with(
-                '%s/page/%s/review/%s/violation' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                data={'key': 'key', 'title': 'title', 'description': 'description', 'points': 100}
-            )
-
-    def test_reviewer_add_violation_fails_if_wrong_status(self):
-        with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=400, text='OK')
-            post_mock.return_value = response_mock
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            try:
-                reviewer.add_violation('key', 'title', 'description', 100)
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    "Could not add violation 'key' to review %s! Status Code: 400, Error: OK" % review_uuid
-                )
-            else:
-                assert False, 'Should not have gotten this far'
-
-    def test_reviewer_add_violation_fails_connection_error(self):
-        with patch.object(requests, 'post') as post_mock:
-            post_mock.side_effect = ConnectionError
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            try:
-                reviewer.add_violation('key', 'title', 'description', 100)
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    "Could not add violation 'key' to review %s! ConnectionError - %s" % (
-                        review_uuid,
-                        '%s/page/%s/review/%s/violation' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                        )
-                )
-            else:
-                assert False, 'Should not have gotten this far'
-
-    def test_reviewer_complete(self):
-        with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=200, text='OK')
-            post_mock.return_value = response_mock
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            reviewer.complete()
-
-            post_mock.assert_called_once_with(
-                '%s/page/%s/review/%s/complete' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                data={}
-            )
-
-    def test_reviewer_complete_fails_if_wrong_status(self):
-        with patch.object(requests, 'post') as post_mock:
-            response_mock = Mock(status_code=400, text='OK')
-            post_mock.return_value = response_mock
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            try:
-                reviewer.complete()
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    'Could not complete review %s! Status Code: 400, Error: OK' % review_uuid
-                )
-            else:
-                assert False, 'Should not have gotten this far'
-
-    def test_reviewer_complete_fails_connection_error(self):
-        with patch.object(requests, 'post') as post_mock:
-            post_mock.side_effect = ConnectionError
-
-            page_uuid = uuid4()
-            review_uuid = uuid4()
-
-            reviewer = self.get_reviewer(page_uuid=page_uuid, review_uuid=review_uuid)
-
-            try:
-                reviewer.complete()
-            except InvalidReviewError:
-                err = sys.exc_info()[1]
-                expect(err).to_have_an_error_message_of(
-                    "Could not complete review %s! ConnectionError - %s" % (
-                        review_uuid,
-                        '%s/page/%s/review/%s/complete' % (reviewer.api_url.rstrip('/'), page_uuid, review_uuid),
-                        )
-                )
-            else:
-                assert False, 'Should not have gotten this far'
+            violation_mock.assert_called_once_with('key', 'title', 'description', 100)
 
     def test_can_get_current(self):
         reviewer = self.get_reviewer()
-
-        reviewer.responses[reviewer.page_url] = {
-            'status': 200,
-            'content': '',
-            'html': None
-        }
+        reviewer._current = 'test'
 
         response = reviewer.current
         expect(response).not_to_be_null()
-        expect(response['status']).to_equal(200)
-
-    @patch('requests.get')
-    def test_can_get_current_when_not_loaded(self, mock_get):
-        reviewer = self.get_reviewer()
-
-        expect(reviewer.page_url in reviewer.responses).to_be_false()
-        mock_get.return_value = Mock(status_code=200, text='OK')
-        reviewer.current
-        expect(reviewer.page_url in reviewer.responses).to_be_true()
+        expect(response).to_equal('test')
 
     def test_can_get_status_code(self):
         reviewer = self.get_reviewer()
@@ -544,8 +374,11 @@ class TestReview(ApiTestCase):
         reviewer.enqueue('http://globo.com')
         mock_post.assert_called_once_with(
             '%spage' % reviewer.api_url,
-            data={'url': 'http://globo.com', 'origin_uuid': str(reviewer.page_uuid)}
-            )
+            data=dumps({
+                'url': 'http://globo.com',
+                'origin_uuid': str(reviewer.page_uuid)
+            })
+        )
 
     @patch('requests.post')
     def test_can_enqueue_multiple_urls(self, mock_post):
@@ -559,14 +392,11 @@ class TestReview(ApiTestCase):
             )
 
     @patch('requests.post')
-    def test_enqueue_404(self, mock_post):
+    @patch('logging.error')
+    def test_enqueue_404(self, error_mock, mock_post):
         mock_post.return_value = Mock(status_code=404, text='Not Found')
         reviewer = self.get_reviewer()
-        try:
-            reviewer.enqueue('http://globo.com')
-        except InvalidReviewError:
-            err = sys.exc_info()[1]
-            expect(err).to_have_an_error_message_of(
-                "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found")
-        else:
-            assert False, 'Should not have gotten this far'
+        reviewer.enqueue('http://globo.com')
+        error_mock.assert_called_once_with(
+            "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found"
+        )

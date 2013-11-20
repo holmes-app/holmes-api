@@ -21,7 +21,6 @@ class TestRobotsValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -40,7 +39,6 @@ class TestRobotsValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -72,7 +70,6 @@ class TestRobotsValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
@@ -104,7 +101,6 @@ class TestRobotsValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
-            review_uuid=review.uuid,
             config=Config(),
             validators=[]
         )
