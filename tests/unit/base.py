@@ -20,7 +20,7 @@ class ApiTestCase(CowTestCase):
 
     def setUp(self):
         super(ApiTestCase, self).setUp()
-        self.db = self.server.application.sqlalchemy_db
+        self.db = self.server.application.get_sqlalchemy_session()
         DomainFactory.FACTORY_SESSION = self.db
         PageFactory.FACTORY_SESSION = self.db
         ReviewFactory.FACTORY_SESSION = self.db
