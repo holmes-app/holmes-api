@@ -5,7 +5,7 @@ from os.path import abspath, dirname, join
 from uuid import uuid4
 
 from preggy import expect
-from mock import patch, Mock
+from mock import patch, Mock, call
 from octopus import TornadoOctopus
 from requests.exceptions import ConnectionError
 
@@ -213,7 +213,8 @@ class WorkerTestCase(ApiTestCase):
             'some-url'
         )
 
-        logging_mock.error.assert_called_once_with('Fail to review some-url: ')
+        expect(logging_mock.error.call_args_list).to_include(call('Fail to review some-url: '))
+        expect(logging_mock.error.call_args_list).to_include(call('Fail to complete worker.'))
 
     @patch.object(holmes.worker.requests, 'post')
     def test_ping_api(self, post_mock):
