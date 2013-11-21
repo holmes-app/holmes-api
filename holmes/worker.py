@@ -11,7 +11,7 @@ from ujson import dumps, loads
 from requests.exceptions import ConnectionError
 from sheep import Shepherd
 from colorama import Fore, Style
-from octopus import Octopus, TornadoOctopus
+from octopus import TornadoOctopus
 
 from holmes import __version__
 from holmes.config import Config

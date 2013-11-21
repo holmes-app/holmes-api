@@ -25,26 +25,25 @@ class TestWorker(ApiTestCase):
 
     def test_worker_current_review_page(self):
         review = ReviewFactory.create()
-        worker = WorkerFactory.create(current_review=review)
+        worker = WorkerFactory.create(current_url=review.domain.url)
 
         loaded_worker = self.db.query(Worker).get(worker.id)
-        expect(loaded_worker.current_review.id).to_equal(review.id)
+        expect(loaded_worker.current_url).to_equal(review.domain.url)
 
     def test_worker_to_dict(self):
         review = ReviewFactory.create()
-        worker = WorkerFactory.create(current_review=review)
+        worker = WorkerFactory.create(current_url=review.domain.url)
 
         worker_dict = worker.to_dict()
 
         expect(worker_dict['uuid']).to_equal(str(worker.uuid))
         expect(worker_dict['last_ping']).to_equal(str(worker.last_ping))
-        expect(worker_dict['current_review']).to_equal(str(review.uuid))
         expect(worker_dict['working']).to_be_true()
 
     def test_worker_is_working(self):
         review = ReviewFactory.create()
         worker = WorkerFactory.create()
-        worker2 = WorkerFactory.create(current_review=review)
+        worker2 = WorkerFactory.create(current_url=review.domain.url)
 
         expect(worker.working).to_be_false()
         expect(worker2.working).to_be_true()

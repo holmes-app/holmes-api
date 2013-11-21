@@ -171,8 +171,6 @@ class PagesHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        # TODO: Refactor this method to use smarter queries
-
         urls = self.get_arguments('url')
 
         if not urls:
@@ -183,7 +181,7 @@ class PagesHandler(BaseHandler):
 
         all_domains = []
         for url in urls:
-            domain_name, domain_url = get_domain_from_url(url)
+            domain_name, domain_url = get_domain_from_url(url.strip())
             if not domain_name:
                 self.set_status(400, 'In the urls you posted there is an invalid URL: %s' % url)
                 self.finish()
@@ -254,6 +252,7 @@ class PagesHandler(BaseHandler):
             existing_pages = []
         existing_pages_dict = dict([(page.url, page) for page in existing_pages])
 
+
         added_pages = []
         for url in set(urls):
             if url in existing_pages_dict:
@@ -263,7 +262,7 @@ class PagesHandler(BaseHandler):
             logging.debug("Adding URL: %s" % url)
             url_hash = hashlib.sha512(str(url)).hexdigest()
 
-            page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_name])
+            page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_url])
             self.db.add(page)
             added_pages.append(page)
 

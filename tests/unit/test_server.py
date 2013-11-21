@@ -20,12 +20,14 @@ class ApiServerTestCase(ApiTestCase):
     def test_server_handlers(self):
         srv = holmes.server.HolmesApiServer()
         handlers = srv.get_handlers()
+
         expect(handlers).not_to_be_null()
-        expect(handlers).to_length(19)
+        expect(handlers).to_length(18)
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()
         plugins = srv.get_plugins()
+
         expect(plugins).to_length(2)
         expect(plugins[0]).to_equal(SQLAlchemyPlugin)
         expect(plugins[1]).to_equal(RedisPlugin)

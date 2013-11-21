@@ -193,7 +193,7 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
-        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(1000)]
+        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(100)]
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
@@ -202,7 +202,7 @@ class TestPagesHandler(ApiTestCase):
         )
 
         expect(response.code).to_equal(200)
-        expect(int(response.body)).to_equal(1000)
+        expect(int(response.body)).to_equal(100)
 
     @gen_test
     def test_saves_only_new_pages(self):
@@ -217,7 +217,6 @@ class TestPagesHandler(ApiTestCase):
             method='POST',
             body='&'.join(['url=%s' % url for url in urls])
         )
-
         expect(response.code).to_equal(200)
         expect(int(response.body)).to_equal(10)
 
