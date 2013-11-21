@@ -8,6 +8,9 @@ Config.define('WORKER_SLEEP_TIME', 10, 'Main loop sleep time', 'Worker')
 Config.define('ZOMBIE_WORKER_TIME', 200,
               'Time to remove a Worker from API List (must be greater than WORKER_SLEEP_TIME + Validation time)', 'API')
 
+Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, 'Number of seconds a connection can take.', 'Worker')
+Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, 'Number of seconds a request can take.', 'Worker')
+
 Config.define('HOLMES_API_URL', 'http://localhost:2368', 'URL that Worker will communicate with API', 'Worker')
 
 Config.define('LOG_LEVEL', 'ERROR', 'Default log level', 'Logging')
