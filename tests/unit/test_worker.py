@@ -11,6 +11,7 @@ from requests.exceptions import ConnectionError
 
 import holmes.worker
 from holmes import __version__
+from holmes.reviewer import InvalidReviewError
 from holmes.worker import HolmesWorker
 from holmes.config import Config
 from tests.unit.base import ApiTestCase
@@ -178,42 +179,41 @@ class WorkerTestCase(ApiTestCase):
             job=job
         )
 
-    # @patch.object(HolmesWorker, '_start_reviewer')
-    # @patch.object(HolmesWorker, '_start_job')
-    # @patch.object(HolmesWorker, '_load_next_job')
-    # @patch.object(HolmesWorker, '_ping_api')
-    # @patch.object(holmes.worker, 'logging')
-    # def test_do_work_if_api_is_up_and_job_available_but_reviewer_fails(
-    #     self,
-    #     logging_mock,
-    #     ping_api_mock,
-    #     load_next_job_mock,
-    #     start_job_mock,
-    #     start_reviewer_mock
-    # ):
+    @patch.object(HolmesWorker, '_start_reviewer')
+    @patch.object(HolmesWorker, '_start_job')
+    @patch.object(HolmesWorker, '_load_next_job')
+    @patch.object(HolmesWorker, '_ping_api')
+    @patch.object(holmes.worker, 'logging')
+    def test_do_work_if_api_is_up_and_job_available_but_reviewer_fails(
+        self,
+        logging_mock,
+        ping_api_mock,
+        load_next_job_mock,
+        start_job_mock,
+        start_reviewer_mock
+    ):
 
-    #     worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
-    #     worker.initialize()
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+        worker.initialize()
 
-    #     job = {
-    #         'url': 'some-url',
-    #         'page': 'some-uuid'
-    #     }
+        job = {
+            'url': 'some-url',
+            'page': 'some-uuid'
+        }
 
-    #     ping_api_mock.return_value = True
-    #     load_next_job_mock.return_value = job
-    #     start_reviewer_mock.side_effect = InvalidReviewError()
+        ping_api_mock.return_value = True
+        load_next_job_mock.return_value = job
+        start_reviewer_mock.side_effect = InvalidReviewError()
 
-    #     worker.do_work()
+        worker.do_work()
 
-    #     expect(worker.uuid).not_to_be_null()
+        expect(worker.uuid).not_to_be_null()
 
-    #     start_job_mock.assert_called_once_with(
-    #         'some-url'
-    #     )
+        start_job_mock.assert_called_once_with(
+            'some-url'
+        )
 
-    ## TODO: when has a side effect in start_reviewer, complete job need to be raise a exception?
-    #     logging_mock.error.assert_called_once_with('Fail to review some-url: ')
+        logging_mock.error.assert_called_once_with('Fail to review some-url: ')
 
     @patch.object(holmes.worker.requests, 'post')
     def test_ping_api(self, post_mock):

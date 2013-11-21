@@ -23,7 +23,7 @@ class TestWorker(ApiTestCase):
 
         expect(str(worker)).to_equal('Worker %s' % str(worker.uuid))
 
-    def test_worker_current_review_page(self):
+    def test_worker_current_url(self):
         review = ReviewFactory.create()
         worker = WorkerFactory.create(current_url=review.domain.url)
 
