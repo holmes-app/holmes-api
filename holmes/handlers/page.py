@@ -216,19 +216,19 @@ class PagesHandler(BaseHandler):
             domain = self.db.query(Domain).filter(Domain.url == domain_url).first()
 
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             key = domain_url.rstrip('/')
             domain = self.db.query(Domain).filter(Domain.url == key).first()
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             key = ("%s/" % domain_url)
             domain = self.db.query(Domain).filter(Domain.url == key).first()
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             resulting_domains[domain_url] = Domain(
