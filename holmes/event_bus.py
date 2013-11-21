@@ -17,7 +17,7 @@ class EventBus(object):
         self.handlers[channel][uuid] = handler
 
     def unsubscribe(self, channel, uuid):
-        if channel not in self.handlers or uuid not in self.handlers[channel]:
+        if self.handlers.get(channel, {}).get(uuid, None) is None:
             return
 
         del self.handlers[channel][uuid]
