@@ -3,6 +3,7 @@
 
 
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
+from cow.plugins.redis_plugin import RedisPlugin
 from preggy import expect
 from mock import patch
 
@@ -20,13 +21,14 @@ class ApiServerTestCase(ApiTestCase):
         srv = holmes.server.HolmesApiServer()
         handlers = srv.get_handlers()
         expect(handlers).not_to_be_null()
-        expect(handlers).to_length(20)
+        expect(handlers).to_length(19)
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()
         plugins = srv.get_plugins()
-        expect(plugins).to_length(1)
+        expect(plugins).to_length(2)
         expect(plugins[0]).to_equal(SQLAlchemyPlugin)
+        expect(plugins[1]).to_equal(RedisPlugin)
 
     @patch('holmes.server.HolmesApiServer')
     def test_server_main_function(self, server_mock):

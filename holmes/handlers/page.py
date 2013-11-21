@@ -45,6 +45,7 @@ class PageHandler(BaseHandler):
         logging.info('Obtaining "%s" using proxy "%s:%s"...' % (url, phost, pport))
 
         response = yield tornado.gen.Task(self.application.http_client.fetch, request)
+
         if response.code > 399:
             self.set_status(400, 'Invalid URL [%s]' % url)
             self.write_json({
