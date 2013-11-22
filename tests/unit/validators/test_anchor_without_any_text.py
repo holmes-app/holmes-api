@@ -50,8 +50,8 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
-            key='Empty anchor(s) found',
-            title='empty.anchors',
+            key='empty.anchors',
+            title='Empty anchor(s) found',
             description='Empty anchors are not good for Search Engines. '
                         'Empty anchors were found for links to: '
                         '<a href="http://globo.com" target="_blank">#1</a>.',
