@@ -28,7 +28,11 @@ class HolmesWorker(Shepherd):
         self.validators = self._load_validators()
 
         logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
-        self.otto = TornadoOctopus(concurrency=self.options.concurrency, cache=True)
+        self.otto = TornadoOctopus(
+            concurrency=self.options.concurrency, cache=True,
+            connect_timeout_in_seconds=self.config.CONNECT_TIMEOUT_IN_SECONDS,
+            request_timeout_in_seconds=self.config.REQUEST_TIMEOUT_IN_SECONDS
+        )
         self.otto.start()
 
     def config_parser(self, parser):

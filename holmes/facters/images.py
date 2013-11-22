@@ -56,10 +56,13 @@ class ImageFacter(Facter):
         logging.debug('Got response (%s) from %s!' % (response.status_code,
                                                       url))
 
+        size_img = 0
+        if response.text:
+            size_img = len(response.text) / 1024.0
+
         self.review.facts['page.images']['value'].add(url)
         self.review.data['page.images'].add((url, response))
 
-        size_img = len(response.text) / 1024.0
         self.review.facts['total.size.img']['value'] += size_img
         self.review.data['total.size.img'] += size_img
 

@@ -213,22 +213,28 @@ class PagesHandler(BaseHandler):
         #existing_domain_dict = dict([(domain[0], domain[1]) for domain in existing_domains])
 
         for domain_name, domain_url in domains:
-            domain = self.db.query(Domain).filter(Domain.url == domain_url).first()
+            if domain_url in resulting_domains:
+                continue
+
+            domain = self.db.query(Domain).filter(or_(
+                Domain.url == domain_url,
+                Domain.url == domain_url.rstrip('/')
+            )).first()
 
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             key = domain_url.rstrip('/')
             domain = self.db.query(Domain).filter(Domain.url == key).first()
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             key = ("%s/" % domain_url)
             domain = self.db.query(Domain).filter(Domain.url == key).first()
             if domain:
-                resulting_domains[domain_name] = domain
+                resulting_domains[domain_url] = domain
                 continue
 
             resulting_domains[domain_url] = Domain(

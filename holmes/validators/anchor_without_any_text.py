@@ -22,8 +22,8 @@ class AnchorWithoutAnyTextValidator(Validator):
                     link.get('href'), index))
 
             self.add_violation(
-                key='Empty anchor(s) found',
-                title='empty.anchors',
+                key='empty.anchors',
+                title='Empty anchor(s) found',
                 description='Empty anchors are not good for Search Engines. '
                             'Empty anchors were found for links to: %s.' % (
                                 ', '.join(data)),
