@@ -14,7 +14,7 @@ ROBOTS_SITEMAP = re.compile('Sitemap:\s+(.*)')
 class SitemapFacter(Facter):
 
     def get_facts(self):
-        sitemaps = self.get_sitemaps()
+        self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
         self.review.data['sitemap.data'] = {}
         self.review.data['sitemap.urls'] = set()
@@ -36,16 +36,13 @@ class SitemapFacter(Facter):
             title='Total Sitemap size gzipped'
         )
 
-        for sitemap in sitemaps:
-            self.async_get(sitemap, self.handle_sitemap_loaded)
-
-    def get_sitemaps(self):
+    def get_sitemaps(self, response):
         sitemaps = [self.rebase('/sitemap.xml')]
 
-        if not self.review.data['robots.response']:
+        if response.status_code > 399:
             return sitemaps
 
-        return sitemaps + ROBOTS_SITEMAP.findall(self.review.data['robots.response'].text)
+        return sitemaps + ROBOTS_SITEMAP.findall(response.text)
 
     def handle_sitemap_loaded(self, url, response):
         logging.debug('Got sitemap %s with status %s' % (url, response.status_code))
@@ -80,3 +77,9 @@ class SitemapFacter(Facter):
                 url = loc.text.strip()
                 self.review.data['sitemap.urls'].add(url)
                 self.review.enqueue(url)
+
+    def handle_robots_loaded(self, url, response):
+        sitemaps = self.get_sitemaps(response)
+
+        for sitemap in sitemaps:
+            self.async_get(sitemap, self.handle_sitemap_loaded)

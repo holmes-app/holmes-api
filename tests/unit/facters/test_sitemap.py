@@ -52,8 +52,8 @@ class TestSitemapFacter(FacterTestCase):
             call(key='total.size.sitemap.gzipped', value=0, unit='kb', title='Total Sitemap size gzipped')
         )
         facter.async_get.assert_called_once_with(
-            'http://g1.globo.com/sitemap.xml',
-            facter.handle_sitemap_loaded
+            'http://g1.globo.com/robots.txt',
+            facter.handle_robots_loaded
         )
 
     def test_get_sitemaps(self):
@@ -70,7 +70,7 @@ class TestSitemapFacter(FacterTestCase):
         facter = SitemapFacter(reviewer)
         facter.review.data['robots.response'] = ''
 
-        expect(facter.get_sitemaps()).to_equal(['http://g1.globo.com/sitemap.xml'])
+        expect(facter.get_sitemaps(Mock(status_code=404))).to_equal(['http://g1.globo.com/sitemap.xml'])
 
     def test_get_sitemaps_with_robots_txt(self):
         page = PageFactory.create(url="http://g1.globo.com/")
@@ -84,14 +84,12 @@ class TestSitemapFacter(FacterTestCase):
         )
 
         facter = SitemapFacter(reviewer)
-        facter.review.data['robots.response'] = Mock(
-            text="""
+        response = Mock(status_code=200, text="""
             Sitemap: http://g1.globo.com/1.xml
             Sitemap: http://g1.globo.com/2.xml
-            """
-        )
+            """)
 
-        expect(facter.get_sitemaps()).to_equal([
+        expect(facter.get_sitemaps(response)).to_equal([
             'http://g1.globo.com/sitemap.xml',
             'http://g1.globo.com/1.xml',
             'http://g1.globo.com/2.xml'
@@ -150,9 +148,9 @@ class TestSitemapFacter(FacterTestCase):
 
         facter = SitemapFacter(reviewer)
         facter.async_get = Mock()
-        facter.get_sitemaps = Mock(return_value=['http://g1.globo.com/sitemap.xml'])
 
         facter.get_facts()
+
         facter.review.enqueue = Mock()
         facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml", response)
 
@@ -169,4 +167,25 @@ class TestSitemapFacter(FacterTestCase):
         )
         expect(facter.review.enqueue.call_args_list).to_include(
             call('http://domain.com/2.html'),
+        )
+
+    def test_handle_robots_loaded(self):
+        page = PageFactory.create(url="http://g1.globo.com/")
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+        facter = SitemapFacter(reviewer)
+        facter.async_get = Mock()
+        facter.get_sitemaps = Mock(return_value=['http://g1.globo.com/sitemap.xml'])
+
+        facter.handle_robots_loaded('http://g1.globo.com/robots.txt', Mock())
+
+        facter.async_get.assert_called_once_with(
+            'http://g1.globo.com/sitemap.xml',
+            facter.handle_sitemap_loaded
         )
