@@ -142,6 +142,7 @@ class TestSitemapFacter(FacterTestCase):
             config=Config(),
             validators=[]
         )
+        reviewer.enqueue = Mock()
 
         content = self.get_file('url_sitemap.xml')
         response = Mock(status_code=200, text=content)
@@ -151,7 +152,6 @@ class TestSitemapFacter(FacterTestCase):
 
         facter.get_facts()
 
-        facter.review.enqueue = Mock()
         facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml", response)
 
         expect(facter.review.data).to_include('sitemap.data')
@@ -162,10 +162,10 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.1494140625)
         expect(facter.review.data['total.size.sitemap']).to_equal(0.296875)
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0.1494140625)
-        expect(facter.review.enqueue.call_args_list).to_include(
+        expect(reviewer.enqueue.call_args_list).to_include(
             call('http://domain.com/1.html'),
         )
-        expect(facter.review.enqueue.call_args_list).to_include(
+        expect(reviewer.enqueue.call_args_list).to_include(
             call('http://domain.com/2.html'),
         )
 

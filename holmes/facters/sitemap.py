@@ -76,7 +76,7 @@ class SitemapFacter(Facter):
             for loc in sitemap.xpath('sm:loc | loc', namespaces=namespaces):
                 url = loc.text.strip()
                 self.review.data['sitemap.urls'].add(url)
-                self.review.enqueue(url)
+                self.reviewer.enqueue(url)
 
     def handle_robots_loaded(self, url, response):
         sitemaps = self.get_sitemaps(response)
