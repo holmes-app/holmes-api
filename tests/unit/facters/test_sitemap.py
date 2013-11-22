@@ -39,12 +39,15 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data).to_include('total.size.sitemap.gzipped')
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0)
 
-        expect(facter.review.data).to_include('sitemap.urls')
-        expect(facter.review.data['sitemap.urls']).to_equal(set())
-
         expect(facter.review.data).to_include('sitemap.files')
         expect(facter.review.data['sitemap.files']).to_equal(set())
 
+        expect(facter.add_fact.call_args_list).to_include(
+            call(key='total.sitemap.indexes', value=0, unit='', title='Total Sitemap indexes')
+        )
+        expect(facter.add_fact.call_args_list).to_include(
+            call(key='total.sitemap.urls', value=0, unit='', title='Total Sitemap urls')
+        )
         expect(facter.add_fact.call_args_list).to_include(
             call(key='total.size.sitemap', value=0, unit='kb', title='Total Sitemap size')
         )
@@ -121,10 +124,12 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data['sitemap.data']).to_equal({
             "http://g1.globo.com/sitemap.xml": response
         })
+        expect(facter.review.data['sitemap.files.size']["http://g1.globo.com/sitemap.xml"]).to_equal(0.2607421875)
         expect(facter.review.facts['total.size.sitemap']['value']).to_equal(0.2607421875)
         expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.146484375)
         expect(facter.review.data['total.size.sitemap']).to_equal(0.2607421875)
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0.146484375)
+        expect(facter.review.data['sitemap.files.urls']["http://g1.globo.com/sitemap.xml"]).to_equal(2)
         expect(facter.async_get.call_args_list).to_include(
             call('http://domain.com/1.xml', facter.handle_sitemap_loaded),
         )
@@ -158,10 +163,13 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data['sitemap.data']).to_equal({
             "http://g1.globo.com/sitemap.xml": response
         })
+        expect(facter.review.data['sitemap.files.size']["http://g1.globo.com/sitemap.xml"]).to_equal(0.296875)
         expect(facter.review.facts['total.size.sitemap']['value']).to_equal(0.296875)
         expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.1494140625)
         expect(facter.review.data['total.size.sitemap']).to_equal(0.296875)
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0.1494140625)
+        expect(facter.review.data['sitemap.files.urls']["http://g1.globo.com/sitemap.xml"]).to_equal(2)
+        expect(facter.review.facts['total.sitemap.urls']['value']).to_equal(2)
         expect(reviewer.enqueue.call_args_list).to_include(
             call('http://domain.com/1.html'),
         )
