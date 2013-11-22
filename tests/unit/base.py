@@ -74,3 +74,7 @@ class ValidatorTestCase(ApiTestCase):
     def get_file(self, name):
         with open(join(FILES_ROOT_PATH.rstrip('/'), name.lstrip('/')), 'r') as local_file:
             return local_file.read()
+
+
+class FacterTestCase(ValidatorTestCase):
+    pass
