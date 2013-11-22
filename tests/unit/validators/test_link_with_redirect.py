@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import lxml
 from mock import Mock
 from tests.unit.base import ApiTestCase
