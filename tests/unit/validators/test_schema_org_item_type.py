@@ -43,7 +43,7 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
         validator = SchemaOrgItemTypeValidator(reviewer)
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.body': []
+            'page.body': [{}]
         }
 
         validator.validate()

@@ -9,13 +9,13 @@ class SchemaOrgItemTypeValidator(Validator):
     def validate(self):
         body = self.get_body()
 
-        if len(body) <= 1:
+        if not body:
+            return
 
-            if body:
-                body = body[0]
-                attributes = body.keys()
-            else:
-                attributes = []
+        if len(body) == 1:
+
+            body = body[0]
+            attributes = body.keys()
 
             if 'itemscope' not in attributes:
                 self.add_violation(
