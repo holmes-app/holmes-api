@@ -24,8 +24,9 @@ class BaseHandler(RequestHandler):
                     self.db.commit()
                     self.application.event_bus.flush()
             finally:
-                self.db.close()
-                self._session = None
+                if self._session is not None:
+                    self._session.remove()
+                    self._session = None
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
