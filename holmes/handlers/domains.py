@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from tornado import gen
-
 from holmes.models import Domain, Page
 from holmes.handlers import BaseHandler
 
 
 class DomainsHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self):
         domains = self.db.query(Domain).order_by(Domain.name.asc()).all()
         violations_per_domain = Domain.get_violations_per_domain(self.db)
@@ -17,7 +14,6 @@ class DomainsHandler(BaseHandler):
 
         if not domains:
             self.write("[]")
-            self.finish()
             return
 
         result = []
@@ -31,18 +27,15 @@ class DomainsHandler(BaseHandler):
             })
 
         self.write_json(result)
-        self.finish()
 
 
 class DomainDetailsHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self, domain_name):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
             self.set_status(404, 'Domain %s not found' % domain_name)
-            self.finish()
             return
 
         page_count = domain.get_page_count(self.db)
@@ -57,18 +50,15 @@ class DomainDetailsHandler(BaseHandler):
         }
 
         self.write_json(domain_json)
-        self.finish()
 
 
 class DomainViolationsPerDayHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self, domain_name):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
             self.set_status(404, 'Domain %s not found' % domain_name)
-            self.finish()
             return
 
         violations_per_day = domain.get_violations_per_day(self.db)
@@ -80,7 +70,6 @@ class DomainViolationsPerDayHandler(BaseHandler):
         }
 
         self.write_json(domain_json)
-        self.finish()
 
 
 class DomainReviewsHandler(BaseHandler):
@@ -93,7 +82,6 @@ class DomainReviewsHandler(BaseHandler):
 
         if not domain:
             self.set_status(404, 'Domain %s not found' % domain_name)
-            self.finish()
             return
 
         review_count = domain.get_active_review_count(self.db)

@@ -5,7 +5,6 @@ from uuid import UUID
 import hashlib
 
 from ujson import loads, dumps
-from tornado import gen
 import tornado.httpclient
 #from motorengine import Q, DESCENDING
 import logging
@@ -18,7 +17,6 @@ from holmes.handlers import BaseHandler
 
 class PageHandler(BaseHandler):
 
-    @gen.coroutine
     def post(self):
         post_data = loads(self.request.body)
         url = post_data['url']
@@ -30,7 +28,6 @@ class PageHandler(BaseHandler):
                 'reason': 'invalid_url',
                 'url': url
             })
-            self.finish()
             return
 
         phost = self.application.config.HTTP_PROXY_HOST
@@ -52,7 +49,6 @@ class PageHandler(BaseHandler):
                 'reason': 'invalid_url',
                 'url': url
             })
-            self.finish()
             return
 
         if response.effective_url != url:
@@ -62,7 +58,6 @@ class PageHandler(BaseHandler):
                 'url': url,
                 'effectiveUrl': response.effective_url
             })
-            self.finish()
             return
 
         domains = self.db.query(Domain).filter(or_(
@@ -100,7 +95,6 @@ class PageHandler(BaseHandler):
 
         if page:
             self.write(str(page.uuid))
-            self.finish()
             return
 
         url_hash = hashlib.sha512(url).hexdigest()
@@ -115,9 +109,7 @@ class PageHandler(BaseHandler):
         }))
 
         self.write(str(page.uuid))
-        self.finish()
 
-    @gen.coroutine
     def get(self, uuid=''):
         uuid = UUID(uuid)
 
@@ -125,7 +117,6 @@ class PageHandler(BaseHandler):
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
-            self.finish()
             return
 
         page_json = {
@@ -134,12 +125,10 @@ class PageHandler(BaseHandler):
         }
 
         self.write(page_json)
-        self.finish()
 
 
 class PageReviewsHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self, uuid='', limit=10):
         uuid = UUID(uuid)
 
@@ -147,7 +136,6 @@ class PageReviewsHandler(BaseHandler):
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
-            self.finish()
             return
 
         reviews = self.db.query(Review) \
@@ -164,19 +152,16 @@ class PageReviewsHandler(BaseHandler):
             })
 
         self.write_json(result)
-        self.finish()
 
 
 class PagesHandler(BaseHandler):
 
-    @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
 
         if not urls:
             self.set_status(200)
             self.write('0')
-            self.finish()
             return
 
         all_domains = []
@@ -184,7 +169,6 @@ class PagesHandler(BaseHandler):
             domain_name, domain_url = get_domain_from_url(url.strip())
             if not domain_name:
                 self.set_status(400, 'In the urls you posted there is an invalid URL: %s' % url)
-                self.finish()
                 return
             all_domains.append((domain_name, domain_url))
 
@@ -192,7 +176,6 @@ class PagesHandler(BaseHandler):
         pages = self.add_pages(urls, domains)
 
         self.write(str(len(pages)))
-        self.finish()
 
     def add_domains(self, domains):
         resulting_domains = {}
@@ -289,7 +272,6 @@ class PageViolationsPerDayHandler(BaseHandler):
 
         if not page:
             self.set_status(404, 'Page UUID [%s] not found' % uuid)
-            self.finish()
             return
 
         violations_per_day = page.get_violations_per_day(self.db)
@@ -299,4 +281,3 @@ class PageViolationsPerDayHandler(BaseHandler):
         }
 
         self.write_json(page_json)
-        self.finish()

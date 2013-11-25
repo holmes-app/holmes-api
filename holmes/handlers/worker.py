@@ -3,7 +3,6 @@
 
 from datetime import datetime, timedelta
 
-from tornado import gen
 from ujson import dumps
 
 from holmes.models.worker import Worker
@@ -35,7 +34,6 @@ class WorkerHandler(BaseHandler):
         }))
 
         self.write(str(worker_uuid))
-        self.finish()
 
     def _remove_zombies_workers(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
@@ -44,10 +42,8 @@ class WorkerHandler(BaseHandler):
 
 class WorkersHandler(BaseHandler):
 
-    @gen.coroutine
     def get(self):
         workers = self.db.query(Worker).all()
 
         workers_json = [worker.to_dict() for worker in workers]
         self.write_json(workers_json)
-        self.finish()

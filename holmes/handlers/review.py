@@ -4,7 +4,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from tornado import gen
 from ujson import loads, dumps
 
 from holmes.models import Review, Page
@@ -20,7 +19,6 @@ class BaseReviewHandler(BaseHandler):
 
 
 class ReviewHandler(BaseReviewHandler):
-    @gen.coroutine
     def get(self, page_uuid, review_uuid):
         review = None
         if self._parse_uuid(review_uuid):
@@ -28,7 +26,6 @@ class ReviewHandler(BaseReviewHandler):
 
         if not review:
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
-            self.finish()
             return
 
         if review.completed_date:
@@ -44,7 +41,6 @@ class ReviewHandler(BaseReviewHandler):
         })
 
         self.write_json(result)
-        self.finish()
 
     def post(self, page_uuid, review_uuid=None):
         page = Page.by_uuid(page_uuid, self.db)
@@ -123,4 +119,3 @@ class LastReviewsHandler(BaseReviewHandler):
             reviews_json.append(review_dict)
 
         self.write_json(reviews_json)
-        self.finish()

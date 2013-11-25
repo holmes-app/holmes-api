@@ -67,11 +67,11 @@ class HolmesWorker(Shepherd):
 
     def get(self, url):
         url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.get(url, proxies=self.proxies)
+        return requests.get(url)
 
     def post(self, url, data={}):
         url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.post(url, data=data, proxies=self.proxies)
+        return requests.post(url)
 
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (
