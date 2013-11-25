@@ -3,4 +3,4 @@
 
 from holmes.validators import BASE_VALIDATORS  # NOQA
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
