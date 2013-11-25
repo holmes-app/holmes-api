@@ -33,14 +33,23 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data).to_include('sitemap.data')
         expect(facter.review.data['sitemap.data']).to_equal({})
 
+        expect(facter.review.data).to_include('sitemap.urls')
+        expect(facter.review.data['sitemap.urls']).to_equal({})
+
+        expect(facter.review.data).to_include('sitemap.files')
+        expect(facter.review.data['sitemap.files']).to_equal(set())
+
+        expect(facter.review.data).to_include('sitemap.files.size')
+        expect(facter.review.data['sitemap.files.size']).to_equal({})
+
+        expect(facter.review.data).to_include('sitemap.files.urls')
+        expect(facter.review.data['sitemap.files.urls']).to_equal({})
+
         expect(facter.review.data).to_include('total.size.sitemap')
         expect(facter.review.data['total.size.sitemap']).to_equal(0)
 
         expect(facter.review.data).to_include('total.size.sitemap.gzipped')
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0)
-
-        expect(facter.review.data).to_include('sitemap.files')
-        expect(facter.review.data['sitemap.files']).to_equal(set())
 
         expect(facter.add_fact.call_args_list).to_include(
             call(key='total.sitemap.indexes', value=0, unit='', title='Total Sitemap indexes')
@@ -120,11 +129,8 @@ class TestSitemapFacter(FacterTestCase):
         facter.async_get = Mock()
         facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml", response)
 
-        expect(facter.review.data).to_include('sitemap.data')
-        expect(facter.review.data['sitemap.data']).to_equal({
-            "http://g1.globo.com/sitemap.xml": response
-        })
         expect(facter.review.data['sitemap.files.size']["http://g1.globo.com/sitemap.xml"]).to_equal(0.2607421875)
+        expect(facter.review.data['sitemap.urls']["http://g1.globo.com/sitemap.xml"]).to_equal(set())
         expect(facter.review.facts['total.size.sitemap']['value']).to_equal(0.2607421875)
         expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.146484375)
         expect(facter.review.data['total.size.sitemap']).to_equal(0.2607421875)
@@ -159,11 +165,8 @@ class TestSitemapFacter(FacterTestCase):
 
         facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml", response)
 
-        expect(facter.review.data).to_include('sitemap.data')
-        expect(facter.review.data['sitemap.data']).to_equal({
-            "http://g1.globo.com/sitemap.xml": response
-        })
         expect(facter.review.data['sitemap.files.size']["http://g1.globo.com/sitemap.xml"]).to_equal(0.296875)
+        expect(facter.review.data['sitemap.urls']["http://g1.globo.com/sitemap.xml"]).to_equal(set(['http://domain.com/1.html', 'http://domain.com/2.html']))
         expect(facter.review.facts['total.size.sitemap']['value']).to_equal(0.296875)
         expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.1494140625)
         expect(facter.review.data['total.size.sitemap']).to_equal(0.296875)

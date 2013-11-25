@@ -17,6 +17,7 @@ class SitemapFacter(Facter):
         self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
         self.review.data['sitemap.data'] = {}
+        self.review.data['sitemap.urls'] = {}
         self.review.data['sitemap.files'] = set()
         self.review.data['sitemap.files.size'] = {}
         self.review.data['sitemap.files.urls'] = {}
@@ -77,6 +78,7 @@ class SitemapFacter(Facter):
 
         self.review.data['sitemap.files.urls'][url] = 0
         self.review.data['sitemap.files.size'][url] = size_sitemap
+        self.review.data['sitemap.urls'][url] = set()
 
         self.review.facts['total.size.sitemap']['value'] += size_sitemap
         self.review.data['total.size.sitemap'] += size_sitemap
@@ -96,6 +98,7 @@ class SitemapFacter(Facter):
         for sitemap in tree.xpath('//sm:url | //url', namespaces=namespaces):
             for loc in sitemap.xpath('sm:loc | loc', namespaces=namespaces):
                 loc = loc.text.strip()
+                self.review.data['sitemap.urls'][url].add(loc)
                 self.review.data['sitemap.files.urls'][url] += 1
                 self.review.facts['total.sitemap.urls']['value'] += 1
                 self.reviewer.enqueue(loc)
