@@ -10,16 +10,12 @@ class ImageRequestsValidator(Validator):
         img_files = self.get_images()
         total_size = self.get_images_size()
 
+        broken_imgs = set()
+
         for url, response in img_files:
 
             if response.status_code > 399:
-                self.add_violation(
-                    key='broken.img',
-                    title='Image not found.',
-                    description='The image in "%s" could not be found or took '
-                                'more than 10 seconds to load.' % url,
-                    points=50
-                )
+                broken_imgs.add(url)
 
             if response.text is not None:
                 size_img = len(response.text) / 1024.0
@@ -35,6 +31,20 @@ class ImageRequestsValidator(Validator):
                         ),
                         points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
                     )
+
+        if broken_imgs:
+            data = []
+            for index, url in enumerate(broken_imgs, start=1):
+                data.append('<a href="%s" target="_blank">Link #%s</a>' % (url, index))
+
+            self.add_violation(
+                key='broken.img',
+                title='Image not found.',
+                description='The image(s) in "%s" could not be found or took '
+                            'more than 10 seconds to load.' % ','.join(data),
+                points=50
+            )
+
 
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
             self.add_violation(

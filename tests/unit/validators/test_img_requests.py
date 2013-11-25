@@ -97,9 +97,10 @@ class TestImageRequestsValidator(ValidatorTestCase):
 
         validator = ImageRequestsValidator(reviewer)
         validator.add_violation = Mock()
+        img_url = 'http://globo.com/some_image.jpg'
         validator.review.data = {
             'page.images': [
-                ('http://globo.com/some_image.jpg', Mock(status_code=404, text=None))
+                (img_url, Mock(status_code=404, text=None))
             ],
             'total.size.img': 60,
         }
@@ -109,8 +110,9 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(key='broken.img',
                  title='Image not found.',
-                 description='The image in "http://globo.com/some_image.jpg" '
-                             'could not be found or took more than 10 seconds to load.',
+                 description='The image(s) in "<a href="%s" target="_blank">'
+                             'Link #0</a>" could not be found or took more '
+                             'than 10 seconds to load.' % (img_url),
                  points=50))
 
     def test_can_validate_single_image_html(self):
