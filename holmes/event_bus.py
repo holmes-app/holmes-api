@@ -5,6 +5,23 @@ import logging
 from collections import defaultdict
 
 
+class NoOpEventBus(object):
+    def __init__(self, application):
+        self.application = application
+
+    def subscribe(self, channel, uuid, handler):
+        pass
+
+    def unsubscribe(self, channel, uuid):
+        pass
+
+    def publish(self, message):
+        pass
+
+    def flush(self):
+        pass
+
+
 class EventBus(object):
     def __init__(self, application):
         self.application = application

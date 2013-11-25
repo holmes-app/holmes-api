@@ -28,7 +28,7 @@ from holmes.handlers.search import (
     SearchHandler
 )
 from holmes.handlers.bus import EventBusHandler
-from holmes.event_bus import EventBus
+from holmes.event_bus import EventBus, NoOpEventBus
 
 
 def main():
@@ -68,6 +68,7 @@ class HolmesApiServer(Server):
         ]
 
     def after_start(self, io_loop):
+        self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
         self.connect_pub_sub(io_loop)
 
