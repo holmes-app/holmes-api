@@ -45,7 +45,8 @@ class BaseHandler(RequestHandler):
 
     @property
     def db(self):
-        if self._session is None:
-            self._session = self.application.get_sqlalchemy_session()
+        return self.application.db
+        #if self._session is None:
+            #self._session = self.application.get_sqlalchemy_session()
 
-        return self._session
+        #return self._session
