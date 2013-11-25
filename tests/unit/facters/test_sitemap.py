@@ -107,6 +107,29 @@ class TestSitemapFacter(FacterTestCase):
             'http://g1.globo.com/2.xml'
         ])
 
+    def test_handle_sitemap_return_404(self):
+        page = PageFactory.create(url="http://g1.globo.com/")
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+
+        response = Mock(status_code=404, text='Not found')
+
+        facter = SitemapFacter(reviewer)
+        facter.async_get = Mock()
+        facter.get_sitemaps = Mock(return_value=['http://g1.globo.com/sitemap.xml'])
+
+        facter.get_facts()
+        facter.async_get = Mock()
+        facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml", response)
+
+        expect(facter.review.data['sitemap.data']["http://g1.globo.com/sitemap.xml"]).to_equal(response)
+
     def test_handle_sitemap_index_loaded(self):
         page = PageFactory.create(url="http://g1.globo.com/")
 

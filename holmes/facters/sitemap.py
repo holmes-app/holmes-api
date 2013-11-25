@@ -68,7 +68,7 @@ class SitemapFacter(Facter):
             ('sm', 'http://www.sitemaps.org/schemas/sitemap/0.9'),
         ]
 
-        if response.text is None or not response.text.strip():
+        if response.status_code > 399 or response.text is None or not response.text.strip():
             return
 
         self.review.facts['total.sitemap.indexes']['value'] += 1
