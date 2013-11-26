@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
+
 from ujson import dumps
 import tornado.web
 
@@ -23,6 +25,7 @@ class WorkerStateHandler(BaseHandler):
         if 'start' == state:
             url = self.request.body
             if not url:
+                logging.warning('Invalid URL trying to start worker %s.' % worker_uuid)
                 self.set_status(400, 'Invalid URL')
                 self.finish()
                 return
@@ -35,6 +38,7 @@ class WorkerStateHandler(BaseHandler):
             worker.current_url = None
 
         else:
+            logging.warning('Invalid operation (not start nor complete) in worker %s.' % worker_uuid)
             self.set_status(400, 'Invalid operation')
             self.finish()
 
