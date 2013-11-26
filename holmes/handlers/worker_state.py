@@ -26,7 +26,7 @@ class WorkerStateHandler(BaseHandler):
             url = self.request.body
             if not url:
                 logging.warning('Invalid URL trying to start worker %s.' % worker_uuid)
-                raise tornado.web.HTTPError(400, 'Invalid URL')
+                raise tornado.web.HTTPError(400, 'Invalid URL', reason='Invalid URL')
 
             self.start_work(worker, url)
             return
@@ -37,7 +37,7 @@ class WorkerStateHandler(BaseHandler):
 
         else:
             logging.warning('Invalid operation (not start nor complete) in worker %s.' % worker_uuid)
-            raise tornado.web.HTTPError(400, 'Invalid Operation')
+            raise tornado.web.HTTPError(400, 'Invalid Operation', reason='Invalid Operation')
 
     def start_work(self, worker, url):
         lock = RedisLock(

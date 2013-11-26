@@ -60,9 +60,7 @@ class ApiTestCase(CowTestCase):
     def get_app(self):
         app = super(ApiTestCase, self).get_app()
         app.http_client = AsyncHTTPClient(self.io_loop)
-
-        self.db = app.get_sqlalchemy_session()
-        app.get_sqlalchemy_session = lambda: self.db
+        self.db = app.db
 
         return app
 
