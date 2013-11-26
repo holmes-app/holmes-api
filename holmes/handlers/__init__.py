@@ -11,6 +11,9 @@ class BaseHandler(RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
 
+    def keep_alive(self):
+        return False
+
     def on_finish(self):
         if self.application.config.COMMIT_ON_REQUEST_END:
             if self.get_status() > 399:
@@ -20,6 +23,14 @@ class BaseHandler(RequestHandler):
                 logging.debug('COMMITTING TRANSACTION')
                 self.db.commit()
                 self.application.event_bus.flush()
+
+    def finish(self, chunk=None):
+        keep_alive = self.keep_alive()
+
+        if not keep_alive:
+            self.request.connection.no_keep_alive = False
+
+        super(BaseHandler, self).finish(chunk)
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)

@@ -8,6 +8,9 @@ from tornado.websocket import WebSocketHandler
 
 
 class EventBusHandler(WebSocketHandler):
+    def keep_alive(self):
+        return True
+
     def open(self):
         self.uuid = uuid4()
         logging.debug("WebSocket opened.")
