@@ -11,22 +11,15 @@ class BaseHandler(RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
 
-        self._session = None
-
     def on_finish(self):
         if self.application.config.COMMIT_ON_REQUEST_END:
-            try:
-                if self.get_status() > 399:
-                    logging.debug('ROLLING BACK TRANSACTION')
-                    self.db.rollback()
-                else:
-                    logging.debug('COMMITTING TRANSACTION')
-                    self.db.commit()
-                    self.application.event_bus.flush()
-            finally:
-                if self._session is not None:
-                    self._session.remove()
-                    self._session = None
+            if self.get_status() > 399:
+                logging.debug('ROLLING BACK TRANSACTION')
+                self.db.rollback()
+            else:
+                logging.debug('COMMITTING TRANSACTION')
+                self.db.commit()
+                self.application.event_bus.flush()
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
