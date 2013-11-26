@@ -59,6 +59,16 @@ class HolmesWorker(Shepherd):
 
         return proxies
 
+    def tornado_async_get(self, url, handler, method='GET', **kw):
+        #if self.proxies:
+            #kw['proxies'] = self.proxies
+
+        kw['proxy_host'] = self.config.HTTP_PROXY_HOST
+        kw['proxy_port'] = self.config.HTTP_PROXY_PORT
+
+        logging.debug('Enqueueing %s for %s...' % (method, url))
+        self.otto.enqueue(url, handler, method, **kw)
+
     def async_get(self, url, handler, method='GET', **kw):
         if self.proxies:
             kw['proxies'] = self.proxies
@@ -117,7 +127,7 @@ class HolmesWorker(Shepherd):
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,
-                async_get=self.async_get,
+                async_get=self.tornado_async_get,
                 wait=self.otto.wait,
                 wait_timeout=0  # max time to wait for all requests to finish
             )
