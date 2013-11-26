@@ -5,6 +5,7 @@ from uuid import UUID
 import hashlib
 
 from ujson import loads, dumps
+from tornado import gen
 import tornado.httpclient
 #from motorengine import Q, DESCENDING
 import logging
@@ -17,6 +18,7 @@ from holmes.handlers import BaseHandler
 
 class PageHandler(BaseHandler):
 
+    @gen.coroutine
     def post(self):
         post_data = loads(self.request.body)
         url = post_data['url']
