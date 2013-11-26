@@ -72,7 +72,7 @@ class HolmesWorker(Shepherd):
 
     def post(self, url, data={}):
         url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.post(url)
+        return requests.post(url, data=data)
 
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (

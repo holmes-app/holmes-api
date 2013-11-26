@@ -128,6 +128,8 @@ class Reviewer(object):
             logging.error("Could not load '%s' (%s)!" % (url, response.status_code))
             return
 
+        logging.debug('Content for url %s loaded.' % url)
+
         self._current = response
 
         try:
