@@ -84,19 +84,9 @@ class TestImageRequestsValidator(ValidatorTestCase):
             validators=[]
         )
 
-        content = "<html><img src='/some_image.jpg'/></html>"
-
-        result = {
-            'url': page.url,
-            'status': 200,
-            'content': content,
-            'html': lxml.html.fromstring(content)
-        }
-        reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
-
         validator = ImageRequestsValidator(reviewer)
         validator.add_violation = Mock()
+
         img_url = 'http://globo.com/some_image.jpg'
         validator.review.data = {
             'page.images': [
@@ -108,12 +98,13 @@ class TestImageRequestsValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.call_args_list).to_include(
-            call(key='broken.img',
-                 title='Image not found.',
-                 description='The image(s) in "<a href="%s" target="_blank">'
-                             'Link #0</a>" could not be found or took more '
-                             'than 10 seconds to load.' % (img_url),
-                 points=50))
+            call(
+                key='broken.img',
+                title='Image not found.',
+                description='The image(s) in "<a href="%s" target="_blank">'
+                    'Link #1</a>" could not be found or took more '
+                    'than 10 seconds to load.' % (img_url),
+                points=50))
 
     def test_can_validate_single_image_html(self):
         config = Config()

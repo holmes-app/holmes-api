@@ -15,16 +15,6 @@ class TestBaseValidator(ApiTestCase):
     def test_can_validate(self):
         expect(Validator(None).validate()).to_be_true()
 
-    def test_can_get_response(self):
-        mock_reviewer = Mock()
-        Validator(mock_reviewer).get_response('some url')
-        mock_reviewer.get_response.assert_called_once_with('some url')
-
-    def test_can_get_raw_response(self):
-        mock_reviewer = Mock()
-        Validator(mock_reviewer).get_raw_response('some url')
-        mock_reviewer.raw_responses.get.assert_called_once_with('some url', None)
-
     def test_can_add_fact(self):
         mock_reviewer = Mock()
         Validator(mock_reviewer).add_fact('test', 10, 'title', 'unit')
@@ -128,23 +118,6 @@ class TestBaseValidator(ApiTestCase):
         validator = Validator(reviewer)
         validator.add_violation('random.violation', 'random', 'violation', 0)
         reviewer.add_violation.assert_called_once_with('random.violation', 'random', 'violation', 0)
-
-    def test_will_call_reviewer_get_status_code(self):
-        page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
-
-        reviewer = Reviewer(
-            api_url='http://localhost:2368',
-            page_uuid=page.uuid,
-            page_url=page.url,
-            config=Config(),
-            validators=[]
-        )
-        reviewer.get_status_code = Mock()
-
-        validator = Validator(reviewer)
-        validator.get_status_code('http://globo.com')
-        reviewer.get_status_code.assert_called_once_with('http://globo.com')
 
     def test_can_encode_content(self):
         validator = Validator(None)
