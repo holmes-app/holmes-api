@@ -52,7 +52,8 @@ class WorkerTestCase(ApiTestCase):
             '--concurrency',
             '-t',
             type=int,
-            help='Number of threads to use for Octopus (doing GETs concurrently)'
+            default=10,
+            help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
         )
 
     def test_proxies_property(self):
@@ -70,7 +71,19 @@ class WorkerTestCase(ApiTestCase):
         worker.otto = otto_mock
 
         worker.async_get("url", "handler", 'GET', test="test")
-        otto_mock.enqueue.assert_called_once_with('url', 'handler', 'GET', test='test', proxies={'http': 'http://proxy:8080', 'https': 'http://proxy:8080'})
+        otto_mock.enqueue.assert_called_once_with('url', 'handler', 'GET', test='test', proxies={
+            'http': 'http://proxy:8080',
+            'https': 'http://proxy:8080'
+        })
+
+    def test_tornado_async_get(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
+
+        otto_mock = Mock()
+        worker.otto = otto_mock
+
+        worker.tornado_async_get("url", "handler", 'GET', test="test")
+        otto_mock.enqueue.assert_called_once_with('url', 'handler', 'GET', test='test', proxy_host='http://proxy', proxy_port=8080)
 
     @patch.object(holmes.worker.requests, 'get')
     def test_get(self, get_mock):
@@ -78,7 +91,7 @@ class WorkerTestCase(ApiTestCase):
 
         worker.get('url')
 
-        get_mock.assert_called_once_with('http://localhost:2368/url', proxies={'http': 'http://proxy:8080', 'https': 'http://proxy:8080'})
+        get_mock.assert_called_once_with('http://localhost:2368/url')
 
     @patch.object(holmes.worker.requests, 'post')
     def test_post(self, post_mock):
@@ -88,8 +101,7 @@ class WorkerTestCase(ApiTestCase):
 
         post_mock.assert_called_once_with(
             'http://localhost:2368/url',
-            data={'test': 'test'},
-            proxies={'http': 'http://proxy:8080', 'https': 'http://proxy:8080'})
+            data={'test': 'test'})
 
     def test_description(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
@@ -114,7 +126,6 @@ class WorkerTestCase(ApiTestCase):
 
         post_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/dead' % str(worker.uuid),
-            proxies={'http': 'http://proxy:8080', 'https': 'http://proxy:8080'},
             data={'worker_uuid': worker.uuid}
         )
 
@@ -225,7 +236,6 @@ class WorkerTestCase(ApiTestCase):
 
         post_mock.assert_called_once_with(
             'http://localhost:2368/worker/%s/alive' % str(worker.uuid),
-            proxies={'http': 'http://proxy:8080', 'https': 'http://proxy:8080'},
             data={}
         )
 
