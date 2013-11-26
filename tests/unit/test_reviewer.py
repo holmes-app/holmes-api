@@ -6,11 +6,8 @@ from uuid import uuid4
 from ujson import dumps
 
 import requests
-import lxml.html
 from preggy import expect
 from mock import patch, Mock
-from requests.exceptions import (
-    HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema)
 
 from holmes.reviewer import Reviewer, ReviewDAO
 from holmes.config import Config
@@ -158,92 +155,6 @@ class TestReview(ApiTestCase):
         reviewer.load_content(mock_callback)
         get_mock.assert_called_once_with(page_url, mock_callback)
 
-
-    @patch('requests.get')
-    def test_get_response_fills_dict(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text='<p>OK</p>', content='<p>OK</p>')
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-
-        reviewer.get_response(page_url)
-
-        expect(reviewer.responses).to_include(page_url)
-        expect(reviewer.responses[page_url]['status']).to_equal(200)
-        expect(reviewer.responses[page_url]['content']).to_include('OK')
-
-        expect(reviewer.responses[page_url]['html']).not_to_be_null()
-        expect(reviewer.responses[page_url]['html']).to_be_instance_of(lxml.html.HtmlElement)
-
-    @patch('requests.get')
-    def test_get_response_fills_empty_dict_when_error(self, mock_get):
-        mock_get.side_effect = Exception
-
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-
-        result = reviewer.get_response(page_url)
-
-        expect(result['status']).to_equal(404)
-        expect(result['content']).to_equal('')
-        expect(result['html']).to_be_null()
-
-    @patch('requests.get')
-    def test_get_response_fills_html_when_200(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text='<p>OK</p>')
-
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-
-        result = reviewer.get_response(page_url)
-
-        expect(result['status']).to_equal(200)
-        expect(result['content']).not_to_be_null()
-        expect(result['html']).not_to_be_null()
-        expect(result['html'].text_content()).to_equal('OK')
-
-    @patch('requests.get')
-    def test_get_response_add_violation_when_empty_document(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text='</html>')
-
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-        reviewer.add_violation = Mock()
-
-        result = reviewer.get_response(page_url)
-
-        expect(result['status']).to_equal(200)
-        expect(result['content']).not_to_be_null()
-        expect(result['html']).to_be_null()
-        expect(reviewer.add_violation.called).to_be_true()
-
-    @patch('requests.get')
-    def test_get_response_add_violation_when_invalid_html(self, mock_get):
-        mock_get.return_value = Mock(status_code=200, text=' ')
-
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-        reviewer.add_violation = Mock()
-
-        result = reviewer.get_response(page_url)
-
-        expect(result['status']).to_equal(200)
-        expect(result['content']).not_to_be_null()
-        expect(result['html']).to_be_null()
-        expect(reviewer.add_violation.called).to_be_true()
-
-    @patch('requests.get')
-    def test_get_response_do_not_fills_html_when_404(self, mock_get):
-        mock_get.return_value = Mock(status_code=404, text='Error')
-
-        page_url = 'http://www.google.com'
-        reviewer = self.get_reviewer(page_url=page_url)
-
-        result = reviewer.get_response(page_url)
-
-        expect(result['status']).to_equal(404)
-        expect(result['content']).not_to_be_null()
-        expect(result['html']).to_be_null()
-
     def test_review_calls_validators(self):
         test_class = {}
 
@@ -307,60 +218,6 @@ class TestReview(ApiTestCase):
         response = reviewer.current
         expect(response).not_to_be_null()
         expect(response).to_equal('test')
-
-    def test_can_get_status_code(self):
-        reviewer = self.get_reviewer()
-        page_url = 'http://google.com'
-        expect(reviewer.status_codes).to_length(0)
-        reviewer.get_status_code(page_url)
-        expect(reviewer.status_codes).to_length(1)
-        expect(reviewer.status_codes[page_url]).not_to_be_null()
-
-    def test_can_get_status_code_when_already_got_before(self):
-        reviewer = self.get_reviewer()
-        page_url = 'http://google.com'
-
-        reviewer.get_status_code(page_url)
-        expect(reviewer.status_codes).to_length(1)
-        expect(reviewer.status_codes[page_url]).not_to_be_null()
-
-        reviewer.get_status_code(page_url)
-        expect(reviewer.status_codes).to_length(1)
-
-    @patch("requests.request")
-    def test_can_get_status_code_fail_http_error(self, mock_request):
-        mock_request.side_effect = HTTPError
-        reviewer = self.get_reviewer()
-        reviewer.get_status_code(reviewer.page_url)
-        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
-
-    @patch("requests.request")
-    def test_can_get_status_code_fail_timeout(self, mock_request):
-        mock_request.side_effect = Timeout
-        reviewer = self.get_reviewer()
-        reviewer.get_status_code(reviewer.page_url)
-        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
-
-    @patch("requests.request")
-    def test_can_get_status_code_fail_too_many_redirects(self, mock_request):
-        mock_request.side_effect = TooManyRedirects
-        reviewer = self.get_reviewer()
-        reviewer.get_status_code(reviewer.page_url)
-        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
-
-    @patch("requests.request")
-    def test_can_get_status_code_fail_connection_error(self, mock_request):
-        mock_request.side_effect = ConnectionError
-        reviewer = self.get_reviewer()
-        reviewer.get_status_code(reviewer.page_url)
-        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
-
-    @patch("requests.request")
-    def test_can_get_status_code_fail_invalid_schema(self, mock_request):
-        mock_request.side_effect = InvalidSchema
-        reviewer = self.get_reviewer()
-        reviewer.get_status_code(reviewer.page_url)
-        expect(reviewer.status_codes[reviewer.page_url]).to_equal(404)
 
     def test_enqueue_when_none(self):
         reviewer = self.get_reviewer()
