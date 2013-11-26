@@ -40,7 +40,8 @@ class HolmesWorker(Shepherd):
             '--concurrency',
             '-t',
             type=int,
-            help='Number of threads to use for Octopus (doing GETs concurrently)'
+            default=10,
+            help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
         )
 
     @property
