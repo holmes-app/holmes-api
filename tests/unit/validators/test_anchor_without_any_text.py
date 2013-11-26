@@ -39,7 +39,9 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         reviewer.responses[page.url] = result
         reviewer.get_response = Mock(return_value=result)
 
-        link = Mock(text='')
+        link = Mock()
+        link.text_content = Mock(return_value='')
+        link.findall = Mock(return_value='')
         link.get.return_value = 'http://globo.com'
 
         validator = AnchorWithoutAnyTextValidator(reviewer)

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.facters.links import REMOVE_HASH
 
 
 class AnchorWithoutAnyTextValidator(Validator):
@@ -12,14 +13,20 @@ class AnchorWithoutAnyTextValidator(Validator):
         links_with_empty_anchor = []
 
         for link in links:
-            if not link.text:
-                links_with_empty_anchor.append(link)
+            href = link.get('href').strip()
+            href = REMOVE_HASH.sub('', href)
+
+            if href and not link.text_content() and not link.findall('img'):
+                is_absolute = self.is_absolute(href)
+                if not is_absolute:
+                    href = self.rebase(href)
+                links_with_empty_anchor.append(href)
 
         if links_with_empty_anchor:
             data = []
-            for index, link in enumerate(links_with_empty_anchor, start=1):
+            for index, href in enumerate(links_with_empty_anchor, start=1):
                 data.append('<a href="%s" target="_blank">#%s</a>' % (
-                    link.get('href'), index))
+                    href, index))
 
             self.add_violation(
                 key='empty.anchors',
