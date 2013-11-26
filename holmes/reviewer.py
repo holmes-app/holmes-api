@@ -103,16 +103,16 @@ class Reviewer(object):
             self.async_get_func(url, handler, method, **kw)
 
     def _get(self, url):
-        if self.proxies:
-            logging.debug('Getting "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
-            return requests.get(url, proxies=self.proxies)
+        #if self.proxies:
+            #logging.debug('Getting "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
+            #return requests.get(url, proxies=self.proxies)
 
         return requests.get(url)
 
     def _post(self, url, data):
-        if self.proxies:
-            logging.debug('Posting to "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
-            return requests.post(url, data=data, proxies=self.proxies)
+        #if self.proxies:
+            #logging.debug('Posting to "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
+            #return requests.post(url, data=data, proxies=self.proxies)
 
         return requests.post(url, data=data)
 
@@ -155,66 +155,12 @@ class Reviewer(object):
     def current(self):
         return self._current
 
-    def get_response(self, url):
-        if url in self.responses:
-            return self.responses[url]
-
-        self.responses[url] = {}
-
-        try:
-            response = self._get(url)
-            self.raw_responses[url] = response
-        except Exception:
-            result = {
-                'url': url,
-                'status': 404,
-                'content': '',
-                'html': None
-            }
-        else:
-            result = {
-                'url': url,
-                'status': response.status_code,
-                'content': response.content,
-                'html': None
-            }
-
-            if response.status_code < 399:
-                try:
-                    result['html'] = lxml.html.fromstring(response.text)
-                except (lxml.etree.XMLSyntaxError, lxml.etree.ParserError):
-                    result['html'] = None
-
-                    self.add_violation(
-                        key='invalid.content',
-                        title='Invalid Content',
-                        description='Fail to parse content from %s' % url,
-                        points=1000)
-
-        self.responses[url] = result
-
-        return result
-
     @property
     def current_html(self):
         if not hasattr(self.current, 'html') or self.current.html is None:
             return lxml.html.HtmlElement()
         else:
             return self.current.html
-
-    def get_status_code(self, url):
-        if not url in self.status_codes:
-            try:
-                response = requests.request(method='GET', url=url, stream=True, timeout=10.0, proxies=self.proxies)
-                response.iter_lines().next()
-                self.raw_responses[url] = response
-                self.status_codes[url] = response.status_code
-            except (TooManyRedirects, Timeout, HTTPError, ConnectionError, InvalidSchema):
-                err = sys.exc_info()[1]
-                logging.warn('ERROR IN %s: %s' % (url, str(err)))
-                self.status_codes[url] = 404
-
-        return self.status_codes[url]
 
     def run_facters(self):
         for facter in self.facters:
