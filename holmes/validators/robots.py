@@ -7,6 +7,9 @@ from holmes.validators.base import Validator
 
 class RobotsValidator(Validator):
     def validate(self):
+        if not self.reviewer.is_root():
+            return
+
         response = self.review.data['robots.response']
 
         if response.status_code > 399:

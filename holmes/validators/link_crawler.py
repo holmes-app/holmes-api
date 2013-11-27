@@ -11,8 +11,8 @@ REMOVE_HASH = re.compile('([#].*)$')
 class LinkCrawlerValidator(Validator):
     def __init__(self, *args, **kw):
         super(LinkCrawlerValidator, self).__init__(*args, **kw)
-        self.url_buffer = set()
         self.broken_links = set()
+        self.moved_links = set()
 
     def validate(self):
         links = self.get_links()
@@ -35,45 +35,32 @@ class LinkCrawlerValidator(Validator):
                 points=100 * len(self.broken_links)
             )
 
-        self.flush()
+        if self.moved_links:
+            data = []
+            for index, url in enumerate(self.moved_links, start=1):
+                data.append('<a href="%s" target="_blank">Link #%s</a>' % (url, index))
 
-    def test_url(self, url, response):
-        status = response.status_code
-
-        if status > 399:
-            self.broken_links.add(url)
-            return False
-
-        if status == 302 or status == 307:
             self.add_violation(
                 key='moved.temporarily',
                 title='Moved Temporarily',
-                description='A link from you page to "%s" is using a %d redirect. '
+                description='A link from your page to "%s" is using a 302 or 307 redirect. '
                 'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. '
-                'Use 301 instead. ' % (url, status),
+                'Use 301 instead. ' % (', '.join(data)),
                 points=100
             )
-            return False
 
-        if response.url.rstrip('/') != url.rstrip('/'):
-            return False
+        self.flush()
 
-        return True
-
-    def send_url(self, url, response):
-        if self.test_url(url, response):
-            self.url_buffer.add(url)
-
-        if len(self.url_buffer) > self.config.MAX_ENQUEUE_BUFFER_LENGTH:
-            self.flush()
-
-    def flush(self):
-        if not self.url_buffer:
-            return
-
-        self.enqueue(*self.url_buffer)
-        self.url_buffer = []
-        self.broken_links = []
+    def flush(self, *args, **kw):
+        super(LinkCrawlerValidator, self).__init__(*args, **kw)
+        self.broken_links = set()
+        self.moved_links = set()
 
     def get_links(self):
         return self.review.data['page.links']
+
+    def broken_link_violation(self, url, response):
+        self.broken_links.add(url)
+
+    def moved_link_violation(self, url, response):
+        self.moved_links.add(url)

@@ -22,6 +22,9 @@ class SitemapValidator(Validator):
     MAX_LINKS_SITEMAP = 50000
 
     def validate(self):
+        if not self.reviewer.is_root():
+            return
+
         for sitemap, size in self.review.data['sitemap.files.size'].items():
             response = self.review.data['sitemap.data'][sitemap]
 
@@ -72,9 +75,6 @@ class SitemapValidator(Validator):
                 relative = parse['relative']
                 encoded = True
 
-                if not relative:
-                    continue
-
                 try:
                     str(relative).encode('utf-8')
                 except UnicodeDecodeError:
@@ -86,6 +86,8 @@ class SitemapValidator(Validator):
                 if not encoded:
                     not_encoded_links += 1
 
+                self.send_url(url, response)
+
             if not_encoded_links > 0:
                 self.add_violation(
                     key='sitemaps.links.not_encoded',
@@ -94,3 +96,5 @@ class SitemapValidator(Validator):
                                 % (not_encoded_links, sitemap),
                     points=10
                 )
+
+        self.flush()

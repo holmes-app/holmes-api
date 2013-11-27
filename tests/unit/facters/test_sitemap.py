@@ -13,6 +13,25 @@ from tests.fixtures import PageFactory
 
 class TestSitemapFacter(FacterTestCase):
 
+    def test_get_facts_when_page_not_is_root(self):
+        page = PageFactory.create(url="http://g1.globo.com/1/")
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+        facter = SitemapFacter(reviewer)
+        facter.async_get = Mock()
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        expect(facter.async_get.call_count).to_equal(0)
+        expect(facter.add_fact.call_count).to_equal(0)
+
     def test_get_facts(self):
         page = PageFactory.create(url="http://g1.globo.com/")
 
@@ -196,12 +215,6 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0.1494140625)
         expect(facter.review.data['sitemap.files.urls']["http://g1.globo.com/sitemap.xml"]).to_equal(2)
         expect(facter.review.facts['total.sitemap.urls']['value']).to_equal(2)
-        expect(reviewer.enqueue.call_args_list).to_include(
-            call('http://domain.com/1.html'),
-        )
-        expect(reviewer.enqueue.call_args_list).to_include(
-            call('http://domain.com/2.html'),
-        )
 
     def test_handle_robots_loaded(self):
         page = PageFactory.create(url="http://g1.globo.com/")

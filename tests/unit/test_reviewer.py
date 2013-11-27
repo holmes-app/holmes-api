@@ -257,3 +257,13 @@ class TestReview(ApiTestCase):
         error_mock.assert_called_once_with(
             "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found"
         )
+
+    def test_is_root(self):
+        reviewer = self.get_reviewer(page_url="http://g1.globo.com")
+        expect(reviewer.is_root()).to_equal(True)
+
+        reviewer = self.get_reviewer(page_url="http://g1.globo.com/")
+        expect(reviewer.is_root()).to_equal(True)
+
+        reviewer = self.get_reviewer(page_url="http://g1.globo.com/index.html")
+        expect(reviewer.is_root()).to_equal(False)

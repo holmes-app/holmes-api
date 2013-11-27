@@ -14,6 +14,9 @@ ROBOTS_SITEMAP = re.compile('Sitemap:\s+(.*)')
 class SitemapFacter(Facter):
 
     def get_facts(self):
+        if not self.reviewer.is_root():
+            return
+
         self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
         self.review.data['sitemap.data'] = {}
@@ -101,7 +104,6 @@ class SitemapFacter(Facter):
                 self.review.data['sitemap.urls'][url].add(loc)
                 self.review.data['sitemap.files.urls'][url] += 1
                 self.review.facts['total.sitemap.urls']['value'] += 1
-                self.reviewer.enqueue(loc)
 
     def handle_robots_loaded(self, url, response):
         sitemaps = self.get_sitemaps(response)

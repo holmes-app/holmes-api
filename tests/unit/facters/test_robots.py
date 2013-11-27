@@ -13,8 +13,27 @@ from tests.fixtures import PageFactory
 
 class TestRobotsFacter(FacterTestCase):
 
-    def test_get_robots_from_domain(self):
+    def test_get_facts_cant_run_if_page_is_not_root(self):
         page = PageFactory.create(url="http://www.globo.com/index.html")
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+        facter = RobotsFacter(reviewer)
+        facter.add_fact = Mock()
+        facter.async_get = Mock()
+
+        facter.get_facts()
+
+        expect(facter.add_fact.call_count).to_equal(0)
+        expect(facter.async_get.call_count).to_equal(0)
+
+    def test_get_robots_from_root_domain(self):
+        page = PageFactory.create(url="http://www.globo.com")
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -41,7 +60,7 @@ class TestRobotsFacter(FacterTestCase):
         )
 
     def test_handle_robots_loaded_should_save_data(self):
-        page = PageFactory.create(url="http://www.globo.com/index.html")
+        page = PageFactory.create(url="http://www.globo.com")
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',

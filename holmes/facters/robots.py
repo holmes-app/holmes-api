@@ -9,6 +9,9 @@ from holmes.facters import Facter
 class RobotsFacter(Facter):
 
     def get_facts(self):
+        if not self.reviewer.is_root():
+            return
+
         url = self.rebase('/robots.txt')
 
         self.review.data['robots.response'] = None

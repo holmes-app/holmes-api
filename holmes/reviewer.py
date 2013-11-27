@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from os.path import join
+import urlparse
 import inspect
+from os.path import join
 
 import requests
 from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
@@ -233,3 +234,7 @@ class Reviewer(object):
 
     def wait_for_async_requests(self):
         self._wait_for_async_requests(self._wait_timeout)
+
+    def is_root(self):
+        result = urlparse.urlparse(self.page_url)
+        return '{0}://{1}'.format(result.scheme, result.netloc) == self.page_url.rstrip('/')
