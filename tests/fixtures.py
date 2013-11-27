@@ -50,7 +50,6 @@ class PageFactory(BaseFactory):
     uuid = factory.LazyAttribute(lambda a: uuid4())
 
     created_date = None
-    last_review_started_date = None
     last_review_date = None
 
     domain = factory.SubFactory(DomainFactory)

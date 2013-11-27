@@ -28,9 +28,6 @@ class Review(Base):
     created_date = sa.Column('created_date', sa.DateTime, default=datetime.now, nullable=False)
     completed_date = sa.Column('completed_date', sa.DateTime, nullable=True)
 
-    #last_review_started_date = sa.Column('last_review_started_date', sa.DateTime, nullable=True)
-    #last_review_date = sa.Column('last_review_started_date', sa.DateTime, nullable=True)
-
     failure_message = sa.Column('failure_message', sa.String(2000), nullable=True)
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
