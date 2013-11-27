@@ -37,18 +37,9 @@ class SchemaOrgItemTypeValidator(Validator):
                     points=10
                 )
 
-            itemtype_value = ['http://schema.org/WebPage',
-                              'http://schema.org/AboutPage',
-                              'http://schema.org/CheckoutPage',
-                              'http://schema.org/CollectionPage',
-                              'http://schema.org/ContactPage',
-                              'http://schema.org/ItemPage',
-                              'http://schema.org/MedicalWebPage',
-                              'http://schema.org/ProfilePage',
-                              'http://schema.org/SearchResultsPage']
-
-            if not has_itemtype or body.get('itemtype') not in itemtype_value:
-                url = itemtype_value[0]
+            itemtype_value = self.reviewer.config.SCHEMA_ORG_ITEMTYPE
+            if has_itemtype and body.get('itemtype') not in itemtype_value:
+                url = 'http://schema.org/WebPage'
                 self.add_violation(
                     key='invalid.schema.itemtype',
                     title='itemtype attribute is invalid',

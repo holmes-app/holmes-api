@@ -68,6 +68,39 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
                 points=10
             ))
 
+
+    def test_has_invalid_itemtype(self):
+        config = Config()
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        content = '<html><body itemtype="http://schema.org/a"></body</html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = SchemaOrgItemTypeValidator(reviewer)
+        validator.add_violation = Mock()
+        validator.review.data = {
+            'page.body': [{'itemtype': 'a'}]
+        }
+
+        validator.validate()
+
         url = 'http://schema.org/WebPage'
         expect(validator.add_violation.call_args_list).to_include(
             call(
