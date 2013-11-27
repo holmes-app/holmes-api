@@ -178,17 +178,17 @@ class Reviewer(object):
     def get_url(self, url):
         return join(self.api_url.rstrip('/'), url.lstrip('/'))
 
-    def enqueue(self, *urls):
+    def enqueue(self, urls):
         if not urls:
             return
 
-        if len(urls) == 1:
+        if isinstance(urls, basestring):
             post_url = self.get_url('/page')
             data = dumps({
                 'url': urls[0],
                 'origin_uuid': str(self.page_uuid)
             })
-            error_message = "Could not enqueue page '" + urls[0] + "'! Status Code: %d, Error: %s"
+            error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
         else:
             post_url = self.get_url('/pages')
             data = {

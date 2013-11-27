@@ -37,8 +37,8 @@ class Validator(object):
     def to_gzip(self, content):
         return content.encode('zip')
 
-    def enqueue(self, *url):
-        self.reviewer.enqueue(*url)
+    def enqueue(self, url):
+        self.reviewer.enqueue(url)
 
     def add_fact(self, key, value, title, unit='value'):
         self.reviewer.add_fact(key, value, title, unit)
