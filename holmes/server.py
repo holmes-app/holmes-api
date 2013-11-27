@@ -6,9 +6,9 @@ import logging
 from cow.server import Server
 #from cow.plugins.motorengine_plugin import MotorEnginePlugin
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
-from cow.plugins.redis_plugin import RedisPlugin
+from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
 from tornado.httpclient import AsyncHTTPClient
-from toredis import Client
+#from toredis import Client
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler
 from holmes.handlers.worker_state import WorkerStateHandler
@@ -83,7 +83,7 @@ class HolmesApiServer(Server):
 
         logging.info("Connecting pubsub to redis at %s:%d" % (host, port))
 
-        self.application.redis_pub_sub = Client(io_loop=io_loop)
+        self.application.redis_pub_sub = CowRedisClient(io_loop=io_loop)
         self.application.redis_pub_sub.authenticated = False
         self.application.redis_pub_sub.connect(host, port, callback=self.has_connected(self.application))
 
