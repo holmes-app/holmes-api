@@ -21,8 +21,7 @@ class Page(Base):
     uuid = sa.Column('uuid', sa.String(36), default=uuid4, nullable=False)
     created_date = sa.Column('created_date', sa.DateTime, default=datetime.now, nullable=False)
 
-    last_review_started_date = sa.Column('last_review_started_date', sa.DateTime, nullable=True)
-    last_review_date = sa.Column('last_review_started_date', sa.DateTime, nullable=True)
+    last_review_date = sa.Column('last_review_date', sa.DateTime, nullable=True)
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
 

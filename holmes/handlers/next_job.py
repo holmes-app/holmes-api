@@ -16,7 +16,6 @@ class NextJobHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
-        timed_out = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
 
         pages_in_need_of_review = self.db.query(Page) \
             .filter(or_(
@@ -26,8 +25,7 @@ class NextJobHandler(BaseHandler):
                     Page.last_review_date < dt
                     )
             )) \
-            .order_by(Page.created_date) \
-            .all()
+            .order_by(Page.created_date)[:50]
 
         if len(pages_in_need_of_review) == 0:
             self.write('')
