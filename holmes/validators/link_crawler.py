@@ -52,7 +52,7 @@ class LinkCrawlerValidator(Validator):
         self.flush()
 
     def flush(self, *args, **kw):
-        super(LinkCrawlerValidator, self).__init__(*args, **kw)
+        super(LinkCrawlerValidator, self).flush(*args, **kw)
         self.broken_links = set()
         self.moved_links = set()
 
