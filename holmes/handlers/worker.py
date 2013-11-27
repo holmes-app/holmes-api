@@ -39,7 +39,7 @@ class WorkerHandler(BaseHandler):
 
         self.db.query(Worker).filter(Worker.last_ping < dt).delete()
 
-        self.db.flush()
+        self.db.commit()
 
 
 class WorkersHandler(BaseHandler):
