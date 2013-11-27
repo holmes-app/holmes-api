@@ -185,7 +185,7 @@ class Reviewer(object):
         if isinstance(urls, basestring):
             post_url = self.get_url('/page')
             data = dumps({
-                'url': urls[0],
+                'url': urls,
                 'origin_uuid': str(self.page_uuid)
             })
             error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
