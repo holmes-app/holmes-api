@@ -12,6 +12,8 @@ from holmes.handlers import BaseHandler
 class WorkerHandler(BaseHandler):
 
     def post(self, worker_uuid, i_am='alive'):
+        self._remove_zombie_workers()
+
         worker = Worker.by_uuid(worker_uuid, self.db)
 
         if worker:
@@ -25,9 +27,6 @@ class WorkerHandler(BaseHandler):
 
         self.db.flush()
 
-        self._remove_zombies_workers()
-        self.db.flush()
-
         self.application.event_bus.publish(dumps({
             'type': 'worker-status',
             'workerId': str(worker.uuid)
@@ -35,9 +34,12 @@ class WorkerHandler(BaseHandler):
 
         self.write(str(worker_uuid))
 
-    def _remove_zombies_workers(self):
+    def _remove_zombie_workers(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
+
         self.db.query(Worker).filter(Worker.last_ping < dt).delete()
+
+        self.db.flush()
 
 
 class WorkersHandler(BaseHandler):
