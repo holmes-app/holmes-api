@@ -39,11 +39,12 @@ class WorkerHandler(BaseHandler):
 
         dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
 
-        workers = self.db.query(
-            Worker.id,
-        ).filter(Worker.last_ping < dt).order_by(Worker.id).subquery('workers')
+        workers_to_delete = self.db.query(
+            Worker.id.label('worker_id')
+        ).filter(Worker.last_ping < dt).order_by(Worker.id).all()
 
-        self.db.query(Worker).filter(Worker.id == workers.c.id).delete()
+        for worker in workers_to_delete:
+            self.db.delete(worker)
 
         self.db.commit()
 
