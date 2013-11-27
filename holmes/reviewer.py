@@ -225,6 +225,7 @@ class Reviewer(object):
                 url,
                 str(err)
             ))
+            return
 
         if response.status_code > 399:
             logging.error("Could not save review! Status Code: %d, Error: %s" % (
