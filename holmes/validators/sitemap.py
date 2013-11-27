@@ -86,7 +86,7 @@ class SitemapValidator(Validator):
                 if not encoded:
                     not_encoded_links += 1
 
-                self.send_url(url, response)
+                self.send_url(response.effective_url, response)
 
             if not_encoded_links > 0:
                 self.add_violation(

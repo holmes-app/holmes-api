@@ -18,7 +18,7 @@ class LinkCrawlerValidator(Validator):
         links = self.get_links()
 
         for url, response in links:
-            self.send_url(url, response)
+            self.send_url(response.effective_url, response)
 
         if self.broken_links:
             data = []
