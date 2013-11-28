@@ -4,7 +4,6 @@
 import logging
 
 from cow.server import Server
-#from cow.plugins.motorengine_plugin import MotorEnginePlugin
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
 from tornado.httpclient import AsyncHTTPClient

@@ -7,7 +7,6 @@ import hashlib
 from ujson import loads, dumps
 from tornado import gen
 import tornado.httpclient
-#from motorengine import Q, DESCENDING
 import logging
 from sqlalchemy import or_
 

@@ -4,9 +4,7 @@
 from uuid import uuid4
 from datetime import datetime
 
-#from motorengine import Document, UUIDField, DateTimeField, ReferenceField
 import sqlalchemy as sa
-#from sqlalchemy.orm import relationship
 
 from holmes.models import Base
 
@@ -19,8 +17,6 @@ class Worker(Base):
     last_ping = sa.Column('last_ping', sa.DateTime, default=datetime.now, nullable=False)
 
     current_url = sa.Column('current_url', sa.Text)
-    #current_review_id = sa.Column('current_review_id', sa.Integer, sa.ForeignKey('reviews.id'))
-    #current_review = relationship('Review')
 
     def __str__(self):
         return 'Worker %s' % str(self.uuid)

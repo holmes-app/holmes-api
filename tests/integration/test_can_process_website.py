@@ -5,8 +5,6 @@ from uuid import uuid4
 from mock import Mock
 
 from preggy import expect
-from tornado.testing import AsyncTestCase
-from motorengine import connect
 
 from holmes.reviewer import Reviewer
 from holmes.models.review import Review
