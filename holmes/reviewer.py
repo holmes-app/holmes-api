@@ -7,7 +7,7 @@ import inspect
 from os.path import join
 
 import requests
-from requests.exceptions import HTTPError, TooManyRedirects, Timeout, ConnectionError, InvalidSchema
+from requests.exceptions import ConnectionError
 import lxml.html
 import logging
 from ujson import dumps
