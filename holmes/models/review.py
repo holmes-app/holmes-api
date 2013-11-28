@@ -26,8 +26,8 @@ class Review(Base):
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
     page_id = sa.Column('page_id', sa.Integer, sa.ForeignKey('pages.id'))
 
-    facts = relationship("Fact", backref="review")
-    violations = relationship("Violation", backref="review")
+    facts = relationship("Fact", cascade="all,delete", backref="review")
+    violations = relationship("Violation", cascade="all,delete", backref="review")
 
     def to_dict(self):
         return {
