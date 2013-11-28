@@ -195,8 +195,10 @@ class WorkerTestCase(ApiTestCase):
     @patch.object(HolmesWorker, '_load_next_job')
     @patch.object(HolmesWorker, '_ping_api')
     @patch.object(holmes.worker, 'logging')
+    @patch.object(HolmesWorker, 'post')
     def test_do_work_if_api_is_up_and_job_available_but_reviewer_fails(
         self,
+        complete_job_mock,
         logging_mock,
         ping_api_mock,
         load_next_job_mock,
@@ -215,6 +217,7 @@ class WorkerTestCase(ApiTestCase):
         ping_api_mock.return_value = True
         load_next_job_mock.return_value = job
         start_reviewer_mock.side_effect = InvalidReviewError()
+        complete_job_mock.side_effect = ConnectionError()
 
         worker.do_work()
 
