@@ -48,13 +48,23 @@ class WorkerTestCase(ApiTestCase):
 
         worker.config_parser(parser_mock)
 
-        parser_mock.add_argument.assert_called_once_with(
-            '--concurrency',
-            '-t',
-            type=int,
-            default=10,
-            help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
-        )
+        expect(parser_mock.add_argument.call_args_list).to_include(
+            call(
+                '--concurrency',
+                '-t',
+                type=int,
+                default=10,
+                help='Number of threads (or async http requests) to use for '
+                     'Octopus (doing GETs concurrently)'
+            ))
+
+        expect(parser_mock.add_argument.call_args_list).to_include(
+            call(
+                '--cache',
+                default=False,
+                action='store_true',
+                help='Whether http requests should be cached by Octopus.'
+            ))
 
     def test_proxies_property(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
