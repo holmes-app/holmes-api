@@ -29,7 +29,7 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
             validators=[]
         )
 
-        content = '<html><body></body</html>'
+        content = '<html><body></body></html>'
 
         result = {
             'url': page.url,
@@ -82,7 +82,7 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
             validators=[]
         )
 
-        content = '<html><body itemtype="http://schema.org/a"></body</html>'
+        content = '<html><body itemtype="http://schema.org/a"></body></html>'
 
         result = {
             'url': page.url,
