@@ -29,7 +29,7 @@ class HolmesWorker(Shepherd):
 
         logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
         self.otto = TornadoOctopus(
-            concurrency=self.options.concurrency, cache=True,
+            concurrency=self.options.concurrency, cache=self.options.cache,
             connect_timeout_in_seconds=self.config.CONNECT_TIMEOUT_IN_SECONDS,
             request_timeout_in_seconds=self.config.REQUEST_TIMEOUT_IN_SECONDS
         )
@@ -42,6 +42,13 @@ class HolmesWorker(Shepherd):
             type=int,
             default=10,
             help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
+        )
+
+        parser.add_argument(
+            '--cache',
+            type=bool,
+            default=False,
+            help='Whether http requests should be cached by Octopus.'
         )
 
     @property
