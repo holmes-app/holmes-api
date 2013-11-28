@@ -45,7 +45,7 @@ class HolmesWorker(Shepherd):
         )
 
         parser.add_argument(
-            '--cache', default=False, type=bool, action='store_true',
+            '--cache', default=False, action='store_true',
             help='Whether http requests should be cached by Octopus.'
         )
 
