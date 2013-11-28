@@ -95,13 +95,22 @@ class ReviewHandler(BaseReviewHandler):
     def _remove_older_reviews_with_same_day(self, review):
         dt = datetime.now()
         dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        self.db.query(Review) \
-            .filter(Review.page == review.page) \
-            .filter(Review.uuid != review.uuid) \
-            .filter(Review.created_date >= dt) \
-            .delete()
 
-        self.db.flush()
+        for review in self.db.query(Review) \
+                .filter(Review.page == review.page) \
+                .filter(Review.uuid != review.uuid) \
+                .filter(Review.created_date >= dt) \
+                .all():
+
+            for fact in review.facts:
+                self.db.delete(fact)
+
+            for violation in review.violations:
+                self.db.delete(violation)
+
+            self.db.delete(review)
+
+            self.db.flush()
 
 
 class LastReviewsHandler(BaseReviewHandler):
