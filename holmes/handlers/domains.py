@@ -100,7 +100,7 @@ class DomainReviewsHandler(BaseHandler):
                 "url": review.page.url,
                 "uuid": str(review.page.uuid),
                 "violationCount": len(review.violations),
-                "completedDate": review.completed_date.isoformat(),
+                "completedAt": review.completed_date,
                 "reviewId": str(review.uuid)
             })
 

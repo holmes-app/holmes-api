@@ -148,7 +148,7 @@ class PageReviewsHandler(BaseHandler):
         for review in reviews:
             result.append({
                 'uuid': str(review.uuid),
-                'completedDate': review.completed_date.isoformat(),
+                'completedAt': review.completed_date,
                 'violationCount': review.violation_count
             })
 

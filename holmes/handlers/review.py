@@ -28,16 +28,10 @@ class ReviewHandler(BaseReviewHandler):
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             return
 
-        if review.completed_date:
-            completed_data_iso = review.completed_date.isoformat()
-        else:
-            completed_data_iso = None
-
         result = review.to_dict()
         result.update({
             'violationPoints': review.get_violation_points(),
             'violationCount': review.violation_count,
-            'completedDateISO': completed_data_iso
         })
 
         self.write_json(result)
@@ -62,7 +56,7 @@ class ReviewHandler(BaseReviewHandler):
             page=page,
             is_active=True,
             is_complete=False,
-            completed_date=datetime.now(),
+            completed_date=datetime.utcnow(),
             uuid=uuid4(),
         )
 
@@ -132,7 +126,6 @@ class LastReviewsHandler(BaseReviewHandler):
             review_dict = review.to_dict()
             data = {
                 'violationCount': review.violation_count,
-                'completedDateISO': review.completed_date.isoformat()
             }
             review_dict.update(data)
             reviews_json.append(review_dict)

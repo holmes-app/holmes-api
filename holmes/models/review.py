@@ -18,7 +18,7 @@ class Review(Base):
     is_complete = sa.Column('is_complete', sa.Boolean, default=False, nullable=False)
     uuid = sa.Column('uuid', sa.String(36), default=uuid4, nullable=False)
 
-    created_date = sa.Column('created_date', sa.DateTime, default=datetime.now, nullable=False)
+    created_date = sa.Column('created_date', sa.DateTime, default=datetime.utcnow, nullable=False)
     completed_date = sa.Column('completed_date', sa.DateTime, nullable=True)
 
     failure_message = sa.Column('failure_message', sa.String(2000), nullable=True)

@@ -56,7 +56,7 @@ class TestReviewHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
 
-        dt = calendar.timegm(datetime.now().utctimetuple())
+        dt = calendar.timegm(datetime.utcnow().utctimetuple())
 
         expected = {
             'domain': review.domain.name,
@@ -73,7 +73,6 @@ class TestReviewHandler(ApiTestCase):
             'completedAt': None,
             'violationPoints': 100,
             'violationCount': 1,
-            'completedDateISO': None
         }
 
         expect(loads(response.body)).to_be_like(expected)
@@ -122,7 +121,6 @@ class TestLastReviewsHandler(ApiTestCase):
             'createdAt': dt,
             'completedAt': dt,
             'violationCount': 1,
-            'completedDateISO': date_now.isoformat()
         }]
 
         expect(loads(response.body)).to_be_like(expected)

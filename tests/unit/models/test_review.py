@@ -18,7 +18,7 @@ class TestReview(ApiTestCase):
         review = ReviewFactory.create()
 
         expect(review.id).not_to_be_null()
-        expect(review.created_date).to_be_like(datetime.now())
+        expect(review.created_date).to_be_like(datetime.utcnow())
 
         expect(review.page).not_to_be_null()
         expect(review.domain).not_to_be_null()

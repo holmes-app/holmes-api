@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import calendar
 from datetime import datetime
 from ujson import loads
 from preggy import expect
@@ -82,7 +83,10 @@ class TestDomainReviewsHandler(ApiTestCase):
     @gen_test
     def test_can_get_domain_reviews(self):
         dt = datetime(2010, 11, 12, 13, 14, 15)
+        dt_timestamp = calendar.timegm(dt.utctimetuple())
+
         dt2 = datetime(2011, 12, 13, 14, 15, 16)
+        dt2_timestamp = calendar.timegm(dt2.utctimetuple())
 
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
@@ -108,11 +112,11 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         expect(domain_details['pages'][0]['url']).to_equal(page2.url)
         expect(domain_details['pages'][0]['uuid']).to_equal(str(page2.uuid))
-        expect(domain_details['pages'][0]['completedDate']).to_equal(dt2.isoformat())
+        expect(domain_details['pages'][0]['completedAt']).to_equal(dt2_timestamp)
 
         expect(domain_details['pages'][1]['url']).to_equal(page.url)
         expect(domain_details['pages'][1]['uuid']).to_equal(str(page.uuid))
-        expect(domain_details['pages'][1]['completedDate']).to_equal(dt.isoformat())
+        expect(domain_details['pages'][1]['completedAt']).to_equal(dt_timestamp)
 
     @gen_test
     def test_can_get_domain_reviews_for_next_page(self):

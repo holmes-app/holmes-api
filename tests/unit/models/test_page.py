@@ -21,7 +21,7 @@ class TestPage(ApiTestCase):
         expect(page.id).not_to_be_null()
         expect(page.url).to_include('http://my-site.com/')
 
-        expect(page.created_date).to_be_like(datetime.now())
+        expect(page.created_date).to_be_like(datetime.utcnow())
         expect(page.last_review_date).to_be_null()
 
     def test_can_convert_page_to_dict(self):

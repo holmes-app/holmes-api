@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import calendar
 from datetime import datetime
 from uuid import UUID
 from ujson import loads, dumps
@@ -288,7 +289,9 @@ class TestPageReviewsHandler(ApiTestCase):
     @gen_test
     def test_can_get_page_reviews(self):
         dt1 = datetime(2010, 11, 12, 13, 14, 15)
+        dt1_timestamp = calendar.timegm(dt1.utctimetuple())
         dt2 = datetime(2011, 12, 13, 14, 15, 16)
+        dt2_timestamp = calendar.timegm(dt2.utctimetuple())
 
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
@@ -307,11 +310,11 @@ class TestPageReviewsHandler(ApiTestCase):
 
         expect(page_details[0]['violationCount']).to_equal(30)
         expect(page_details[0]['uuid']).to_equal(str(review2.uuid))
-        expect(page_details[0]['completedDate']).to_equal(dt2.isoformat())
+        expect(page_details[0]['completedAt']).to_equal(dt2_timestamp)
 
         expect(page_details[1]['violationCount']).to_equal(20)
         expect(page_details[1]['uuid']).to_equal(str(review1.uuid))
-        expect(page_details[1]['completedDate']).to_equal(dt1.isoformat())
+        expect(page_details[1]['completedAt']).to_equal(dt1_timestamp )
 
 
 class TestViolationsPerDayHandler(ApiTestCase):
