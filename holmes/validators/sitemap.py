@@ -77,7 +77,7 @@ class SitemapValidator(Validator):
 
                 try:
                     str(relative).encode('utf-8')
-                except UnicodeDecodeError:
+                except UnicodeEncodeError:
                     encoded = False
 
                 relative = HTML_ENTITIES.sub('', relative)
