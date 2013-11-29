@@ -85,8 +85,6 @@ class ReviewHandler(BaseReviewHandler):
 
         self.db.flush()
 
-        self._remove_older_reviews_with_same_day(review)
-
         self.db.query(Review).filter(
             Review.page_id == review.page_id
         ).filter(
@@ -96,6 +94,8 @@ class ReviewHandler(BaseReviewHandler):
         })
 
         self.db.flush()
+
+        self._remove_older_reviews_with_same_day(review)
 
         self.application.event_bus.publish(dumps({
             'type': 'new-review',

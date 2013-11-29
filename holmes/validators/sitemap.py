@@ -71,7 +71,12 @@ class SitemapValidator(Validator):
                 )
 
             for url in self.review.data['sitemap.urls'][sitemap]:
-                parse = URL_RE.match(url).groupdict()
+                match = URL_RE.match(url)
+
+                if not match:
+                    continue
+
+                parse = match.groupdict()
                 relative = parse['relative']
                 encoded = True
 
