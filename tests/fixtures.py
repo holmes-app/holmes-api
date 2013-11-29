@@ -34,6 +34,9 @@ class PageFactory(BaseFactory):
     created_date = None
     last_review_date = None
 
+    last_modified = None
+    expires = None
+
     domain = factory.SubFactory(DomainFactory)
     last_review = None
 

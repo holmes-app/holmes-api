@@ -47,6 +47,16 @@ class ReviewHandler(BaseReviewHandler):
 
         review_data = loads(self.get_argument('review'))
 
+        page.expires = review_data['expires']
+        if page.expires is not None:
+            page.expires = datetime.utcfromtimestamp(page.expires)
+
+        page.last_modified = review_data['lastModified']
+        if page.last_modified is not None:
+            page.last_modified = datetime.utcfromtimestamp(page.last_modified)
+
+        self.db.flush()
+
         review = Review(
             domain=page.domain,
             page=page,

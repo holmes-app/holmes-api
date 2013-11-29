@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from os.path import join
 import urlparse
 import inspect
-from os.path import join
+import email.utils as eut
+from datetime import datetime
 
 import requests
 from requests.exceptions import ConnectionError
@@ -22,9 +24,11 @@ class InvalidReviewError(RuntimeError):
 
 
 class ReviewDAO(object):
-    def __init__(self, page_uuid, page_url):
+    def __init__(self, page_uuid, page_url, last_modified=None, expires=None):
         self.page_uuid = page_uuid
         self.page_url = page_url
+        self.last_modified = last_modified
+        self.expires = expires
         self.facts = {}
         self.violations = []
         self.data = {}
@@ -51,7 +55,9 @@ class ReviewDAO(object):
             'page_uuid': self.page_uuid,
             'page_url': self.page_url,
             'facts': self.facts.values(),
-            'violations': self.violations
+            'violations': self.violations,
+            'lastModified': self.last_modified,
+            'expires': self.expires
         }
 
 
@@ -130,6 +136,19 @@ class Reviewer(object):
             return
 
         logging.debug('Content for url %s loaded.' % url)
+
+        last_modified = None
+
+        if 'Last-Modified' in response.headers:
+            last_modified = datetime(*eut.parsedate(response.headers['Last-Modified'])[:6])
+
+        self.review_dao.last_modified = last_modified
+
+        expires = None
+        if 'Expires' in response.headers:
+            expires = datetime(*eut.parsedate(response.headers['Expires'])[:6])
+
+        self.review_dao.expires = expires
 
         self._current = response
 

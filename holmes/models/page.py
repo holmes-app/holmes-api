@@ -28,10 +28,15 @@ class Page(Base):
     last_review_id = sa.Column('last_review_id', sa.Integer, sa.ForeignKey('reviews.id'))
     last_review = relationship("Review", foreign_keys=[last_review_id])
 
+    last_modified = sa.Column('last_modified', sa.DateTime, nullable=True)
+    expires = sa.Column('expires', sa.DateTime, nullable=True)
+
     def to_dict(self):
         return {
             'uuid': str(self.uuid),
-            'url': self.url
+            'url': self.url,
+            'lastModified': self.last_modified,
+            'expires': self.expires,
         }
 
     def __str__(self):
