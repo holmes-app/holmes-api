@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from mock import Mock
+from mock import Mock, call
 from preggy import expect
 
 from holmes.config import Config
@@ -47,17 +47,27 @@ class TestRobotsFacter(FacterTestCase):
         facter.add_fact = Mock()
         facter.get_facts()
 
+        robots_url = 'http://www.globo.com/robots.txt'
+
         expect(facter.review.data['robots.response']).to_equal(None)
-        facter.add_fact.assert_called_once_with(
-            key='robots.url',
-            value='http://www.globo.com/robots.txt',
-            title='Robots',
-            unit='robots',
-        )
+
         facter.async_get.assert_called_once_with(
-            'http://www.globo.com/robots.txt',
+            robots_url,
             facter.handle_robots_loaded
         )
+
+        response = Mock(status_code=200, text='', headers={})
+        facter.handle_robots_loaded(robots_url, response)
+
+        expect(facter.review.data['robots.response']).to_equal(response)
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='robots.url',
+                value=robots_url,
+                unit='robots',
+                title='Robots'
+            ))
 
     def test_handle_robots_loaded_should_save_data(self):
         page = PageFactory.create(url="http://www.globo.com")
