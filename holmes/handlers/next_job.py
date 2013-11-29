@@ -18,19 +18,21 @@ class NextJobHandler(BaseHandler):
         dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
 
         pages_in_need_of_review = self.db.query(Page) \
-            .filter(or_(
-                Page.last_review == None,
-                and_(
-                    Page.last_review != None,
-                    Page.last_review_date < dt
-                    )
-            )) \
+            .filter(Page.last_review == None) \
             .order_by(Page.created_date)[:50]
 
         if len(pages_in_need_of_review) == 0:
-            self.write('')
-            self.finish()
-            return
+            pages_in_need_of_review = self.db.query(Page) \
+                .filter(
+                    Page.last_review != None,
+                    Page.last_review_date < dt
+                ) \
+                .order_by(Page.created_date)[:50]
+
+            if len(pages_in_need_of_review) == 0:
+                self.write('')
+                self.finish()
+                return
 
         page = choice(pages_in_need_of_review)
 
