@@ -187,17 +187,20 @@ class TestViolationsPerDayHandler(ApiTestCase):
 
         domain_details = loads(response.body)
 
-        expect(domain_details['violations']).to_be_like({
-            u'2013-10-10': {
+        expect(domain_details['violations']).to_be_like([
+            {
+                u'completedAt': u'2013-10-10',
                 u'violation_points': 190,
                 u'violation_count': 20
             },
-            u'2013-10-11': {
+            {
+                u'completedAt': u'2013-10-11',
                 u'violation_points': 45,
                 u'violation_count': 10
             },
-            u'2013-10-12': {
+            {
+                u'completedAt': u'2013-10-12',
                 u'violation_points': 435,
                 u'violation_count': 30
             }
-        })
+        ])
