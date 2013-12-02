@@ -36,7 +36,7 @@ class TestTitleFacter(FacterTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
 
         facter = TitleFacter(reviewer)
         facter.add_fact = Mock()
@@ -75,7 +75,7 @@ class TestTitleFacter(FacterTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
 
         facter = TitleFacter(reviewer)
         facter.add_fact = Mock()

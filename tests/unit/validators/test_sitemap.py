@@ -192,7 +192,7 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.review.data['sitemap.files.size'] = {'http://g1.globo.com/sitemap.xml': 10}
         validator.review.data['sitemap.data'] = {'http://g1.globo.com/sitemap.xml': Mock(status_code=200, text='data')}
         validator.review.data['sitemap.files.urls'] = {'http://g1.globo.com/sitemap.xml': 20}
-        validator.review.data['sitemap.urls'] = {'http://g1.globo.com/sitemap.xml': ['http://g1.globo.com/ümlat.php']}
+        validator.review.data['sitemap.urls'] = {'http://g1.globo.com/sitemap.xml': ['http://g1.globo.com/ümlat.php', u'http://g1.globo.com/ümlat.php']}
         validator.add_violation = Mock()
         # validator.send_url = Mock()
 
@@ -201,7 +201,7 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.add_violation.assert_called_once_with(
             key='sitemaps.links.not_encoded',
             title='Url in sitemap is not encoded',
-            description='There\'s 1 not encoded links in the http://g1.globo.com/sitemap.xml sitemap.',
+            description='There\'s 2 not encoded links in the http://g1.globo.com/sitemap.xml sitemap.',
             points=10)
 
     def test_add_violation_when_sitemap_has_links_that_need_to_be_encoded_with_amp(self):

@@ -38,7 +38,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
 
         validator = TotalRequestsValidator(reviewer)
 
@@ -81,7 +81,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        reviewer.content_loaded(page.url, Mock(status_code=200, text=content))
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
 
         validator = TotalRequestsValidator(reviewer)
 
@@ -122,7 +122,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        reviewer.content_loaded(page.url, Mock(status_code=200, text=''))
+        reviewer.content_loaded(page.url, Mock(status_code=200, text='', headers={}))
 
         validator = TotalRequestsValidator(reviewer)
 

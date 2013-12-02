@@ -148,6 +148,8 @@ class TestReview(ApiTestCase):
             ],
             'page': {
                 'url': page.url,
+                'lastModified': None,
+                'expires': None,
                 'uuid': str(page_id)
             },
             'createdAt': None,

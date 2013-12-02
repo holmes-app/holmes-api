@@ -37,7 +37,7 @@ class TestBodyFacter(FacterTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        response = Mock(status_code=200, text=content)
+        response = Mock(status_code=200, text=content, headers={})
         reviewer.content_loaded(page.url, response)
 
         facter = BodyFacter(reviewer)
@@ -72,7 +72,7 @@ class TestBodyFacter(FacterTestCase):
         reviewer.responses[page.url] = result
         reviewer._wait_for_async_requests = Mock()
         reviewer.save_review = Mock()
-        response = Mock(status_code=200, text=content)
+        response = Mock(status_code=200, text=content, headers={})
         reviewer.content_loaded(page.url, response)
 
         facter = BodyFacter(reviewer)
