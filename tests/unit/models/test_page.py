@@ -45,20 +45,23 @@ class TestPage(ApiTestCase):
 
         violations = page.get_violations_per_day(self.db)
 
-        expect(violations["1997-10-10"]).to_be_like({
-            "violation_count": 20,
-            "violation_points": 190
-        })
-
-        expect(violations["1997-10-11"]).to_be_like({
-            "violation_count": 10,
-            "violation_points": 45
-        })
-
-        expect(violations["1997-10-12"]).to_be_like({
-            "violation_count": 30,
-            "violation_points": 435
-        })
+        expect(violations).to_be_like([
+            {
+                "completedAt": "1997-10-10",
+                "violation_count": 20,
+                "violation_points": 190
+            },
+            {
+                "completedAt": "1997-10-11",
+                "violation_count": 10,
+                "violation_points": 45
+            },
+            {
+                "completedAt": "1997-10-12",
+                "violation_count": 30,
+                "violation_points": 435
+            }
+        ])
 
     def test_can_get_page_by_uuid(self):
         page = PageFactory.create()

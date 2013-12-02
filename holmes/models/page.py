@@ -65,16 +65,18 @@ class Page(Base):
                 sa.func.month(Review.completed_date),
                 sa.func.day(Review.completed_date),
             ) \
+            .order_by(Review.completed_date) \
             .all()
 
-        result = {}
+        result = []
 
         for day in violations:
             dt = "%d-%d-%d" % (day.year, day.month, day.day)
-            result[dt] = {
+            result.append({
+                "completedAt": dt,
                 "violation_count": int(day.violation_count),
                 "violation_points": int(day.violation_points)
-            }
+            })
 
         return result
 

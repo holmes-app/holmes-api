@@ -122,20 +122,23 @@ class TestDomain(ApiTestCase):
 
         violations = domain.get_violations_per_day(self.db)
 
-        expect(violations["2013-10-10"]).to_be_like({
-            "violation_count": 20,
-            "violation_points": 190
-        })
-
-        expect(violations["2013-10-11"]).to_be_like({
-            "violation_count": 10,
-            "violation_points": 45
-        })
-
-        expect(violations["2013-10-12"]).to_be_like({
-            "violation_count": 30,
-            "violation_points": 435
-        })
+        expect(violations).to_be_like([
+            {
+                "completedAt": "2013-10-10",
+                "violation_count": 20,
+                "violation_points": 190
+            },
+            {
+                "completedAt": "2013-10-11",
+                "violation_count": 10,
+                "violation_points": 45
+            },
+            {
+                "completedAt": "2013-10-12",
+                "violation_count": 30,
+                "violation_points": 435
+            }
+        ])
 
     @gen_test
     def test_can_get_reviews_for_domain(self):
