@@ -3,16 +3,15 @@
 
 import sys
 import calendar
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from ujson import loads
 
-from holmes.models import Review, Page
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestReviewHandler(ApiTestCase):
