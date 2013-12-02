@@ -44,7 +44,7 @@ class WorkerHandler(BaseHandler):
         for worker in workers_to_delete:
             self.db.delete(worker)
 
-        self.db.commit()
+        self.db.flush()
 
 
 class WorkersHandler(BaseHandler):
