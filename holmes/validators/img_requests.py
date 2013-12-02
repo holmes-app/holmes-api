@@ -12,6 +12,8 @@ class ImageRequestsValidator(Validator):
 
         broken_imgs = set()
 
+        over_max_size = set()
+
         for url, response in img_files:
 
             if response.status_code > 399:
@@ -21,16 +23,7 @@ class ImageRequestsValidator(Validator):
                 size_img = len(response.text) / 1024.0
 
                 if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
-                    self.add_violation(
-                        key='single.size.img',
-                        title='Single image size in kb is too big.',
-                        description='Found a image bigger then limit %d (%d over limit): %s' % (
-                            self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                            size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE,
-                            url
-                        ),
-                        points=size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
-                    )
+                    over_max_size.add((url, size_img))
 
         if broken_imgs:
             data = []
@@ -45,6 +38,30 @@ class ImageRequestsValidator(Validator):
                 points=50
             )
 
+        if over_max_size:
+            data = []
+            points = 0
+            for url, size_img in over_max_size:
+                size = size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
+                name = url.rsplit('/', 1)[-1]
+                points += size
+                if size > 0:
+                    desc = ' (%dkb above limit)' % (size)
+                else:
+                    desc = ''
+                data.append(
+                    '<a href="%s" target="_blank">%s</a>%s' % (url, name, desc)
+                )
+
+            self.add_violation(
+                key='single.size.img',
+                title='Single image size in kb is too big.',
+                description='Some images are above the expected limit (%dkb): %s' % (
+                    self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                    ', '.join(data),
+                ),
+                points=points
+            )
 
         if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
             self.add_violation(

@@ -65,7 +65,9 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(key='single.size.img',
                  title='Single image size in kb is too big.',
-                 description='Found a image bigger then limit 6 (0 over limit): some_image.jpg',
+                 description='Some images are above the expected limit (6kb): '
+                             '<a href="some_image.jpg" target="_blank">'
+                             'some_image.jpg</a> (0kb above limit)',
                  points=0.57421875))
 
     def test_can_validate_image_404(self):
