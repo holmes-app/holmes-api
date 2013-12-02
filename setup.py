@@ -14,6 +14,7 @@ tests_require = [
     'ipdb',
     'coveralls',
     'factory_boy',
+    'sqltap',
 ]
 
 setup(

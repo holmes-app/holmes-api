@@ -69,12 +69,21 @@ class HolmesApiServer(Server):
     def after_start(self, io_loop):
         self.application.db = self.application.get_sqlalchemy_session()
 
+        if self.debug:
+            import sqltap
+            sqltap.start()
+
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
         self.connect_pub_sub(io_loop)
 
     def before_end(self, io_loop):
         self.application.db.remove()
+
+        if self.debug:
+            import sqltap
+            statistics = sqltap.collect()
+            sqltap.report(statistics, "report.html")
 
     def connect_pub_sub(self, io_loop):
         host = self.application.config.get('REDISHOST')

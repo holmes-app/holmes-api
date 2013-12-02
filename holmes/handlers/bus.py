@@ -21,5 +21,6 @@ class EventBusHandler(WebSocketHandler):
             self.write_message(message)
 
     def on_close(self):
-        self.application.event_bus.unsubscribe('events', self.uuid)
+        if hasattr(self, 'uuid'):
+            self.application.event_bus.unsubscribe('events', self.uuid)
         logging.debug("WebSocket closed.")
