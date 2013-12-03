@@ -28,6 +28,7 @@ from holmes.handlers.search import (
 )
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
+from holmes.utils import load_classes
 
 
 def main():
@@ -73,9 +74,27 @@ class HolmesApiServer(Server):
             import sqltap
             sqltap.start()
 
+        self.application.facters = self._load_facters()
+        self.application.validators = self._load_validators()
+
+        self.application.fact_definitions = {}
+        self.application.violation_definitions = {}
+
+        for facter in self.application.facters:
+            self.application.fact_definitions.update(facter.get_fact_definitions())
+
+        for validator in self.application.validators:
+            self.application.violation_definitions.update(validator.get_violation_definitions())
+
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
         self.connect_pub_sub(io_loop)
+
+    def _load_validators(self):
+        return load_classes(default=self.config.VALIDATORS)
+
+    def _load_facters(self):
+        return load_classes(default=self.config.FACTERS)
 
     def before_end(self, io_loop):
         self.application.db.remove()

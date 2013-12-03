@@ -14,6 +14,46 @@ class LinkCrawlerValidator(Validator):
         self.broken_links = set()
         self.moved_links = set()
 
+    @classmethod
+    def get_broken_link_message(cls, value):
+        return 'A link from your page to "%s" is using a 302 or 307 redirect. ' \
+            'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. ' \
+            'Use 301 instead.' % (
+                ', '.join(
+                    [
+                        '<a href="%s" target="_blank">Link #%s</a>' % (url, url, index)
+                        for index, url in enumerate(value)
+                    ]
+                )
+            )
+
+    @classmethod
+    def get_redirect_message(cls, value):
+        return 'This page contains broken links to %s ' \
+            '(the urls failed to load or timed-out after 10 seconds). ' \
+            'This can lead your site to lose rating with ' \
+            'Search Engines and is misleading to users.' % (
+                ', '.join(
+                    [
+                        '<a href="%s" target="_blank">Link #%s</a>' % (url, url, index)
+                        for index, url in enumerate(value)
+                    ]
+                )
+            )
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'link.broken': {
+                'title': 'Broken link(s) found.',
+                'description': cls.get_broken_link_message
+            },
+            'link.moved.temporarily': {
+                'title': 'Moved Temporarily.',
+                'description': cls.get_redirect_message
+            }
+        }
+
     def validate(self):
         links = self.get_links()
 
@@ -21,17 +61,9 @@ class LinkCrawlerValidator(Validator):
             self.send_url(response.effective_url, response)
 
         if self.broken_links:
-            data = []
-            for index, url in enumerate(self.broken_links, start=1):
-                data.append('<a href="%s" target="_blank">Link #%s</a>' % (url, index))
-
             self.add_violation(
-                key='broken.link',
-                title='A link is broken',
-                description=('A link from your page to "%s" is broken or the '
-                             'page failed to load in under 10 seconds. '
-                             'This can lead your site to lose rating with '
-                             'Search Engines and is misleading to users.') % (', '.join(data)),
+                key='link.broken',
+                value=self.broken_links,
                 points=100 * len(self.broken_links)
             )
 
@@ -41,11 +73,8 @@ class LinkCrawlerValidator(Validator):
                 data.append('<a href="%s" target="_blank">Link #%s</a>' % (url, index))
 
             self.add_violation(
-                key='moved.temporarily',
-                title='Moved Temporarily',
-                description='A link from your page to "%s" is using a 302 or 307 redirect. '
-                'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. '
-                'Use 301 instead. ' % (', '.join(data)),
+                key='link.moved.temporarily',
+                value=self.moved_links,
                 points=100
             )
 

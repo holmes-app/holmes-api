@@ -9,6 +9,10 @@ class Validator(object):
         self.reviewer = reviewer
         self.url_buffer = set()
 
+    @classmethod
+    def get_violation_definitions(cls):
+        raise NotImplementedError
+
     def is_absolute(self, url):
         return bool(urlparse.urlparse(url).scheme)
 

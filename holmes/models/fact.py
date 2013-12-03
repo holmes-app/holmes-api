@@ -10,29 +10,23 @@ class Fact(Base):
     __tablename__ = "facts"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    title = sa.Column('title', sa.String(2000), nullable=False)
     key = sa.Column('key', sa.String(2000), nullable=False)
-    unit = sa.Column('unit', sa.String(2000), nullable=False)
     value = sa.Column('value', JsonType, nullable=False)
+    #title = sa.Column('title', sa.String(2000), nullable=False)
+    #unit = sa.Column('unit', sa.String(2000), nullable=False)
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))
 
-    def to_dict(self):
+    def to_dict(self, fact_definitions):
         return {
-            'title': self.title,
+            'title': fact_definitions[self.key]['title'],
             'key': self.key,
-            'unit': self.unit,
+            'unit': fact_definitions[self.key].get('unit', 'value'),
             'value': self.value
         }
 
     def __str__(self):
-        unit = self.unit != 'value' and self.unit or ''
-        value = self.value
-
-        if unit in ['kb']:
-            value = '%.2f' % float(value)
-
-        return '%s: %s%s' % (self.key, value, unit)
+        return '%s: %s' % (self.key, self.value)
 
     def __repr__(self):
         return str(self)

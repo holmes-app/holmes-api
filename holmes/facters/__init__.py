@@ -5,8 +5,14 @@ import urlparse
 
 
 class Facter(object):
+    unit = 'value'
+
     def __init__(self, reviewer):
         self.reviewer = reviewer
+
+    @classmethod
+    def get_fact_definitions(cls):
+        raise NotImplementedError
 
     @property
     def page_uuid(self):
@@ -27,11 +33,11 @@ class Facter(object):
     def get(self, url):
         return self.reviewer._get(url)
 
-    def add_fact(self, key, value, title, unit='value'):
-        self.reviewer.add_fact(key, value, title, unit)
+    def add_fact(self, key, value):
+        self.reviewer.add_fact(key, value)
 
-    def add_violation(self, key, title, description, points):
-        self.reviewer.add_violation(key, title, description, points)
+    def add_violation(self, key, value):
+        self.reviewer.add_violation(key, value)
 
     def async_get(self, url, handler, method='GET', **kw):
         self.reviewer._async_get(url, handler, method, **kw)

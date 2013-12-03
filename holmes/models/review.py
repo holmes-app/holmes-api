@@ -29,7 +29,7 @@ class Review(Base):
     facts = relationship("Fact", cascade="all,delete", backref="review")
     violations = relationship("Violation", cascade="all,delete", backref="review")
 
-    def to_dict(self):
+    def to_dict(self, fact_definitions, violation_definitions):
         return {
             'page': self.page and self.page.to_dict() or None,
             'domain': self.domain and self.domain.name or None,
@@ -37,8 +37,8 @@ class Review(Base):
             'uuid': str(self.uuid),
             'createdAt': self.created_date,
             'completedAt': self.completed_date,
-            'facts': [fact.to_dict() for fact in self.facts],
-            'violations': [violation.to_dict() for violation in self.violations]
+            'facts': [fact.to_dict(fact_definitions) for fact in self.facts],
+            'violations': [violation.to_dict(violation_definitions) for violation in self.violations]
         }
 
     def __str__(self):
@@ -47,23 +47,23 @@ class Review(Base):
     def __repr__(self):
         return str(self)
 
-    def add_fact(self, key, value, title, unit=None):
+    def add_fact(self, key, value):
         if self.is_complete:
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.fact import Fact  # to avoid circular dependency
 
-        fact = Fact(key=key, value=value, title=title, unit=unit)
+        fact = Fact(key=key, value=value)
 
         self.facts.append(fact)
 
-    def add_violation(self, key, title, description, points):
+    def add_violation(self, key, value, points):
         if self.is_complete:
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.violation import Violation  # to avoid circular dependency
 
-        violation = Violation(key=key, title=title, description=description, points=int(float(points)))
+        violation = Violation(key=key, value=value, points=int(float(points)))
 
         self.violations.append(violation)
 

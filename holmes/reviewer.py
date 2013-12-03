@@ -34,19 +34,16 @@ class ReviewDAO(object):
         self.data = {}
         self._current = None
 
-    def add_fact(self, key, title, value, unit=None):
+    def add_fact(self, key, value):
         self.facts[key] = {
             'key': key,
-            'value': value,
-            'title': title,
-            'unit': unit
+            'value': value
         }
 
-    def add_violation(self, key, title, description, points):
+    def add_violation(self, key, value, points):
         self.violations.append({
             'key': key,
-            'title': title,
-            'description': description,
+            'value': value,
             'points': points
         })
 
@@ -224,11 +221,11 @@ class Reviewer(object):
                 response.text
             ))
 
-    def add_fact(self, key, value, title, unit='value'):
-        self.review_dao.add_fact(key, title, value, unit)
+    def add_fact(self, key, value):
+        self.review_dao.add_fact(key, value)
 
-    def add_violation(self, key, title, description, points):
-        self.review_dao.add_violation(key, title, description, points)
+    def add_violation(self, key, value, points):
+        self.review_dao.add_violation(key, value, points)
 
     def save_review(self):
         url = self.get_url('/page/%s/review/' % (self.page_uuid))

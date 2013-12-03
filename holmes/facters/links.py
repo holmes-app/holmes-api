@@ -18,6 +18,20 @@ URL_RE = re.compile(
 
 
 class LinkFacter(Facter):
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'page.links': {
+                'title': 'Links to',
+                'description': lambda value: list(value),
+                'unit': 'links'
+            },
+            'total.number.links': {
+                'title': 'Link count',
+                'description': lambda value: "This page has %d outbound links." % value
+            }
+        }
+
     def looks_like_image(self, url):
         image_types = ['png', 'webp', 'gif', 'jpg', 'jpeg']
         for image_type in image_types:
@@ -35,8 +49,6 @@ class LinkFacter(Facter):
         self.add_fact(
             key='page.links',
             value=set(),
-            title='Links',
-            unit='links'
         )
 
         num_links = 0
@@ -73,8 +85,7 @@ class LinkFacter(Facter):
 
         self.add_fact(
             key='total.number.links',
-            value=num_links,
-            title='Link Count'
+            value=num_links
         )
 
     def handle_url_loaded(self, url, response):

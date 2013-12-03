@@ -28,7 +28,7 @@ class ReviewHandler(BaseReviewHandler):
             self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
             return
 
-        result = review.to_dict()
+        result = review.to_dict(self.application.fact_definitions, self.application.violation_definitions)
         result.update({
             'violationPoints': review.get_violation_points(),
             'violationCount': review.violation_count,
@@ -64,11 +64,13 @@ class ReviewHandler(BaseReviewHandler):
         self.db.flush()
 
         for fact in review_data['facts']:
-            review.add_fact(fact['key'], fact['value'], fact['title'], fact['unit'])
+            review.add_fact(fact['key'], fact['value'])
+
         self.db.flush()
 
         for violation in review_data['violations']:
-            review.add_violation(violation['key'], violation['title'], violation['description'], violation['points'])
+            review.add_violation(violation['key'], violation['value'], violation['points'])
+
         self.db.flush()
 
         review.is_complete = True
@@ -123,7 +125,7 @@ class LastReviewsHandler(BaseReviewHandler):
 
         reviews_json = []
         for review in reviews:
-            review_dict = review.to_dict()
+            review_dict = review.to_dict(self.application.fact_definitions, self.application.violation_definitions)
             data = {
                 'violationCount': review.violation_count,
             }
