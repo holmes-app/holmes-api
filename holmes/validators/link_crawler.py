@@ -68,10 +68,6 @@ class LinkCrawlerValidator(Validator):
             )
 
         if self.moved_links:
-            data = []
-            for index, url in enumerate(self.moved_links, start=1):
-                data.append('<a href="%s" target="_blank">Link #%s</a>' % (url, index))
-
             self.add_violation(
                 key='link.moved.temporarily',
                 value=self.moved_links,
