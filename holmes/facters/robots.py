@@ -8,6 +8,15 @@ from holmes.facters import Facter
 
 class RobotsFacter(Facter):
 
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'robots.url': {
+                'title': 'Robots file URL',
+                'description': lambda value: value
+            }
+        }
+
     def get_facts(self):
         if not self.reviewer.is_root():
             return
@@ -25,9 +34,7 @@ class RobotsFacter(Facter):
         if url == self.rebase('/robots.txt') and response.status_code <= 399:
             self.add_fact(
                 key='robots.url',
-                value=url,
-                title='Robots',
-                unit='robots'
+                value=url
             )
 
         self.review.data['robots.response'] = response

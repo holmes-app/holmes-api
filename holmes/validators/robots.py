@@ -6,6 +6,20 @@ from holmes.validators.base import Validator
 
 
 class RobotsValidator(Validator):
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'robots.not_found': {
+                'title': 'Robots file not found.',
+                'description': lambda value: "The robots file at '%s' was not found." % value
+            },
+            'robots.empty': {
+                'title': 'Robots file was empty.',
+                'description': lambda value: "The robots file at '%s' was empty." % value
+            }
+        }
+
     def validate(self):
         if not self.reviewer.is_root():
             return
@@ -15,8 +29,7 @@ class RobotsValidator(Validator):
         if response.status_code > 399:
             self.add_violation(
                 key='robots.not_found',
-                title='Robots not found',
-                description='',
+                value=response.url,
                 points=100
             )
             return
@@ -24,7 +37,6 @@ class RobotsValidator(Validator):
         if not response.text.strip():
             self.add_violation(
                 key='robots.empty',
-                title='Empty robots file',
-                description='',
+                value=response.url,
                 points=100
             )
