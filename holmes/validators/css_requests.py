@@ -5,6 +5,31 @@ from holmes.validators.base import Validator
 
 
 class CSSRequestsValidator(Validator):
+    @classmethod
+    def get_requests_css_message(cls, value):
+        return 'This page has %d CSS request (%d over limit). ' \
+               'Having too many requests impose a tax in the ' \
+               'browser due to handshakes.' % (value['total_css_files'],
+                                               value['over_limit'])
+
+    @classmethod
+    def get_total_size_message(cls, value):
+        return 'There\'s %.2fkb of CSS in this page and that ' \
+               'adds up to more download time slowing down the ' \
+               'page rendering to the user.' % value
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'total.requests.css': {
+                'title': 'Too many CSS requests.',
+                'description': cls.get_requests_css_message
+            },
+            'total.size.css': {
+                'title': 'CSS size in kb is too big.',
+                'description': cls.get_total_size_message
+            },
+        }
 
     def validate(self):
         total_css_files = self.get_total_requests_css()
@@ -16,11 +41,10 @@ class CSSRequestsValidator(Validator):
         if total_css_files > self.reviewer.config.MAX_CSS_REQUESTS_PER_PAGE:
             self.add_violation(
                 key='total.requests.css',
-                title='Too many CSS requests.',
-                description='This page has %d CSS request (%d over limit). '
-                            'Having too many requests impose a tax in the '
-                            'browser due to handshakes.' % (total_css_files,
-                                                            over_limit),
+                value={
+                    'total_css_files': total_css_files,
+                    'over_limit': over_limit
+                },
                 points=5 * over_limit
             )
 
@@ -29,10 +53,7 @@ class CSSRequestsValidator(Validator):
         if total_size_gzip > max_kb_gzip:
             self.add_violation(
                 key='total.size.css',
-                title='CSS size in kb is too big.',
-                description='There\'s %.2fkb of CSS in this page and that '
-                            'adds up to more download time slowing down the '
-                            'page rendering to the user.' % total_size_gzip,
+                value=total_size_gzip,
                 points=int(total_size_gzip - max_kb_gzip)
             )
 
