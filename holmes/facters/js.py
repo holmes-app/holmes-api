@@ -7,6 +7,29 @@ from holmes.facters import Facter
 
 
 class JSFacter(Facter):
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'page.js': {
+                'title': 'JS',
+                'description': lambda value: list(value),
+                'unit': 'js'
+            },
+            'total.requests.js': {
+                'title': 'Total JS requests',
+                'description': lambda value: '%d' % value,
+            },
+            'total.size.js': {
+                'title': 'Total JS size',
+                'description': lambda value: '%d' % value,
+                'unit': 'kb'
+            },
+            'total.size.js.gzipped': {
+                'title': 'Total JS size gzipped',
+                'description': lambda value: '%d' % value,
+                'unit': 'kb'
+            }
+        }
 
     def get_facts(self):
         js_files = self.get_js_requests()
@@ -18,22 +41,16 @@ class JSFacter(Facter):
         self.add_fact(
             key='page.js',
             value=set(),
-            title='JS',
-            unit='js'
         )
 
         self.add_fact(
             key='total.size.js',
             value=0,
-            unit='kb',
-            title='Total JS size'
         )
 
         self.add_fact(
             key='total.size.js.gzipped',
             value=0,
-            unit='kb',
-            title='Total JS size gzipped'
         )
 
         num_js = 0
@@ -52,7 +69,6 @@ class JSFacter(Facter):
         self.add_fact(
             key='total.requests.js',
             value=num_js,
-            title='Total JS requests'
         )
 
         for url in js_to_get:
