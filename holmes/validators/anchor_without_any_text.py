@@ -6,6 +6,23 @@ from holmes.facters.links import REMOVE_HASH
 
 
 class AnchorWithoutAnyTextValidator(Validator):
+    @classmethod
+    def get_empy_anchors_message(cls, value):
+        return 'Empty anchors are not good for Search Engines. ' \
+               'Empty anchors were found for links to: %s.' % (
+                   ', '.join([
+                       '<a href="%s" target="_blank">#%s</a>' % (href, index)
+                       for index, href in enumerate(value)
+                   ]))
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'empty.anchors': {
+                'title': 'Empty anchor(s) found',
+                'description': cls.get_empy_anchors_message
+            }
+        }
 
     def validate(self):
         links = self.get_links()
@@ -23,17 +40,9 @@ class AnchorWithoutAnyTextValidator(Validator):
                 links_with_empty_anchor.append(href)
 
         if links_with_empty_anchor:
-            data = []
-            for index, href in enumerate(links_with_empty_anchor, start=1):
-                data.append('<a href="%s" target="_blank">#%s</a>' % (
-                    href, index))
-
             self.add_violation(
                 key='empty.anchors',
-                title='Empty anchor(s) found',
-                description='Empty anchors are not good for Search Engines. '
-                            'Empty anchors were found for links to: %s.' % (
-                                ', '.join(data)),
+                value=links_with_empty_anchor,
                 points=20 * len(links_with_empty_anchor)
             )
 
