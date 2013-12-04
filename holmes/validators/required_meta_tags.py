@@ -6,18 +6,30 @@ from holmes.validators.base import Validator
 
 class RequiredMetaTagsValidator(Validator):
 
-    def validate(self):
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'absent.meta.tags': {
+                'title': 'Required Meta Tags were not found.',
+                'description': lambda value: "Meta tags for %s were not found." % (', '.join(value))
+            }
+        }
 
+    def validate(self):
         required_tags = self.reviewer.config.REQUIRED_META_TAGS
+
+        absent_metatags = []
+
         for tag in required_tags:
             if not self.get_meta_tag(tag):
-                self.add_violation(
-                    key='absent.meta.%s' % tag,
-                    title='Meta not present',
-                    description='Not having meta tag for "%s" is '
-                                'damaging for Search Engines.' % tag,
-                    points=20
-                )
+                absent_metatags.append(tag)
+
+        if absent_metatags:
+            self.add_violation(
+                key='absent.meta.tags',
+                value=absent_metatags,
+                points=20
+            )
 
     def get_meta_tag(self, tag):
         meta_tags = self.review.data.get('meta.tags', None)
