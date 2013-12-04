@@ -5,6 +5,14 @@ from holmes.validators.base import Validator
 
 
 class BodyValidator(Validator):
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'page.body.not_found': {
+                'title': 'Page body not found.',
+                'description': lambda value: 'Body was not found on %s.' % value
+            }
+        }
 
     def validate(self):
         body = self.get_body()
@@ -15,8 +23,7 @@ class BodyValidator(Validator):
 
             self.add_violation(
                 key='page.body.not_found',
-                title='Page body not found.',
-                description='Body was not found on %s' % page_url,
+                value=page_url,
                 points=50
             )
 
