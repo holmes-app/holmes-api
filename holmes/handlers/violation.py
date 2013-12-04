@@ -11,7 +11,7 @@ class MostCommonViolationsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        violations = Violation.get_most_common_violations(self.db)
+        violations = Violation.get_most_common_violations(self.db, self.application.violation_definitions)
 
         result = []
         for item in violations:

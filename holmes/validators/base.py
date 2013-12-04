@@ -47,8 +47,8 @@ class Validator(object):
     def add_fact(self, key, value, title, unit='value'):
         self.reviewer.add_fact(key, value, title, unit)
 
-    def add_violation(self, key, title, description, points):
-        self.reviewer.add_violation(key, title, description, points)
+    def add_violation(self, key, value, points):
+        self.reviewer.add_violation(key, value, points)
 
     def test_url(self, url, response, broken_link_callback=None, moved_link_callback=None):
         status = response.status_code

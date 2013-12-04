@@ -13,6 +13,25 @@ ROBOTS_SITEMAP = re.compile('Sitemap:\s+(.*)')
 
 class SitemapFacter(Facter):
 
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'total.sitemap.indexes': {
+                'title': 'Total SiteMap indexes'
+            },
+            'total.sitemap.urls': {
+                'title': 'Total SiteMap urls'
+            },
+            'total.size.sitemap': {
+                'title': 'Total SiteMap size',
+                'unit': 'kb'
+            },
+            'total.size.sitemap.gzipped': {
+                'title': 'Total SiteMap gzipped size',
+                'unit': 'kb'
+            }
+        }
+
     def get_facts(self):
         if not self.reviewer.is_root():
             return
@@ -29,30 +48,22 @@ class SitemapFacter(Facter):
 
         self.add_fact(
             key='total.sitemap.indexes',
-            value=0,
-            unit='',
-            title='Total Sitemap indexes'
+            value=0
         )
 
         self.add_fact(
             key='total.sitemap.urls',
-            value=0,
-            unit='',
-            title='Total Sitemap urls'
+            value=0
         )
 
         self.add_fact(
             key='total.size.sitemap',
-            value=0,
-            unit='kb',
-            title='Total Sitemap size'
+            value=0
         )
 
         self.add_fact(
             key='total.size.sitemap.gzipped',
-            value=0,
-            unit='kb',
-            title='Total Sitemap size gzipped'
+            value=0
         )
 
     def get_sitemaps(self, response):

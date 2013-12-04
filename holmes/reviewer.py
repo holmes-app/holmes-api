@@ -154,11 +154,12 @@ class Reviewer(object):
         except (lxml.etree.XMLSyntaxError, lxml.etree.ParserError):
             self._current.html = None
 
-            self.add_violation(
-                key='invalid.content',
-                title='Invalid Content',
-                description='Fail to parse content from %s' % url,
-                points=1000)
+            # can't do this there, this is not a validator
+            #self.add_violation(
+                #key='invalid.content',
+                #title='Invalid Content',
+                #description='Fail to parse content from %s' % url,
+                #points=1000)
 
         self.run_facters()
         self.wait_for_async_requests()

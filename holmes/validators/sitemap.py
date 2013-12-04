@@ -21,6 +21,37 @@ class SitemapValidator(Validator):
     MAX_SITEMAP_SIZE = 10  # 10 MB
     MAX_LINKS_SITEMAP = 50000
 
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'sitemap.not_found': {
+                'title': 'SiteMap file not found.',
+                'description': lambda value: "The sitemap file was not found at '%s'." % value
+            },
+            'sitemap.empty': {
+                'title': 'SiteMap file is empty.',
+                'description': lambda value: "The sitemap file was found at '%s', but was empty." % value
+            },
+            'total.size.sitemap': {
+                'title': 'SiteMap file is too big.',
+                'description': lambda value: "The sitemap file was found at '%s', but was too big (%.2fMB)." % (
+                    value['url'], value['size']
+                )
+            },
+            'total.links.sitemap': {
+                'title': 'SiteMap file contains too many links.',
+                'description': lambda value: "The sitemap file was found at '%s', but contained too many links (%d). Maybe splitting it would help?" % (
+                    value['url'], value['links']
+                )
+            },
+            'sitemap.links.not_encoded': {
+                'title': 'SiteMap file contains unencoded links.',
+                'description': lambda value: "The sitemap file was found at '%s', but contains unencoded links (%s)." % (
+                    value['url'], value['links']
+                )
+            }
+        }
+
     def validate(self):
         if not self.reviewer.is_root():
             return
@@ -30,18 +61,16 @@ class SitemapValidator(Validator):
 
             if response.status_code > 399:
                 self.add_violation(
-                    key='sitemaps.not_found',
-                    title='Sitemaps not found',
-                    description='',
+                    key='sitemap.not_found',
+                    value=sitemap,
                     points=100
                 )
                 return
 
             if not response.text.strip():
                 self.add_violation(
-                    key='sitemaps.empty',
-                    title='Empty sitemaps file',
-                    description='',
+                    key='sitemap.empty',
+                    value=sitemap,
                     points=100
                 )
                 return
@@ -53,20 +82,20 @@ class SitemapValidator(Validator):
             if size_mb > self.MAX_SITEMAP_SIZE:
                 self.add_violation(
                     key='total.size.sitemap',
-                    title='Sitemap size in MB is too big.',
-                    description='There\'s %.2fMB of Sitemap in the %s file. '
-                                'Sitemap files should not exceed %s MB.'
-                                % (size_mb, sitemap, self.MAX_SITEMAP_SIZE),
+                    value={
+                        'url': sitemap,
+                        'size': size_mb
+                    },
                     points=10
                 )
 
             if urls_count > self.MAX_LINKS_SITEMAP:
                 self.add_violation(
                     key='total.links.sitemap',
-                    title='Many links in a single sitemap.',
-                    description='There\'s %d links in the %s sitemap. '
-                                'Sitemap links should not exceed %s links.'
-                                % (urls_count, sitemap, self.MAX_LINKS_SITEMAP),
+                    value={
+                        'url': sitemap,
+                        'links': urls_count
+                    },
                     points=10
                 )
 
@@ -95,10 +124,11 @@ class SitemapValidator(Validator):
 
             if not_encoded_links > 0:
                 self.add_violation(
-                    key='sitemaps.links.not_encoded',
-                    title='Url in sitemap is not encoded',
-                    description='There\'s %d not encoded links in the %s sitemap.'
-                                % (not_encoded_links, sitemap),
+                    key='sitemap.links.not_encoded',
+                    value={
+                        'url': sitemap,
+                        'links': not_encoded_links
+                    },
                     points=10
                 )
 

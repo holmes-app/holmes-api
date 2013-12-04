@@ -22,7 +22,7 @@ class Fact(Base):
             'title': fact_definitions[self.key]['title'],
             'key': self.key,
             'unit': fact_definitions[self.key].get('unit', 'value'),
-            'value': self.value
+            'value': fact_definitions[self.key].get('description', lambda value: value)(self.value)
         }
 
     def __str__(self):

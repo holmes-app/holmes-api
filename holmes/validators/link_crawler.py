@@ -21,7 +21,7 @@ class LinkCrawlerValidator(Validator):
             'Use 301 instead.' % (
                 ', '.join(
                     [
-                        '<a href="%s" target="_blank">Link #%s</a>' % (url, url, index)
+                        '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
                         for index, url in enumerate(value)
                     ]
                 )
