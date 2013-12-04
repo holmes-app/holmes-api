@@ -6,6 +6,16 @@ from holmes.facters import Facter
 
 class MetaTagsFacter(Facter):
 
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'meta.tags': {
+                'title': 'Meta Tags',
+                'description': lambda value: value,
+                'unit': 'values'
+            }
+        }
+
     def get_facts(self):
 
         values = self.process_meta_tags()
@@ -13,8 +23,6 @@ class MetaTagsFacter(Facter):
         self.add_fact(
             key='meta.tags',
             value=values,
-            title='Meta Tags',
-            unit='values'
         )
 
         self.review.data['meta.tags'] = values
