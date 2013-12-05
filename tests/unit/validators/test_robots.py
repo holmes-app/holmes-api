@@ -44,16 +44,17 @@ class TestRobotsValidator(ValidatorTestCase):
         )
 
         validator = RobotsValidator(reviewer)
-        validator.review.data['robots.response'] = Mock(status_code=404, text=None)
+        response = Mock(status_code=404, text=None)
+        validator.review.data['robots.response'] = response
         validator.add_violation = Mock()
 
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
             key='robots.not_found',
-            title='Robots not found',
-            description='',
-            points=100)
+            value=response.url,
+            points=100
+        )
 
     def test_add_violation_when_empty(self):
         page = PageFactory.create(url='http://globo.com/')
@@ -67,13 +68,23 @@ class TestRobotsValidator(ValidatorTestCase):
         )
 
         validator = RobotsValidator(reviewer)
-        validator.review.data['robots.response'] = Mock(status_code=200, text='')
+        response = Mock(status_code=200, text='')
+        validator.review.data['robots.response'] = response
         validator.add_violation = Mock()
 
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
             key='robots.empty',
-            title='Empty robots file',
-            description='',
-            points=100)
+            value=response.url,
+            points=100
+        )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = RobotsValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('robots.not_found' in definitions).to_be_true()
+        expect('robots.empty' in definitions).to_be_true()
