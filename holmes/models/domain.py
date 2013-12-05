@@ -3,6 +3,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+from sqlalchemy import func
 
 from holmes.models import Base
 
@@ -31,7 +32,7 @@ class Domain(Base):
 
     def get_page_count(self, db):
         from holmes.models import Page
-        return db.query(Page).filter(Page.domain_id == self.id).count()
+        return db.query(func.count(Page.id)).filter(Page.domain_id == self.id).scalar()
 
     @classmethod
     def get_violations_per_domain(cls, db):
@@ -55,7 +56,7 @@ class Domain(Base):
 
         result = db.query(sa.func.count(Violation.id).label('count'), sa.func.sum(Violation.points).label('points')) \
             .join(Review, Violation.review_id == Review.id) \
-            .filter(Review.domain_id == self.id) \
+            .filter(Review.domain_id == self.id, Review.is_active == True) \
             .one()
 
         return (
@@ -120,4 +121,4 @@ class Domain(Base):
     def get_active_review_count(self, db):
         from holmes.models import Review
 
-        return db.query(Review).filter(Review.is_active == True, Review.domain == self).count()
+        return db.query(func.count(Review.id)).filter(Review.is_active == True, Review.domain_id == self.id).scalar()

@@ -27,10 +27,14 @@ class Violation(Base):
         return str(self)
 
     def to_dict(self, violation_definitions):
+        definition = violation_definitions.get(self.key, {
+            'title': 'undefined'
+        })
+
         return {
             'key': self.key.name,
-            'title': violation_definitions[self.key.name]['title'],
-            'description': violation_definitions[self.key.name]['description'](self.value),
+            'title': definition['title'],
+            'description': definition.get('description', lambda value: value)(self.value),
             'points': self.points
         }
 

@@ -13,49 +13,53 @@ down_revision = '21087e990aa8'
 from alembic import op
 import sqlalchemy as sa
 
-connection = op.get_bind()
 
 def upgrade():
-    op.create_table(
-        'keys',
-        sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('name', sa.String(2000), nullable=False)
-    )
+    connection = op.get_bind()
 
-    op.add_column('facts', sa.Column('key_id', sa.Integer), nullable=False)
-    op.create_foreign_key(
-        "fk_key_fact", 'facts',
-        "keys", ["key_id"], ["id"]
-    )
+    #op.create_table(
+        #'keys',
+        #sa.Column('id', sa.Integer, primary_key=True),
+        #sa.Column('name', sa.String(2000), nullable=False)
+    #)
 
-    op.add_column('violations', sa.Column('key_id', sa.Integer), nullable=False)
-    op.create_foreign_key(
-        "fk_key_violation", 'violations',
-        "keys", ["key_id"], ["id"]
-    )
+    #op.add_column('violations', sa.Column('key_id', sa.Integer, nullable=False))
+    #op.add_column('facts', sa.Column('key_id', sa.Integer, nullable=False))
 
-    keys = set()
+    #keys = set()
 
-    for values in connection.execute('SELECT DISTINCT(`key`) FROM violations;'):
-        keys.add(values[0])
+    #for values in connection.execute('SELECT DISTINCT(`key`) FROM violations;'):
+        #keys.add(values[0])
 
-    for values in connection.execute('SELECT DISTINCT(`key`) FROM facts;'):
-        keys.add(values[0])
+    #for values in connection.execute('SELECT DISTINCT(`key`) FROM facts;'):
+        #keys.add(values[0])
 
-    if keys:
-        connection.execute('INSERT INTO `keys` (`name`) VALUES {0}'.format(', '.join(('(\'{0}\')'.format(key) for key in keys))))
+    #if keys:
+        #connection.execute('INSERT INTO `keys` (`name`) VALUES {0}'.format(', '.join(('(\'{0}\')'.format(key) for key in keys))))
 
-    for values in connection.execute('SELECT id, `name` FROM `keys`'):
-        connection.execute('UPDATE facts SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
-        connection.execute('UPDATE violations SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
+    #for values in connection.execute('SELECT id, `name` FROM `keys`'):
+        #connection.execute('UPDATE facts SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
+        #connection.execute('UPDATE violations SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
 
-    op.drop_column('facts', 'key')
-    op.drop_column('violations', 'key')
+    #op.drop_column('facts', 'key')
+    #op.drop_column('violations', 'key')
+
+    #op.create_foreign_key(
+        #"fk_key_fact", 'facts',
+        #"keys", ["key_id"], ["id"]
+    #)
+
+    #op.create_foreign_key(
+        #"fk_key_violation", 'violations',
+        #"keys", ["key_id"], ["id"]
+    #)
 
 
 def downgrade():
-    op.add_column('facts', sa.Column('key', sa.String(2000)))
-    op.add_column('violations', sa.Column('key', sa.String(2000)))
+    connection = op.get_bind()
+
+    op.add_column('facts', sa.Column('key', sa.String(2000), nullable=True))
+    op.add_column('violations', sa.Column('key', sa.String(2000), nullable=True))
 
     for values in connection.execute('SELECT id, `name` FROM `keys`'):
         id_, key = values

@@ -17,14 +17,18 @@ class Fact(Base):
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))
     # review comes from Review relationship
+
     key_id = sa.Column('key_id', sa.Integer, sa.ForeignKey('keys.id'))
 
     def to_dict(self, fact_definitions):
+        definition = fact_definitions.get(self.key.name, {
+            'title': 'unknown'
+        })
         return {
-            'title': fact_definitions[self.key.name]['title'],
+            'title': definition['title'],
             'key': self.key.name,
-            'unit': fact_definitions[self.key.name].get('unit', 'value'),
-            'value': fact_definitions[self.key.name].get('description', lambda value: value)(self.value)
+            'unit': definition.get('unit', 'value'),
+            'value': definition.get('description', lambda value: value)(self.value)
         }
 
     def __str__(self):
