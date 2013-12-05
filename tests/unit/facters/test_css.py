@@ -49,31 +49,24 @@ class TestCSSFacter(FacterTestCase):
             call(
                 key='page.css',
                 value=set([]),
-                unit='css',
-                title='CSS'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css',
                 value=0,
-                unit='kb',
-                title='Total CSS size'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.size.css.gzipped',
                 value=0,
-                unit='kb',
-                title='Total CSS size gzipped'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.css',
                 value=1,
-                title='Total CSS requests'
             ))
 
         expect(facter.review.data).to_be_like({
@@ -127,3 +120,13 @@ class TestCSSFacter(FacterTestCase):
         expect(facter.review.data).to_include('page.css')
         data = set([(page.url, response)])
         expect(facter.review.data['page.css']).to_equal(data)
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = CSSFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('page.css' in definitions).to_be_true()
+        expect('total.size.css' in definitions).to_be_true()
+        expect('total.size.css.gzipped' in definitions).to_be_true()
+        expect('total.requests.css' in definitions).to_be_true()
