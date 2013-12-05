@@ -52,10 +52,10 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
-            key='sitemaps.not_found',
-            title='Sitemaps not found',
-            description='',
-            points=100)
+            key='sitemap.not_found',
+            value='http://g1.globo.com/sitemap.xml',
+            points=100
+        )
 
     def test_add_violation_when_sitemap_is_empty(self):
         page = PageFactory.create(url='http://globo.com')
@@ -76,10 +76,10 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
-            key='sitemaps.empty',
-            title='Empty sitemaps file',
-            description='',
-            points=100)
+            key='sitemap.empty',
+            value='http://g1.globo.com/sitemap.xml',
+            points=100
+        )
 
     def test_add_violation_when_sitemap_is_too_large(self):
         page = PageFactory.create(url='http://globo.com')
@@ -103,9 +103,12 @@ class TestSitemapValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='total.size.sitemap',
-            title='Sitemap size in MB is too big.',
-            description='There\'s 10.00MB of Sitemap in the http://g1.globo.com/sitemap.xml file. Sitemap files should not exceed 10 MB.',
-            points=10)
+            value={
+                'url': 'http://g1.globo.com/sitemap.xml',
+                'size': 10.0009765625
+            },
+            points=10
+        )
 
     def test_add_violation_when_sitemap_has_many_links(self):
         page = PageFactory.create(url='http://globo.com')
@@ -129,9 +132,9 @@ class TestSitemapValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='total.links.sitemap',
-            title='Many links in a single sitemap.',
-            description='There\'s 50001 links in the http://g1.globo.com/sitemap.xml sitemap. Sitemap links should not exceed 50000 links.',
-            points=10)
+            value={'url': 'http://g1.globo.com/sitemap.xml', 'links': 50001},
+            points=10
+        )
 
     def test_add_violation_when_sitemap_has_links_with_no_path(self):
         page = PageFactory.create(url='http://globo.com')
@@ -199,9 +202,8 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
-            key='sitemaps.links.not_encoded',
-            title='Url in sitemap is not encoded',
-            description='There\'s 2 not encoded links in the http://g1.globo.com/sitemap.xml sitemap.',
+            key='sitemap.links.not_encoded',
+            value={'url': 'http://g1.globo.com/sitemap.xml', 'links': 2},
             points=10)
 
     def test_add_violation_when_sitemap_has_links_that_need_to_be_encoded_with_amp(self):
@@ -225,10 +227,10 @@ class TestSitemapValidator(ValidatorTestCase):
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
-            key='sitemaps.links.not_encoded',
-            title='Url in sitemap is not encoded',
-            description='There\'s 1 not encoded links in the http://g1.globo.com/sitemap.xml sitemap.',
-            points=10)
+            key='sitemap.links.not_encoded',
+            value={'url': 'http://g1.globo.com/sitemap.xml', 'links': 1},
+            points=10
+        )
 
     def test_add_violation_when_sitemap_with_good_link(self):
         page = PageFactory.create(url='http://globo.com')
@@ -253,3 +255,15 @@ class TestSitemapValidator(ValidatorTestCase):
 
         expect(validator.add_violation.call_count).to_equal(0)
         expect(validator.flush.call_count).to_equal(1)
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = SitemapValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('sitemap.not_found' in definitions).to_be_true()
+        expect('sitemap.empty' in definitions).to_be_true()
+        expect('total.size.sitemap' in definitions).to_be_true()
+        expect('total.links.sitemap' in definitions).to_be_true()
+        expect('sitemap.links.not_encoded' in definitions).to_be_true()
