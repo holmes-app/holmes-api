@@ -71,16 +71,16 @@ class TestSitemapFacter(FacterTestCase):
         expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0)
 
         expect(facter.add_fact.call_args_list).to_include(
-            call(key='total.sitemap.indexes', value=0, unit='', title='Total Sitemap indexes')
+            call(key='total.sitemap.indexes', value=0)
         )
         expect(facter.add_fact.call_args_list).to_include(
-            call(key='total.sitemap.urls', value=0, unit='', title='Total Sitemap urls')
+            call(key='total.sitemap.urls', value=0)
         )
         expect(facter.add_fact.call_args_list).to_include(
-            call(key='total.size.sitemap', value=0, unit='kb', title='Total Sitemap size')
+            call(key='total.size.sitemap', value=0)
         )
         expect(facter.add_fact.call_args_list).to_include(
-            call(key='total.size.sitemap.gzipped', value=0, unit='kb', title='Total Sitemap size gzipped')
+            call(key='total.size.sitemap.gzipped', value=0)
         )
         facter.async_get.assert_called_once_with(
             'http://g1.globo.com/robots.txt',
@@ -236,3 +236,13 @@ class TestSitemapFacter(FacterTestCase):
             'http://g1.globo.com/sitemap.xml',
             facter.handle_sitemap_loaded
         )
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = SitemapFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('total.sitemap.indexes' in definitions).to_be_true()
+        expect('total.sitemap.urls' in definitions).to_be_true()
+        expect('total.size.sitemap' in definitions).to_be_true()
+        expect('total.size.sitemap.gzipped' in definitions).to_be_true()
