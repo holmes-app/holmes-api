@@ -47,11 +47,10 @@ class TestTitleFacter(FacterTestCase):
             key='page.title',
             value=u'globo.com - Absolutamente tudo sobre not\xedcias, '
                   'esportes e entretenimento',
-            title='Page Title'
         )
 
-        expect(facter.review.data).to_include('page.title.count')
-        expect(facter.review.data['page.title.count']).to_equal(1)
+        expect(facter.review.data).to_include('page.title_count')
+        expect(facter.review.data['page.title_count']).to_equal(1)
 
     def test_no_title_tag(self):
         page = PageFactory.create()
@@ -84,3 +83,34 @@ class TestTitleFacter(FacterTestCase):
 
         expect(facter.add_fact.called).to_be_false()
         expect(facter.review.data).to_be_like({})
+
+    def test_can_get_fact_definitions(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            facters=[]
+        )
+
+        content = self.get_file('globo.html')
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = TitleFacter(reviewer)
+
+        definitions = facter.get_fact_definitions()
+
+        expect('page.title' in definitions).to_be_true()

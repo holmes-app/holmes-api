@@ -23,4 +23,4 @@ class TitleFacter(Facter):
 
         self.review.data['page.title_count'] = len(titles)
 
-        self.add_fact('page.title', titles[0].text)
+        self.add_fact(key='page.title', value=titles[0].text)
