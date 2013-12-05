@@ -19,13 +19,13 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
     def test_can_add_fact(self):
         mock_reviewer = Mock()
-        Validator(mock_reviewer).add_fact('test', 10, 'title', 'unit')
-        mock_reviewer.add_fact.assert_called_once_with('test', 10, 'title', 'unit')
+        Validator(mock_reviewer).add_fact('test', 10)
+        mock_reviewer.add_fact.assert_called_once_with('test', 10)
 
     def test_can_add_violation(self):
         mock_reviewer = Mock()
-        Validator(mock_reviewer).add_violation('test', 'title', 'description', 100)
-        mock_reviewer.add_violation.assert_called_once_with('test', 'title', 'description', 100)
+        Validator(mock_reviewer).add_violation('test', 'value', 100)
+        mock_reviewer.add_violation.assert_called_once_with('test', 'value', 100)
 
     def test_can_return_reviewer_info(self):
         review = ReviewFactory.create()
@@ -54,7 +54,6 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
     def test_can_rebase(self):
         page = PageFactory.create(url='http://globoi.com/test/index.html')
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -71,7 +70,6 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
     def test_will_call_reviewer_enqueue(self):
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -89,7 +87,6 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
     def test_will_call_reviewer_add_fact(self):
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -101,12 +98,11 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
         reviewer.add_fact = Mock()
 
         validator = Validator(reviewer)
-        validator.add_fact('random.fact', 'random', 'value', 'title')
-        reviewer.add_fact.assert_called_once_with('random.fact', 'random', 'value', 'title')
+        validator.add_fact('random.fact', 'value')
+        reviewer.add_fact.assert_called_once_with('random.fact', 'value')
 
     def test_will_call_reviewer_add_violation(self):
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page)
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -118,8 +114,8 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
         reviewer.add_violation = Mock()
 
         validator = Validator(reviewer)
-        validator.add_violation('random.violation', 'random', 'violation', 0)
-        reviewer.add_violation.assert_called_once_with('random.violation', 'random', 'violation', 0)
+        validator.add_violation('random.violation', 'random', 0)
+        reviewer.add_violation.assert_called_once_with('random.violation', 'random', 0)
 
     def test_can_encode_content(self):
         validator = Validator(None)

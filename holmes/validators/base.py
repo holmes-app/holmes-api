@@ -44,8 +44,8 @@ class Validator(object):
     def enqueue(self, url):
         self.reviewer.enqueue(url)
 
-    def add_fact(self, key, value, title, unit='value'):
-        self.reviewer.add_fact(key, value, title, unit)
+    def add_fact(self, key, value):
+        self.reviewer.add_fact(key, value)
 
     def add_violation(self, key, value, points):
         self.reviewer.add_violation(key, value, points)
