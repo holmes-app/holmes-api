@@ -65,9 +65,14 @@ class TestMetaTagsFacter(FacterTestCase):
             call(
                 key='meta.tags',
                 value=values,
-                unit='values',
-                title='Meta Tags'
             ))
 
         expect(facter.review.data).to_include('meta.tags')
         expect(facter.review.data).to_be_like({'meta.tags': values})
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = MetaTagsFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('meta.tags' in definitions).to_be_true()
