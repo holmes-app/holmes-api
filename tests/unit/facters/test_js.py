@@ -49,31 +49,24 @@ class TestJSFacter(FacterTestCase):
             call(
                 key='page.js',
                 value=set([]),
-                unit='js',
-                title='JS'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js',
                 value=0,
-                unit='kb',
-                title='Total JS size'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.size.js.gzipped',
                 value=0,
-                unit='kb',
-                title='Total JS size gzipped'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.js',
                 value=1,
-                title='Total JS requests'
             ))
 
         expect(facter.review.data).to_be_like({
@@ -127,3 +120,13 @@ class TestJSFacter(FacterTestCase):
         expect(facter.review.data).to_include('page.js')
         data = set([(page.url, response)])
         expect(facter.review.data['page.js']).to_equal(data)
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = JSFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('page.js' in definitions).to_be_true()
+        expect('total.size.js' in definitions).to_be_true()
+        expect('total.size.js.gzipped' in definitions).to_be_true()
+        expect('total.requests.js' in definitions).to_be_true()
