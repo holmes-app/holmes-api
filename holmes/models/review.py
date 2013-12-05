@@ -20,6 +20,7 @@ class Review(Base):
 
     created_date = sa.Column('created_date', sa.DateTime, default=datetime.utcnow, nullable=False)
     completed_date = sa.Column('completed_date', sa.DateTime, nullable=True)
+    completed_day = sa.Column('completed_day', sa.Date, nullable=True)
 
     failure_message = sa.Column('failure_message', sa.String(2000), nullable=True)
 

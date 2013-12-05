@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from sqlalchemy import func
+
 from holmes.models import Domain, Page
 from holmes.handlers import BaseHandler
 
@@ -111,7 +113,8 @@ class DomainReviewsHandler(BaseHandler):
                 'url': page.url
             })
 
-        page_count = self.db.query(Page).filter(Page.domain == domain, Page.last_review_date == None).count()
+        page_count = self.db.query(func.count(Page.id)).filter(Page.domain_id == domain.id, Page.last_review_date == None).scalar()
+
         page_count = page_count - len(pages)
         if page_count <= 0:
             page_count = 0
