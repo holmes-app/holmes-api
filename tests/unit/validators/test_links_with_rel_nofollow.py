@@ -4,6 +4,7 @@
 import lxml
 from mock import Mock
 from tests.unit.base import ApiTestCase
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -53,10 +54,26 @@ class TestLinkWithRelNofollowValidator(ApiTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='invalid.links.nofollow',
-            title='Links with rel="nofollow"',
-            description='Links with rel="nofollow" to the same '
-                        'domain as the page make it harder for search '
-                        'engines to crawl the website. Links with '
-                        'rel="nofollow" were found for hrefs ('
-                        '<a href="%s" target="_blank">#1</a>).' % url,
-            points=10)
+            value=[{'href': 'http://my-site.com/test.html', 'rel': 'nofollow'}],
+            points=10
+        )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = LinkWithRelNofollowValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        links_nofollow_message = validator.get_links_nofollow_message(
+            [{'href': 'http://my-site.com/test.html', 'rel': 'nofollow'}]
+        )
+
+        expect('invalid.links.nofollow' in definitions).to_be_true()
+
+        url = 'http://my-site.com/test.html'
+        expect(links_nofollow_message).to_equal(
+            'Links with rel="nofollow" to the same domain as the page make '
+            'it harder for search engines to crawl the website. Links with '
+            'rel="nofollow" were found for hrefs (<a href="%s" '
+            'target="_blank">#0</a>).' % url
+        )
