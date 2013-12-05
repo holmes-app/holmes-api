@@ -7,6 +7,29 @@ from holmes.facters import Facter
 
 
 class CSSFacter(Facter):
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'page.css': {
+                'title': 'CSS',
+                'description': lambda value: list(value),
+                'unit': 'css'
+            },
+            'total.requests.css': {
+                'title': 'Total CSS requests',
+                'description': lambda value: '%d' % value,
+            },
+            'total.size.css': {
+                'title': 'Total CSS size',
+                'description': lambda value: '%d' % value,
+                'unit': 'kb'
+            },
+            'total.size.css.gzipped': {
+                'title': 'Total CSS size gzipped',
+                'description': lambda value: '%d' % value,
+                'unit': 'kb'
+            }
+        }
 
     def get_facts(self):
         css_files = self.get_css()
@@ -18,22 +41,16 @@ class CSSFacter(Facter):
         self.add_fact(
             key='page.css',
             value=set(),
-            title='CSS',
-            unit='css'
         )
 
         self.add_fact(
             key='total.size.css',
             value=0,
-            unit='kb',
-            title='Total CSS size'
         )
 
         self.add_fact(
             key='total.size.css.gzipped',
             value=0,
-            unit='kb',
-            title='Total CSS size gzipped'
         )
 
         num_css = 0
@@ -54,7 +71,6 @@ class CSSFacter(Facter):
         self.add_fact(
             key='total.requests.css',
             value=num_css,
-            title='Total CSS requests'
         )
 
         for url in css_to_get:

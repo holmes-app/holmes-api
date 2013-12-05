@@ -52,10 +52,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='total.requests.js',
-                title='Too many javascript requests.',
-                description='This page has 2 JavaScript request '
-                            '(1 over limit). Having too many requests impose '
-                            'a tax in the browser due to handshakes.',
+                value={'total_js_files': 2, 'over_limit': 1},
                 points=5
             )
         )
@@ -63,10 +60,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='total.size.js',
-                title='Javascript size in kb is too big.',
-                description='There\'s 0.04kb of JavaScript in this page and '
-                            'that adds up to more download time slowing down '
-                            'the page rendering to the user.',
+                value=0.04,
                 points=0
             ))
 
@@ -131,3 +125,53 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_get_violation_definitions(self):
+        config = Config()
+        config.MAX_JS_REQUESTS_PER_PAGE = 1
+        config.MAX_JS_KB_PER_PAGE_AFTER_GZIP = 0.03
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        content = self.get_file('globo.html')
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = JSRequestsValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('total.size.js' in definitions).to_be_true()
+        expect('total.requests.js' in definitions).to_be_true()
+
+        total_size_message = validator.get_total_size_message(0.03)
+        requests_js_message = validator.get_requests_js_message({
+            'total_js_files': 7,
+            'over_limit': 6
+        })
+
+        expect(total_size_message).to_equal(
+            'There\'s 0.03kb of JavaScript in this page and that adds '
+            'up to more download time slowing down the page rendering '
+            'to the user.'
+        )
+
+        expect(requests_js_message).to_equal(
+            'This page has 7 JavaScript request (6 over limit). Having too '
+            'many requests impose a tax in the browser due to handshakes.'
+        )

@@ -61,23 +61,18 @@ class TestImageFacter(FacterTestCase):
             call(
                 key='page.images',
                 value=set([]),
-                unit='image',
-                title='Images'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.size.img',
                 value=0,
-                unit='kb',
-                title='Total images size'
             )),
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.requests.img',
                 value=1,
-                title='Total images requests'
             ))
 
         facter.async_get.assert_called_once_with(
@@ -125,3 +120,12 @@ class TestImageFacter(FacterTestCase):
 
         expect(facter.review.data).to_include('total.size.img')
         expect(facter.review.data['total.size.img']).to_equal(0.0390625)
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = ImageFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('page.images' in definitions).to_be_true()
+        expect('total.size.img' in definitions).to_be_true()
+        expect('total.requests.img' in definitions).to_be_true()

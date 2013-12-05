@@ -60,18 +60,14 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='total.requests.css',
-                title='Too many CSS requests.',
-                description='This page has 7 CSS request (6 over limit). '
-                            'Having too many requests impose a tax in the browser due to handshakes.',
+                value={'over_limit': 6, 'total_css_files': 7},
                 points=30
             ))
 
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='total.size.css',
-                title='CSS size in kb is too big.',
-                description="There's 0.05kb of CSS in this page and that adds up to more download time "
-                            "slowing down the page rendering to the user.",
+                value=0.05,
                 points=0
             ))
 
@@ -136,3 +132,27 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = CSSRequestsValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+        total_size_message = validator.get_total_size_message(0.05)
+        requests_css_message = validator.get_requests_css_message({
+            'total_css_files': 7,
+            'over_limit': 6
+        })
+
+        expect(total_size_message).to_equal(
+            'There\'s 0.05kb of CSS in this page and that adds up to more '
+            'download time slowing down the page rendering to the user.'
+        )
+
+        expect(requests_css_message).to_equal(
+            'This page has 7 CSS request (6 over limit). Having too many '
+            'requests impose a tax in the browser due to handshakes.'
+        )
+
+        expect('total.size.css' in definitions).to_be_true()
+        expect('total.requests.css' in definitions).to_be_true()

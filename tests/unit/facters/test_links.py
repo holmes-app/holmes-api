@@ -58,15 +58,12 @@ class TestMetaTagsFacter(ValidatorTestCase):
             call(
                 key='page.links',
                 value=set([]),
-                unit='links',
-                title='Links'
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.number.links',
                 value=4,
-                title='Link Count'
             ))
 
         expect(facter.async_get.call_args_list).to_include(
@@ -121,3 +118,11 @@ class TestMetaTagsFacter(ValidatorTestCase):
         expect(facter.review.data).to_include('page.links')
         data = set([(page.url, response)])
         expect(facter.review.data['page.links']).to_equal(data)
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = LinkFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('page.links' in definitions).to_be_true()
+        expect('total.number.links' in definitions).to_be_true()

@@ -65,8 +65,6 @@ class TestRobotsFacter(FacterTestCase):
             call(
                 key='robots.url',
                 value=robots_url,
-                unit='robots',
-                title='Robots'
             ))
 
     def test_handle_robots_loaded_should_save_data(self):
@@ -89,3 +87,10 @@ class TestRobotsFacter(FacterTestCase):
         )
 
         expect(facter.review.data['robots.response']).to_equal(response)
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = RobotsFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect('robots.url' in definitions).to_be_true()

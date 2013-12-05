@@ -7,6 +7,24 @@ from holmes.facters import Facter
 
 
 class ImageFacter(Facter):
+    @classmethod
+    def get_fact_definitions(cls):
+        return {
+            'page.images': {
+                'title': 'Images',
+                'description': lambda value: list(value),
+                'unit': 'images'
+            },
+            'total.size.img': {
+                'title': 'Total images size',
+                'description': lambda value: '%d' % value,
+                'unit': 'kb'
+            },
+            'total.requests.img': {
+                'title': 'Total images requests',
+                'description': lambda value: '%d' % value,
+            }
+        }
 
     def get_facts(self):
         img_files = self.get_images()
@@ -17,16 +35,12 @@ class ImageFacter(Facter):
 
         self.add_fact(
             key='page.images',
-            value=set(),
-            title='Images',
-            unit='image'
+            value=set()
         )
 
         self.add_fact(
             key='total.size.img',
-            value=0,
-            unit='kb',
-            title='Total images size'
+            value=0
         )
 
         images_to_get = set()
@@ -48,8 +62,7 @@ class ImageFacter(Facter):
 
         self.add_fact(
             key='total.requests.img',
-            value=len(images_to_get),
-            title='Total images requests'
+            value=len(images_to_get)
         )
 
     def handle_url_loaded(self, url, response):

@@ -5,6 +5,33 @@ from holmes.validators.base import Validator
 
 
 class JSRequestsValidator(Validator):
+    @classmethod
+    def get_requests_js_message(cls, value):
+        return 'This page has %d JavaScript request ' \
+               '(%d over limit). Having too many requests impose ' \
+               'a tax in the browser due to handshakes.' % (
+                   value['total_js_files'],
+                   value['over_limit'])
+
+    @classmethod
+    def get_total_size_message(cls, value):
+        return 'There\'s %.2fkb of JavaScript in this page and ' \
+               'that adds up to more download time slowing down ' \
+               'the page rendering to the user.' % value
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'total.requests.js': {
+                'title': 'Too many javascript requests.',
+                'description': cls.get_requests_js_message
+            },
+            'total.size.js': {
+                'title': 'Javascript size in kb is too big.',
+                'description': cls.get_total_size_message
+            }
+        }
+
     def validate(self):
         total_js_files = self.get_total_requests_js()
         total_size_gzip = self.get_total_size_js_gzipped()
@@ -15,12 +42,9 @@ class JSRequestsValidator(Validator):
         if total_js_files > max_requests:
             self.add_violation(
                 key='total.requests.js',
-                title='Too many javascript requests.',
-                description='This page has %d JavaScript request '
-                            '(%d over limit). Having too many requests impose '
-                            'a tax in the browser due to handshakes.' % (
-                                total_js_files,
-                                over_limit),
+                value={
+                    'total_js_files': total_js_files,
+                    'over_limit': over_limit},
                 points=5 * over_limit
             )
 
@@ -29,10 +53,7 @@ class JSRequestsValidator(Validator):
         if total_size_gzip > max_kb_gzip:
             self.add_violation(
                 key='total.size.js',
-                title='Javascript size in kb is too big.',
-                description='There\'s %.2fkb of JavaScript in this page and '
-                            'that adds up to more download time slowing down '
-                            'the page rendering to the user.' % total_size_gzip,
+                value=total_size_gzip,
                 points=int(total_size_gzip - max_kb_gzip)
             )
 

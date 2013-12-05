@@ -5,6 +5,25 @@ from holmes.validators.base import Validator
 
 
 class ImageWithoutAltAttributeValidator(Validator):
+    @classmethod
+    def get_empy_anchors_message(cls, value):
+        result = []
+        for src, name in value:
+            data = '<a href="%s" target="_blank">%s</a>' % (src, name)
+            result.append(data)
+
+        return 'Images without alt text are not good for ' \
+               'Search Engines. Images without alt were ' \
+               'found for: %s.' % (', '.join(result))
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'invalid.images.alt': {
+                'title': 'Image(s) without alt attribute',
+                'description': cls.get_empy_anchors_message
+            }
+        }
 
     def validate(self):
         imgs = self.get_imgs()
@@ -22,16 +41,12 @@ class ImageWithoutAltAttributeValidator(Validator):
 
             if not img.get('alt'):
                 name = src.rsplit('/', 1)[-1]
-                data = '<a href="%s" target="_blank">%s</a>' % (src, name)
-                result.append(data)
+                result.append((src, name))
 
         if result:
             self.add_violation(
                 key='invalid.images.alt',
-                title='Image(s) without alt attribute',
-                description='Images without alt text are not good for '
-                            'Search Engines. Images without alt were '
-                            'found for: %s.' % (', '.join(result)),
+                value=result,
                 points=20 * len(result)
             )
 
