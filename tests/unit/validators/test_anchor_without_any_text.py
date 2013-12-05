@@ -3,6 +3,7 @@
 
 import lxml.html
 from mock import Mock
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -52,8 +53,21 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='empty.anchors',
-            title='Empty anchor(s) found',
-            description='Empty anchors are not good for Search Engines. '
-                        'Empty anchors were found for links to: '
-                        '<a href="http://globo.com" target="_blank">#1</a>.',
+            value=['http://globo.com'],
             points=20)
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = AnchorWithoutAnyTextValidator(reviewer)
+        definitions = validator.get_violation_definitions()
+
+        expect('empty.anchors' in definitions).to_be_true()
+
+        links = ['http://globo.com']
+        empy_anchors_message = validator.get_empy_anchors_message(links)
+
+        expect(empy_anchors_message).to_equal(
+            'Empty anchors are not good for Search Engines. '
+            'Empty anchors were found for links to: '
+            '<a href="http://globo.com" target="_blank">#0</a>.'
+        )
