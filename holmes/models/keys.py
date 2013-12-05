@@ -17,7 +17,7 @@ class Key(Base):
     violations = relationship("Violation", cascade="all,delete", backref="key")
 
     def __str__(self):
-        return '%s' % (self.key)
+        return '%s' % (self.name)
 
     def __repr__(self):
         return str(self)
