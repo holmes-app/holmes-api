@@ -11,7 +11,7 @@ class JSRequestsValidator(Validator):
                '(%d over limit). Having too many requests impose ' \
                'a tax in the browser due to handshakes.' % (
                    value['total_js_files'],
-                   value['over_limit']),
+                   value['over_limit'])
 
     @classmethod
     def get_total_size_message(cls, value):
