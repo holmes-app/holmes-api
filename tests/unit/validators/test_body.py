@@ -3,6 +3,7 @@
 
 import lxml.html
 from mock import Mock
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -47,7 +48,14 @@ class TestBodyValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='page.body.not_found',
-            title='Page body not found.',
-            description='Body was not found on %s' % page.url,
+            value=page.url,
             points=50
         )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = BodyValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('page.body.not_found' in definitions).to_be_true()
