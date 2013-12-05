@@ -4,6 +4,7 @@
 import lxml
 from mock import Mock
 from tests.unit.base import ApiTestCase
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -74,3 +75,21 @@ class TestLinkWithRedirectValidator(ApiTestCase):
                             'link: %s.' % url2,
              'points': 10}
         ])
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = LinkWithRedirectValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('link.redirect.302' in definitions).to_be_true()
+        expect('link.redirect.307' in definitions).to_be_true()
+
+        link_with_redirect_message = validator.get_link_with_redirect_message(
+            302
+        )
+
+        expect(link_with_redirect_message).to_equal(
+            'Link with redirect, in most cases, should not be used. '
+            'Redirects were found for link: 302.'
+        )
