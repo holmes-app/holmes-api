@@ -56,19 +56,21 @@ class TestImageRequestsValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.call_args_list).to_include(
-            call(key='total.requests.img',
-                 title='Too many image requests.',
-                 description='This page has 60 image requests (10 over limit). '
-                             'Having too many requests impose a tax in the browser due to handshakes.',
-                 points=50))
+            call(
+                key='total.requests.img',
+                value={'total': 60, 'limit': 10},
+                points=50
+            ))
 
         expect(validator.add_violation.call_args_list).to_include(
-            call(key='single.size.img',
-                 title='Single image size in kb is too big.',
-                 description='Some images are above the expected limit (6kb): '
-                             '<a href="some_image.jpg" target="_blank">'
-                             'some_image.jpg</a> (0kb above limit)',
-                 points=0.57421875))
+            call(
+                key='single.size.img',
+                value={
+                    'limit': 6,
+                    'over_max_size': set([('some_image.jpg', 6.57421875)])
+                },
+                points=0.57421875
+            ))
 
     def test_can_validate_image_404(self):
         config = Config()
@@ -102,11 +104,9 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='broken.img',
-                title='Image not found.',
-                description='The image(s) in "<a href="%s" target="_blank">'
-                    'Link #1</a>" could not be found or took more '
-                    'than 10 seconds to load.' % (img_url),
-                points=50))
+                value=set(['http://globo.com/some_image.jpg']),
+                points=50
+            ))
 
     def test_can_validate_single_image_html(self):
         config = Config()
@@ -186,3 +186,37 @@ class TestImageRequestsValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = ImageRequestsValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('broken.img' in definitions).to_be_true()
+        expect('single.size.img' in definitions).to_be_true()
+        expect('total.requests.img' in definitions).to_be_true()
+        expect('total.size.img' in definitions).to_be_true()
+
+        broken_images_message = validator.get_broken_images_message(
+            set(['http://globo.com/some_image.jpg'])
+        )
+        requests_images_message = validator.get_requests_images_message(
+            {'total': 60, 'limit': 10}
+        )
+        total_size_message = validator.get_total_size_message(60)
+
+        expect(broken_images_message).to_equal(
+            'The image(s) in "<a href="http://globo.com/some_image.jpg" '
+            'target="_blank">Link #0</a>" could not be found or took '
+            'more than 10 seconds to load.')
+
+        expect(requests_images_message).to_equal(
+            'This page has 60 image requests (10 over limit). Having too many '
+            'requests impose a tax in the browser due to handshakes.'
+        )
+
+        expect(total_size_message).to_equal(
+            'There`s 60.00kb of images in this page and that adds up to more '
+            'download time slowing down the page rendering to the user.'
+        )

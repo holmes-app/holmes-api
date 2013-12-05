@@ -13,7 +13,6 @@ class ImageRequestsValidator(Validator):
                    ', '.join(
                    [
                        '<a href="%s" target="_blank">Link #%s</a>' % (url,
-                                                                      url,
                                                                       index)
                        for index, url in enumerate(value)
                    ]))
