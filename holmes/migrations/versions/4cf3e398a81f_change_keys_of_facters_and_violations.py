@@ -22,17 +22,8 @@ def upgrade():
         sa.Column('name', sa.String(2000), nullable=False)
     )
 
-    op.add_column('facts', sa.Column('key_id', sa.Integer), nullable=False)
-    op.create_foreign_key(
-        "fk_key_fact", 'facts',
-        "keys", ["key_id"], ["id"]
-    )
-
-    op.add_column('violations', sa.Column('key_id', sa.Integer), nullable=False)
-    op.create_foreign_key(
-        "fk_key_violation", 'violations',
-        "keys", ["key_id"], ["id"]
-    )
+    op.add_column('facts', sa.Column('key_id', sa.Integer, nullable=False))
+    op.add_column('violations', sa.Column('key_id', sa.Integer, nullable=False))
 
     keys = set()
 
@@ -48,6 +39,15 @@ def upgrade():
     for values in connection.execute('SELECT id, `name` FROM `keys`'):
         connection.execute('UPDATE facts SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
         connection.execute('UPDATE violations SET key_id = \'{0}\' WHERE `key` = \'{1}\''.format(*values))
+
+    op.create_foreign_key(
+        "fk_key_fact", 'facts',
+        "keys", ["key_id"], ["id"]
+    )
+    op.create_foreign_key(
+        "fk_key_violation", 'violations',
+        "keys", ["key_id"], ["id"]
+    )
 
     op.drop_column('facts', 'key')
     op.drop_column('violations', 'key')
