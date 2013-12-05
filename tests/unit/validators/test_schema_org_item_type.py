@@ -51,23 +51,14 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.schema.itemscope',
-                title='itemscope attribute missing in body',
-                description='In order to conform to schema.org definition '
-                            'of a webpage, the body tag must feature an '
-                            'itemscope attribute.',
                 points=10
             ))
 
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.schema.itemtype',
-                title='itemtype attribute missing in body',
-                description='In order to conform to schema.org definition '
-                            'of a webpage, the body tag must feature an '
-                            'itemtype attribute.',
                 points=10
             ))
-
 
     def test_has_invalid_itemtype(self):
         config = Config()
@@ -101,14 +92,38 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
 
         validator.validate()
 
-        url = 'http://schema.org/WebPage'
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='invalid.schema.itemtype',
-                title='itemtype attribute is invalid',
-                description='In order to conform to schema.org definition '
-                            'of a webpage, the body tag must feature an '
-                            'itemtype attribute with a value of "%s" or '
-                            'one of its more specific types.' % (url),
                 points=10
             ))
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = SchemaOrgItemTypeValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('absent.schema.itemscope' in definitions).to_be_true()
+        expect('absent.schema.itemtype' in definitions).to_be_true()
+        expect('absent.schema.itemtype' in definitions).to_be_true()
+
+        itemscope_message = validator.get_itemscope_message()
+        itemtype_message = validator.get_itemtype_message()
+        invalid_itemtype_message = validator.get_invalid_itemtype_message()
+
+        expect(itemscope_message).to_equal(
+            'In order to conform to schema.org definition of a webpage, the '
+            'body tag must feature an itemscope attribute.'
+        )
+
+        expect(itemtype_message).to_equal(
+            'In order to conform to schema.org definition of a webpage, '
+            'the body tag must feature an itemtype attribute.'
+        )
+
+        expect(invalid_itemtype_message).to_equal(
+            'In order to conform to schema.org definition of a webpage, '
+            'the body tag must feature an itemtype attribute with a value '
+            'of "http://schema.org/WebPage" or one of its more specific types.'
+        )
