@@ -50,7 +50,25 @@ class TestImageWithoutAltAttributeValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.call_args_list).to_include(
-            call(key='invalid.images.alt',
-                 title='Image(s) without alt attribute',
-                 description='Images without alt text are not good for Search Engines. Images without alt were found for: <a href="http://my-site.com/the-src" target="_blank">the-src</a>.',
-                 points=20))
+            call(
+                key='invalid.images.alt',
+                value=[('http://my-site.com/the-src', 'the-src')],
+                points=20
+            ))
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = ImageWithoutAltAttributeValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('invalid.images.alt' in definitions).to_be_true()
+
+        data = [('http://my-site.com/the-src', 'the-src')]
+        empy_anchors_message = validator.get_empy_anchors_message(data)
+
+        expect(empy_anchors_message).to_equal(
+            'Images without alt text are not good for Search Engines. Images '
+            'without alt were found for: <a href="http://my-site.com/the-src" '
+            'target="_blank">the-src</a>.'
+        )
