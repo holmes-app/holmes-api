@@ -3,6 +3,7 @@
 
 import lxml.html
 from mock import Mock
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -47,10 +48,6 @@ class TestMetaRobotsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='presence.meta.robots.noindex',
-            title='Meta Robots with value of noindex',
-            description='A meta tag with the robots="noindex" '
-                        'attribute tells the search engines that '
-                        'they should not index this page.',
             points=80
         )
 
@@ -88,8 +85,12 @@ class TestMetaRobotsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='presence.meta.robots.nofollow',
-            title='Meta Robots with value of nofollow',
-            description='A meta tag with the robots="nofollow" '
-                        'attribute tells the search engines that they '
-                        'should not follow any links in this page.',
             points=50)
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = MetaRobotsValidator(reviewer)
+        definitions = validator.get_violation_definitions()
+
+        expect('presence.meta.robots.noindex' in definitions).to_be_true()
+        expect('presence.meta.robots.nofollow' in definitions).to_be_true()
