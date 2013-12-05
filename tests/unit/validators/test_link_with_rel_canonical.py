@@ -46,16 +46,10 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
 
         validator.validate()
 
-        url = 'https://support.google.com/webmasters/answer/139394?hl=en'
-
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.meta.canonical',
-                title='Link with rel="canonical" not found',
-                description='As can be seen in this page <a href="%s">About '
-                            'rel="canonical"</a>, it\'s a good practice to '
-                            'include rel="canonical" urls in the pages for '
-                            'your website.' % (url),
+                value='',
                 points=30
             ))
 
@@ -90,16 +84,10 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
 
         validator.validate()
 
-        url = 'https://support.google.com/webmasters/answer/139394?hl=en'
-
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.meta.canonical',
-                title='Link with rel="canonical" not found',
-                description='As can be seen in this page <a href="%s">About '
-                            'rel="canonical"</a>, it\'s a good practice to '
-                            'include rel="canonical" urls in the pages for '
-                            'your website.' % (url),
+                value='',
                 points=30
             ))
 
@@ -135,3 +123,22 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = LinkWithRelCanonicalValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('absent.meta.canonical' in definitions).to_be_true()
+
+        message = validator.get_absent_meta_canonical_message(
+            'http://globo.com'
+        )
+
+        url = 'https://support.google.com/webmasters/answer/139394?hl=en'
+        expect(message).to_equal(
+            'As can be seen in this page <a href="%s">About rel="canonical"'
+            '</a>, it\'s a good practice to include rel="canonical" urls in '
+            'the pages for your website.' % url
+        )
