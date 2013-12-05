@@ -13,9 +13,9 @@ down_revision = '21087e990aa8'
 from alembic import op
 import sqlalchemy as sa
 
-connection = op.get_bind()
-
 def upgrade():
+    connection = op.get_bind()
+
     op.create_table(
         'keys',
         sa.Column('id', sa.Integer, primary_key=True),
@@ -54,6 +54,8 @@ def upgrade():
 
 
 def downgrade():
+    connection = op.get_bind()
+
     op.add_column('facts', sa.Column('key', sa.String(2000)))
     op.add_column('violations', sa.Column('key', sa.String(2000)))
 
