@@ -27,26 +27,23 @@ class TestReviewDAO(ApiTestCase):
     def test_can_add_fact(self):
         item = ReviewDAO("uuid", "http://www.globo.com")
 
-        item.add_fact('some.fact', 'Some Title', 'value', 'unit')
+        item.add_fact('some.fact', 'value')
 
         expect(item.facts).to_length(1)
         expect(item.facts['some.fact']).to_be_like({
             'key': 'some.fact',
-            'title': 'Some Title',
             'value': 'value',
-            'unit': 'unit'
         })
 
     def test_can_add_violation(self):
         item = ReviewDAO("uuid", "http://www.globo.com")
 
-        item.add_violation('some.violation', 'Some Violation', 'Violation Description', 200)
+        item.add_violation('some.violation', 'value', 200)
 
         expect(item.violations).to_length(1)
         expect(item.violations[0]).to_be_like({
             'key': 'some.violation',
-            'title': 'Some Violation',
-            'description': 'Violation Description',
+            'value': 'value',
             'points': 200
         })
 
@@ -194,8 +191,8 @@ class TestReview(ApiTestCase):
 
             reviewer = self.get_reviewer(page_uuid=page_uuid)
 
-            reviewer.add_fact('key', 'value', 'title', 'unit')
-            fact_dao.assert_called_once_with('key', 'title', 'value', 'unit')
+            reviewer.add_fact('key', 'value')
+            fact_dao.assert_called_once_with('key', 'value')
 
     @patch.object(ReviewDAO, 'add_violation')
     def test_reviewer_add_violation(self, violation_mock):
@@ -207,9 +204,9 @@ class TestReview(ApiTestCase):
 
             reviewer = self.get_reviewer(page_uuid=page_uuid)
 
-            reviewer.add_violation('key', 'title', 'description', 100)
+            reviewer.add_violation('key', 'description', 100)
 
-            violation_mock.assert_called_once_with('key', 'title', 'description', 100)
+            violation_mock.assert_called_once_with('key', 'description', 100)
 
     def test_can_get_current(self):
         reviewer = self.get_reviewer()
