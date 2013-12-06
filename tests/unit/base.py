@@ -8,7 +8,10 @@ from tornado.httpclient import AsyncHTTPClient
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, FactFactory, ViolationFactory, WorkerFactory
+from tests.fixtures import (
+    DomainFactory, PageFactory, ReviewFactory, FactFactory,
+    ViolationFactory, WorkerFactory
+)
 
 
 class ApiTestCase(CowTestCase):
