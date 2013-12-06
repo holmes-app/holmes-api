@@ -48,6 +48,7 @@ class TestMetaRobotsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='presence.meta.robots.noindex',
+            value=None,
             points=80
         )
 
@@ -85,6 +86,7 @@ class TestMetaRobotsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='presence.meta.robots.nofollow',
+            value=None,
             points=50)
 
     def test_can_get_violation_definitions(self):

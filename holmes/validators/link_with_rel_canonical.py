@@ -38,7 +38,7 @@ class LinkWithRelCanonicalValidator(Validator):
         if not canonical:
             self.add_violation(
                 key='absent.meta.canonical',
-                value='',
+                value=None,
                 points=30
             )
 

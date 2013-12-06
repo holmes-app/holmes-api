@@ -49,7 +49,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.meta.canonical',
-                value='',
+                value=None,
                 points=30
             ))
 
@@ -87,7 +87,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.meta.canonical',
-                value='',
+                value=None,
                 points=30
             ))
 

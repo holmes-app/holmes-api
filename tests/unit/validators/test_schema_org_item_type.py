@@ -51,12 +51,14 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.schema.itemscope',
+                value=None,
                 points=10
             ))
 
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='absent.schema.itemtype',
+                value=None,
                 points=10
             ))
 
@@ -95,6 +97,7 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
         expect(validator.add_violation.call_args_list).to_include(
             call(
                 key='invalid.schema.itemtype',
+                value=None,
                 points=10
             ))
 

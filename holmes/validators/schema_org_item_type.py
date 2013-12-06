@@ -56,12 +56,14 @@ class SchemaOrgItemTypeValidator(Validator):
             if 'itemscope' not in attributes:
                 self.add_violation(
                     key='absent.schema.itemscope',
+                    value=None,
                     points=10)
 
             has_itemtype = 'itemtype' in attributes
             if not has_itemtype:
                 self.add_violation(
                     key='absent.schema.itemtype',
+                    value=None,
                     points=10
                 )
 
@@ -69,6 +71,7 @@ class SchemaOrgItemTypeValidator(Validator):
             if has_itemtype and body.get('itemtype') not in itemtype_value:
                 self.add_violation(
                     key='invalid.schema.itemtype',
+                    value=None,
                     points=10
                 )
 

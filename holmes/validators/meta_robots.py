@@ -33,12 +33,14 @@ class MetaRobotsValidator(Validator):
             if tag['key'] == 'robots' and tag['content'] == 'noindex':
                 self.add_violation(
                     key='presence.meta.robots.noindex',
+                    value=None,
                     points=80
                 )
 
             if tag['key'] == 'robots' and tag['content'] == 'nofollow':
                 self.add_violation(
                     key='presence.meta.robots.nofollow',
+                    value=None,
                     points=50
                 )
 
