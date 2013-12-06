@@ -3,6 +3,7 @@
 
 import lxml.html
 from mock import Mock
+from preggy import expect
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
@@ -42,9 +43,7 @@ class TestMetaTagsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='absent.metatags',
-            title='Meta tags not present',
-            description='Not having meta tags is damaging for '
-                        'Search Engines.',
+            value='No metatags.',
             points=100
         )
 
@@ -79,6 +78,13 @@ class TestMetaTagsValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='absent.metatags',
-            title='Meta tags not present',
-            description='Not having meta tags is damaging for Search Engines.',
-            points=100)
+            value='No metatags.',
+            points=100
+        )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = MetaTagsValidator(reviewer)
+        definitions = validator.get_violation_definitions()
+
+        expect('absent.metatags' in definitions).to_be_true()
