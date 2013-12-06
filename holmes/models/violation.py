@@ -4,6 +4,7 @@
 import sqlalchemy as sa
 
 from holmes.models import Base, JsonType
+from holmes.models.keys import Key
 
 
 class Violation(Base):
@@ -41,15 +42,18 @@ class Violation(Base):
     @classmethod
     def get_most_common_violations(cls, db, violation_definitions, limit=5):
         violations = []
-        results = db.query(Violation.key_id, sa.func.count(Violation.id).label('count')) \
-                    .group_by(Violation.key_id) \
-                    .order_by('count desc')[:limit]
 
-        for item in results:
+        results = db.query(Violation.key_id, Key.name, sa.func.count(Violation.id).label('count')) \
+                    .outerjoin(Key) \
+                    .group_by(Violation.key_id) \
+                    .order_by('count desc') \
+                    .limit(limit)
+
+        for key_id, key_name, count in results:
             violations.append({
-                "key": item.key.name,
-                "title": violation_definitions[item.key.name]['title'],
-                "count": item.count
+                "key": key_name,
+                "title": violation_definitions[key_name]['title'],
+                "count": count
             })
 
         return violations
