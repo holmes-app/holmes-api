@@ -39,7 +39,7 @@ class TestTitleValidator(ValidatorTestCase):
         validator = TitleValidator(reviewer)
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.title.count': 1
+            'page.title_count': 1
         }
 
         validator.review.facts = {
@@ -80,8 +80,7 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='page.title.not_found',
-            title='Page title not found.',
-            description="Title was not found on %s" % page.url,
+            value=page.url,
             points=50)
 
     def test_can_validate_no_title_tag(self):
@@ -114,8 +113,7 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='page.title.not_found',
-            title='Page title not found.',
-            description="Title was not found on %s" % page.url,
+            value=page.url,
             points=50)
 
     def test_can_validate_empty_html(self):
@@ -148,8 +146,7 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='page.title.not_found',
-            title='Page title not found.',
-            description="Title was not found on %s" % page.url,
+            value=page.url,
             points=50)
 
     def test_can_validate_multiple_title(self):
@@ -178,7 +175,7 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.title.count': 2
+            'page.title_count': 2
         }
 
         validator.review.facts = {
@@ -189,6 +186,15 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='page.title.multiple',
-            title='To many titles.',
-            description="Page %s has %d titles" % (page.url, 2),
-            points=50)
+            value={'page_url': page.url, 'title_count': 2},
+            points=50
+        )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = TitleValidator(reviewer)
+
+        definitions = validator.get_violation_definitions()
+
+        expect('page.title.not_found' in definitions).to_be_true()
+        expect('page.title.multiple' in definitions).to_be_true()
