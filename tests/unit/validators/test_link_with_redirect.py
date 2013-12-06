@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import lxml
-from mock import Mock
+from mock import Mock, call
 from tests.unit.base import ApiTestCase
 from preggy import expect
 
@@ -61,20 +61,19 @@ class TestLinkWithRedirectValidator(ApiTestCase):
 
         validator.validate()
 
-        validator.add_violation.assert_calls([
-            {'key': 'link.redirect.307',
-             'title': 'Link with 307 redirect',
-             'description': 'Link with redirect, in most cases, should '
-                            'not be used. Redirects were found for '
-                            'link: %s.' % url1,
-             'points': 10},
-            {'key': 'link.redirect.302',
-             'title': 'Link with 302 redirect',
-             'description': 'Link with redirect, in most cases, should '
-                            'not be used. Redirects were found for '
-                            'link: %s.' % url2,
-             'points': 10}
-        ])
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='link.redirect.307',
+                value=307,
+                points=10
+            ))
+
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='link.redirect.302',
+                value=302,
+                points=10
+            ))
 
     def test_can_get_violation_definitions(self):
         reviewer = Mock()
