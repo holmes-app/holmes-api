@@ -6,19 +6,19 @@ from holmes.validators.base import Validator
 
 class SchemaOrgItemTypeValidator(Validator):
     @classmethod
-    def get_itemscope_message(cls):
+    def get_itemscope_message(cls, value=None):
         return 'In order to conform to schema.org definition ' \
                'of a webpage, the body tag must feature an ' \
                'itemscope attribute.'
 
     @classmethod
-    def get_itemtype_message(cls):
+    def get_itemtype_message(cls, value=None):
         return 'In order to conform to schema.org definition ' \
                'of a webpage, the body tag must feature an ' \
                'itemtype attribute.'
 
     @classmethod
-    def get_invalid_itemtype_message(cls):
+    def get_invalid_itemtype_message(cls, value=None):
         url = 'http://schema.org/WebPage'
         return 'In order to conform to schema.org definition ' \
                'of a webpage, the body tag must feature an ' \
