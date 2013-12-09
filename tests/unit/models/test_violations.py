@@ -24,6 +24,22 @@ class TestViolations(ApiTestCase):
             violation.value,
         ))
 
+    def test_to_dict(self):
+        violation = ViolationFactory.create(
+            key=Key(name='some.random.fact'),
+            value='value',
+            points=1203
+        )
+
+        violations_definitions = {'some.random.fact': {}}
+
+        expect(violation.to_dict(violations_definitions)).to_be_like({
+            'key': 'some.random.fact',
+            'description': 'value',
+            'title': 'undefined',
+            'points': 1203
+        })
+
     def test_can_get_most_common_violations(self):
         self.db.query(Violation).delete()
 
