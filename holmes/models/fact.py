@@ -21,11 +21,9 @@ class Fact(Base):
     key_id = sa.Column('key_id', sa.Integer, sa.ForeignKey('keys.id'))
 
     def to_dict(self, fact_definitions):
-        definition = fact_definitions.get(self.key.name, {
-            'title': 'unknown'
-        })
+        definition = fact_definitions.get(self.key.name, {})
         return {
-            'title': definition['title'],
+            'title': definition.get('title', 'unknown'),
             'key': self.key.name,
             'unit': definition.get('unit', 'value'),
             'value': definition.get('description', lambda value: value)(self.value)

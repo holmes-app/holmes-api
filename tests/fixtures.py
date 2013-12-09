@@ -4,7 +4,7 @@
 import factory
 import factory.alchemy
 
-from holmes.models import Domain, Page, Review, Worker, Violation, Fact
+from holmes.models import Domain, Page, Review, Worker, Violation, Fact, Key
 from uuid import uuid4
 
 
@@ -67,24 +67,29 @@ class ReviewFactory(BaseFactory):
 
             violations = []
             for i in range(number_of_violations):
-                violations.append(Violation(
-                    key="violation.%d" % i,
-                    title="title %d" % i,
-                    description="description %d" % i,
-                    points=i
-                ))
+                violations.append(
+                    Violation(
+                        key=Key(name="violation.%d" % i),
+                        value="value %d" % i,
+                        points=i
+                    )
+                )
 
             kwargs['violations'] = violations
 
         return kwargs
 
 
+class KeyFactory(BaseFactory):
+    FACTORY_FOR = Key
+
+    name = factory.Sequence(lambda n: 'key-{0}'.format(n))
+
+
 class FactFactory(BaseFactory):
     FACTORY_FOR = Fact
 
-    title = factory.Sequence(lambda n: 'fact-{0}'.format(n))
-    key = factory.Sequence(lambda n: 'fact-key-{0}'.format(n))
-    unit = "value"
+    key = factory.SubFactory(KeyFactory)
     value = None
     review = factory.SubFactory(ReviewFactory)
 
@@ -92,9 +97,8 @@ class FactFactory(BaseFactory):
 class ViolationFactory(BaseFactory):
     FACTORY_FOR = Violation
 
-    title = factory.Sequence(lambda n: 'violation-{0}'.format(n))
-    key = factory.Sequence(lambda n: 'violation-key-{0}'.format(n))
-    description = factory.Sequence(lambda n: 'violation-description-{0}'.format(n))
+    key = key = factory.SubFactory(KeyFactory)
+    value = None
     points = 0
     review = factory.SubFactory(ReviewFactory)
 
