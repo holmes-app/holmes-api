@@ -39,8 +39,8 @@ class TestReviewHandler(ApiTestCase):
     def test_can_get_review(self):
         review = ReviewFactory.create()
 
-        review.add_fact('fact', 'value', 'title', 'kb')
-        review.add_violation('violation', 'title', 'description', 100)
+        review.add_fact('fact', 'value')
+        review.add_violation('violation', 'value', 100)
 
         self.db.flush()
 
@@ -63,10 +63,12 @@ class TestReviewHandler(ApiTestCase):
             'uuid': str(review.uuid),
             'isComplete': False,
             'facts': [
-                {u'key': u'fact', u'value': u'value', u'title': u'title', u'unit': u'kb'}
+                {u'key': u'fact', u'value': u'value', u'title': u'unknown',
+                 u'unit': u'value'}
             ],
             'violations': [
-                {u'points': 100, u'description': u'description', u'key': u'violation', u'title': u'title'}
+                {u'points': 100, u'description': u'value',
+                 u'key': u'violation', u'title': u'undefined'}
             ],
             'createdAt': dt,
             'completedAt': None,
@@ -92,8 +94,8 @@ class TestLastReviewsHandler(ApiTestCase):
             completed_date=date_now,
             created_date=date_now)
 
-        review.add_fact('fact', 'value', 'title', 'kb')
-        review.add_violation('violation', 'title', 'description', 100)
+        review.add_fact('fact', 'value')
+        review.add_violation('violation', 'value', 100)
         review.is_complete = True
         self.db.flush()
 
@@ -110,12 +112,12 @@ class TestLastReviewsHandler(ApiTestCase):
             'uuid': str(review.uuid),
             'isComplete': True,
             'facts': [
-                {u'key': u'fact', u'value': u'value', u'title': u'title',
-                 u'unit': u'kb'}
+                {u'key': u'fact', u'unit': u'value', u'value': u'value',
+                 u'title': u'unknown'}
             ],
             'violations': [
-                {u'points': 100, u'description': u'description',
-                 u'key': u'violation', u'title': u'title'}
+                {u'points': 100, u'description': u'value',
+                 u'key': u'violation', u'title': u'undefined'}
             ],
             'createdAt': dt,
             'completedAt': dt,
