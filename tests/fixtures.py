@@ -97,7 +97,7 @@ class FactFactory(BaseFactory):
 class ViolationFactory(BaseFactory):
     FACTORY_FOR = Violation
 
-    key = key = factory.SubFactory(KeyFactory)
+    key = factory.SubFactory(KeyFactory)
     value = None
     points = 0
     review = factory.SubFactory(ReviewFactory)

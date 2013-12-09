@@ -48,9 +48,10 @@ class Violation(Base):
                     .limit(limit)
 
         for key_id, key_name, count in results:
+            definition = violation_definitions.get(key_name, {})
             violations.append({
                 "key": key_name,
-                "title": violation_definitions[key_name]['title'],
+                "title": definition.get('title', 'undefined'),
                 "count": count
             })
 
