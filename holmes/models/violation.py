@@ -28,7 +28,7 @@ class Violation(Base):
         return str(self)
 
     def to_dict(self, violation_definitions):
-        definition = violation_definitions.get(self.key, {
+        definition = violation_definitions.get(self.key.name, {
             'title': 'undefined'
         })
 

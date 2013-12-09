@@ -53,8 +53,11 @@ class Review(Base):
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.fact import Fact  # to avoid circular dependency
+        from holmes.models.keys import Key  # to avoid circular dependency
 
-        fact = Fact(key=key, value=value)
+        keys = Key(name=key)
+
+        fact = Fact(key=keys, value=value)
 
         self.facts.append(fact)
 
@@ -63,8 +66,11 @@ class Review(Base):
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.violation import Violation  # to avoid circular dependency
+        from holmes.models.keys import Key  # to avoid circular dependency
 
-        violation = Violation(key=key, value=value, points=int(float(points)))
+        keys = Key(name=key)
+
+        violation = Violation(key=keys, value=value, points=int(float(points)))
 
         self.violations.append(violation)
 
