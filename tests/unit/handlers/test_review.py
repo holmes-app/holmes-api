@@ -37,7 +37,9 @@ class TestReviewHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_review(self):
-        review = ReviewFactory.create()
+        dt = datetime(2010, 11, 12, 13, 14, 15)
+        dt_timestamp = calendar.timegm(dt.utctimetuple())
+        review = ReviewFactory.create(created_date=dt)
 
         review.add_fact('fact', 'value')
         review.add_violation('violation', 'value', 100)
@@ -55,8 +57,6 @@ class TestReviewHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
 
-        dt = calendar.timegm(datetime.utcnow().utctimetuple())
-
         expected = {
             'domain': review.domain.name,
             'page': review.page.to_dict(),
@@ -70,7 +70,7 @@ class TestReviewHandler(ApiTestCase):
                 {u'points': 100, u'description': u'value',
                  u'key': u'violation', u'title': u'undefined'}
             ],
-            'createdAt': dt,
+            'createdAt': dt_timestamp,
             'completedAt': None,
             'violationPoints': 100,
             'violationCount': 1,
