@@ -5,7 +5,6 @@ from uuid import uuid4
 from datetime import datetime
 
 from preggy import expect
-from tornado.testing import gen_test
 
 from holmes.models import Page
 from tests.unit.base import ApiTestCase
@@ -13,7 +12,6 @@ from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestPage(ApiTestCase):
-    @gen_test
     def test_can_create_page(self):
         page = PageFactory.create()
 
