@@ -21,3 +21,12 @@ class Key(Base):
 
     def __repr__(self):
         return str(self)
+
+    @classmethod
+    def get_or_create(cls, db, key_name):
+        key = db.query(Key).filter(Key.name == key_name).scalar()
+
+        if not key:
+            key = Key(name=key_name)
+
+        return key

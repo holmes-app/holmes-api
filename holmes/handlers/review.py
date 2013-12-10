@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from ujson import loads, dumps
 
-from holmes.models import Review, Page
+from holmes.models import Review, Page, Key
 from holmes.handlers import BaseHandler
 
 
@@ -64,12 +64,14 @@ class ReviewHandler(BaseReviewHandler):
         self.db.flush()
 
         for fact in review_data['facts']:
-            review.add_fact(fact['key'], fact['value'])
+            key = Key.get_or_create(self.db, fact['key'])
+            review.add_fact(key, fact['value'])
 
         self.db.flush()
 
         for violation in review_data['violations']:
-            review.add_violation(violation['key'], violation['value'], violation['points'])
+            key = Key.get_or_create(self.db, violation['key'])
+            review.add_violation(key, violation['value'], violation['points'])
 
         self.db.flush()
 

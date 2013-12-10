@@ -10,7 +10,7 @@ from preggy import expect
 
 from holmes.models import Review
 from tests.unit.base import ApiTestCase
-from tests.fixtures import ReviewFactory, PageFactory
+from tests.fixtures import ReviewFactory, PageFactory, KeyFactory
 
 
 class TestReview(ApiTestCase):
@@ -32,7 +32,8 @@ class TestReview(ApiTestCase):
     def test_can_create_facts_float(self):
         review = ReviewFactory.create()
 
-        review.add_fact(key="some.random.fact", value=1203.01)
+        key = KeyFactory.create(name="some.random.fact")
+        review.add_fact(key, value=1203.01)
 
         loaded_review = self.db.query(Review).get(review.id)
 
@@ -44,7 +45,9 @@ class TestReview(ApiTestCase):
         review = ReviewFactory.build()
         expect(review.facts).to_length(0)
 
-        review.add_fact('a', 'b')
+        key = KeyFactory.create(name='a')
+
+        review.add_fact(key, 'b')
         expect(review.facts).to_length(1)
         expect(review.facts[0].key.name).to_equal('a')
         expect(review.facts[0].value).to_equal('b')
@@ -53,7 +56,9 @@ class TestReview(ApiTestCase):
         review = ReviewFactory.build()
         expect(review.violations).to_length(0)
 
-        review.add_violation('a', 'b', 100)
+        key = KeyFactory.create(name='a')
+
+        review.add_violation(key, 'b', 100)
         expect(review.violations).to_length(1)
         expect(review.violations[0].key.name).to_equal('a')
         expect(review.violations[0].value).to_equal('b')
@@ -65,7 +70,8 @@ class TestReview(ApiTestCase):
         review.is_complete = True
 
         try:
-            review.add_fact('a', 'b')
+            key = KeyFactory.create(name='a')
+            review.add_fact(key, 'b')
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
@@ -78,7 +84,8 @@ class TestReview(ApiTestCase):
         review.is_complete = True
 
         try:
-            review.add_violation('a', 'b', 10)
+            key = KeyFactory.create(name='a')
+            review.add_violation(key, 'b', 10)
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
@@ -128,21 +135,23 @@ class TestReview(ApiTestCase):
         review_id = uuid4()
         page = PageFactory.build(uuid=page_id)
         review = ReviewFactory.build(page=page, uuid=review_id)
-        review.add_violation('a', 'b', 100)
-        review.add_fact('a', 'b')
+        key1 = KeyFactory.create(name='some.random.key1')
+        review.add_violation(key1, 'b', 100)
+        key2 = KeyFactory.create(name='some.random.key2')
+        review.add_fact(key2, 'b')
 
-        fact_definitions = {'a': {}}
-        violation_definitions = {'a': {}}
+        fact_definitions = {'some.random.key2': {}}
+        violation_definitions = {'some.random.key1': {}}
 
         expect(review.to_dict(fact_definitions, violation_definitions)).to_be_like({
             'domain': review.domain.name,
             'uuid': str(review_id),
             'completedAt': None,
             'facts': [
-                {'value': 'b', 'key': 'a', 'unit': 'value', 'title': 'unknown'}
+                {'value': 'b', 'key': 'some.random.key2', 'unit': 'value', 'title': 'unknown'}
             ],
             'violations': [
-                {'points': 100, 'key': 'a', 'description': 'b', 'title': 'undefined'}
+                {'points': 100, 'key': 'some.random.key1', 'description': 'b', 'title': 'undefined'}
             ],
             'page': {
                 'url': page.url,
@@ -150,6 +159,6 @@ class TestReview(ApiTestCase):
                 'expires': None,
                 'uuid': str(page_id)
             },
-            'createdAt': None,
+            'createdAt': review.created_date,
             'isComplete': False
         })

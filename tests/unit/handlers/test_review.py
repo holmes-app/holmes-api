@@ -11,7 +11,7 @@ from tornado.httpclient import HTTPError
 from ujson import loads
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory, KeyFactory
 
 
 class TestReviewHandler(ApiTestCase):
@@ -41,8 +41,10 @@ class TestReviewHandler(ApiTestCase):
         dt_timestamp = calendar.timegm(dt.utctimetuple())
         review = ReviewFactory.create(created_date=dt)
 
-        review.add_fact('fact', 'value')
-        review.add_violation('violation', 'value', 100)
+        key1 = KeyFactory.create(name='fact')
+        review.add_fact(key1, 'value')
+        key2 = KeyFactory.create(name='violation')
+        review.add_violation(key2, 'value', 100)
 
         self.db.flush()
 
@@ -94,8 +96,10 @@ class TestLastReviewsHandler(ApiTestCase):
             completed_date=date_now,
             created_date=date_now)
 
-        review.add_fact('fact', 'value')
-        review.add_violation('violation', 'value', 100)
+        key1 = KeyFactory.create(name='fact')
+        review.add_fact(key1, 'value')
+        key2 = KeyFactory.create(name='violation')
+        review.add_violation(key2, 'value', 100)
         review.is_complete = True
         self.db.flush()
 
