@@ -44,16 +44,16 @@ class TestViolations(ApiTestCase):
         self.db.query(Violation).delete()
 
         for i in range(3):
-            for j in range(2):
+            for j in range(i):
                 ViolationFactory.create(
                     key=Key(name='some.random.fact.%s' % i),
                     value='value',
-                    points=1203
+                    points=10 * i + j
                 )
 
         violation_definitions = {
-            'some.random.fact.0': {},
-            'some.random.fact.1': {}
+            'some.random.fact.1': {},
+            'some.random.fact.2': {}
         }
 
         violations = Violation.get_most_common_violations(
@@ -65,12 +65,12 @@ class TestViolations(ApiTestCase):
         expect(violations).to_be_like([
             {
                 'count': 1,
-                'key': 'some.random.fact.0',
+                'key': 'some.random.fact.1',
                 'title': 'undefined'
             },
             {
                 'count': 1,
-                'key': 'some.random.fact.1',
+                'key': 'some.random.fact.2',
                 'title': 'undefined'
             }
         ])
