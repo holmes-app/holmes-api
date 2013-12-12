@@ -37,13 +37,16 @@ def main():
 
 
 class HolmesApiServer(Server):
-    def __init__(self, debug=None, *args, **kw):
+    def __init__(self, db=None, debug=None, *args, **kw):
         super(HolmesApiServer, self).__init__(*args, **kw)
 
         self.force_debug = debug
+        self.db = db
 
     def initialize_app(self, *args, **kw):
         super(HolmesApiServer, self).initialize_app(*args, **kw)
+
+        self.application.db = None
 
         if self.force_debug is not None:
             self.debug = self.force_debug
@@ -79,7 +82,10 @@ class HolmesApiServer(Server):
         ]
 
     def after_start(self, io_loop):
-        self.application.db = self.application.get_sqlalchemy_session()
+        if self.db is not None:
+            self.application.db = self.db
+        else:
+            self.application.db = self.application.get_sqlalchemy_session()
 
         if self.debug:
             import sqltap

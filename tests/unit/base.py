@@ -6,6 +6,8 @@ from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
 from tornado.httpclient import AsyncHTTPClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
@@ -13,6 +15,18 @@ from tests.fixtures import (
     DomainFactory, PageFactory, ReviewFactory, FactFactory,
     ViolationFactory, WorkerFactory, KeyFactory
 )
+
+
+autoflush = True
+engine = create_engine(
+    "mysql+mysqldb://root@localhost:3306/test_holmes",
+    convert_unicode=True,
+    pool_size=1,
+    max_overflow=0,
+    echo=False
+)
+maker = sessionmaker(bind=engine, autoflush=autoflush)
+db = scoped_session(maker)
 
 
 class ApiTestCase(CowTestCase):
@@ -32,20 +46,16 @@ class ApiTestCase(CowTestCase):
         ViolationFactory.FACTORY_SESSION = self.db
         WorkerFactory.FACTORY_SESSION = self.db
         KeyFactory.FACTORY_SESSION = self.db
-        #self.drop_collection(Domain)
-        #self.drop_collection(Page)
-        #self.drop_collection(Review)
-        #self.drop_collection(Worker)
 
     def tearDown(self):
-        super(ApiTestCase, self).tearDown()
         self.db.rollback()
+        super(ApiTestCase, self).tearDown()
 
     def get_config(self):
         return dict(
             SQLALCHEMY_CONNECTION_STRING="mysql+mysqldb://root@localhost:3306/test_holmes",
-            SQLALCHEMY_POOL_SIZE=20,
-            SQLALCHEMY_POOL_MAX_OVERFLOW=10,
+            SQLALCHEMY_POOL_SIZE=1,
+            SQLALCHEMY_POOL_MAX_OVERFLOW=0,
             SQLALCHEMY_AUTO_FLUSH=True,
             COMMIT_ON_REQUEST_END=False,
         )
@@ -53,7 +63,8 @@ class ApiTestCase(CowTestCase):
     def get_server(self):
         cfg = Config(**self.get_config())
         debug = os.environ.get('DEBUG_TESTS', 'False').lower() == 'true'
-        self.server = HolmesApiServer(config=cfg, debug=debug)
+
+        self.server = HolmesApiServer(config=cfg, debug=debug, db=db)
         return self.server
 
     def get_app(self):
