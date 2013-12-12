@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 import calendar
 from datetime import datetime
 from ujson import loads
 from preggy import expect
 from tornado.testing import gen_test
+from tornado.httpclient import HTTPError
 
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
@@ -75,6 +77,19 @@ class TestDomainDetailsHandler(ApiTestCase):
         expect(domain_details['pageCount']).to_equal(2)
         expect(domain_details['violationCount']).to_equal(50)
         expect(domain_details['violationPoints']).to_equal(625)
+
+    @gen_test
+    def test_domain_not_found(self):
+        name = 'haha.com.br'
+
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/%s/' % name))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+        else:
+            assert False, 'Should not have got this far'
 
 
 class TestDomainReviewsHandler(ApiTestCase):
