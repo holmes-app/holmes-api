@@ -27,7 +27,6 @@ class DomainFactory(BaseFactory):
 class PageFactory(BaseFactory):
     FACTORY_FOR = Page
 
-    #title = factory.Sequence(lambda n: 'page-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
     uuid = factory.LazyAttribute(lambda a: uuid4())
 
