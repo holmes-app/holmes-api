@@ -126,3 +126,48 @@ class TestMetaTagsFacter(ValidatorTestCase):
 
         expect('page.links' in definitions).to_be_true()
         expect('total.number.links' in definitions).to_be_true()
+
+    def test_link_looks_like_image(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<a href="http://globo.com/metal.png">Metal</a>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = LinkFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.async_get = Mock()
+        facter.get_facts()
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='page.links',
+                value=set([])
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='total.number.links',
+                value=0
+            ))
+
+        expect(facter.async_get.called).to_be_false()
