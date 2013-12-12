@@ -46,7 +46,7 @@ class TestViolations(ApiTestCase):
         for i in range(3):
             for j in range(i):
                 ViolationFactory.create(
-                    key=Key(name='some.random.fact.%s' % i),
+                    key=Key.get_or_create(self.db, 'some.random.fact.%s' % i),
                     value='value',
                     points=10 * i + j
                 )
@@ -69,7 +69,7 @@ class TestViolations(ApiTestCase):
                 'title': 'undefined'
             },
             {
-                'count': 1,
+                'count': 2,
                 'key': 'some.random.fact.2',
                 'title': 'undefined'
             }

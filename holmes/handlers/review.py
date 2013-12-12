@@ -64,13 +64,15 @@ class ReviewHandler(BaseReviewHandler):
         self.db.flush()
 
         for fact in review_data['facts']:
-            key = Key.get_or_create(self.db, fact['key'])
+            name = fact['key']
+            key = self.application.fact_definitions[name]['key']
             review.add_fact(key, fact['value'])
 
         self.db.flush()
 
         for violation in review_data['violations']:
-            key = Key.get_or_create(self.db, violation['key'])
+            name = violation['key']
+            key = self.application.violation_definitions[name]['key']
             review.add_violation(key, violation['value'], violation['points'])
 
         self.db.flush()

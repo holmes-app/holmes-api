@@ -67,12 +67,10 @@ class ReviewFactory(BaseFactory):
 
             violations = []
             for i in range(number_of_violations):
+                db = cls.FACTORY_SESSION
+                key = Key.get_or_create(db, "violation.%d" % i)
                 violations.append(
-                    Violation(
-                        key=Key(name="violation.%d" % i),
-                        value="value %d" % i,
-                        points=i
-                    )
+                    Violation(key=key, value="value %d" % i, points=i)
                 )
 
             kwargs['violations'] = violations

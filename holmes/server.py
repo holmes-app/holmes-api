@@ -29,6 +29,7 @@ from holmes.handlers.search import (
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
 from holmes.utils import load_classes
+from holmes.models import Key
 
 
 def main():
@@ -100,12 +101,24 @@ class HolmesApiServer(Server):
         for facter in self.application.facters:
             self.application.fact_definitions.update(facter.get_fact_definitions())
 
+        self._insert_keys(self.application.fact_definitions)
+
         for validator in self.application.validators:
             self.application.violation_definitions.update(validator.get_violation_definitions())
+
+        self._insert_keys(self.application.violation_definitions)
 
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
         self.connect_pub_sub(io_loop)
+
+    def _insert_keys(self, keys):
+        for name in keys:
+            key = Key.get_or_create(self.application.db, name)
+            keys[name]['key'] = key
+            self.application.db.add(key)
+            self.application.db.flush()
+            self.application.db.commit()
 
     def _load_validators(self):
         return load_classes(default=self.config.VALIDATORS)
