@@ -86,3 +86,10 @@ class TestHeadFacter(FacterTestCase):
 
         expect(facter.add_fact.called).to_be_false()
         expect(facter.review.data).to_be_like({})
+
+    def test_can_get_fact_definitions(self):
+        reviewer = Mock()
+        facter = HeadFacter(reviewer)
+        definitions = facter.get_fact_definitions()
+
+        expect(definitions).to_equal({})
