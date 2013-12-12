@@ -83,7 +83,7 @@ class CSSFacter(Facter):
         self.review.facts['page.css']['value'].add(url)
         self.review.data['page.css'].add((url, response))
 
-        if response.text is not None:
+        if response.text:
             size_css = len(response.text) / 1024.0
             size_gzip = len(self.to_gzip(response.text)) / 1024.0
         else:
