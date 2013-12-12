@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
@@ -47,18 +48,12 @@ class ApiTestCase(CowTestCase):
             SQLALCHEMY_POOL_MAX_OVERFLOW=10,
             SQLALCHEMY_AUTO_FLUSH=True,
             COMMIT_ON_REQUEST_END=False,
-            MONGO_DATABASES={
-                'default': {
-                    'host': 'localhost',
-                    'port': 6686,
-                    'database': 'holmes-test'
-                }
-            }
         )
 
     def get_server(self):
         cfg = Config(**self.get_config())
-        self.server = HolmesApiServer(config=cfg)
+        debug = os.environ.get('DEBUG_TESTS', 'False').lower() == 'true'
+        self.server = HolmesApiServer(config=cfg, debug=debug)
         return self.server
 
     def get_app(self):

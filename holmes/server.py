@@ -37,6 +37,17 @@ def main():
 
 
 class HolmesApiServer(Server):
+    def __init__(self, debug=None, *args, **kw):
+        super(HolmesApiServer, self).__init__(*args, **kw)
+
+        self.force_debug = debug
+
+    def initialize_app(self, *args, **kw):
+        super(HolmesApiServer, self).initialize_app(*args, **kw)
+
+        if self.force_debug is not None:
+            self.debug = self.force_debug
+
     def get_handlers(self):
         handlers = [
             (r'/most-common-violations/?', MostCommonViolationsHandler),
