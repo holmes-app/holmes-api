@@ -12,7 +12,7 @@ from tests.unit.base import ValidatorTestCase
 from tests.fixtures import PageFactory
 
 
-class TestMetaTagsFacter(ValidatorTestCase):
+class TestLinksFacter(ValidatorTestCase):
 
     def test_can_get_facts(self):
         page = PageFactory.create()
