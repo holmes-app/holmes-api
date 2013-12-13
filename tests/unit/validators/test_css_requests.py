@@ -156,3 +156,17 @@ class TestCSSRequestsValidator(ValidatorTestCase):
 
         expect('total.size.css' in definitions).to_be_true()
         expect('total.requests.css' in definitions).to_be_true()
+
+    def test_get_css_requests(self):
+        reviewer = Mock()
+        validator = CSSRequestsValidator(reviewer)
+
+        css1 = Mock()
+        css2 = Mock()
+        validator.review.data = {
+            'page.css': [css1, css2]
+        }
+
+        css_requests = validator.get_css_requests()
+
+        expect(css_requests).to_equal([css1, css2])
