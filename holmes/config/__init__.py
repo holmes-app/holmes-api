@@ -65,3 +65,5 @@ Config.define('REQUIRED_META_TAGS', [], 'List of required meta tags', 'Meta tag 
 Config.define('SCHEMA_ORG_ITEMTYPE', [], 'List of Schema.Org ItemType', 'Schema.Org ItemType')
 
 Config.define('FORCE_CANONICAL', False, 'Force canonical', 'Force canonical')
+
+Config.define('BLACKLIST_DOMAIN', [], 'Domain blacklist', 'Domain blacklist')
