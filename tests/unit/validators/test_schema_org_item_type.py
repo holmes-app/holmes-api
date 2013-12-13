@@ -130,3 +130,34 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
             'the body tag must feature an itemtype attribute with a value '
             'of "http://schema.org/WebPage" or one of its more specific types.'
         )
+
+    def test_no_body_tag(self):
+        config = Config()
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        content = '<html></html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = SchemaOrgItemTypeValidator(reviewer)
+        validator.add_violation = Mock()
+
+        validator.validate()
+
+        expect(validator.add_violation.called).to_be_false()
