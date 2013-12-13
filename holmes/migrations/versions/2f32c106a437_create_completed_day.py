@@ -22,4 +22,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column('reviews', sa.Column('completed_day', sa.Date, nullable=True))
+    op.drop_column('reviews', 'completed_day')
