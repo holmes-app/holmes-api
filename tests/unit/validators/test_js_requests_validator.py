@@ -175,3 +175,25 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             'This page has 7 JavaScript request (6 over limit). Having too '
             'many requests impose a tax in the browser due to handshakes.'
         )
+
+    def test_get_js_requests(self):
+        reviewer = Mock()
+        validator = JSRequestsValidator(reviewer)
+        validator.review.data = {
+            'page.js': []
+        }
+
+        js_requests = validator.get_js_requests()
+
+        expect(js_requests).to_equal([])
+
+    def test_get_total_size_js(self):
+        reviewer = Mock()
+        validator = JSRequestsValidator(reviewer)
+        validator.review.data = {
+            'total.size.js': 100
+        }
+
+        total_size = validator.get_total_size_js()
+
+        expect(total_size).to_equal(100)
