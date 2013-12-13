@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from mock import Mock, call, patch
+from mock import Mock, call
 from preggy import expect
 import lxml.html
 
