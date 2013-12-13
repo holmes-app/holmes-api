@@ -162,6 +162,7 @@ class TestCSSFacter(FacterTestCase):
         facter = CSSFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(4)
         expect('page.css' in definitions).to_be_true()
         expect('total.size.css' in definitions).to_be_true()
         expect('total.size.css.gzipped' in definitions).to_be_true()

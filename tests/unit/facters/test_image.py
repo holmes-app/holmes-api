@@ -126,6 +126,7 @@ class TestImageFacter(FacterTestCase):
         facter = ImageFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(3)
         expect('page.images' in definitions).to_be_true()
         expect('total.size.img' in definitions).to_be_true()
         expect('total.requests.img' in definitions).to_be_true()

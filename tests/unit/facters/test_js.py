@@ -162,6 +162,7 @@ class TestJSFacter(FacterTestCase):
         facter = JSFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(4)
         expect('page.js' in definitions).to_be_true()
         expect('total.size.js' in definitions).to_be_true()
         expect('total.size.js.gzipped' in definitions).to_be_true()

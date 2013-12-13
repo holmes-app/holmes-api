@@ -86,6 +86,7 @@ class TestRobotsValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(3)
         expect('robots.not_found' in definitions).to_be_true()
         expect('robots.empty' in definitions).to_be_true()
         expect('robots.sitemap.not_found' in definitions).to_be_true()

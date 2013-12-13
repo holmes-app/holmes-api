@@ -58,4 +58,5 @@ class TestBodyValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(1)
         expect('page.body.not_found' in definitions).to_be_true()

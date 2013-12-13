@@ -81,6 +81,7 @@ class TestLinkWithRedirectValidator(ApiTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(2)
         expect('link.redirect.302' in definitions).to_be_true()
         expect('link.redirect.307' in definitions).to_be_true()
 

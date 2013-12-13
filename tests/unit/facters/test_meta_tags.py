@@ -75,4 +75,5 @@ class TestMetaTagsFacter(FacterTestCase):
         facter = MetaTagsFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(1)
         expect('meta.tags' in definitions).to_be_true()

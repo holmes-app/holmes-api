@@ -89,4 +89,5 @@ class TestBodyFacter(FacterTestCase):
         facter = BodyFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(0)
         expect(definitions).to_equal({})

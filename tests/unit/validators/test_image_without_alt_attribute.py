@@ -62,6 +62,7 @@ class TestImageWithoutAltAttributeValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(1)
         expect('invalid.images.alt' in definitions).to_be_true()
 
         data = [('http://my-site.com/the-src', 'the-src')]

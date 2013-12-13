@@ -154,6 +154,7 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             'requests impose a tax in the browser due to handshakes.'
         )
 
+        expect(definitions).to_length(2)
         expect('total.size.css' in definitions).to_be_true()
         expect('total.requests.css' in definitions).to_be_true()
 

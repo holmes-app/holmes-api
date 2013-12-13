@@ -94,5 +94,6 @@ class TestMetaRobotsValidator(ValidatorTestCase):
         validator = MetaRobotsValidator(reviewer)
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(2)
         expect('presence.meta.robots.noindex' in definitions).to_be_true()
         expect('presence.meta.robots.nofollow' in definitions).to_be_true()

@@ -59,4 +59,5 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
         validator = RequiredMetaTagsValidator(reviewer)
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(1)
         expect('absent.meta.tags' in definitions).to_be_true()

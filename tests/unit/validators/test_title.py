@@ -196,5 +196,6 @@ class TestTitleValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(2)
         expect('page.title.not_found' in definitions).to_be_true()
         expect('page.title.multiple' in definitions).to_be_true()

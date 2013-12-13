@@ -113,4 +113,5 @@ class TestTitleFacter(FacterTestCase):
 
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(1)
         expect('page.title' in definitions).to_be_true()

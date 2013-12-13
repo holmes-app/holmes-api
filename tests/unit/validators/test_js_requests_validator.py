@@ -156,6 +156,7 @@ class TestTotalRequestsValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(2)
         expect('total.size.js' in definitions).to_be_true()
         expect('total.requests.js' in definitions).to_be_true()
 

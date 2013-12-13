@@ -68,6 +68,7 @@ class TestLinkWithRelNofollowValidator(ApiTestCase):
             [{'href': 'http://my-site.com/test.html', 'rel': 'nofollow'}]
         )
 
+        expect(definitions).to_length(1)
         expect('invalid.links.nofollow' in definitions).to_be_true()
 
         url = 'http://my-site.com/test.html'

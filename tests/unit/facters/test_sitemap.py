@@ -242,6 +242,7 @@ class TestSitemapFacter(FacterTestCase):
         facter = SitemapFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(4)
         expect('total.sitemap.indexes' in definitions).to_be_true()
         expect('total.sitemap.urls' in definitions).to_be_true()
         expect('total.size.sitemap' in definitions).to_be_true()

@@ -193,6 +193,7 @@ class TestImageRequestsValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(4)
         expect('broken.img' in definitions).to_be_true()
         expect('single.size.img' in definitions).to_be_true()
         expect('total.requests.img' in definitions).to_be_true()

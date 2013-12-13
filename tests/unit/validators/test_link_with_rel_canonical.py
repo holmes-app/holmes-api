@@ -130,6 +130,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(1)
         expect('absent.meta.canonical' in definitions).to_be_true()
 
         message = validator.get_absent_meta_canonical_message(

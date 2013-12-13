@@ -61,6 +61,7 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         validator = AnchorWithoutAnyTextValidator(reviewer)
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(1)
         expect('empty.anchors' in definitions).to_be_true()
 
         links = ['http://globo.com']

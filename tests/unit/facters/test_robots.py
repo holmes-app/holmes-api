@@ -93,4 +93,5 @@ class TestRobotsFacter(FacterTestCase):
         facter = RobotsFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(1)
         expect('robots.url' in definitions).to_be_true()

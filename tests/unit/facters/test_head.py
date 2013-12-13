@@ -92,4 +92,5 @@ class TestHeadFacter(FacterTestCase):
         facter = HeadFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(0)
         expect(definitions).to_equal({})

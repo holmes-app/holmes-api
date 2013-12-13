@@ -124,6 +124,7 @@ class TestLinksFacter(ValidatorTestCase):
         facter = LinkFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
+        expect(definitions).to_length(2)
         expect('page.links' in definitions).to_be_true()
         expect('total.number.links' in definitions).to_be_true()
 

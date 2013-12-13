@@ -262,6 +262,7 @@ class TestSitemapValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(5)
         expect('sitemap.not_found' in definitions).to_be_true()
         expect('sitemap.empty' in definitions).to_be_true()
         expect('total.size.sitemap' in definitions).to_be_true()

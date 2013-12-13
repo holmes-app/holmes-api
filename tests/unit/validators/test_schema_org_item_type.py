@@ -107,6 +107,7 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
+        expect(definitions).to_length(3)
         expect('absent.schema.itemscope' in definitions).to_be_true()
         expect('absent.schema.itemtype' in definitions).to_be_true()
         expect('absent.schema.itemtype' in definitions).to_be_true()
