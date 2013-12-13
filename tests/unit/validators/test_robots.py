@@ -88,3 +88,30 @@ class TestRobotsValidator(ValidatorTestCase):
 
         expect('robots.not_found' in definitions).to_be_true()
         expect('robots.empty' in definitions).to_be_true()
+        expect('robots.sitemap.not_found' in definitions).to_be_true()
+
+    def test_sitemap_not_found(self):
+        page = PageFactory.create(url='http://globo.com/')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+
+        validator = RobotsValidator(reviewer)
+
+        response = Mock(status_code=200, text='key:value')
+
+        validator.review.data['robots.response'] = response
+        validator.add_violation = Mock()
+
+        validator.validate()
+
+        validator.add_violation.assert_called_once_with(
+            key='robots.sitemap.not_found',
+            value=None,
+            points=100
+        )
