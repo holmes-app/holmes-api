@@ -11,7 +11,6 @@ revision = '1e071953a65d'
 down_revision = '2f32c106a437'
 
 from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():
@@ -19,5 +18,9 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_constraint('fk_key_violation', 'violations', type_='foreignkey')
     op.drop_index('idx_violations_id_key_id', 'violations')
-
+    op.create_foreign_key(
+        'fk_key_violation', 'violations',
+        'keys', ['key_id'], ["id"]
+    )
