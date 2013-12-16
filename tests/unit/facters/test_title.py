@@ -49,6 +49,7 @@ class TestTitleFacter(FacterTestCase):
                   'esportes e entretenimento',
         )
 
+        expect(facter.review.data).to_length(1)
         expect(facter.review.data).to_include('page.title_count')
         expect(facter.review.data['page.title_count']).to_equal(1)
 

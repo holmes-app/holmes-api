@@ -45,6 +45,8 @@ class TestImageFacter(FacterTestCase):
         facter.async_get = Mock()
         facter.get_facts()
 
+        expect(facter.review.data).to_length(3)
+
         expect(facter.review.data).to_include('page.all_images')
 
         img = facter.review.data['page.all_images'][0]

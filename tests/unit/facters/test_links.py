@@ -45,6 +45,8 @@ class TestLinksFacter(ValidatorTestCase):
         facter.async_get = Mock()
         facter.get_facts()
 
+        expect(facter.review.data).to_length(2)
+
         expect(facter.review.data).to_include('page.links')
         expect(facter.review.data['page.links']).to_equal(set([]))
 

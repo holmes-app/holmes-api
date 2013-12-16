@@ -49,6 +49,7 @@ class TestRobotsFacter(FacterTestCase):
 
         robots_url = 'http://www.globo.com/robots.txt'
 
+        expect(facter.review.data).to_length(1)
         expect(facter.review.data['robots.response']).to_equal(None)
 
         facter.async_get.assert_called_once_with(

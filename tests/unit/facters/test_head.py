@@ -45,6 +45,8 @@ class TestHeadFacter(FacterTestCase):
 
         facter.get_facts()
 
+        expect(facter.review.data).to_length(1)
+
         expect(facter.review.data).to_include('page.head')
         head = facter.review.data['page.head'][0]
         expect(head.tag).to_equal('head')

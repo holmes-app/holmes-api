@@ -49,6 +49,8 @@ class TestSitemapFacter(FacterTestCase):
 
         facter.get_facts()
 
+        expect(facter.review.data).to_length(7)
+
         expect(facter.review.data).to_include('sitemap.data')
         expect(facter.review.data['sitemap.data']).to_equal({})
 

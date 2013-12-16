@@ -69,6 +69,8 @@ class TestCSSFacter(FacterTestCase):
                 value=1,
             ))
 
+        expect(facter.review.data).to_length(3)
+
         expect(facter.review.data).to_be_like({
             'total.size.css': 0,
             'total.size.css.gzipped': 0,

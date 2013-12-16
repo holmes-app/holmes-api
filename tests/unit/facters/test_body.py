@@ -45,6 +45,7 @@ class TestBodyFacter(FacterTestCase):
 
         facter.get_facts()
 
+        expect(facter.review.data).to_length(1)
         expect(facter.review.data).to_include('page.body')
         expect(facter.review.data['page.body'][0].tag).to_equal('body')
 

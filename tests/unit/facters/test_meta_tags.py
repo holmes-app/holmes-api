@@ -67,6 +67,7 @@ class TestMetaTagsFacter(FacterTestCase):
                 value=values,
             ))
 
+        expect(facter.review.data).to_length(1)
         expect(facter.review.data).to_include('meta.tags')
         expect(facter.review.data).to_be_like({'meta.tags': values})
 
