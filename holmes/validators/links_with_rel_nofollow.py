@@ -13,7 +13,7 @@ class LinkWithRelNofollowValidator(Validator):
                'engines to crawl the website. Links with ' \
                'rel="nofollow" were found for hrefs (%s).' % (
                    ', '.join([
-                       '<a href="%s" target="_blank">#%s</a>' % (link.get('href'), index)
+                       '<a href="%s" target="_blank">#%s</a>' % (link, index)
                        for index, link in enumerate(value)
                     ]))
 
@@ -39,7 +39,7 @@ class LinkWithRelNofollowValidator(Validator):
             link_domain, link_domain_url = get_domain_from_url(href)
 
             if link.get('rel') == 'nofollow' and page_domain == link_domain:
-                rel_nofollow.append(link)
+                rel_nofollow.append(href)
 
         if rel_nofollow:
             self.add_violation(
