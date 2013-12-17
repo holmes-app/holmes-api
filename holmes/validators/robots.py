@@ -10,6 +10,13 @@ class RobotsValidator(Validator):
     SITEMAP_NOT_FOUND = 'You must specify the location of the Sitemap ' \
                         'using a robots.txt file'
 
+    DISALLOW_NOT_FOUND = 'Disallow directive indicates that robots should ' \
+                         'not access the specific directory, subdirectory ' \
+                         'or file. '
+
+    DISALLOW_ROOT_PATH = 'Crawlers may not index anything, because ' \
+                         'the root path (/) is disallowed.'
+
     @classmethod
     def get_violation_definitions(cls):
         return {
@@ -24,7 +31,15 @@ class RobotsValidator(Validator):
             'robots.sitemap.not_found': {
                 'title': 'Sitemap in Robots not found',
                 'description': lambda value: cls.SITEMAP_NOT_FOUND
-            }
+            },
+            'robots.disallow.not_found': {
+                'title': 'Disallow in Robots not found',
+                'description': lambda value: cls.DISALLOW_NOT_FOUND
+            },
+            'robots.disallow.root_path': {
+                'title': 'Disallow: / in Robots',
+                'description': lambda value: cls.DISALLOW_ROOT_PATH
+            },
         }
 
     def validate(self):
@@ -50,6 +65,10 @@ class RobotsValidator(Validator):
             return
 
         has_sitemap = False
+
+        has_disallow = False
+        disallow_root_path = True
+
         for rawline in response.text.splitlines():
             line = rawline.strip()
             comments = line.find('#')
@@ -61,10 +80,27 @@ class RobotsValidator(Validator):
             key = key.lower()
             if key == 'sitemap':
                 has_sitemap = True
+            elif key == 'disallow':
+                has_disallow = True
+                if val == '/':
+                    disallow_root_path = True
 
         if not has_sitemap:
             self.add_violation(
                 key='robots.sitemap.not_found',
+                value=None,
+                points=100
+            )
+
+        if not has_disallow:
+            self.add_violation(
+                key='robots.disallow.not_found',
+                value=None,
+                points=100
+            )
+        elif disallow_root_path:
+            self.add_violation(
+                key='robots.disallow.root_path',
                 value=None,
                 points=100
             )

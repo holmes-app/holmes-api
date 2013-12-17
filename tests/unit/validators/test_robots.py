@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from mock import Mock
+from mock import Mock, call
 from preggy import expect
 
 from holmes.config import Config
@@ -86,12 +86,14 @@ class TestRobotsValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
-        expect(definitions).to_length(3)
+        expect(definitions).to_length(5)
         expect('robots.not_found' in definitions).to_be_true()
         expect('robots.empty' in definitions).to_be_true()
         expect('robots.sitemap.not_found' in definitions).to_be_true()
+        expect('robots.disallow.not_found' in definitions).to_be_true()
+        expect('robots.disallow.root_path' in definitions).to_be_true()
 
-    def test_sitemap_not_found(self):
+    def test_validate(self):
         page = PageFactory.create(url='http://globo.com/')
 
         reviewer = Reviewer(
@@ -111,8 +113,43 @@ class TestRobotsValidator(ValidatorTestCase):
 
         validator.validate()
 
-        validator.add_violation.assert_called_once_with(
-            key='robots.sitemap.not_found',
-            value=None,
-            points=100
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='robots.sitemap.not_found',
+                value=None,
+                points=100
+            ))
+
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='robots.disallow.not_found',
+                value=None,
+                points=100
+            ))
+
+    def test_disallow_root_path(self):
+        page = PageFactory.create(url='http://globo.com/')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
         )
+
+        validator = RobotsValidator(reviewer)
+
+        response = Mock(status_code=200, text='Disallow: /')
+
+        validator.review.data['robots.response'] = response
+        validator.add_violation = Mock()
+
+        validator.validate()
+
+        expect(validator.add_violation.call_args_list).to_include(
+            call(
+                key='robots.disallow.root_path',
+                value=None,
+                points=100
+            ))
