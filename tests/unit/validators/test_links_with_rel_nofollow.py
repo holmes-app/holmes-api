@@ -54,7 +54,7 @@ class TestLinkWithRelNofollowValidator(ApiTestCase):
 
         validator.add_violation.assert_called_once_with(
             key='invalid.links.nofollow',
-            value=[{'href': 'http://my-site.com/test.html', 'rel': 'nofollow'}],
+            value=['http://my-site.com/test.html'],
             points=10
         )
 
@@ -65,7 +65,7 @@ class TestLinkWithRelNofollowValidator(ApiTestCase):
         definitions = validator.get_violation_definitions()
 
         links_nofollow_message = validator.get_links_nofollow_message(
-            [{'href': 'http://my-site.com/test.html', 'rel': 'nofollow'}]
+            ['http://my-site.com/test.html']
         )
 
         expect(definitions).to_length(1)
