@@ -55,6 +55,7 @@ Holmes is a service to investigate your website health.
         'six',
         'octopus-http',
         'toredis',
+        'raven'
     ],
     extras_require={
         'tests': tests_require,

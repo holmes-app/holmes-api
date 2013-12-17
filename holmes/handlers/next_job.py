@@ -5,7 +5,6 @@ from random import choice
 from datetime import datetime, timedelta
 
 from tornado import gen
-from sqlalchemy import or_, and_
 
 from holmes.handlers import BaseHandler
 from holmes.models.page import Page

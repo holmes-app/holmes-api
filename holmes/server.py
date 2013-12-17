@@ -94,6 +94,7 @@ class HolmesApiServer(Server):
 
         self.application.facters = self._load_facters()
         self.application.validators = self._load_validators()
+        self.application.error_handlers = [handler(self.application) for handler in self._load_error_handlers()]
 
         self.application.fact_definitions = {}
         self.application.violation_definitions = {}
@@ -125,6 +126,9 @@ class HolmesApiServer(Server):
 
     def _load_facters(self):
         return load_classes(default=self.config.FACTERS)
+
+    def _load_error_handlers(self):
+        return load_classes(default=self.config.ERROR_HANDLERS)
 
     def before_end(self, io_loop):
         self.application.db.remove()
