@@ -9,6 +9,7 @@ from tornado import gen
 import tornado.httpclient
 import logging
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 
 from holmes.models import Page, Domain, Review
 from holmes.utils import get_domain_from_url
@@ -252,9 +253,13 @@ class PagesHandler(BaseHandler):
             logging.debug("Adding URL: %s" % url)
             url_hash = hashlib.sha512(str(url)).hexdigest()
 
-            page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_url])
-            self.db.add(page)
-            added_pages.append(page)
+            try:
+                page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_url])
+                self.db.add(page)
+                self.db.flush()
+                added_pages.append(page)
+            except IntegrityError:
+                pass
 
         if added_pages:
             self.application.event_bus.publish(dumps({
@@ -262,7 +267,6 @@ class PagesHandler(BaseHandler):
                 'pageUrl': added_pages[0].url
             }))
 
-        self.db.flush()
         return added_pages
 
 
