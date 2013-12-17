@@ -22,16 +22,16 @@ def get_modules():
 
 
 class SentryErrorHandler(object):
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, config):
+        self.config = config
 
-        if self.app.config.USE_SENTRY:
-            self.sentry = Client(self.app.config.SENTRY_DSN_URL)
+        if self.config.USE_SENTRY:
+            self.sentry = Client(self.config.SENTRY_DSN_URL)
 
         self.modules = get_modules()
 
     def handle_exception(self, typ, value, tb, extra={}):
-        if self.app.config.USE_SENTRY:
+        if self.config.USE_SENTRY:
             self.sentry.captureException(
                 (typ, value, tb),
                 extra=extra,

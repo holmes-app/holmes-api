@@ -14,7 +14,6 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).initialize(*args, **kw)
 
     def log_exception(self, typ, value, tb):
-
         for handler in self.application.error_handlers:
             handler.handle_exception(
                 typ, value, tb, extra={

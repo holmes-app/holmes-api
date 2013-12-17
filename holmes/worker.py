@@ -26,6 +26,7 @@ class HolmesWorker(Shepherd):
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
+        self.error_handlers = [handler(self.config) for handler in self._load_error_handlers()]
 
         logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
         self.otto = TornadoOctopus(
@@ -34,6 +35,18 @@ class HolmesWorker(Shepherd):
             request_timeout_in_seconds=self.config.REQUEST_TIMEOUT_IN_SECONDS
         )
         self.otto.start()
+
+    def _load_error_handlers(self):
+        return load_classes(default=self.config.ERROR_HANDLERS)
+
+    def handle_error(self, exc_type, exc_value, tb):
+        for handler in self.error_handlers:
+            handler.handle_exception(
+                exc_type, exc_value, tb, extra={
+                    'worker-uuid': self.uuid,
+                    'holmes-version': __version__
+                }
+            )
 
     def config_parser(self, parser):
         parser.add_argument(
@@ -108,6 +121,7 @@ class HolmesWorker(Shepherd):
         self.working = False
 
     def do_work(self):
+        raise RuntimeError("woot?")
         if self._ping_api():
             err = None
             job = self._load_next_job()
