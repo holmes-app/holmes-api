@@ -259,7 +259,7 @@ class PagesHandler(BaseHandler):
                 self.db.flush()
                 added_pages.append(page)
             except IntegrityError:
-                pass
+                logging.info('IntegrityError on save %s.' % url)
 
         if added_pages:
             self.application.event_bus.publish(dumps({
