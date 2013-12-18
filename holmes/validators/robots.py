@@ -67,7 +67,7 @@ class RobotsValidator(Validator):
         has_sitemap = False
 
         has_disallow = False
-        disallow_root_path = True
+        disallow_root_path = False
 
         for rawline in response.text.splitlines():
             line = rawline.strip()
