@@ -185,7 +185,8 @@ class HolmesWorker(Shepherd):
                 logging.debug('Failed to acquire lock on %s.' % url)
                 return False
         except ConnectionError:
-            logging.error('Fail to start review.')
+            err = sys.exc_info()
+            logging.error('Fail to start review: %s.' % err[1])
 
         return False
 

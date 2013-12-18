@@ -129,7 +129,7 @@ class Reviewer(object):
 
     def content_loaded(self, url, response):
         if response.status_code > 399:
-            logging.error("Could not load '%s' (%s)!" % (url, response.status_code))
+            logging.error("Could not load '%s' (%s) - %s!" % (url, response.status_code, response.text))
             return
 
         logging.debug('Content for url %s loaded.' % url)
