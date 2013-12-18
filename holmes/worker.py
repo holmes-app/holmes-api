@@ -121,7 +121,6 @@ class HolmesWorker(Shepherd):
         self.working = False
 
     def do_work(self):
-        raise RuntimeError("woot?")
         if self._ping_api():
             err = None
             job = self._load_next_job()
