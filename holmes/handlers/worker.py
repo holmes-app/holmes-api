@@ -54,3 +54,17 @@ class WorkersHandler(BaseHandler):
 
         workers_json = [worker.to_dict() for worker in workers]
         self.write_json(workers_json)
+
+
+class WorkersInfoHandler(BaseHandler):
+
+    def get(self):
+        total_workers = self.db.query(Worker).count()
+        inactive_workers = self.db.query(Worker).filter(Worker.current_url == None).count()
+
+        workers_info = {
+            'total': total_workers,
+            'inactive': inactive_workers,
+            'active': total_workers - inactive_workers,
+        }
+        self.write_json(workers_info)

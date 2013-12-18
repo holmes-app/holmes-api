@@ -9,7 +9,7 @@ from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
 from tornado.httpclient import AsyncHTTPClient
 #from toredis import Client
 
-from holmes.handlers.worker import WorkerHandler, WorkersHandler
+from holmes.handlers.worker import WorkerHandler, WorkersHandler, WorkersInfoHandler
 from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
     PageHandler, PagesHandler, PageReviewsHandler, PageViolationsPerDayHandler
@@ -57,6 +57,7 @@ class HolmesApiServer(Server):
             (r'/most-common-violations/?', MostCommonViolationsHandler),
             (r'/last-reviews/?', LastReviewsHandler),
             (r'/workers/?', WorkersHandler),
+            (r'/workers/info/?', WorkersInfoHandler),
             (r'/worker/([a-z0-9-]*)/(alive|dead)/?', WorkerHandler),
             (r'/worker/([a-z0-9-]*)/(start|complete)/?', WorkerStateHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
