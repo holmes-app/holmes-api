@@ -196,6 +196,51 @@ class TestTitleValidator(ValidatorTestCase):
 
         definitions = validator.get_violation_definitions()
 
-        expect(definitions).to_length(2)
+        expect(definitions).to_length(3)
         expect('page.title.not_found' in definitions).to_be_true()
         expect('page.title.multiple' in definitions).to_be_true()
+        expect('page.title.size' in definitions).to_be_true()
+
+    def test_can_validate_title_size(self):
+        config = Config()
+        config.MAX_TITLE_SIZE = 70
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        title = 'a' * 80
+        content = '<html><title>%s</title></html>' % title
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = TitleValidator(reviewer)
+        validator.add_violation = Mock()
+        validator.review.data = {
+            'page.title_count': 1
+        }
+
+        validator.review.facts = {
+            'page.title': [title]
+        }
+
+        validator.validate()
+
+        validator.add_violation.assert_called_once_with(
+            key='page.title.size',
+            value={'max_size': 70, 'page_url': page.url},
+            points=10
+        )
