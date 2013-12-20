@@ -41,14 +41,13 @@ class DomainDetailsHandler(BaseHandler):
             return
 
         page_count = domain.get_page_count(self.db)
-        violation_count, violation_points = domain.get_violation_data(self.db)
+        violation_count = domain.get_violation_data(self.db)
 
         domain_json = {
             "name": domain.name,
             "url": domain.url,
             "pageCount": page_count,
             "violationCount": violation_count,
-            "violationPoints": violation_points or 0
         }
 
         self.write_json(domain_json)

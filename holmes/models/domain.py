@@ -54,13 +54,13 @@ class Domain(Base):
     def get_violation_data(self, db):
         from holmes.models import Review, Violation
 
-        result = db.query(sa.func.count(Violation.id).label('count'), sa.func.sum(Violation.points).label('points')) \
+        result = db.query(sa.func.count(Violation.id).label('count')) \
             .join(Review, Violation.review_id == Review.id) \
             .filter(Review.domain_id == self.id, Review.is_active == True) \
             .one()
 
         return (
-            result.count, result.points
+            result.count
         )
 
     def get_violations_per_day(self, db):
