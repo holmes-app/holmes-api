@@ -234,7 +234,7 @@ class TestTitleValidator(ValidatorTestCase):
         }
 
         validator.review.facts = {
-            'page.title': [title]
+            'page.title': title
         }
 
         validator.validate()
