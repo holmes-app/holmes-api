@@ -102,10 +102,9 @@ class TestDomain(ApiTestCase):
         ReviewFactory.create(domain=domain, page=page2, is_active=True, number_of_violations=10)
         ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=30)
 
-        violation_count, violation_points = domain.get_violation_data(self.db)
+        violation_count = domain.get_violation_data(self.db)
 
         expect(violation_count).to_equal(30)
-        expect(violation_points).to_equal(235)
 
     def test_can_get_violations_per_day(self):
         dt = datetime(2013, 10, 10, 10, 10, 10)
