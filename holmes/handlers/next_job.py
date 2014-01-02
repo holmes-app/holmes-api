@@ -16,12 +16,11 @@ class NextJobHandler(BaseHandler):
     def get(self):
         dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
 
-        pages_in_need_of_review = self.db.query(Page) \
-            .filter(Page.last_review == None) \
-            .order_by(Page.created_date)[:50]
+        pages_in_need_of_review = self.db.query(Page.uuid, Page.url) \
+            .filter(Page.last_review == None)[:50]
 
         if len(pages_in_need_of_review) == 0:
-            pages_in_need_of_review = self.db.query(Page) \
+            pages_in_need_of_review = self.db.query(Page.uuid, Page.url) \
                 .filter(
                     Page.last_review != None,
                     Page.last_review_date < dt
