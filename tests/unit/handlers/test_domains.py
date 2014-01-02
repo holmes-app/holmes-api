@@ -76,7 +76,6 @@ class TestDomainDetailsHandler(ApiTestCase):
         expect(domain_details['name']).to_equal('domain-details.com')
         expect(domain_details['pageCount']).to_equal(2)
         expect(domain_details['violationCount']).to_equal(50)
-        expect(domain_details['violationPoints']).to_equal(625)
 
     @gen_test
     def test_domain_not_found(self):
