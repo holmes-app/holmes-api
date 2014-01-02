@@ -93,7 +93,6 @@ class DomainReviewsHandler(BaseHandler):
             'domainURL': domain.url,
             'pageCount': review_count,
             'pages': [],
-            'pagesWithoutReview': []
         }
 
         for review in reviews:
@@ -104,20 +103,5 @@ class DomainReviewsHandler(BaseHandler):
                 "completedAt": review.completed_date,
                 "reviewId": str(review.uuid)
             })
-
-        pages = self.db.query(Page).filter(Page.domain == domain, Page.last_review_date == None)[:10]
-        for page in pages:
-            result['pagesWithoutReview'].append({
-                'uuid': str(page.uuid),
-                'url': page.url
-            })
-
-        page_count = self.db.query(func.count(Page.id)).filter(Page.domain_id == domain.id, Page.last_review_date == None).scalar()
-
-        page_count = page_count - len(pages)
-        if page_count <= 0:
-            page_count = 0
-
-        result['pagesWithoutReviewCount'] = page_count
 
         self.write_json(result)
