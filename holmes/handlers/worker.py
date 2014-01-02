@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 
 from ujson import dumps
 
+import sqlalchemy as sa
+
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
 
@@ -59,12 +61,18 @@ class WorkersHandler(BaseHandler):
 class WorkersInfoHandler(BaseHandler):
 
     def get(self):
-        total_workers = self.db.query(Worker).count()
-        inactive_workers = self.db.query(Worker).filter(Worker.current_url == None).count()
+        total_workers = self.db \
+            .query(sa.func.count(Worker.id).label('count')) \
+            .one()
+
+        inactive_workers = self.db \
+            .query(sa.func.count(Worker.id).label('count')) \
+            .filter(Worker.current_url == None) \
+            .one()
 
         workers_info = {
-            'total': total_workers,
-            'inactive': inactive_workers,
-            'active': total_workers - inactive_workers,
+            'total': total_workers.count,
+            'inactive': inactive_workers.count,
+            'active': total_workers.count - inactive_workers.count,
         }
         self.write_json(workers_info)
