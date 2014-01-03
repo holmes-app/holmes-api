@@ -56,6 +56,7 @@ class DomainDetailsHandler(BaseHandler):
             "pageCount": page_count,
             "reviewCount": review_count,
             "violationCount": violation_count,
+            "reviewPercentage": round(float(review_count) / page_count * 100, 2)
         }
 
         self.write_json(domain_json)
@@ -93,13 +94,11 @@ class DomainReviewsHandler(BaseHandler):
             self.set_status(404, 'Domain %s not found' % domain_name)
             return
 
-        review_count = domain.get_active_review_count(self.db)
         reviews = domain.get_active_reviews(self.db, current_page=current_page, page_size=page_size)
 
         result = {
             'domainName': domain.name,
             'domainURL': domain.url,
-            'pageCount': review_count,
             'pages': [],
         }
 
