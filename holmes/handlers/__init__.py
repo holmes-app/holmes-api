@@ -51,6 +51,10 @@ class BaseHandler(RequestHandler):
         self.write(dumps(obj))
 
     @property
+    def cache(self):
+        return self.application.cache
+
+    @property
     def db(self):
         return self.application.db
         #if self._session is None:

@@ -30,6 +30,7 @@ from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
 from holmes.utils import load_classes
 from holmes.models import Key
+from holmes.cache import Cache
 
 
 def main():
@@ -113,6 +114,8 @@ class HolmesApiServer(Server):
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
         self.connect_pub_sub(io_loop)
+
+        self.application.cache = Cache(self.application)
 
     def _insert_keys(self, keys):
         for name in keys:

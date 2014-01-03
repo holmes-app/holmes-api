@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import func
+from tornado.gen import coroutine
 
-from holmes.models import Domain, Page
+from holmes.models import Domain
 from holmes.handlers import BaseHandler
 
 
@@ -33,6 +33,7 @@ class DomainsHandler(BaseHandler):
 
 class DomainDetailsHandler(BaseHandler):
 
+    @coroutine
     def get(self, domain_name):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
@@ -40,7 +41,7 @@ class DomainDetailsHandler(BaseHandler):
             self.set_status(404, 'Domain %s not found' % domain_name)
             return
 
-        page_count = domain.get_page_count(self.db)
+        page_count = yield self.cache.get_page_count(domain)
         violation_count = domain.get_violation_data(self.db)
 
         domain_json = {
