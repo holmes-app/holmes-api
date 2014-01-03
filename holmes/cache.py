@@ -46,13 +46,51 @@ class Cache(object):
                 key=key,
                 value=int(page_count),
                 seconds=int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
-                callback=self.handle_set_cache_key(page_count, callback)
+                callback=self.handle_set_page_count(page_count, callback)
             )
 
         return handle
 
-    def handle_set_cache_key(self, page_count, callback):
+    def handle_set_page_count(self, page_count, callback):
         def handle(*args, **kw):
             callback(page_count)
+
+        return handle
+
+    @return_future
+    def get_violation_count(self, domain_name, callback=None):
+        key = '%s-violation-count' % self.get_domain_name(domain_name)
+        self.redis.get(key, callback=self.handle_get_violation_count(domain_name, callback))
+
+    def handle_get_violation_count(self, domain_name, callback):
+        def handle(violation_count):
+            if violation_count is not None:
+                callback(int(violation_count))
+                return
+
+            domain = domain_name
+            if domain and not isinstance(domain, Domain):
+                domain = Domain.get_domain_by_name(domain_name, self.db)
+
+            if not domain:
+                callback(None)
+                return
+
+            violation_count = domain.get_violation_data(self.db)
+
+            key = '%s-violation-count' % domain.name
+
+            self.redis.setex(
+                key=key,
+                value=int(violation_count),
+                seconds=int(self.config.VIOLATION_COUNT_EXPIRATION_IN_SECONDS),
+                callback=self.handle_set_violation_count(violation_count, callback)
+            )
+
+        return handle
+
+    def handle_set_violation_count(self, violation_count, callback):
+        def handle(*args, **kw):
+            callback(violation_count)
 
         return handle

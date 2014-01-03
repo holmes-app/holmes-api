@@ -9,10 +9,11 @@ from holmes.handlers import BaseHandler
 
 class DomainsHandler(BaseHandler):
 
+    @coroutine
     def get(self):
         domains = self.db.query(Domain).order_by(Domain.name.asc()).all()
-        violations_per_domain = Domain.get_violations_per_domain(self.db)
-        pages_per_domain = Domain.get_pages_per_domain(self.db)
+        #violations_per_domain = Domain.get_violations_per_domain(self.db)
+        #pages_per_domain = Domain.get_pages_per_domain(self.db)
 
         if not domains:
             self.write("[]")
@@ -21,11 +22,14 @@ class DomainsHandler(BaseHandler):
         result = []
 
         for domain in domains:
+            page_count = yield self.cache.get_page_count(domain)
+            violation_count = yield self.cache.get_violation_count(domain)
+
             result.append({
                 "url": domain.url,
                 "name": domain.name,
-                "violationCount": violations_per_domain.get(domain.id, 0),
-                "pageCount": pages_per_domain.get(domain.id, 0)
+                "violationCount": violation_count,
+                "pageCount": page_count
             })
 
         self.write_json(result)
@@ -42,7 +46,7 @@ class DomainDetailsHandler(BaseHandler):
             return
 
         page_count = yield self.cache.get_page_count(domain)
-        violation_count = domain.get_violation_data(self.db)
+        violation_count = yield self.cache.get_violation_count(domain)
 
         domain_json = {
             "name": domain.name,

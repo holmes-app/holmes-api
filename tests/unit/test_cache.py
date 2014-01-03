@@ -6,7 +6,7 @@ from tornado.testing import gen_test
 
 from holmes.cache import Cache
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory
+from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class CacheTestCase(ApiTestCase):
@@ -51,3 +51,15 @@ class CacheTestCase(ApiTestCase):
 
         page_count = yield self.cache.get_page_count('g1.globo.com')
         expect(page_count).to_equal(3)
+
+    @gen_test
+    def test_can_get_violation_count_for_domain(self):
+        self.clean_cache('globo.com')
+
+        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
+
+        page = PageFactory.create(domain=globocom)
+        ReviewFactory.create(is_active=True, is_complete=True, domain=globocom, page=page, number_of_violations=10)
+
+        violation_count = yield self.cache.get_violation_count('globo.com')
+        expect(violation_count).to_equal(10)
