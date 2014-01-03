@@ -60,6 +60,8 @@ class ReviewHandler(BaseReviewHandler):
             uuid=uuid4(),
         )
 
+        page.last_review_uuid = review.uuid
+
         self.db.add(review)
         self.db.flush()
 
@@ -76,6 +78,8 @@ class ReviewHandler(BaseReviewHandler):
             review.add_violation(key, violation['value'], violation['points'])
 
         self.db.flush()
+
+        page.violations_count = len(review_data['violations'])
 
         review.is_complete = True
         self.db.flush()

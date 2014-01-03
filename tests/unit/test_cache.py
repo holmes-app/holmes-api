@@ -14,9 +14,6 @@ class CacheTestCase(ApiTestCase):
     def cache(self):
         return self.server.application.cache
 
-    def clean_cache(self, domain_name):
-        self.server.application.redis.delete('%s-page-count' % domain_name)
-
     def test_cache_is_in_server(self):
         expect(self.server.application.cache).to_be_instance_of(Cache)
 

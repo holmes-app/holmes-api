@@ -39,6 +39,10 @@ class PageFactory(BaseFactory):
     domain = factory.SubFactory(DomainFactory)
     last_review = None
 
+    violations_count = 0
+
+    last_review_uuid = None
+
 
 class ReviewFactory(BaseFactory):
     FACTORY_FOR = Review
@@ -60,9 +64,15 @@ class ReviewFactory(BaseFactory):
         if 'page' in kwargs:
             kwargs['domain'] = kwargs['page'].domain
 
+        if 'page' in kwargs and 'uuid' in kwargs:
+            kwargs['page'].last_review_uuid = kwargs['uuid']
+
         if 'number_of_violations' in kwargs:
             number_of_violations = kwargs['number_of_violations']
             del kwargs['number_of_violations']
+
+            if 'page' in kwargs:
+                kwargs['page'].violations_count = number_of_violations
 
             violations = []
             for i in range(number_of_violations):

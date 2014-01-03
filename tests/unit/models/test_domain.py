@@ -147,7 +147,7 @@ class TestDomain(ApiTestCase):
 
         domain = DomainFactory.create()
 
-        page = PageFactory.create(domain=domain)
+        page = PageFactory.create(domain=domain, last_review_date=dt3)
 
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
@@ -159,7 +159,7 @@ class TestDomain(ApiTestCase):
 
         expect(reviews).to_length(1)
 
-        expect(reviews[0].id).to_equal(review.id)
+        expect(reviews[0].last_review_uuid).to_equal(str(review.uuid))
 
     def test_invalid_domain_returns_None(self):
         domain_name = 'domain-details.com'

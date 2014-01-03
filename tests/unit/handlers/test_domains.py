@@ -17,6 +17,9 @@ class TestDomainsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_domains_info(self):
+        self.clean_cache('globo.com')
+        self.clean_cache('g1.globo.com')
+
         DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
@@ -57,6 +60,8 @@ class TestDomainDetailsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_domain_details(self):
+        self.clean_cache('domain-details.com')
+
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
         page = PageFactory.create(domain=domain)
@@ -103,8 +108,8 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
-        page = PageFactory.create(domain=domain)
-        page2 = PageFactory.create(domain=domain)
+        page = PageFactory.create(domain=domain, last_review_date=dt)
+        page2 = PageFactory.create(domain=domain, last_review_date=dt2)
 
         ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=20)
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
@@ -123,13 +128,13 @@ class TestDomainReviewsHandler(ApiTestCase):
         expect(domain_details['domainURL']).to_equal('http://www.domain-details.com')
         expect(domain_details['pages']).to_length(2)
 
-        expect(domain_details['pages'][0]['url']).to_equal(page2.url)
-        expect(domain_details['pages'][0]['uuid']).to_equal(str(page2.uuid))
-        expect(domain_details['pages'][0]['completedAt']).to_equal(dt2_timestamp)
+        expect(domain_details['pages'][1]['url']).to_equal(page2.url)
+        expect(domain_details['pages'][1]['uuid']).to_equal(str(page2.uuid))
+        expect(domain_details['pages'][1]['completedAt']).to_equal(dt2_timestamp)
 
-        expect(domain_details['pages'][1]['url']).to_equal(page.url)
-        expect(domain_details['pages'][1]['uuid']).to_equal(str(page.uuid))
-        expect(domain_details['pages'][1]['completedAt']).to_equal(dt_timestamp)
+        expect(domain_details['pages'][0]['url']).to_equal(page.url)
+        expect(domain_details['pages'][0]['uuid']).to_equal(str(page.uuid))
+        expect(domain_details['pages'][0]['completedAt']).to_equal(dt_timestamp)
 
     @gen_test
     def test_can_get_domain_reviews_for_next_page(self):
@@ -139,7 +144,7 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         pages = []
         for page_index in range(16):
-            page = PageFactory.create(domain=domain)
+            page = PageFactory.create(domain=domain, last_review_date=dt)
             pages.append(page)
 
         reviews = []

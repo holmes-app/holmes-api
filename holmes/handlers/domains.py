@@ -24,13 +24,18 @@ class DomainsHandler(BaseHandler):
             review_count = yield self.cache.get_review_count(domain)
             violation_count = yield self.cache.get_violation_count(domain)
 
+            if page_count > 0:
+                review_percentage = round(float(review_count) / page_count * 100, 2)
+            else:
+                review_percentage = 0
+
             result.append({
                 "url": domain.url,
                 "name": domain.name,
                 "violationCount": violation_count,
                 "pageCount": page_count,
                 "reviewCount": review_count,
-                "reviewPercentage": round(float(review_count) / page_count * 100, 2)
+                "reviewPercentage": review_percentage
             })
 
         self.write_json(result)
@@ -50,13 +55,18 @@ class DomainDetailsHandler(BaseHandler):
         review_count = yield self.cache.get_review_count(domain)
         violation_count = yield self.cache.get_violation_count(domain)
 
+        if page_count > 0:
+            review_percentage = round(float(review_count) / page_count * 100, 2)
+        else:
+            review_percentage = 0
+
         domain_json = {
             "name": domain.name,
             "url": domain.url,
             "pageCount": page_count,
             "reviewCount": review_count,
             "violationCount": violation_count,
-            "reviewPercentage": round(float(review_count) / page_count * 100, 2)
+            "reviewPercentage": review_percentage
         }
 
         self.write_json(domain_json)
@@ -94,7 +104,11 @@ class DomainReviewsHandler(BaseHandler):
             self.set_status(404, 'Domain %s not found' % domain_name)
             return
 
-        reviews = domain.get_active_reviews(self.db, current_page=current_page, page_size=page_size)
+        reviews = domain.get_active_reviews(
+            self.db,
+            current_page=current_page,
+            page_size=page_size
+        )
 
         result = {
             'domainName': domain.name,
@@ -102,13 +116,13 @@ class DomainReviewsHandler(BaseHandler):
             'pages': [],
         }
 
-        for review in reviews:
+        for page in reviews:
             result['pages'].append({
-                "url": review.page.url,
-                "uuid": str(review.page.uuid),
-                "violationCount": len(review.violations),
-                "completedAt": review.completed_date,
-                "reviewId": str(review.uuid)
+                "url": page.url,
+                "uuid": str(page.uuid),
+                "violationCount": page.violations_count,
+                "completedAt": page.last_review_date,
+                "reviewId": str(page.last_review_uuid)
             })
 
         self.write_json(result)

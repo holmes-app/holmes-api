@@ -74,6 +74,9 @@ class ApiTestCase(CowTestCase):
 
         return app
 
+    def clean_cache(self, domain_name):
+        self.server.application.redis.delete('%s-page-count' % domain_name)
+
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 
 

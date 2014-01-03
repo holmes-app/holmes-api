@@ -99,20 +99,21 @@ class Domain(Base):
         return result
 
     def get_active_reviews(self, db, current_page=1, page_size=10):
-        from holmes.models import Review, Violation  # Prevent circular dependency
+        from holmes.models import Page  # Prevent circular dependency
 
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
         items = db \
-            .query(Review, sa.func.count(Violation.id).label('violation_count')) \
-            .outerjoin(Violation, Violation.review_id == Review.id) \
-            .filter(Review.is_active == True) \
-            .filter(Review.domain == self) \
-            .group_by(Review.id) \
-            .order_by('violation_count desc')[lower_bound:upper_bound]
+            .query(
+                Page.url, Page.uuid, Page.last_review_date,
+                Page.last_review_uuid, Page.violations_count
+            ) \
+            .filter(Page.last_review_date != None) \
+            .filter(Page.domain == self) \
+            .order_by('violations_count desc')[lower_bound:upper_bound]
 
-        return [item[0] for item in items]
+        return items
 
     @classmethod
     def get_domain_by_name(self, domain_name, db):

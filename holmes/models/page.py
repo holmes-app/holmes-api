@@ -31,6 +31,10 @@ class Page(Base):
     last_modified = sa.Column('last_modified', sa.DateTime, nullable=True)
     expires = sa.Column('expires', sa.DateTime, nullable=True)
 
+    violations_count = sa.Column('violations_count', sa.Integer, server_default='0', nullable=False)
+
+    last_review_uuid = sa.Column('last_review_uuid', sa.String(36), nullable=True)
+
     def to_dict(self):
         return {
             'uuid': str(self.uuid),
