@@ -53,6 +53,21 @@ class CacheTestCase(ApiTestCase):
         expect(page_count).to_equal(3)
 
     @gen_test
+    def test_can_increment_page_count(self):
+        self.clean_cache('globo.com')
+
+        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
+
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        page_count = yield self.cache.get_page_count('globo.com')
+        expect(page_count).to_equal(2)
+
+        page_count = yield self.cache.increment_page_count('globo.com', 10)
+        expect(page_count).to_equal(12)
+
+    @gen_test
     def test_can_get_violation_count_for_domain(self):
         self.clean_cache('globo.com')
 
@@ -63,3 +78,32 @@ class CacheTestCase(ApiTestCase):
 
         violation_count = yield self.cache.get_violation_count('globo.com')
         expect(violation_count).to_equal(10)
+
+        # should get from cache
+        self.cache.db = None
+
+        violation_count = yield self.cache.get_violation_count('globo.com')
+        expect(violation_count).to_equal(10)
+
+    @gen_test
+    def test_can_get_active_review_count_for_domain(self):
+        self.clean_cache('globo.com')
+        self.clean_cache('g1.globo.com')
+
+        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
+        DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
+
+        page = PageFactory.create(domain=globocom)
+        ReviewFactory.create(is_active=True, is_complete=True, domain=globocom, page=page, number_of_violations=10)
+        page2 = PageFactory.create(domain=globocom)
+        ReviewFactory.create(is_active=True, is_complete=True, domain=globocom, page=page2, number_of_violations=10)
+        ReviewFactory.create(is_active=False, is_complete=True, domain=globocom, page=page2, number_of_violations=10)
+
+        count = yield self.cache.get_active_review_count('globo.com')
+        expect(count).to_equal(2)
+
+        # should get from cache
+        self.cache.db = None
+
+        count = yield self.cache.get_active_review_count('globo.com')
+        expect(count).to_equal(2)

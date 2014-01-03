@@ -75,5 +75,7 @@ Config.define('ERROR_HANDLERS', [], 'List of classes to handle errors', 'General
 Config.define('USE_SENTRY', False, 'If set to true errors will be sent to sentry.', 'Sentry')
 Config.define('SENTRY_DSN_URL', '', 'URL to use as sentry DSN.', 'Sentry')
 
-Config.define('PAGE_COUNT_EXPIRATION_IN_SECONDS', 10, 'Expiration for the cache key for each domain page count', 'Cache')
-Config.define('VIOLATION_COUNT_EXPIRATION_IN_SECONDS', 10, 'Expiration for the cache key for each domain violation count', 'Cache')
+HOUR = 60 * 60
+Config.define('PAGE_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain page count', 'Cache')
+Config.define('VIOLATION_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
+Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')

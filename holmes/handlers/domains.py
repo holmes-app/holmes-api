@@ -12,8 +12,6 @@ class DomainsHandler(BaseHandler):
     @coroutine
     def get(self):
         domains = self.db.query(Domain).order_by(Domain.name.asc()).all()
-        #violations_per_domain = Domain.get_violations_per_domain(self.db)
-        #pages_per_domain = Domain.get_pages_per_domain(self.db)
 
         if not domains:
             self.write("[]")
@@ -23,13 +21,16 @@ class DomainsHandler(BaseHandler):
 
         for domain in domains:
             page_count = yield self.cache.get_page_count(domain)
+            review_count = yield self.cache.get_review_count(domain)
             violation_count = yield self.cache.get_violation_count(domain)
 
             result.append({
                 "url": domain.url,
                 "name": domain.name,
                 "violationCount": violation_count,
-                "pageCount": page_count
+                "pageCount": page_count,
+                "reviewCount": review_count,
+                "reviewPercentage": round(float(review_count) / page_count * 100, 2)
             })
 
         self.write_json(result)
@@ -46,12 +47,14 @@ class DomainDetailsHandler(BaseHandler):
             return
 
         page_count = yield self.cache.get_page_count(domain)
+        review_count = yield self.cache.get_review_count(domain)
         violation_count = yield self.cache.get_violation_count(domain)
 
         domain_json = {
             "name": domain.name,
             "url": domain.url,
             "pageCount": page_count,
+            "reviewCount": review_count,
             "violationCount": violation_count,
         }
 

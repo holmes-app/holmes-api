@@ -105,6 +105,8 @@ class PageHandler(BaseHandler):
         self.db.add(page)
         self.db.flush()
 
+        yield self.cache.increment_page_count(domain)
+
         self.application.event_bus.publish(dumps({
             'type': 'new-page',
             'pageUrl': str(url)
@@ -158,6 +160,7 @@ class PageReviewsHandler(BaseHandler):
 
 class PagesHandler(BaseHandler):
 
+    @gen.coroutine
     def post(self):
         urls = self.get_arguments('url')
 
@@ -175,7 +178,38 @@ class PagesHandler(BaseHandler):
             all_domains.append((domain_name, domain_url))
 
         domains = self.add_domains(all_domains)
-        pages = self.add_pages(urls, domains)
+
+        existing_pages = self.db.query(Page).filter(Page.url.in_(urls)).all()
+        if not existing_pages:
+            existing_pages = []
+        existing_pages_dict = dict([(page.url, page) for page in existing_pages])
+
+        added_pages = []
+        for url in set(urls):
+            if url in existing_pages_dict:
+                continue
+            domain_name, domain_url = get_domain_from_url(url.strip())
+
+            logging.debug("Adding URL: %s" % url)
+            url_hash = hashlib.sha512(str(url)).hexdigest()
+
+            try:
+                domain = domains[domain_url]
+                page = Page(url=str(url), url_hash=url_hash, domain=domain)
+                self.db.add(page)
+                self.db.flush()
+                yield self.cache.increment_page_count(domain)
+                added_pages.append(page)
+            except IntegrityError:
+                logging.info('IntegrityError on save %s.' % url)
+
+        if added_pages:
+            self.application.event_bus.publish(dumps({
+                'type': 'new-page',
+                'pageUrl': added_pages[0].url
+            }))
+
+        pages = list(added_pages)
 
         self.write(str(len(pages)))
 
@@ -236,38 +270,6 @@ class PagesHandler(BaseHandler):
 
         self.db.flush()
         return resulting_domains
-
-    def add_pages(self, urls, domains):
-        existing_pages = self.db.query(Page).filter(Page.url.in_(urls)).all()
-        if not existing_pages:
-            existing_pages = []
-        existing_pages_dict = dict([(page.url, page) for page in existing_pages])
-
-
-        added_pages = []
-        for url in set(urls):
-            if url in existing_pages_dict:
-                continue
-            domain_name, domain_url = get_domain_from_url(url.strip())
-
-            logging.debug("Adding URL: %s" % url)
-            url_hash = hashlib.sha512(str(url)).hexdigest()
-
-            try:
-                page = Page(url=str(url), url_hash=url_hash, domain=domains[domain_url])
-                self.db.add(page)
-                self.db.flush()
-                added_pages.append(page)
-            except IntegrityError:
-                logging.info('IntegrityError on save %s.' % url)
-
-        if added_pages:
-            self.application.event_bus.publish(dumps({
-                'type': 'new-page',
-                'pageUrl': added_pages[0].url
-            }))
-
-        return added_pages
 
 
 class PageViolationsPerDayHandler(BaseHandler):
