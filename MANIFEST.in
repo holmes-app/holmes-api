@@ -1,2 +1,2 @@
 prune *
-recursive-include holmes *.py *.ini *.conf
+recursive-include holmes *.py *.ini *.conf *.rst Makefile
