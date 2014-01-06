@@ -15,6 +15,7 @@ tests_require = [
     'coveralls',
     'factory_boy',
     'sqltap',
+    'sphinx',
 ]
 
 setup(
