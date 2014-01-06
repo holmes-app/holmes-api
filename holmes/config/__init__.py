@@ -26,21 +26,24 @@ Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, 'Number of seconds th
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               'Number of urls to enqueue before submitting to the /pages route', 'Validators')
 
-Config.define('MAX_IMG_REQUESTS_PER_PAGE', 50,
+# Reference data retrieved from HTTP Archive in 06-jan-2014
+Config.define('MAX_IMG_REQUESTS_PER_PAGE', 40,
               'Maximum number of images per page', 'Image Request Validator')
-Config.define('MAX_KB_SINGLE_IMAGE', 100,
+Config.define('MAX_KB_SINGLE_IMAGE', 26,
               'Maximum size of a single image', 'Image Request Validator')
-Config.define('MAX_IMG_KB_PER_PAGE', 1000,
+Config.define('MAX_IMG_KB_PER_PAGE', 1028,
               'Maximum size of images per page', 'Image Request Validator')
 
-Config.define('MAX_CSS_REQUESTS_PER_PAGE', 5,
+# Reference data retrieved from HTTP Archive in 06-jan-2014
+Config.define('MAX_CSS_REQUESTS_PER_PAGE', 8,
               'Maximum number of external stylesheets per page', 'CSS Request Validator')
-Config.define('MAX_CSS_KB_PER_PAGE_AFTER_GZIP', 50,
+Config.define('MAX_CSS_KB_PER_PAGE_AFTER_GZIP', 46,
               'Maximum size of stylesheets per page after gzip', 'CSS Request Validator')
 
-Config.define('MAX_JS_REQUESTS_PER_PAGE', 5,
+# Reference data retrieved from HTTP Archive in 06-jan-2014
+Config.define('MAX_JS_REQUESTS_PER_PAGE', 17,
               'Maximum number of external scripts per page', 'JS Request Validator')
-Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 50,
+Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 272,
               'Maximum size of scripts per page after gzip', 'JS Request Validator')
 
 Config.define('MAX_TITLE_SIZE', 70,
