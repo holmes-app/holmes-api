@@ -58,4 +58,4 @@ workers:
 	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 20
 
 docs:
-	@cd holmes/docs && make html && open _build/index.html
+	@cd holmes/docs && make html && open _build/html/index.html
