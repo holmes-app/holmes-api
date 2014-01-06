@@ -21,7 +21,7 @@ class DomainsHandler(BaseHandler):
 
         for domain in domains:
             page_count = yield self.cache.get_page_count(domain)
-            review_count = yield self.cache.get_review_count(domain)
+            review_count = yield self.cache.get_active_review_count(domain)
             violation_count = yield self.cache.get_violation_count(domain)
 
             if page_count > 0:
@@ -52,7 +52,7 @@ class DomainDetailsHandler(BaseHandler):
             return
 
         page_count = yield self.cache.get_page_count(domain)
-        review_count = yield self.cache.get_review_count(domain)
+        review_count = yield self.cache.get_active_review_count(domain)
         violation_count = yield self.cache.get_violation_count(domain)
 
         if page_count > 0:

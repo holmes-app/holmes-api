@@ -48,7 +48,7 @@ class Cache(object):
         )
 
     @return_future
-    def get_review_count(self, domain_name, callback=None):
+    def get_active_review_count(self, domain_name, callback=None):
         self.get_count(
             'active-review-count',
             domain_name,
