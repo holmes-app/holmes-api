@@ -25,9 +25,6 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_page_count_per_domain(self):
-        self.clean_cache('globo.com')
-        self.clean_cache('g1.globo.com')
-
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
         g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
@@ -51,8 +48,6 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_increment_page_count(self):
-        self.clean_cache('globo.com')
-
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
 
         for i in range(2):
@@ -66,8 +61,6 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_violation_count_for_domain(self):
-        self.clean_cache('globo.com')
-
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
 
         page = PageFactory.create(domain=globocom)
@@ -84,9 +77,6 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_active_review_count_for_domain(self):
-        self.clean_cache('globo.com')
-        self.clean_cache('g1.globo.com')
-
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 

@@ -47,6 +47,9 @@ class ApiTestCase(CowTestCase):
         WorkerFactory.FACTORY_SESSION = self.db
         KeyFactory.FACTORY_SESSION = self.db
 
+        self.clean_cache('globo.com')
+        self.clean_cache('g1.globo.com')
+
     def tearDown(self):
         self.db.rollback()
         super(ApiTestCase, self).tearDown()
@@ -76,6 +79,8 @@ class ApiTestCase(CowTestCase):
 
     def clean_cache(self, domain_name):
         self.server.application.redis.delete('%s-page-count' % domain_name)
+        self.server.application.redis.delete('%s-violation-count' % domain_name)
+        self.server.application.redis.delete('%s-active-review-count' % domain_name)
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 

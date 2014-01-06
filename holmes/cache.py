@@ -34,7 +34,7 @@ class Cache(object):
             domain_name,
             int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
             lambda domain: domain.get_page_count(self.db),
-            callback
+            callback=callback
         )
 
     @return_future
@@ -44,7 +44,7 @@ class Cache(object):
             domain_name,
             int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
             lambda domain: domain.get_violation_data(self.db),
-            callback
+            callback=callback
         )
 
     @return_future
@@ -54,7 +54,7 @@ class Cache(object):
             domain_name,
             int(self.config.ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS),
             lambda domain: domain.get_active_review_count(self.db),
-            callback
+            callback=callback
         )
 
     def get_count(self, key, domain_name, expiration, get_count_method, callback=None):
