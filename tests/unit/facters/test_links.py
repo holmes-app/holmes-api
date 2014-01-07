@@ -174,3 +174,46 @@ class TestLinksFacter(ValidatorTestCase):
             ))
 
         expect(facter.async_get.called).to_be_false()
+
+    def test_javascript_link(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<script>document.write(\'<A HREF="\'+OAS_url+\'click_nx.ads/\'+OAS_sitepage+\'/1\'+OAS_rns+\'@\'+OAS_listpos+\'!\'+pos+\'?\'+OAS_query+\'" TARGET=\'+OAS_target+\'>\');</script>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = LinkFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.async_get = Mock()
+        facter.get_facts()
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='page.links',
+                value=set([])
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='total.number.links',
+                value=0
+            ))
