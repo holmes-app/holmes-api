@@ -148,3 +148,78 @@ class TestOpenGraphValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_validate_multiple_og_image(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            validators=[]
+        )
+
+        content = '<html>' \
+            '<meta property="og:title" content="Metal" />' \
+            '<meta property="og:type" content="video.movie" />' \
+            '<meta property="og:url" content="http://a.com" />' \
+            '<meta property="og:image" content="http://a.com/paper.png" />' \
+            '<meta property="og:image" content="http://a.com/rock.png" />' \
+            '<meta property="og:image" content="http://a.com/scissors.png" />' \
+            '<meta property="og:image" content="http://a.com/lizard.png" />' \
+            '<meta property="og:image" content="http://a.com/spock.png" />' \
+            '</html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = OpenGraphValidator(reviewer)
+        validator.add_violation = Mock()
+        validator.review.data = {
+            'meta.tags': [
+                {
+                    'key': 'og:title',
+                    'content': 'Metal',
+                    'property': 'property'
+                }, {
+                    'key': 'og:type',
+                    'content': 'video.movie',
+                    'property': 'property'
+                }, {
+                    'key': 'og:url',
+                    'content': 'http://a.com',
+                    'property': 'property'
+                }, {
+                    'key': 'og:image',
+                    'content': 'http://a.com/paper.png',
+                    'property': 'property'
+                }, {
+                    'key': 'og:image',
+                    'content': 'http://a.com/rock.png',
+                    'property': 'property'
+                }, {
+                    'key': 'og:image',
+                    'content': 'http://a.com/scissors.png',
+                    'property': 'property'
+                }, {
+                    'key': 'og:image',
+                    'content': 'http://a.com/lizard.png',
+                    'property': 'property'
+                }, {
+                    'key': 'og:image',
+                    'content': 'http://a.com/spock.png',
+                    'property': 'property'
+                }
+            ],
+        }
+
+        validator.validate()
+
+        expect(validator.add_violation.called).to_be_false()

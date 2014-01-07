@@ -28,17 +28,10 @@ class OpenGraphValidator(Validator):
         og = ['og:title', 'og:type', 'og:image', 'og:url']
 
         for item in meta_tags:
-            if item['key'] == 'og:title' and item['content']:
-                og.remove('og:title')
-
-            if item['key'] == 'og:type' and item['content']:
-                og.remove('og:type')
-
-            if item['key'] == 'og:image' and item['content']:
-                og.remove('og:image')
-
-            if item['key'] == 'og:url' and item['content']:
-                og.remove('og:url')
+            og = self._missing_tags(item, 'og:title', og)
+            og = self._missing_tags(item, 'og:type', og)
+            og = self._missing_tags(item, 'og:image', og)
+            og = self._missing_tags(item, 'og:url', og)
 
         if og:
             self.add_violation(
@@ -46,6 +39,16 @@ class OpenGraphValidator(Validator):
                 value=og,
                 points=50 * len(og)
             )
+
+    def _missing_tags(self, item, key, current_tags):
+        if not 'key' in item or not 'content' in item:
+            return current_tags
+
+        if item['key'] == key and item['content']:
+            if key in current_tags:
+                current_tags.remove(key)
+
+        return current_tags
 
     def get_meta_tags(self):
         return self.review.data.get('meta.tags', None)
