@@ -8,6 +8,10 @@ import inspect
 import email.utils as eut
 from datetime import datetime
 
+import codecs
+from box.util.rotunicode import RotUnicode
+codecs.register(RotUnicode.search_function)
+
 import requests
 from requests.exceptions import ConnectionError
 import lxml.html
@@ -129,7 +133,10 @@ class Reviewer(object):
 
     def content_loaded(self, url, response):
         if response.status_code > 399:
-            logging.error(u"Could not load '%s' (%s) - %s!" % (url, response.status_code, response.text))
+            msg = "Could not load '%s' (%s) - %s!" % (url,
+                                                      response.status_code,
+                                                      response.text)
+            logging.error(msg.decode('rotunicode'))
             return
 
         logging.debug('Content for url %s loaded.' % url)
