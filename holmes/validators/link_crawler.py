@@ -15,7 +15,7 @@ class LinkCrawlerValidator(Validator):
         self.moved_links = set()
 
     @classmethod
-    def get_broken_link_message(cls, value):
+    def get_redirect_message(cls, value):
         return 'A link from your page to "%s" is using a 302 or 307 redirect. ' \
             'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. ' \
             'Use 301 instead.' % (
@@ -28,7 +28,7 @@ class LinkCrawlerValidator(Validator):
             )
 
     @classmethod
-    def get_redirect_message(cls, value):
+    def get_broken_link_message(cls, value):
         return 'This page contains broken links to %s ' \
             '(the urls failed to load or timed-out after 10 seconds). ' \
             'This can lead your site to lose rating with ' \
