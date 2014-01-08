@@ -19,21 +19,19 @@ class Page(Base):
     uuid = sa.Column('uuid', sa.String(36), default=uuid4, nullable=False)
     created_date = sa.Column('created_date', sa.DateTime, default=datetime.utcnow, nullable=False)
 
-    last_review_date = sa.Column('last_review_date', sa.DateTime, nullable=True)
-
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
 
     reviews = relationship("Review", backref="page", foreign_keys='[Review.page_id]')
 
     last_review_id = sa.Column('last_review_id', sa.Integer, sa.ForeignKey('reviews.id'))
     last_review = relationship("Review", foreign_keys=[last_review_id])
+    last_review_date = sa.Column('last_review_date', sa.DateTime, nullable=True)
+    last_review_uuid = sa.Column('last_review_uuid', sa.String(36), nullable=True)
 
     last_modified = sa.Column('last_modified', sa.DateTime, nullable=True)
     expires = sa.Column('expires', sa.DateTime, nullable=True)
 
     violations_count = sa.Column('violations_count', sa.Integer, server_default='0', nullable=False)
-
-    last_review_uuid = sa.Column('last_review_uuid', sa.String(36), nullable=True)
 
     def to_dict(self):
         return {
