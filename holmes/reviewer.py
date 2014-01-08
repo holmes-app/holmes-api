@@ -133,7 +133,11 @@ class Reviewer(object):
 
     def content_loaded(self, url, response):
         if response.status_code > 399:
-            text = response.text.decode('rotunicode')
+            if response.text:
+                text = response.text.decode('rotunicode')
+            else:
+                text = 'Empty response.text'
+
             msg = "Could not load '%s' (%s) - %s!" % (url,
                                                       response.status_code,
                                                       text)
