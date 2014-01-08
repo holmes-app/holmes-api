@@ -42,6 +42,12 @@ class Facter(object):
     def async_get(self, url, handler, method='GET', **kw):
         self.reviewer._async_get(url, handler, method, **kw)
 
+    def is_valid(self, url):
+        try:
+            return urlparse.urlparse(url)
+        except ValueError:
+            return None
+
     def is_absolute(self, url):
         return bool(urlparse.urlparse(url).scheme)
 

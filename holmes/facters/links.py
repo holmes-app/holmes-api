@@ -29,6 +29,14 @@ class LinkFacter(Facter):
             'total.number.links': {
                 'title': 'Link count',
                 'description': lambda value: "This page has %d outbound links." % value
+            },
+            'total.number.invalid_links': {
+                'title': 'Total invalid links',
+                'description': lambda value: "This page has %d invalid links." % value
+            },
+            'page.invalid_links': {
+                'title': 'Invalid Links',
+                'description': lambda value: list(value),
             }
         }
 
@@ -51,6 +59,8 @@ class LinkFacter(Facter):
             value=set(),
         )
 
+        invalid_links = set()
+
         num_links = 0
 
         links_to_get = set()
@@ -60,6 +70,10 @@ class LinkFacter(Facter):
             url = REMOVE_HASH.sub('', url)
 
             if not url:
+                continue
+
+            if not self.is_valid(url):
+                invalid_links.add(url)
                 continue
 
             if self.looks_like_image(url):
@@ -86,6 +100,16 @@ class LinkFacter(Facter):
         self.add_fact(
             key='total.number.links',
             value=num_links
+        )
+
+        self.add_fact(
+            key='total.number.invalid_links',
+            value=len(invalid_links)
+        )
+
+        self.add_fact(
+            key='page.invalid_links',
+            value=invalid_links
         )
 
     def handle_url_loaded(self, url, response):

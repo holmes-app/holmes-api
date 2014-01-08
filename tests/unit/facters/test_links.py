@@ -86,6 +86,18 @@ class TestLinksFacter(ValidatorTestCase):
                 facter.handle_url_loaded
             ))
 
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='total.number.invalid_links',
+                value=0,
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='page.invalid_links',
+                value=set([]),
+            ))
+
     def test_handle_url_loaded(self):
         page = PageFactory.create()
 
@@ -126,9 +138,11 @@ class TestLinksFacter(ValidatorTestCase):
         facter = LinkFacter(reviewer)
         definitions = facter.get_fact_definitions()
 
-        expect(definitions).to_length(2)
+        expect(definitions).to_length(4)
         expect('page.links' in definitions).to_be_true()
         expect('total.number.links' in definitions).to_be_true()
+        expect('total.number.invalid_links' in definitions).to_be_true()
+        expect('page.invalid_links' in definitions).to_be_true()
 
     def test_link_looks_like_image(self):
         page = PageFactory.create()
@@ -216,4 +230,59 @@ class TestLinksFacter(ValidatorTestCase):
             call(
                 key='total.number.links',
                 value=0
+            ))
+
+    def test_invalid_link(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<html><a href="http://]http://www.globo.com/malhacao">blah</a></html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = LinkFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.async_get = Mock()
+        facter.get_facts()
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='page.links',
+                value=set([])
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='total.number.links',
+                value=0
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='total.number.invalid_links',
+                value=1
+            ))
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='page.invalid_links',
+                value=set(['http://]http://www.globo.com/malhacao'])
             ))

@@ -62,6 +62,9 @@ class CSSFacter(Facter):
             if not src.endswith('.css'):
                 continue
 
+            if not self.is_valid(src):
+                continue
+
             if not self.is_absolute(src):
                 src = self.rebase(src)
 

@@ -50,6 +50,12 @@ class Validator(object):
     def add_violation(self, key, value, points):
         self.reviewer.add_violation(key, value, points)
 
+    def is_valid(self, url):
+        try:
+            return urlparse.urlparse(url)
+        except ValueError:
+            return None
+
     def test_url(self, url, response, broken_link_callback=None, moved_link_callback=None):
         status = response.status_code
 

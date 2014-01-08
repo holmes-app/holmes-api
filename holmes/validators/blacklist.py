@@ -33,6 +33,10 @@ class BlackListValidator(Validator):
 
         for link in links:
             href = link.get('href')
+
+            if not self.is_valid(href):
+                continue
+
             link_domain, link_domain_url = get_domain_from_url(href)
             if link_domain in self.reviewer.config.BLACKLIST_DOMAIN:
                 domains.append(href)

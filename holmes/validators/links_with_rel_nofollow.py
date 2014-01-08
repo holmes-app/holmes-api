@@ -36,6 +36,10 @@ class LinkWithRelNofollowValidator(Validator):
 
         for link in links:
             href = link.get('href')
+
+            if not self.is_valid(href):
+                continue
+
             link_domain, link_domain_url = get_domain_from_url(href)
 
             if link.get('rel') == 'nofollow' and page_domain == link_domain:

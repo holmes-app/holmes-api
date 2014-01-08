@@ -34,6 +34,9 @@ class ImageWithoutAltAttributeValidator(Validator):
             if not src:
                 continue
 
+            if not self.is_valid(src):
+                continue
+
             is_absolute = self.is_absolute(src)
 
             if not is_absolute:
