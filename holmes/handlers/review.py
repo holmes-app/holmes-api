@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from ujson import loads, dumps
 
-from holmes.models import Review, Page, Key
+from holmes.models import Review, Page
 from holmes.handlers import BaseHandler
 
 
