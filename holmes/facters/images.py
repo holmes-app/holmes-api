@@ -26,10 +26,14 @@ class ImageFacter(Facter):
             }
         }
 
+    def looks_like_base64(self, url):
+        if url.lstrip().startswith('data:image'):
+            return True
+        return False
+
     def get_facts(self):
         img_files = self.get_images()
 
-        self.review.data['page.all_images'] = img_files
         self.review.data['page.images'] = set()
         self.review.data['total.size.img'] = 0
 
@@ -44,11 +48,17 @@ class ImageFacter(Facter):
         )
 
         images_to_get = set()
+        images_without_base64 = []
 
         for img_file in img_files:
             src = img_file.get('src')
             if not src:
                 continue
+
+            if self.looks_like_base64(src):
+                continue
+
+            images_without_base64.append(img_file)
 
             is_absolute = self.is_absolute(src)
 
@@ -57,8 +67,10 @@ class ImageFacter(Facter):
 
             images_to_get.add(src)
 
-        for url in images_to_get:
-            self.async_get(url, self.handle_url_loaded)
+        self.review.data['page.all_images'] = images_without_base64
+
+        for src in images_to_get:
+            self.async_get(src, self.handle_url_loaded)
 
         self.add_fact(
             key='total.requests.img',
