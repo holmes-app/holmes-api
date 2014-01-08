@@ -35,7 +35,7 @@ class LinkCrawlerValidator(Validator):
             'Search Engines and is misleading to users.' % (
                 ', '.join(
                     [
-                        '<a href="%s" target="_blank">Link #%s</a>' % (url, url, index)
+                        '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
                         for index, url in enumerate(value)
                     ]
                 )
