@@ -4,6 +4,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from tornado import gen
 from ujson import loads, dumps
 
 from holmes.models import Review, Page
@@ -36,6 +37,7 @@ class ReviewHandler(BaseReviewHandler):
 
         self.write_json(result)
 
+    @gen.coroutine
     def post(self, page_uuid, review_uuid=None):
         page = Page.by_uuid(page_uuid, self.db)
 
@@ -84,18 +86,28 @@ class ReviewHandler(BaseReviewHandler):
         review.is_complete = True
         self.db.flush()
 
+        active_review = page.last_review
+
+        if not active_review:
+            yield self.cache.increment_active_review_count(page.domain)
+
+            yield self.cache.increment_violations_count(
+                page.domain,
+                increment=page.violations_count
+            )
+        else:
+            old_violations_count = len(active_review.violations)
+            new_violations_count = len(review.violations)
+
+            yield self.cache.increment_violations_count(
+                page.domain,
+                increment=new_violations_count - old_violations_count
+            )
+
+            active_review.is_active = False
+
         page.last_review = review
         page.last_review_date = review.completed_date
-
-        self.db.flush()
-
-        self.db.query(Review).filter(
-            Review.page_id == review.page_id
-        ).filter(
-            Review.id != review.id
-        ).update({
-            'is_active': False
-        })
 
         self.db.flush()
 

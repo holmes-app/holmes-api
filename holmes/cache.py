@@ -20,12 +20,60 @@ class Cache(object):
         return domain_name
 
     @return_future
-    def increment_page_count(self, domain_name, increment=1, callback=None):
-        self.increment_count('page-count', domain_name, increment, callback)
+    def has_key(self, key, callback):
+        self.redis.exists(key, callback)
 
-    def increment_count(self, key, domain_name, increment=1, callback=None):
+    @return_future
+    def increment_violations_count(self, domain_name, increment=1, callback=None):
+        self.increment_count(
+            'violation-count',
+            domain_name,
+            lambda domain: domain.get_violation_data(self.db),
+            increment,
+            callback
+        )
+
+    @return_future
+    def increment_active_review_count(self, domain_name, increment=1, callback=None):
+        self.increment_count(
+            'active-review-count',
+            domain_name,
+            lambda domain: domain.get_violation_data(self.db),
+            increment,
+            callback
+        )
+
+    @return_future
+    def increment_page_count(self, domain_name, increment=1, callback=None):
+        self.increment_count(
+            'page-count',
+            domain_name,
+            lambda domain: domain.get_page_count(self.db),
+            increment,
+            callback
+        )
+
+    def increment_count(self, key, domain_name, get_default_method, increment=1, callback=None):
         key = '%s-%s' % (self.get_domain_name(domain_name), key)
-        self.redis.incrby(key, increment, callback=callback)
+        self.has_key(key, self.handle_has_key(key, domain_name, get_default_method, increment, callback))
+
+    def handle_has_key(self, key, domain_name, get_default_method, increment, callback):
+        def handle(has_key):
+            domain = domain_name
+            if domain and not isinstance(domain, Domain):
+                domain = Domain.get_domain_by_name(domain_name, self.db)
+
+            if not domain:
+                callback(None)
+                return
+
+            if has_key:
+                self.redis.incrby(key, increment, callback=callback)
+            else:
+                value = get_default_method(domain)
+                self.redis.set(key, value + increment, callback=callback)
+
+        return handle
 
     @return_future
     def get_page_count(self, domain_name, callback=None):
