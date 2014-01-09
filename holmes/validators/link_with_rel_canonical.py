@@ -33,14 +33,15 @@ class LinkWithRelCanonicalValidator(Validator):
                     return
 
         head = self.get_head()
-        canonical = [item for item in head if item.get('rel') == 'canonical']
+        if head:
+            canonical = [item for item in head if item.get('rel') == 'canonical']
 
-        if not canonical:
-            self.add_violation(
-                key='absent.meta.canonical',
-                value=None,
-                points=30
-            )
+            if not canonical:
+                self.add_violation(
+                    key='absent.meta.canonical',
+                    value=None,
+                    points=30
+                )
 
     def get_head(self):
         return self.review.data.get('page.head', None)

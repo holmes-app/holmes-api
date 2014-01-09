@@ -143,3 +143,36 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             '</a>, it\'s a good practice to include rel="canonical" urls in '
             'the pages for your website.' % url
         )
+
+    def test_page_without_head_tag(self):
+        config = Config()
+        config.FORCE_CANONICAL = False
+
+        page = PageFactory.create(url='http://globo.com/1?item=test')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        content = '<html></html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = LinkWithRelCanonicalValidator(reviewer)
+        validator.add_violation = Mock()
+        validator.review.data = {'page.head': None}
+
+        validator.validate()
+
+        expect(validator.add_violation.called).to_be_false()
