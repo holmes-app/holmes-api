@@ -176,3 +176,35 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_validate_page_with_invalid_url(self):
+        config = Config()
+
+        page = PageFactory.create(url='http://[globo.com/1?item=test')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            config=config,
+            validators=[]
+        )
+
+        content = '<html><head></head></html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer.get_response = Mock(return_value=result)
+
+        validator = LinkWithRelCanonicalValidator(reviewer)
+        validator.add_violation = Mock()
+        validator.review.data = {'page.head': [{}]}
+
+        validator.validate()
+
+        expect(validator.add_violation.called).to_be_false()

@@ -29,6 +29,9 @@ class LinkWithRelCanonicalValidator(Validator):
         if not self.config.FORCE_CANONICAL:
             # Only pages with query string parameters
             if self.page_url:
+                if not self.is_valid(self.page_url):
+                    return
+
                 if not urlparse(self.page_url).query:
                     return
 
