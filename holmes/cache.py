@@ -38,7 +38,7 @@ class Cache(object):
         self.increment_count(
             'active-review-count',
             domain_name,
-            lambda domain: domain.get_violation_data(self.db),
+            lambda domain: domain.get_active_review_count(self.db),
             increment,
             callback
         )
