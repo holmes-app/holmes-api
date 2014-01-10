@@ -80,6 +80,7 @@ class ReviewHandler(BaseReviewHandler):
         self.db.flush()
 
         page.violations_count = len(review_data['violations'])
+        self.db.flush()
 
         review.is_complete = True
         self.db.flush()
@@ -130,8 +131,12 @@ class ReviewHandler(BaseReviewHandler):
             for fact in review.facts:
                 self.db.delete(fact)
 
+            self.db.flush()
+
             for violation in review.violations:
                 self.db.delete(violation)
+
+            self.db.flush()
 
             self.db.delete(review)
 
