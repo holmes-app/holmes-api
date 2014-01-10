@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import hashlib
 from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
@@ -81,7 +82,9 @@ class ApiTestCase(CowTestCase):
     def clean_cache(self, domain_name):
         do_nothing = lambda *args, **kw: None
 
-        self.server.application.redis.delete('http://%s-lock' % domain_name, callback=do_nothing)
+        url_hash = hashlib.sha512('http://%s' % domain_name).hexdigest()
+
+        self.server.application.redis.delete('%s-lock' % url_hash, callback=do_nothing)
         self.server.application.redis.delete('%s-page-count' % domain_name, callback=do_nothing)
         self.server.application.redis.delete('%s-violation-count' % domain_name, callback=do_nothing)
         self.server.application.redis.delete('%s-active-review-count' % domain_name, callback=do_nothing)
