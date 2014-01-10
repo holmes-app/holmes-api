@@ -118,7 +118,7 @@ class HolmesApiServer(Server):
         self.application.cache = Cache(self.application)
 
     def _insert_keys(self, keys):
-        for name in keys:
+        for name in keys.keys():
             key = Key.get_or_create(self.application.db, name)
             keys[name]['key'] = key
             self.application.db.add(key)
