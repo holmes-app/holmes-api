@@ -3,6 +3,7 @@
 
 from preggy import expect
 from tornado.testing import gen_test
+from tornado.gen import Task
 
 from holmes.cache import Cache
 from tests.unit.base import ApiTestCase
@@ -94,3 +95,17 @@ class CacheTestCase(ApiTestCase):
 
         count = yield self.cache.get_active_review_count('globo.com')
         expect(count).to_equal(2)
+
+    @gen_test
+    def test_can_store_processed_page_lock(self):
+        yield self.cache.lock_page('http://www.globo.com')
+
+        result = yield Task(self.cache.redis.get, 'http://www.globo.com-lock')
+        expect(int(result)).to_equal(1)
+
+    @gen_test
+    def test_can_get_url_was_added(self):
+        yield self.cache.lock_page('http://www.globo.com')
+
+        result = yield self.cache.has_lock('http://www.globo.com')
+        expect(result).to_be_true()

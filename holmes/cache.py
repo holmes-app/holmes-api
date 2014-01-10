@@ -141,3 +141,27 @@ class Cache(object):
             callback(count)
 
         return handle
+
+    @return_future
+    def lock_page(self, url, callback=None):
+        expiration = self.config.URL_LOCK_EXPIRATION_IN_SECONDS
+
+        self.redis.setex(
+            key='%s-lock' % url,
+            value=1,
+            seconds=expiration,
+            callback=callback
+        )
+
+    @return_future
+    def has_lock(self, url, callback=None):
+        self.redis.get(
+            key='%s-lock' % url,
+            callback=self.handle_get_lock_page(url, callback)
+        )
+
+    def handle_get_lock_page(self, url, callback):
+        def handle(value):
+            callback(value == '1')
+
+        return handle

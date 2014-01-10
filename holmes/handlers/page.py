@@ -188,20 +188,27 @@ class PagesHandler(BaseHandler):
         for url in set(urls):
             if url in existing_pages_dict:
                 continue
+
+            page_url = str(url)
+
+            has_lock = yield self.cache.has_lock(page_url)
+            if has_lock:
+                logging.debug('Lock found in page %s. Skipping...' % page_url)
+                continue
+
             domain_name, domain_url = get_domain_from_url(url.strip())
 
             logging.debug("Adding URL: %s" % url)
             url_hash = hashlib.sha512(str(url)).hexdigest()
 
-            try:
-                domain = domains[domain_url]
-                page = Page(url=str(url), url_hash=url_hash, domain=domain)
-                self.db.add(page)
-                self.db.flush()
-                yield self.cache.increment_page_count(domain)
-                added_pages.append(page)
-            except IntegrityError:
-                logging.info('IntegrityError on save %s.' % url)
+            domain = domains[domain_url]
+            page = Page(url=page_url, url_hash=url_hash, domain=domain)
+            self.db.add(page)
+            self.db.flush()
+
+            yield self.cache.lock_page(page_url)
+            yield self.cache.increment_page_count(domain)
+            added_pages.append(page)
 
         if added_pages:
             self.application.event_bus.publish(dumps({

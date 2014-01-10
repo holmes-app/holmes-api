@@ -82,3 +82,4 @@ HOUR = 60 * 60
 Config.define('PAGE_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain page count', 'Cache')
 Config.define('VIOLATION_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
 Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
+Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, 'Expiration for the url lock for each url', 'Cache')

@@ -47,6 +47,7 @@ class ApiTestCase(CowTestCase):
         WorkerFactory.FACTORY_SESSION = self.db
         KeyFactory.FACTORY_SESSION = self.db
 
+        self.clean_cache('www.globo.com')
         self.clean_cache('globo.com')
         self.clean_cache('g1.globo.com')
 
@@ -78,6 +79,7 @@ class ApiTestCase(CowTestCase):
         return app
 
     def clean_cache(self, domain_name):
+        self.server.application.redis.delete('http://%s-lock' % domain_name)
         self.server.application.redis.delete('%s-page-count' % domain_name)
         self.server.application.redis.delete('%s-violation-count' % domain_name)
         self.server.application.redis.delete('%s-active-review-count' % domain_name)
