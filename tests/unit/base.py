@@ -79,10 +79,12 @@ class ApiTestCase(CowTestCase):
         return app
 
     def clean_cache(self, domain_name):
-        self.server.application.redis.delete('http://%s-lock' % domain_name)
-        self.server.application.redis.delete('%s-page-count' % domain_name)
-        self.server.application.redis.delete('%s-violation-count' % domain_name)
-        self.server.application.redis.delete('%s-active-review-count' % domain_name)
+        do_nothing = lambda *args, **kw: None
+
+        self.server.application.redis.delete('http://%s-lock' % domain_name, callback=do_nothing)
+        self.server.application.redis.delete('%s-page-count' % domain_name, callback=do_nothing)
+        self.server.application.redis.delete('%s-violation-count' % domain_name, callback=do_nothing)
+        self.server.application.redis.delete('%s-active-review-count' % domain_name, callback=do_nothing)
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 

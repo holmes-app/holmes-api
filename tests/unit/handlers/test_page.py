@@ -194,7 +194,10 @@ class TestPagesHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
-        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(100)]
+        for i in xrange(100):
+            self.clean_cache('%d.globo.com/%d.html' % (i, i))
+
+        urls = ['http://%d.globo.com/%d.html' % (num, num) for num in xrange(100)]
 
         response = yield self.http_client.fetch(
             self.get_url('/pages'),
@@ -209,6 +212,9 @@ class TestPagesHandler(ApiTestCase):
     def test_saves_only_new_pages(self):
         domain = DomainFactory.create(name='globo.com', url='http://globo.com')
         page = PageFactory.create(domain=domain, url='http://www.globo.com/')
+
+        for i in range(10):
+            self.clean_cache('%d.globo.com/%d.html' % (i, i))
 
         urls = ['http://%d.globo.com/%d.html' % (num, num) for num in range(10)]
         urls.append(page.url)
