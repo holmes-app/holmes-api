@@ -62,8 +62,6 @@ class ReviewHandler(BaseReviewHandler):
             uuid=uuid4(),
         )
 
-        page.last_review_uuid = review.uuid
-
         self.db.add(review)
         self.db.flush()
 
@@ -105,6 +103,7 @@ class ReviewHandler(BaseReviewHandler):
             page.last_review.is_active = False
             self.db.flush()
 
+        page.last_review_uuid = review.uuid
         page.last_review = review
         self.db.flush()
 
