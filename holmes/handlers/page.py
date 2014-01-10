@@ -190,7 +190,9 @@ class PagesHandler(BaseHandler):
 
             page_url = str(url)
 
-            has_lock = yield self.cache.has_lock(page_url)
+            url_hash = hashlib.sha512(page_url).hexdigest()
+
+            has_lock = yield self.cache.has_lock(url_hash)
             if has_lock:
                 logging.debug('Lock found in page %s. Skipping...' % page_url)
                 continue
@@ -198,14 +200,13 @@ class PagesHandler(BaseHandler):
             domain_name, domain_url = get_domain_from_url(url.strip())
 
             logging.debug("Adding URL: %s" % url)
-            url_hash = hashlib.sha512(str(url)).hexdigest()
 
             domain = domains[domain_url]
             page = Page(url=page_url, url_hash=url_hash, domain=domain)
             self.db.add(page)
             self.db.flush()
 
-            yield self.cache.lock_page(page_url)
+            yield self.cache.lock_page(url_hash)
             yield self.cache.increment_page_count(domain)
             added_pages.append(page)
 
