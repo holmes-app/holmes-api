@@ -106,8 +106,9 @@ class ReviewHandler(BaseReviewHandler):
             self.db.flush()
 
         page.last_review = review
-        page.last_review_date = review.completed_date
+        self.db.flush()
 
+        page.last_review_date = review.completed_date
         self.db.flush()
 
         self._remove_older_reviews_with_same_day(review)

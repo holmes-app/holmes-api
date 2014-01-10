@@ -9,7 +9,6 @@ from tornado import gen
 import tornado.httpclient
 import logging
 from sqlalchemy import or_
-from sqlalchemy.exc import IntegrityError
 
 from holmes.models import Page, Domain, Review
 from holmes.utils import get_domain_from_url
