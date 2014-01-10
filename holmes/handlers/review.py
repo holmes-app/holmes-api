@@ -86,9 +86,7 @@ class ReviewHandler(BaseReviewHandler):
         review.is_complete = True
         self.db.flush()
 
-        active_review = page.last_review
-
-        if not active_review:
+        if not page.last_review:
             yield self.cache.increment_active_review_count(page.domain)
 
             yield self.cache.increment_violations_count(
@@ -96,7 +94,7 @@ class ReviewHandler(BaseReviewHandler):
                 increment=page.violations_count
             )
         else:
-            old_violations_count = len(active_review.violations)
+            old_violations_count = len(page.last_review.violations)
             new_violations_count = len(review.violations)
 
             yield self.cache.increment_violations_count(
@@ -104,7 +102,8 @@ class ReviewHandler(BaseReviewHandler):
                 increment=new_violations_count - old_violations_count
             )
 
-            active_review.is_active = False
+            page.last_review.is_active = False
+            self.db.flush()
 
         page.last_review = review
         page.last_review_date = review.completed_date
