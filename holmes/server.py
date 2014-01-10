@@ -14,7 +14,9 @@ from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
     PageHandler, PagesHandler, PageReviewsHandler, PageViolationsPerDayHandler
 )
-from holmes.handlers.violation import MostCommonViolationsHandler
+from holmes.handlers.violation import (
+    MostCommonViolationsHandler, ViolationsHandler, ViolationHandler
+)
 from holmes.handlers.review import (
     ReviewHandler, LastReviewsHandler
 )
@@ -74,6 +76,8 @@ class HolmesApiServer(Server):
             (r'/domains/([^/]+)/reviews/?', DomainReviewsHandler),
             (r'/next/?', NextJobHandler),
             (r'/events/?', EventBusHandler),
+            (r'/violations/?', ViolationsHandler),
+            (r'/violation/([a-z0-9\.]*)/?', ViolationHandler),
         ]
 
         return tuple(handlers)

@@ -90,3 +90,28 @@ class Review(Base):
     @property
     def violation_count(self):
         return len(self.violations)
+
+    @classmethod
+    def get_by_violation_key_name(cls, db, key_name, current_page=1, page_size=10):
+
+        from holmes.models.violation import Violation  # to avoid circular dependency
+        from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.page import Page  # to avoid circular dependency
+
+        lower_bound = (current_page - 1) * page_size
+        upper_bound = lower_bound + page_size
+
+        query = db \
+            .query(
+                Review.uuid.label('review_uuid'),
+                Page.url,
+                Page.uuid.label('page_uuid'),
+                Review.completed_date
+            ) \
+            .filter(Page.id == Review.page_id) \
+            .filter(Violation.review_id == Review.id) \
+            .filter(Review.is_active == True) \
+            .filter(Key.id == Violation.key_id) \
+            .filter(Key.name == key_name)
+
+        return query.count(), query[lower_bound:upper_bound]
