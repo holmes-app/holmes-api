@@ -19,8 +19,10 @@ class JsonType(types.TypeDecorator):
     impl = types.Unicode
 
     def process_bind_param(self, value, dialect):
-        if value is not None:
+        if value:
             value = dumps(value)
+        else:
+            value = None
 
         return value
 
