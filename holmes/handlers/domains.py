@@ -94,7 +94,9 @@ class DomainViolationsPerDayHandler(BaseHandler):
 
 class DomainReviewsHandler(BaseHandler):
 
+    @coroutine
     def get(self, domain_name):
+        term = self.get_argument('term', None)
         current_page = int(self.get_argument('current_page', 1))
         page_size = 10
 
@@ -106,13 +108,19 @@ class DomainReviewsHandler(BaseHandler):
 
         reviews = domain.get_active_reviews(
             self.db,
+            url_starts_with=term,
             current_page=current_page,
             page_size=page_size
         )
 
+        page_count = yield self.cache.get_page_count(domain)
+        review_count = domain.get_active_review_count(url_starts_with=term, db=self.db)
+
         result = {
             'domainName': domain.name,
             'domainURL': domain.url,
+            'reviewCount': review_count,
+            'pageCount': page_count,
             'pages': [],
         }
 
