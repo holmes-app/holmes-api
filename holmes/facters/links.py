@@ -28,11 +28,11 @@ class LinkFacter(Facter):
             },
             'total.number.links': {
                 'title': 'Link count',
-                'description': lambda value: "This page has %d outbound links." % value
+                'description': lambda value: "This page has %d outbound links." % (value or 0)
             },
             'total.number.invalid_links': {
                 'title': 'Total invalid links',
-                'description': lambda value: "This page has %d invalid links." % value
+                'description': lambda value: "This page has %d invalid links." % (value or 0)
             },
             'page.invalid_links': {
                 'title': 'Invalid Links',
