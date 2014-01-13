@@ -165,3 +165,27 @@ class Cache(object):
             callback(value == '1')
 
         return handle
+
+    @return_future
+    def lock_next_job(self, url, callback=None):
+        expiration = self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS
+
+        self.redis.setex(
+            key='%s-next-job-lock' % url,
+            value=1,
+            seconds=expiration,
+            callback=callback
+        )
+
+    @return_future
+    def has_next_job_lock(self, url, callback=None):
+        self.redis.get(
+            key='%s-next-job-lock' % url,
+            callback=self.handle_get_next_job_lock(url, callback)
+        )
+
+    def handle_get_next_job_lock(self, url, callback):
+        def handle(value):
+            callback(value == '1')
+
+        return handle

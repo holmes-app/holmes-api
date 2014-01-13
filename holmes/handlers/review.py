@@ -54,8 +54,8 @@ class ReviewHandler(BaseReviewHandler):
         self.db.flush()
 
         review = Review(
-            domain=page.domain,
-            page=page,
+            domain_id=page.domain.id,
+            page_id=page.id,
             is_active=True,
             is_complete=False,
             completed_date=datetime.utcnow(),
@@ -105,7 +105,7 @@ class ReviewHandler(BaseReviewHandler):
             self.db.flush()
 
         page.last_review_uuid = review.uuid
-        page.last_review = review
+        page.last_review_id = review.id
         self.db.flush()
 
         page.last_review_date = review.completed_date

@@ -32,9 +32,20 @@ class NextJobHandler(BaseHandler):
                 self.finish()
                 return
 
-        page = choice(pages_in_need_of_review)
+        has_lock = True
 
-        self.write_json({
-            'page': str(page.uuid),
-            'url': page.url
-        })
+        for i in range(50):
+            page = choice(pages_in_need_of_review)
+            has_lock = yield self.cache.has_next_job_lock(page.url)
+
+            if not has_lock:
+                yield self.cache.lock_next_job(page.url)
+                self.write_json({
+                    'page': str(page.uuid),
+                    'url': page.url
+                })
+                break
+
+        self.write('')
+        self.finish()
+        return
