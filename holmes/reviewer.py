@@ -63,7 +63,10 @@ class ReviewDAO(object):
 
 
 class Reviewer(object):
-    def __init__(self, api_url, page_uuid, page_url, config=None, validators=[], facters=[], async_get=None, wait=None, wait_timeout=None):
+    def __init__(
+            self, api_url, page_uuid, page_url, config=None, validators=[], facters=[],
+            async_get=None, wait=None, wait_timeout=None):
+
         self.api_url = api_url
 
         self.page_uuid = page_uuid
@@ -218,21 +221,33 @@ class Reviewer(object):
                 'origin_uuid': str(self.page_uuid)
             })
             error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
+
+            response = self._post(post_url, data=data)
+
+            if response.status_code > 399:
+                logging.error(error_message % (
+                    response.status_code,
+                    response.text
+                ))
         else:
-            post_url = self.get_url('/pages')
-            data = {
-                "url": urls,
-                'origin_uuid': str(self.page_uuid)
-            }
-            error_message = "Could not enqueue the " + str(len(urls)) + " pages sent! Status Code: %d, Error: %s"
+            post_url = self.get_url('/page')
+            #post_url = self.get_url('/pages')
 
-        response = self._post(post_url, data=data)
+            for url in urls:
+                data = dumps({
+                    'url': url,
+                    'origin_uuid': str(self.page_uuid)
+                })
 
-        if response.status_code > 399:
-            logging.error(error_message % (
-                response.status_code,
-                response.text
-            ))
+                error_message = "Could not enqueue page '" + url + "'! Status Code: %d, Error: %s"
+
+                response = self._post(post_url, data=data)
+
+                if response.status_code > 399:
+                    logging.error(error_message % (
+                        response.status_code,
+                        response.text
+                    ))
 
     def add_fact(self, key, value):
         self.review_dao.add_fact(key, value)
