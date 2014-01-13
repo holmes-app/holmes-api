@@ -7,7 +7,7 @@ from ujson import dumps
 
 import requests
 from preggy import expect
-from mock import patch, Mock
+from mock import patch, Mock, call
 
 from holmes.reviewer import Reviewer, ReviewDAO
 from holmes.config import Config
@@ -239,11 +239,24 @@ class TestReview(ApiTestCase):
         mock_post.return_value = Mock(status_code=200, text='OK')
         reviewer = self.get_reviewer()
         reviewer.enqueue(['http://globo.com', 'http://g1.globo.com'])
-        mock_post.assert_called_once_with(
-            '%spages' % reviewer.api_url,
-            data={'url': (['http://globo.com', 'http://g1.globo.com']),
-                  'origin_uuid': str(reviewer.page_uuid)}
-            )
+
+        expect(mock_post.call_args_list).to_include(
+            call(
+                '%spage' % reviewer.api_url,
+                data=dumps({
+                    'url': 'http://globo.com',
+                    'origin_uuid': str(reviewer.page_uuid)
+                })
+            ))
+
+        expect(mock_post.call_args_list).to_include(
+            call(
+                '%spage' % reviewer.api_url,
+                data=dumps({
+                    'url': 'http://g1.globo.com',
+                    'origin_uuid': str(reviewer.page_uuid)
+                })
+            ))
 
     @patch('requests.post')
     @patch('logging.error')

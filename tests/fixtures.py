@@ -98,7 +98,6 @@ class FactFactory(BaseFactory):
 
     key = factory.SubFactory(KeyFactory)
     value = None
-    review = factory.SubFactory(ReviewFactory)
 
 
 class ViolationFactory(BaseFactory):
@@ -107,7 +106,6 @@ class ViolationFactory(BaseFactory):
     key = factory.SubFactory(KeyFactory)
     value = None
     points = 0
-    review = factory.SubFactory(ReviewFactory)
 
 
 class WorkerFactory(BaseFactory):
