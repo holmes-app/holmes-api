@@ -27,8 +27,10 @@ class JsonType(types.TypeDecorator):
         return value
 
     def process_result_value(self, value, dialect):
-        if value is not None:
+        if value:
             value = loads(value)
+        else:
+            value = None
         return value
 
 
