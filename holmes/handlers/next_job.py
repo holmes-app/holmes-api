@@ -17,7 +17,7 @@ class NextJobHandler(BaseHandler):
         dt = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
 
         pages_in_need_of_review = self.db.query(Page.uuid, Page.url) \
-            .filter(Page.last_review == None)[:50]
+            .filter(Page.last_review == None)[:200]
 
         if len(pages_in_need_of_review) == 0:
             pages_in_need_of_review = self.db.query(Page.uuid, Page.url) \
@@ -25,7 +25,7 @@ class NextJobHandler(BaseHandler):
                     Page.last_review != None,
                     Page.last_review_date < dt
                 ) \
-                .order_by(Page.created_date)[:50]
+                .order_by(Page.created_date)[:200]
 
             if len(pages_in_need_of_review) == 0:
                 self.write('')
@@ -34,7 +34,7 @@ class NextJobHandler(BaseHandler):
 
         has_lock = True
 
-        for i in range(50):
+        for i in range(200):
             page = choice(pages_in_need_of_review)
             has_lock = yield self.cache.has_next_job_lock(page.url)
 
@@ -44,7 +44,7 @@ class NextJobHandler(BaseHandler):
                     'page': str(page.uuid),
                     'url': page.url
                 })
-                break
+                return
 
         self.write('')
         self.finish()

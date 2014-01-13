@@ -51,8 +51,6 @@ class ReviewHandler(BaseReviewHandler):
         if page.last_modified is not None:
             page.last_modified = datetime.utcfromtimestamp(page.last_modified)
 
-        self.db.flush()
-
         review = Review(
             domain_id=page.domain.id,
             page_id=page.id,
@@ -63,27 +61,20 @@ class ReviewHandler(BaseReviewHandler):
         )
 
         self.db.add(review)
-        self.db.flush()
 
         for fact in review_data['facts']:
             name = fact['key']
             key = self.application.fact_definitions[name]['key']
             review.add_fact(key, fact['value'])
 
-        self.db.flush()
-
         for violation in review_data['violations']:
             name = violation['key']
             key = self.application.violation_definitions[name]['key']
             review.add_violation(key, violation['value'], violation['points'])
 
-        self.db.flush()
-
         page.violations_count = len(review_data['violations'])
-        self.db.flush()
 
         review.is_complete = True
-        self.db.flush()
 
         if not page.last_review:
             yield self.cache.increment_active_review_count(page.domain)
@@ -102,45 +93,15 @@ class ReviewHandler(BaseReviewHandler):
             )
 
             page.last_review.is_active = False
-            self.db.flush()
 
         page.last_review_uuid = review.uuid
         page.last_review_id = review.id
-        self.db.flush()
-
         page.last_review_date = review.completed_date
-        self.db.flush()
-
-        self._remove_older_reviews_with_same_day(review)
 
         self.application.event_bus.publish(dumps({
             'type': 'new-review',
             'reviewId': str(review.uuid)
         }))
-
-    def _remove_older_reviews_with_same_day(self, review):
-        dt = datetime.now()
-        dt = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-
-        for review in self.db.query(Review) \
-                .filter(Review.page == review.page) \
-                .filter(Review.uuid != review.uuid) \
-                .filter(Review.created_date >= dt) \
-                .all():
-
-            for fact in review.facts:
-                self.db.delete(fact)
-
-            self.db.flush()
-
-            for violation in review.violations:
-                self.db.delete(violation)
-
-            self.db.flush()
-
-            self.db.delete(review)
-
-            self.db.flush()
 
 
 class LastReviewsHandler(BaseReviewHandler):
