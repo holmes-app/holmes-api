@@ -25,17 +25,17 @@ class ViolationHandler(BaseHandler):
     @gen.coroutine
     def get(self, key_name):
         current_page = int(self.get_argument('current_page', 1))
-        page_size = 10
-
-        review_count, reviews = Review.get_by_violation_key_name(
-            self.db,
-            key_name,
-            current_page=current_page,
-            page_size=page_size)
+        page_size = 100
 
         violations = self.application.violation_definitions
-
         violation_title = violations[key_name]['title']
+        key_id = violations[key_name]['key'].id
+
+        reviews = Review.get_by_violation_key_name(
+            self.db,
+            key_id,
+            current_page=current_page,
+            page_size=page_size)
 
         reviews_data = []
         for item in reviews:
@@ -51,7 +51,6 @@ class ViolationHandler(BaseHandler):
         violation = {
             'title': violation_title,
             'reviews': reviews_data,
-            'reviewCount': review_count
         }
 
         self.write_json(violation)
