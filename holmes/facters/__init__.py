@@ -29,7 +29,7 @@ class Baser(object):
         return bool(urlparse.urlparse(url).scheme)
 
     def rebase(self, url):
-        return urlparse.urljoin(self.page_url.rstrip('/'), url)
+        return urlparse.urljoin(self.page_url, url)
 
     def is_valid(self, url):
         try:
