@@ -77,7 +77,6 @@ class PageHandler(BaseHandler):
             url_hash = hashlib.sha512(domain_url).hexdigest()
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             self.db.add(domain)
-            self.db.flush()
 
             self.application.event_bus.publish(dumps({
                 'type': 'new-domain',
@@ -93,6 +92,7 @@ class PageHandler(BaseHandler):
         if pages:
             page = pages[0]
             page.score += score  # if page exists we need to increase page score
+            self.db.flush()
         else:
             page = None
 
