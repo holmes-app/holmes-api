@@ -4,7 +4,6 @@
 import datetime
 from mock import Mock
 from preggy import expect
-import lxml.html
 
 from holmes.config import Config
 from holmes.reviewer import Reviewer
