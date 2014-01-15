@@ -39,13 +39,8 @@ class TestNextJobHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_next_job(self):
-        dt = datetime(2010, 10, 10, 10, 10, 10)
-
         page = PageFactory.create()
-        review = ReviewFactory.create(page=page, is_complete=True, completed_date=dt)
-
-        page.last_review = review
-        page.last_review_date = dt
+        ReviewFactory.create(page=page)
         self.db.flush()
 
         page2 = PageFactory.create(domain=page.domain)

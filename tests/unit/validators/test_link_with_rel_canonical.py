@@ -25,6 +25,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )
@@ -63,6 +64,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )
@@ -101,6 +103,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )
@@ -154,6 +157,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )
@@ -186,6 +190,7 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )

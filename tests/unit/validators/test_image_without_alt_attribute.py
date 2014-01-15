@@ -19,12 +19,13 @@ class TestImageWithoutAltAttributeValidator(ValidatorTestCase):
     def test_can_validate_image_without_alt_attribute_on_globo_html(self):
         config = Config()
 
-        page = PageFactory.create()
+        page = PageFactory.create(url='http://my-site.com')
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=config,
             validators=[]
         )

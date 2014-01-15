@@ -15,12 +15,13 @@ from tests.fixtures import PageFactory
 class TestCSSFacter(FacterTestCase):
 
     def test_can_get_facts(self):
-        page = PageFactory.create()
+        page = PageFactory.create(url='http://my-site.com')
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             facters=[]
         )
@@ -89,6 +90,7 @@ class TestCSSFacter(FacterTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             facters=[]
         )
@@ -130,6 +132,7 @@ class TestCSSFacter(FacterTestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             facters=[]
         )

@@ -43,6 +43,8 @@ class PageFactory(BaseFactory):
 
     last_review_uuid = None
 
+    score = 0.0
+
 
 class ReviewFactory(BaseFactory):
     FACTORY_FOR = Review

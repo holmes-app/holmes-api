@@ -158,7 +158,7 @@ class TestReview(ApiTestCase):
                 'lastModified': None,
                 'expires': None,
                 'uuid': str(page_id),
-                'score': None
+                'score': 0.0
             },
             'createdAt': review.created_date,
             'isComplete': False

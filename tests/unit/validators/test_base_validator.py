@@ -34,6 +34,7 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
             api_url='http://localhost:2368',
             page_uuid=review.page.uuid,
             page_url=review.page.url,
+            page_score=0.0,
             config=Config(),
             validators=[]
         )
@@ -59,6 +60,7 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             validators=[]
         )
@@ -75,6 +77,7 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             validators=[]
         )
@@ -92,6 +95,7 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             validators=[]
         )
@@ -108,6 +112,7 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
+            page_score=0.0,
             config=Config(),
             validators=[]
         )
@@ -159,12 +164,12 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
         expect(len(validator.url_buffer)).to_equal(0)
 
-        validator.send_url('the-url', 'the-response')
+        validator.send_url('the-url', 0.0, 'the-response')
 
         expect(len(validator.url_buffer)).to_equal(1)
         expect(validator.flush.call_count).to_equal(0)
 
-        validator.send_url('the-url-2', 'the-response-2')
+        validator.send_url('the-url-2', 0.0, 'the-response-2')
 
         expect(len(validator.url_buffer)).to_equal(2)
         expect(validator.flush.call_count).to_equal(1)
