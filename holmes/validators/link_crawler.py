@@ -57,8 +57,18 @@ class LinkCrawlerValidator(Validator):
     def validate(self):
         links = self.get_links()
 
+        total_score = float(self.reviewer.page_score)
+        tax = total_score * float(self.reviewer.config.PAGE_SCORE_TAX_RATE)
+        available_score = total_score - tax
+
+        number_of_links = float(len(links)) or 1.0
+        link_score = available_score / number_of_links
+
         for url, response in links:
-            self.send_url(response.effective_url, response)
+            self.send_url(response.effective_url, link_score, response)
+
+        if links:
+            self.reviewer.increase_lambda_tax(tax)
 
         if self.broken_links:
             self.add_violation(

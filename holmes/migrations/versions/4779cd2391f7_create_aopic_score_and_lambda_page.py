@@ -29,7 +29,11 @@ def upgrade():
     connection = op.get_bind()
     connection.execute('INSERT INTO settings(lambda_score) VALUES(0.0)')
 
+    op.create_index('idx_pages_score', 'pages', ['score'])
+
 
 def downgrade():
     op.drop_table('settings')
+
+    op.drop_index('idx_pages_score', 'pages')
     op.drop_column('pages', 'score')

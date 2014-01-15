@@ -74,9 +74,9 @@ class Validator(object):
 
         return True
 
-    def send_url(self, url, response):
+    def send_url(self, url, score, response):
         if self.test_url(url, response, self.broken_link_violation, self.moved_link_violation):
-            self.url_buffer.add(url)
+            self.url_buffer.add((url, score))
 
         if len(self.url_buffer) > self.config.MAX_ENQUEUE_BUFFER_LENGTH:
             self.flush()

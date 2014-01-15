@@ -21,6 +21,7 @@ class PageHandler(BaseHandler):
     def post(self):
         post_data = loads(self.request.body)
         url = post_data['url']
+        score = float(post_data.get('score', self.application.config.DEFAULT_PAGE_SCORE))
 
         domain_name, domain_url = get_domain_from_url(url)
         if not domain_name:
@@ -91,6 +92,7 @@ class PageHandler(BaseHandler):
 
         if pages:
             page = pages[0]
+            page.score += score  # if page exists we need to increase page score
         else:
             page = None
 
@@ -100,11 +102,12 @@ class PageHandler(BaseHandler):
 
         url_hash = hashlib.sha512(url).hexdigest()
 
-        page = Page(url=url, url_hash=url_hash, domain=domain)
+        page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
         self.db.add(page)
         self.db.flush()
 
         yield self.cache.increment_page_count(domain)
+        yield self.cache.increment_page_count()
 
         self.application.event_bus.publish(dumps({
             'type': 'new-page',

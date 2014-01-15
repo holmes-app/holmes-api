@@ -51,6 +51,8 @@ class ReviewHandler(BaseReviewHandler):
         if page.last_modified is not None:
             page.last_modified = datetime.utcfromtimestamp(page.last_modified)
 
+        page.score = 0
+
         review = Review(
             domain_id=page.domain.id,
             page_id=page.id,
@@ -95,7 +97,7 @@ class ReviewHandler(BaseReviewHandler):
             page.last_review.is_active = False
 
         page.last_review_uuid = review.uuid
-        page.last_review_id = review.id
+        page.last_review = review
         page.last_review_date = review.completed_date
 
         self.application.event_bus.publish(dumps({

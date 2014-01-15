@@ -64,13 +64,14 @@ class ReviewDAO(object):
 
 class Reviewer(object):
     def __init__(
-            self, api_url, page_uuid, page_url, config=None, validators=[], facters=[],
+            self, api_url, page_uuid, page_url, page_score, config=None, validators=[], facters=[],
             async_get=None, wait=None, wait_timeout=None):
 
         self.api_url = api_url
 
         self.page_uuid = page_uuid
         self.page_url = page_url
+        self.page_score = page_score
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
 
@@ -210,17 +211,47 @@ class Reviewer(object):
     def get_url(self, url):
         return join(self.api_url.rstrip('/'), url.lstrip('/'))
 
+    def increase_lambda_tax(self, tax):
+        post_url = self.get_url('/tax')
+        response = self._post(post_url, data={'tax': tax})
+
+        if response.status_code > 399:
+            logging.error('Failed to increase lambda tax by %.2f (Status: %s, Text: %s)' % (
+                response.status_code,
+                response.text
+            ))
+
     def enqueue(self, urls):
         if not urls:
             return
 
-        if isinstance(urls, basestring):
-            post_url = self.get_url('/page')
+        #if isinstance(urls, basestring):
+            #post_url = self.get_url('/page')
+            #data = dumps({
+                #'url': urls,
+                #'origin_uuid': str(self.page_uuid)
+            #})
+            #error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
+
+            #response = self._post(post_url, data=data)
+
+            #if response.status_code > 399:
+                #logging.error(error_message % (
+                    #response.status_code,
+                    #response.text
+                #))
+        #else:
+        post_url = self.get_url('/page')
+        #post_url = self.get_url('/pages')
+
+        for url, score in urls:
             data = dumps({
-                'url': urls,
+                'url': url,
+                'score': score,
                 'origin_uuid': str(self.page_uuid)
             })
-            error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
+
+            error_message = "Could not enqueue page '" + url + "'! Status Code: %d, Error: %s"
 
             response = self._post(post_url, data=data)
 
@@ -229,25 +260,6 @@ class Reviewer(object):
                     response.status_code,
                     response.text
                 ))
-        else:
-            post_url = self.get_url('/page')
-            #post_url = self.get_url('/pages')
-
-            for url in urls:
-                data = dumps({
-                    'url': url,
-                    'origin_uuid': str(self.page_uuid)
-                })
-
-                error_message = "Could not enqueue page '" + url + "'! Status Code: %d, Error: %s"
-
-                response = self._post(post_url, data=data)
-
-                if response.status_code > 399:
-                    logging.error(error_message % (
-                        response.status_code,
-                        response.text
-                    ))
 
     def add_fact(self, key, value):
         self.review_dao.add_fact(key, value)

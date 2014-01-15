@@ -142,6 +142,7 @@ class HolmesWorker(Shepherd):
                 api_url=self.config.HOLMES_API_URL,
                 page_uuid=job['page'],
                 page_url=job['url'],
+                page_score=job['score'],
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,

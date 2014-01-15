@@ -3,7 +3,7 @@
 
 from tornado.concurrent import return_future
 
-from holmes.models import Domain
+from holmes.models import Domain, Page
 
 
 class Cache(object):
@@ -17,7 +17,7 @@ class Cache(object):
         if isinstance(domain_name, Domain):
             return domain_name.name
 
-        return domain_name
+        return domain_name or 'page'
 
     @return_future
     def has_key(self, key, callback):
@@ -44,7 +44,7 @@ class Cache(object):
         )
 
     @return_future
-    def increment_page_count(self, domain_name, increment=1, callback=None):
+    def increment_page_count(self, domain_name=None, increment=1, callback=None):
         self.increment_count(
             'page-count',
             domain_name,
@@ -63,20 +63,24 @@ class Cache(object):
             if domain and not isinstance(domain, Domain):
                 domain = Domain.get_domain_by_name(domain_name, self.db)
 
-            if not domain:
-                callback(None)
-                return
+            #if not domain:
+                #callback(None)
+                #return
 
             if has_key:
                 self.redis.incrby(key, increment, callback=callback)
             else:
-                value = get_default_method(domain)
-                self.redis.set(key, value + increment, callback=callback)
+                if domain is None:
+                    value = Page.get_page_count(self.db) + increment - 1
+                else:
+                    value = get_default_method(domain) + increment - 1
+
+                self.redis.set(key, value, callback=callback)
 
         return handle
 
     @return_future
-    def get_page_count(self, domain_name, callback=None):
+    def get_page_count(self, domain_name=None, callback=None):
         self.get_count(
             'page-count',
             domain_name,
@@ -119,13 +123,12 @@ class Cache(object):
             if domain and not isinstance(domain, Domain):
                 domain = Domain.get_domain_by_name(domain_name, self.db)
 
-            if not domain:
-                callback(None)
-                return
+            if domain is None:
+                count = Page.get_page_count(self.db)
+            else:
+                count = get_count_method(domain)
 
-            count = get_count_method(domain)
-
-            cache_key = '%s-%s' % (domain.name, key)
+            cache_key = '%s-%s' % (self.get_domain_name(domain), key)
 
             self.redis.setex(
                 key=cache_key,
@@ -165,6 +168,10 @@ class Cache(object):
             callback(value == '1')
 
         return handle
+
+    @return_future
+    def release_lock_page(self, url, callback):
+        self.redis.delete('%s-lock' % url, callback=callback)
 
     @return_future
     def lock_next_job(self, url, callback=None):

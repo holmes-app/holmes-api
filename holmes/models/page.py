@@ -33,12 +33,15 @@ class Page(Base):
 
     violations_count = sa.Column('violations_count', sa.Integer, server_default='0', nullable=False)
 
+    score = sa.Column('score', sa.Float, default=0.0, nullable=False)
+
     def to_dict(self):
         return {
             'uuid': str(self.uuid),
             'url': self.url,
             'lastModified': self.last_modified,
             'expires': self.expires,
+            'score': self.score
         }
 
     def __str__(self):
@@ -85,3 +88,11 @@ class Page(Base):
     @classmethod
     def by_uuid(cls, uuid, db):
         return db.query(Page).filter(Page.uuid == uuid).first()
+
+    @classmethod
+    def get_page_count(cls, db):
+        return int(db.query(sa.func.count(Page.id)).scalar())
+
+    @classmethod
+    def update_scores(cls, individual_score, db):
+        db.query(Page).update({'score': Page.score + individual_score})
