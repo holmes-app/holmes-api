@@ -83,14 +83,13 @@ class PageHandler(BaseHandler):
                 'domainUrl': str(domain_url)
             }))
 
-        pages = self.db.query(Page).filter(or_(
+        page = self.db.query(Page).filter(or_(
             Page.url == url,
             Page.url == url.rstrip('/'),
             Page.url == "%s/" % url
-        )).all()
+        )).first()
 
-        if pages:
-            page = pages[0]
+        if page:
             page.score += score  # if page exists we need to increase page score
             self.db.flush()
         else:
