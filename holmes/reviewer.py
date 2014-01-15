@@ -217,6 +217,7 @@ class Reviewer(object):
 
         if response.status_code > 399:
             logging.error('Failed to increase lambda tax by %.2f (Status: %s, Text: %s)' % (
+                tax,
                 response.status_code,
                 response.text
             ))
