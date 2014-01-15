@@ -21,16 +21,22 @@ class NextJobHandler(BaseHandler):
         settings = Settings.instance(self.db)
 
         pages_in_need_of_review = self.db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
+            .filter(Page.last_review == None) \
             .order_by(Page.score.desc())[:200]
 
         if len(pages_in_need_of_review) == 0:
-            if settings.lambda_score > 0:
-                self.update_pages_score_by(settings, settings.lambda_score, self.handle_scores_updated)
-                return
+            pages_in_need_of_review = self.db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
+                .filter(Page.last_review != None) \
+                .order_by(Page.score.desc())[:200]
 
-            self.write('')
-            self.finish()
-            return
+            if len(pages_in_need_of_review) == 0:
+                if settings.lambda_score > 0:
+                    self.update_pages_score_by(settings, settings.lambda_score, self.handle_scores_updated)
+                    return
+
+                self.write('')
+                self.finish()
+                return
 
         if settings.lambda_score > pages_in_need_of_review[0].score:
             self.update_pages_score_by(settings, settings.lambda_score, self.handle_scores_updated)
