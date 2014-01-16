@@ -16,17 +16,17 @@ class NextJobHandler(BaseHandler):
     @gen.coroutine
     @asynchronous
     def get(self):
-        last_week = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
+        expired_time = datetime.now() - timedelta(seconds=self.application.config.REVIEW_EXPIRATION_IN_SECONDS)
 
         settings = Settings.instance(self.db)
 
         pages_in_need_of_review = self.db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
-            .filter(Page.last_review == None) \
+            .filter(Page.last_review_date == None) \
             .order_by(Page.score.desc())[:200]
 
         if len(pages_in_need_of_review) == 0:
             pages_in_need_of_review = self.db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
-                .filter(Page.last_review != None) \
+                .filter(Page.last_review_date <= expired_time) \
                 .order_by(Page.score.desc())[:200]
 
             if len(pages_in_need_of_review) == 0:
@@ -44,7 +44,7 @@ class NextJobHandler(BaseHandler):
 
         page = choice(pages_in_need_of_review)
 
-        if page.last_review_date is not None and page.last_review_date > last_week:
+        if page.last_review_date is not None and page.last_review_date > expired_time:
             self.write('')
             self.finish()
             return
