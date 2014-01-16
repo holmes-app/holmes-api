@@ -1,14 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from uuid import UUID
 import hashlib
+import logging
 
 from ujson import loads, dumps
 from tornado import gen
 import tornado.httpclient
-import logging
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from holmes.models import Page, Domain, Review
 from holmes.utils import get_domain_from_url
@@ -90,30 +92,42 @@ class PageHandler(BaseHandler):
         )).first()
 
         if page:
-            page.score += score  # if page exists we need to increase page score
-            self.db.flush()
-        else:
-            page = None
 
-        if page:
+            try:
+                self.db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
+            except OperationalError:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    logging.error('Deadlock happened! Trying again! (Details: %s)' % str(err))
+                    self.db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
+                else:
+                    raise
+
             self.write(str(page.uuid))
+            page = None
             return
 
-        url_hash = hashlib.sha512(url).hexdigest()
+        try:
+            url_hash = hashlib.sha512(url).hexdigest()
 
-        page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
-        self.db.add(page)
-        self.db.flush()
+            page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
+            self.db.add(page)
+            self.db.flush()
 
-        yield self.cache.increment_page_count(domain)
-        yield self.cache.increment_page_count()
+            yield self.cache.increment_page_count(domain)
+            yield self.cache.increment_page_count()
 
-        self.application.event_bus.publish(dumps({
-            'type': 'new-page',
-            'pageUrl': str(url)
-        }))
+            self.application.event_bus.publish(dumps({
+                'type': 'new-page',
+                'pageUrl': str(url)
+            }))
 
-        self.write(str(page.uuid))
+            self.write(str(page.uuid))
+        except IntegrityError:
+            self.db.rollback()
+            self.db.query(Page).filter(Page.url_hash == url_hash).one()
+            self.write(str(page.uuid))
+            page = None
 
     def get(self, uuid=''):
         uuid = UUID(uuid)

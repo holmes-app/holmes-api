@@ -51,11 +51,14 @@ run_daemon:
 run: redis
 	@holmes-api -vvv --debug -c ./holmes/config/local.conf
 
+run-prod: redis
+	@holmes-api -w 10 -c ./holmes/config/local.conf
+
 worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf -t 1
 
 workers:
-	@holmes-worker -c ./holmes/config/local.conf -t 200 -w 20
+	@holmes-worker -c ./holmes/config/local.conf -t 10 -w 40
 
 docs:
 	@cd holmes/docs && make html && open _build/html/index.html
