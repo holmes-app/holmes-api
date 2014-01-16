@@ -92,16 +92,16 @@ class PageHandler(BaseHandler):
         )).first()
 
         if page:
-
-            try:
-                self.db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
-            except OperationalError:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err):
-                    logging.error('Deadlock happened! Trying again! (Details: %s)' % str(err))
+            for i in range(3):
+                try:
                     self.db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
-                else:
-                    raise
+                    break
+                except OperationalError:
+                    err = sys.exc_info()[1]
+                    if 'Deadlock found' in str(err):
+                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    else:
+                        raise
 
             self.write(str(page.uuid))
             page = None
