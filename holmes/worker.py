@@ -143,6 +143,7 @@ class HolmesWorker(Shepherd):
                 page_uuid=job['page'],
                 page_url=job['url'],
                 page_score=job['score'],
+                ping_method=self._ping_api,
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,

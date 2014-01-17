@@ -64,7 +64,7 @@ class ReviewDAO(object):
 
 class Reviewer(object):
     def __init__(
-            self, api_url, page_uuid, page_url, page_score, config=None, validators=[], facters=[],
+            self, api_url, page_uuid, page_url, page_score, ping_method=None, config=None, validators=[], facters=[],
             async_get=None, wait=None, wait_timeout=None):
 
         self.api_url = api_url
@@ -72,6 +72,8 @@ class Reviewer(object):
         self.page_uuid = page_uuid
         self.page_url = page_url
         self.page_score = page_score
+
+        self.ping_method = ping_method
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
 
@@ -246,6 +248,9 @@ class Reviewer(object):
         #post_url = self.get_url('/pages')
 
         for url, score in urls:
+            if self.ping_method is not None:
+                self.ping_method()
+
             data = dumps({
                 'url': url,
                 'score': score,
