@@ -53,7 +53,7 @@ class PageHandler(BaseHandler):
                 'reason': 'invalid_url',
                 'url': url,
                 'status': response.code,
-                'details': response.text
+                'details': response.body
             })
             return
 
