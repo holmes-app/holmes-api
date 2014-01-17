@@ -9,8 +9,7 @@ class TaxHandler(BaseHandler):
     def post(self):
         tax = float(self.get_argument('tax'))
 
-        settings = Settings.instance(self.db)
-        settings.lambda_score += tax
+        self.db.query(Settings).update({'lambda_score': Settings.lambda_score + tax})
 
         self.write('OK')
         self.finish()
