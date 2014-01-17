@@ -51,7 +51,9 @@ class PageHandler(BaseHandler):
             self.set_status(400, 'Invalid URL [%s]' % url)
             self.write_json({
                 'reason': 'invalid_url',
-                'url': url
+                'url': url,
+                'status': response.code,
+                'details': response.text
             })
             return
 
