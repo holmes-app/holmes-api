@@ -112,6 +112,10 @@ class Reviewer(object):
         self._wait_for_async_requests = wait
         self._wait_timeout = wait_timeout
 
+    def ping(self):
+        if self.ping_method is not None:
+            self.ping_method()
+
     def _async_get(self, url, handler, method='GET', **kw):
         if self.async_get_func:
             self.async_get_func(url, handler, method, **kw)
@@ -200,12 +204,14 @@ class Reviewer(object):
 
     def run_facters(self):
         for facter in self.facters:
+            self.ping()
             logging.debug('---------- Started running facter %s ---------' % facter.__name__)
             facter_instance = facter(self)
             facter_instance.get_facts()
 
     def run_validators(self):
         for validator in self.validators:
+            self.ping()
             logging.debug('---------- Started running validator %s ---------' % validator.__name__)
             validator_instance = validator(self)
             validator_instance.validate()
@@ -248,9 +254,6 @@ class Reviewer(object):
         #post_url = self.get_url('/pages')
 
         for url, score in urls:
-            if self.ping_method is not None:
-                self.ping_method()
-
             data = dumps({
                 'url': url,
                 'score': score,
@@ -266,6 +269,8 @@ class Reviewer(object):
                     response.status_code,
                     response.text
                 ))
+
+            self.ping()
 
     def add_fact(self, key, value):
         self.review_dao.add_fact(key, value)
