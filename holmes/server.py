@@ -23,7 +23,7 @@ from holmes.handlers.review import (
 from holmes.handlers.next_job import NextJobHandler
 from holmes.handlers.domains import (
     DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler,
-    DomainReviewsHandler
+    DomainReviewsHandler, DomainsChangeStatusHandler
 )
 from holmes.handlers.search import (
     SearchHandler
@@ -78,6 +78,7 @@ class HolmesApiServer(Server):
             (r'/domains/([^/]+)/?', DomainDetailsHandler),
             (r'/domains/([^/]+)/violations-per-day/?', DomainViolationsPerDayHandler),
             (r'/domains/([^/]+)/reviews/?', DomainReviewsHandler),
+            (r'/domains/([^/]+)/change-status/?', DomainsChangeStatusHandler),
             (r'/next/?', NextJobHandler),
             (r'/events/?', EventBusHandler),
             (r'/violations/?', ViolationsHandler),

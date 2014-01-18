@@ -138,3 +138,15 @@ class DomainReviewsHandler(BaseHandler):
 
         self.write_json(result)
 
+
+class DomainsChangeStatusHandler(BaseHandler):
+
+    @coroutine
+    def post(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        domain.is_active = not domain.is_active
