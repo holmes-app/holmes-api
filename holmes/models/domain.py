@@ -16,6 +16,8 @@ class Domain(Base):
     url_hash = sa.Column('url_hash', sa.String(128), nullable=False)
     name = sa.Column('name', sa.String(2000), nullable=False)
 
+    is_active = sa.Column('is_active', sa.Boolean, default=True, nullable=False)
+
     pages = relationship("Page", backref="domain")
     reviews = relationship("Review", backref="domain")
 

@@ -8,7 +8,7 @@ from tornado import gen
 from tornado.web import asynchronous
 
 from holmes.handlers import BaseHandler
-from holmes.models import Page, Settings
+from holmes.models import Domain, Page, Settings
 
 
 class NextJobHandler(BaseHandler):
@@ -20,8 +20,11 @@ class NextJobHandler(BaseHandler):
 
         settings = Settings.instance(self.db)
 
+        active_domains = [item.id for item in self.db.query(Domain.id).filter(Domain.is_active).all()]
+
         pages_in_need_of_review = self.db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
             .filter(Page.last_review_date == None) \
+            .filter(Page.domain_id.in_(active_domains)) \
             .order_by(Page.score.desc())[:200]
 
         if len(pages_in_need_of_review) == 0:

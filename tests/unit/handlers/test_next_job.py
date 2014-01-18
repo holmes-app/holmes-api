@@ -7,7 +7,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from ujson import loads
 
-from holmes.models import Review
+from holmes.models import Domain, Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -83,3 +83,26 @@ class TestNextJobHandler(ApiTestCase):
         second_request_page = loads(response.body)['page']
 
         expect(second_request_page).not_to_equal(first_request_page)
+
+    @gen_test
+    def test_call_next_job_will_return_a_active_domain(self):
+        self.db.query(Domain).delete()
+
+        active_domain = DomainFactory.create()
+        inactive_domain = DomainFactory.create(is_active=False)
+
+        for i in range(10):
+            PageFactory.create(domain=active_domain)
+
+        for i in range(10):
+            PageFactory.create(domain=inactive_domain)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/next'),
+        )
+        expect(response.code).to_equal(200)
+        expect(response.body).not_to_be_empty()
+        requested_page = loads(response.body)['page']
+
+        page = self.db.query(Page).filter(Page.uuid == requested_page).one()
+        expect(page.domain).not_to_equal(inactive_domain)
