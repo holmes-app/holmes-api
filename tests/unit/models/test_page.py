@@ -6,9 +6,9 @@ from datetime import datetime
 
 from preggy import expect
 
-from holmes.models import Page
+from holmes.models import Page, Settings
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory, DomainFactory
 
 
 class TestPage(ApiTestCase):
@@ -70,3 +70,61 @@ class TestPage(ApiTestCase):
 
         invalid_page = Page.by_uuid(uuid4(), self.db)
         expect(invalid_page).to_be_null()
+
+    def test_can_get_next_job(self):
+        page = PageFactory.create()
+
+        next_job = Page.get_next_job(self.db, expiration=100)
+
+        expect(next_job).not_to_be_null()
+        expect(next_job['page']).to_equal(str(page.uuid))
+
+    def test_get_next_job_does_not_get_from_inactive_domains(self):
+        domain = DomainFactory.create(is_active=False)
+        PageFactory.create(domain=domain)
+
+        next_job = Page.get_next_job(self.db, expiration=100)
+
+        expect(next_job).to_be_null()
+
+    def test_can_get_next_job_when_expired(self):
+        page = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
+
+        next_job = Page.get_next_job(self.db, expiration=100)
+
+        expect(next_job).not_to_be_null()
+        expect(next_job['page']).to_equal(str(page.uuid))
+
+    def test_increases_page_score_when_lambda_is_top_page(self):
+        page = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
+        page2 = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
+
+        settings = Settings.instance(self.db)
+        settings.lambda_score = 10000
+
+        next_job = Page.get_next_job(self.db, expiration=100)
+
+        expect(next_job).to_be_null()
+
+        self.db.refresh(page)
+        self.db.refresh(page2)
+
+        expect(page.score).to_equal(5000)
+        expect(page2.score).to_equal(5000)
+
+    def test_increases_page_score_when_all_pages_have_been_reviewed(self):
+        page = PageFactory.create(last_review_date=datetime(2014, 10, 10, 10, 10, 10))
+        page2 = PageFactory.create(last_review_date=datetime(2014, 10, 10, 10, 10, 10))
+
+        settings = Settings.instance(self.db)
+        settings.lambda_score = 10000
+
+        next_job = Page.get_next_job(self.db, expiration=100)
+
+        expect(next_job).to_be_null()
+
+        self.db.refresh(page)
+        self.db.refresh(page2)
+
+        expect(page.score).to_equal(5000)
+        expect(page2.score).to_equal(5000)

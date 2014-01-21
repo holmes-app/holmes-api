@@ -22,6 +22,7 @@ class DomainFactory(BaseFactory):
 
     name = factory.Sequence(lambda n: 'domain-{0}'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
+    is_active = True
 
 
 class PageFactory(BaseFactory):

@@ -196,3 +196,112 @@ class Cache(object):
             callback(value == '1')
 
         return handle
+
+
+class SyncCache(object):
+    def __init__(self, db, redis):
+        self.db = db
+        self.redis = redis
+
+    def has_key(self, key):
+        return self.redis.exists(key)
+
+    def get_domain_name(self, domain_name):
+        if isinstance(domain_name, Domain):
+            return domain_name.name
+
+        return domain_name or 'page'
+
+    def increment_violations_count(self, domain_name, increment=1):
+        self.increment_count(
+            'violation-count',
+            domain_name,
+            lambda domain: domain.get_violation_data(self.db),
+            increment
+        )
+
+    def increment_active_review_count(self, domain_name, increment=1):
+        self.increment_count(
+            'active-review-count',
+            domain_name,
+            lambda domain: domain.get_active_review_count(self.db),
+            increment,
+        )
+
+    def increment_page_count(self, domain_name=None, increment=1):
+        self.increment_count(
+            'page-count',
+            domain_name,
+            lambda domain: domain.get_page_count(self.db),
+            increment,
+        )
+
+    def increment_count(self, key, domain_name, get_default_method, increment=1):
+        key = '%s-%s' % (self.get_domain_name(domain_name), key)
+
+        has_key = self.has_key(key)
+
+        domain = domain_name
+        if domain and not isinstance(domain, Domain):
+            domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if has_key:
+            self.redis.incrby(key, increment)
+        else:
+            if domain is None:
+                value = Page.get_page_count(self.db) + increment - 1
+            else:
+                value = get_default_method(domain) + increment - 1
+
+            self.redis.set(key, value)
+
+    def get_page_count(self, domain_name=None):
+        self.get_count(
+            'page-count',
+            domain_name,
+            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_page_count(self.db),
+        )
+
+    def get_violation_count(self, domain_name):
+        self.get_count(
+            'violation-count',
+            domain_name,
+            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_violation_data(self.db),
+        )
+
+    def get_active_review_count(self, domain_name):
+        self.get_count(
+            'active-review-count',
+            domain_name,
+            int(self.config.ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_active_review_count(self.db)
+        )
+
+    def get_count(self, key, domain_name, expiration, get_count_method):
+        cache_key = '%s-%s' % (self.get_domain_name(domain_name), key)
+
+        count = self.redis.get(cache_key)
+
+        if count is not None:
+            return int(count)
+
+        domain = domain_name
+        if domain and not isinstance(domain, Domain):
+            domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if domain is None:
+            count = Page.get_page_count(self.db)
+        else:
+            count = get_count_method(domain)
+
+        cache_key = '%s-%s' % (self.get_domain_name(domain), key)
+
+        self.redis.setex(
+            key=cache_key,
+            value=int(count),
+            seconds=expiration,
+        )
+
+        return int(count)

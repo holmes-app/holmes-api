@@ -1,13 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
+from random import choice
+import hashlib
+import logging
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+from sqlalchemy import or_
+from sqlalchemy.exc import OperationalError
+from ujson import dumps
 
 from holmes.models import Base
+from holmes.utils import get_domain_from_url
 
 
 class Page(Base):
@@ -96,3 +104,166 @@ class Page(Base):
     @classmethod
     def update_scores(cls, individual_score, db):
         db.query(Page).update({'score': Page.score + individual_score})
+
+    @classmethod
+    def get_next_job(cls, db, expiration):
+        from holmes.models import Settings, Domain
+
+        expired_time = datetime.now() - timedelta(seconds=expiration)
+
+        settings = Settings.instance(db)
+
+        active_domains = [item.id for item in db.query(Domain.id).filter(Domain.is_active).all()]
+
+        if not active_domains:
+            return None
+
+        pages_query = db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
+                        .filter(Page.last_review_date == None) \
+                        .filter(Page.domain_id.in_(active_domains))
+
+        pages_in_need_of_review = pages_query.order_by(Page.score.desc())[:200]
+
+        if len(pages_in_need_of_review) == 0:
+            pages_query = db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
+                            .filter(Page.last_review_date <= expired_time) \
+                            .filter(Page.domain_id.in_(active_domains))
+
+            pages_in_need_of_review = pages_query.order_by(Page.score.desc())[:200]
+
+            if len(pages_in_need_of_review) == 0:
+                if settings.lambda_score > 0:
+                    cls.update_pages_score_by(settings, settings.lambda_score, db)
+                return None
+
+        if settings.lambda_score > pages_in_need_of_review[0].score:
+            cls.update_pages_score_by(settings, settings.lambda_score, db)
+            return None
+
+        page = choice(pages_in_need_of_review)
+
+        return {
+            'page': str(page.uuid),
+            'url': page.url,
+            'score': page.score
+        }
+
+    @classmethod
+    def update_pages_score_by(cls, settings, score, db):
+        with db.begin(subtransactions=True):
+            settings.lambda_score = 0
+            page_count = cls.get_page_count(db)
+            individual_score = float(score) / float(page_count)
+            cls.update_scores(individual_score, db)
+
+    @classmethod
+    def add_page(cls, db, cache, url, score, fetch_method, publish_method, callback):
+        domain_name, domain_url = get_domain_from_url(url)
+        if not domain_name:
+            return False, {
+                'reason': 'invalid_url',
+                'url': url
+            }
+
+        logging.info('Obtaining "%s"...' % url)
+
+        fetch_method(
+            url,
+            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, callback))
+        )
+
+    @classmethod
+    def handle_request(cls, callback):
+        def handle(url, response):
+            callback(response.status_code, response.text, response.effective_url)
+
+        return handle
+
+    @classmethod
+    def handle_add_page(cls, db, cache, url, score, publish_method, callback):
+        def handle(code, body, effective_url):
+            if code > 399:
+                callback(False, url, {
+                    'reason': 'invalid_url',
+                    'url': url,
+                    'status': code,
+                    'details': body
+                })
+
+            if effective_url != url:
+                callback(False, url, {
+                    'reason': 'redirect',
+                    'url': url,
+                    'effectiveUrl': effective_url
+                })
+
+            domain = cls.add_domain(url, db, publish_method)
+            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method)
+
+            cache.increment_page_count(domain)
+            cache.increment_page_count()
+
+            callback(True, url, page_uuid)
+
+        return handle
+
+    @classmethod
+    def insert_or_update_page(cls, url, score, domain, db, publish_method):
+        page = db.query(Page).filter(or_(
+            Page.url == url,
+            Page.url == url.rstrip('/'),
+            Page.url == "%s/" % url
+        )).first()
+
+        if page:
+            for i in range(3):
+                try:
+                    db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
+                    break
+                except OperationalError:
+                    err = sys.exc_info()[1]
+                    if 'Deadlock found' in str(err):
+                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    else:
+                        raise
+
+            return page.uuid
+
+        url_hash = hashlib.sha512(url).hexdigest()
+
+        page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
+        db.add(page)
+
+        publish_method(dumps({
+            'type': 'new-page',
+            'pageUrl': str(url)
+        }))
+
+        return page.uuid
+
+    @classmethod
+    def add_domain(cls, url, db, publish_method):
+        from holmes.models import Domain
+
+        domain_name, domain_url = get_domain_from_url(url)
+
+        domains = db.query(Domain).filter(or_(
+            Domain.name == domain_name,
+            Domain.name == domain_name.rstrip('/'),
+            Domain.name == "%s/" % domain_name
+        )).all()
+
+        if not domains:
+            domain = None
+        else:
+            domain = domains[0]
+
+        if not domain:
+            url_hash = hashlib.sha512(domain_url).hexdigest()
+            domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
+            db.add(domain)
+
+            publish_method(dumps({
+                'type': 'new-domain',
+                'domainUrl': str(domain_url)
+            }))
