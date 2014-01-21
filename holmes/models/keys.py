@@ -13,6 +13,12 @@ class Key(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column('name', sa.String(2000), nullable=False)
 
+    category_id = sa.Column(
+        'category_id',
+        sa.Integer,
+        sa.ForeignKey('keys_category.id')
+    )
+
     facts = relationship("Fact", cascade="all,delete", backref="key")
     violations = relationship("Violation", cascade="all,delete", backref="key")
 

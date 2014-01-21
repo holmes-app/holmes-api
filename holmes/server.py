@@ -36,6 +36,7 @@ from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
 from holmes.utils import load_classes
 from holmes.models import Key
+from holmes.models import KeysCategory
 from holmes.cache import Cache
 
 
@@ -127,10 +128,23 @@ class HolmesApiServer(Server):
 
         self.application.cache = Cache(self.application)
 
+    def _insert_key_category(self, key, name):
+        category = KeysCategory.get_or_create(self.application.db, name)
+        self.application.db.add(category)
+        self.application.db.flush()
+        self.application.db.commit()
+        return category
+
     def _insert_keys(self, keys):
         for name in keys.keys():
             key = Key.get_or_create(self.application.db, name)
             keys[name]['key'] = key
+
+            category_name = keys[name].get('category', None)
+            if category_name:
+                category = self._insert_key_category(key, category_name)
+                key.category = category
+
             self.application.db.add(key)
             self.application.db.flush()
             self.application.db.commit()
