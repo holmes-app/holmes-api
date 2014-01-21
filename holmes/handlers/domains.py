@@ -152,3 +152,7 @@ class DomainsChangeStatusHandler(BaseHandler):
             return
 
         domain.is_active = not domain.is_active
+
+    @coroutine
+    def options(self, domain_name):
+        super(DomainsChangeStatusHandler, self).options()
