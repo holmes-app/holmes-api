@@ -8,15 +8,15 @@ from holmes.validators.base import Validator
 class GoogleAnalyticsValidator(Validator):
 
     @classmethod
-    def get_analytics_message(cls, value):
+    def get_analytics_message(cls, value=None):
         return 'This page should include a Google Analytics.'
 
     @classmethod
-    def get_account_message(cls, value):
+    def get_account_message(cls, value=None):
         return 'This page should include a Google Analytics account.'
 
     @classmethod
-    def get_domain_message(cls, value):
+    def get_domain_message(cls, value=None):
         return 'This page should include a Google Analytics domain.'
 
     @classmethod
