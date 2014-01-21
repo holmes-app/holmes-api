@@ -4,7 +4,9 @@
 import factory
 import factory.alchemy
 
-from holmes.models import Domain, Page, Review, Worker, Violation, Fact, Key
+from holmes.models import (
+    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory
+)
 from uuid import uuid4
 
 
@@ -90,10 +92,17 @@ class ReviewFactory(BaseFactory):
         return kwargs
 
 
+class KeysCategoryFactory(BaseFactory):
+    FACTORY_FOR = KeysCategory
+
+    name = factory.Sequence(lambda n: 'category-{0}'.format(n))
+
+
 class KeyFactory(BaseFactory):
     FACTORY_FOR = Key
 
     name = factory.Sequence(lambda n: 'key-{0}'.format(n))
+    category = factory.SubFactory(KeysCategoryFactory)
 
 
 class FactFactory(BaseFactory):
