@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 from os.path import join
 import urlparse
 import inspect
@@ -12,10 +11,8 @@ import codecs
 from box.util.rotunicode import RotUnicode
 codecs.register(RotUnicode.search_function)
 
-from requests.exceptions import ConnectionError
 import lxml.html
 import logging
-from ujson import dumps
 
 from holmes.config import Config
 from holmes.facters import Facter
@@ -172,13 +169,6 @@ class Reviewer(object):
         except (lxml.etree.XMLSyntaxError, lxml.etree.ParserError):
             self._current.html = None
 
-            # can't do this there, this is not a validator
-            #self.add_violation(
-                #key='invalid.content',
-                #title='Invalid Content',
-                #description='Fail to parse content from %s' % url,
-                #points=1000)
-
         self.run_facters()
         self.wait_for_async_requests()
 
@@ -241,21 +231,6 @@ class Reviewer(object):
 
         self.ping()
 
-        #data = dumps({
-            #'url': url,
-            #'score': score,
-            #'origin_uuid': str(self.page_uuid)
-        #})
-
-        #response = self._post(post_url, data=data)
-
-        #if response.status_code > 399:
-            #logging.error(error_message % (
-                #response.status_code,
-                #response.text
-            #))
-
-
     def add_fact(self, key, value):
         self.review_dao.add_fact(key, value)
 
@@ -265,7 +240,6 @@ class Reviewer(object):
     def save_review(self):
         from holmes.models import Review
 
-        #url = self.get_url('/page/%s/review/' % (self.page_uuid))
         data = self.review_dao.to_dict()
 
         Review.save_review(
@@ -273,25 +247,6 @@ class Reviewer(object):
             self.fact_definitions, self.violation_definitions,
             self.cache, self.publish
         )
-
-        #try:
-            #data = dumps(self.review_dao.to_dict())
-            #response = self._post(url, data={
-                #'review': data
-            #})
-        #except ConnectionError:
-            #err = sys.exc_info()[1]
-            #logging.error("Could not save review! ConnectionError - %s (%s)" % (
-                #url,
-                #str(err)
-            #))
-            #return
-
-        #if response.status_code > 399:
-            #logging.error("Could not save review! Status Code: %d, Error: %s" % (
-                #response.status_code,
-                #response.text
-            #))
 
     def wait_for_async_requests(self):
         self._wait_for_async_requests(self._wait_timeout)
