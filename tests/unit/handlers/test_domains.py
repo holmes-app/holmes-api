@@ -9,6 +9,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
+from holmes.models import Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -226,3 +227,32 @@ class TestViolationsPerDayHandler(ApiTestCase):
                 u'violation_count': 30
             }
         ])
+
+
+class TestChangeDomainStatus(ApiTestCase):
+
+    @gen_test
+    def test_can_set_domain_to_inactive(self):
+        domain = DomainFactory.create(url="http://www.domain.com", name="domain.com", is_active=True)
+
+        response = yield self.http_client.fetch(
+            self.get_url(r'/domains/%s/change-status/' % domain.name),
+            method='POST',
+            body=''
+        )
+        expect(response.code).to_equal(200)
+        domain_from_db = Domain.get_domain_by_name(domain.name, self.db)
+        expect(domain_from_db.is_active).to_be_false()
+
+    @gen_test
+    def test_can_set_domain_to_active(self):
+        domain = DomainFactory.create(url="http://www.domain.com", name="domain.com", is_active=False)
+
+        response = yield self.http_client.fetch(
+            self.get_url(r'/domains/%s/change-status/' % domain.name),
+            method='POST',
+            body=''
+        )
+        expect(response.code).to_equal(200)
+        domain_from_db = Domain.get_domain_by_name(domain.name, self.db)
+        expect(domain_from_db.is_active).to_be_true()
