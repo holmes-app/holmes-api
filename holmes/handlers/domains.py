@@ -35,7 +35,8 @@ class DomainsHandler(BaseHandler):
                 "violationCount": violation_count,
                 "pageCount": page_count,
                 "reviewCount": review_count,
-                "reviewPercentage": review_percentage
+                "reviewPercentage": review_percentage,
+                "is_active": domain.is_active,
             })
 
         self.write_json(result)
@@ -66,7 +67,8 @@ class DomainDetailsHandler(BaseHandler):
             "pageCount": page_count,
             "reviewCount": review_count,
             "violationCount": violation_count,
-            "reviewPercentage": review_percentage
+            "reviewPercentage": review_percentage,
+            "is_active": domain.is_active,
         }
 
         self.write_json(domain_json)
