@@ -5,6 +5,7 @@ import sys
 import logging
 from uuid import uuid4
 from os.path import join
+from datetime import datetime, timedelta
 
 import requests
 from ujson import dumps, loads
@@ -12,23 +13,39 @@ from requests.exceptions import ConnectionError
 from sheep import Shepherd
 from colorama import Fore, Style
 from octopus import TornadoOctopus
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+import redis
 
 from holmes import __version__
+from holmes.cache import SyncCache
 from holmes.config import Config
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes
+from holmes.models import Settings, Worker, Page
 
 
-class HolmesWorker(Shepherd):
-    def initialize(self):
-        self.uuid = uuid4().hex
-        self.working = True
+class BaseWorker(Shepherd):
+    def info(self, message):
+        self.log(message, logging.info)
 
-        self.facters = self._load_facters()
-        self.validators = self._load_validators()
-        self.error_handlers = [handler(self.config) for handler in self._load_error_handlers()]
+    def debug(self, message):
+        self.log(message, logging.debug)
 
-        logging.debug('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
+    def log(self, message, level=logging.info):
+        name = self.get_description()
+        level('[%s - %s] %s' % (
+            name, self.parent_name, message
+        ))
+
+    def _load_validators(self):
+        return load_classes(default=self.config.VALIDATORS)
+
+    def _load_facters(self):
+        return load_classes(default=self.config.FACTERS)
+
+    def start_otto(self):
+        self.info('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
         self.otto = TornadoOctopus(
             concurrency=self.options.concurrency, cache=self.options.cache,
             connect_timeout_in_seconds=self.config.CONNECT_TIMEOUT_IN_SECONDS,
@@ -36,7 +53,35 @@ class HolmesWorker(Shepherd):
         )
         self.otto.start()
 
-    def _load_error_handlers(self):
+    def connect_sqlalchemy(self):
+        autoflush = self.config.get('SQLALCHEMY_AUTO_FLUSH', False)
+        connstr = self.config.SQLALCHEMY_CONNECTION_STRING
+        engine = create_engine(
+            connstr,
+            convert_unicode=True,
+            pool_size=self.config.SQLALCHEMY_POOL_SIZE,
+            max_overflow=self.config.SQLALCHEMY_POOL_MAX_OVERFLOW,
+            echo=self.options.verbose == 3
+        )
+
+        self.info("Connecting to \"%s\" using SQLAlchemy" % connstr)
+
+        self.sqlalchemy_db_maker = sessionmaker(bind=engine, autoflush=autoflush, autocommit=True)
+        self.db = scoped_session(self.sqlalchemy_db_maker)
+
+    def connect_to_redis(self):
+        host = self.config.get('REDISHOST')
+        port = self.config.get('REDISPORT')
+
+        self.info("Connecting to redis at %s:%d" % (host, port))
+        self.redis = redis.StrictRedis(host=host, port=port, db=0)
+
+        self.info("Connecting pubsub to redis at %s:%d" % (host, port))
+        self.redis_pub_sub = redis.StrictRedis(host=host, port=port, db=0)
+
+        self.cache = SyncCache(self.db, self.redis)
+
+    def load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
 
     def handle_error(self, exc_type, exc_value, tb):
@@ -47,20 +92,6 @@ class HolmesWorker(Shepherd):
                     'holmes-version': __version__
                 }
             )
-
-    def config_parser(self, parser):
-        parser.add_argument(
-            '--concurrency',
-            '-t',
-            type=int,
-            default=10,
-            help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
-        )
-
-        parser.add_argument(
-            '--cache', default=False, action='store_true',
-            help='Whether http requests should be cached by Octopus.'
-        )
 
     @property
     def proxies(self):
@@ -77,30 +108,43 @@ class HolmesWorker(Shepherd):
 
         return proxies
 
-    def tornado_async_get(self, url, handler, method='GET', **kw):
-        #if self.proxies:
-            #kw['proxies'] = self.proxies
-
+    def async_get(self, url, handler, method='GET', **kw):
         kw['proxy_host'] = self.config.HTTP_PROXY_HOST
         kw['proxy_port'] = self.config.HTTP_PROXY_PORT
 
-        logging.debug('Enqueueing %s for %s...' % (method, url))
+        self.debug('Enqueueing %s for %s...' % (method, url))
         self.otto.enqueue(url, handler, method, **kw)
 
-    def async_get(self, url, handler, method='GET', **kw):
-        if self.proxies:
-            kw['proxies'] = self.proxies
+    def publish(self, data):
+        self.redis_pub_sub.publish('events', data)
 
-        logging.debug('Enqueueing %s for %s...' % (method, url))
-        self.otto.enqueue(url, handler, method, **kw)
 
-    def get(self, url):
-        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.get(url)
+class HolmesWorker(BaseWorker):
+    def initialize(self):
+        self.uuid = uuid4().hex
+        self.working = True
 
-    def post(self, url, data={}):
-        url = join(self.config.HOLMES_API_URL.rstrip('/'), url.lstrip('/'))
-        return requests.post(url, data=data)
+        self.facters = self._load_facters()
+        self.validators = self._load_validators()
+        self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
+
+        self.start_otto()
+        self.connect_sqlalchemy()
+        self.connect_to_redis()
+
+    def config_parser(self, parser):
+        parser.add_argument(
+            '--concurrency',
+            '-t',
+            type=int,
+            default=10,
+            help='Number of threads (or async http requests) to use for Octopus (doing GETs concurrently)'
+        )
+
+        parser.add_argument(
+            '--cache', default=False, action='store_true',
+            help='Whether http requests should be cached by Octopus.'
+        )
 
     def get_description(self):
         return "%s%sholmes-worker%s (holmes-api v%s)" % (
@@ -112,13 +156,6 @@ class HolmesWorker(Shepherd):
 
     def get_config_class(self):
         return Config
-
-    def stop_work(self):
-        try:
-            self.post('/worker/%s/dead' % self.uuid, data={'worker_uuid': self.uuid})
-        except ConnectionError:
-            pass
-        self.working = False
 
     def do_work(self):
         if self._ping_api():
@@ -133,80 +170,82 @@ class HolmesWorker(Shepherd):
 
                 self._complete_job(error=err)
             elif job:
-                logging.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
+                self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
 
     def _start_reviewer(self, job):
         if job:
-            logging.debug('Starting Review for [%s]' % job['url'])
+            self.debug('Starting Review for [%s]' % job['url'])
             reviewer = Reviewer(
                 api_url=self.config.HOLMES_API_URL,
                 page_uuid=job['page'],
                 page_url=job['url'],
                 page_score=job['score'],
                 ping_method=self._ping_api,
+                increase_lambda_tax_method=self._increase_lambda_tax,
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,
-                async_get=self.tornado_async_get,
+                async_get=self.async_get,
                 wait=self.otto.wait,
-                wait_timeout=0  # max time to wait for all requests to finish
+                wait_timeout=0,  # max time to wait for all requests to finish
+                db=self.db,
+                cache=self.cache,
+                publish=self.publish
             )
 
             reviewer.review()
 
+    def _increase_lambda_tax(self, tax):
+        tax = float(tax)
+        self.db.query(Settings).update({'lambda_score': Settings.lambda_score + tax})
+
     def _ping_api(self):
-        try:
-            self.post('/worker/%s/alive' % self.uuid)
-            return True
-        except ConnectionError:
-            logging.fatal('Fail to ping API [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
-            self.stop_work()
-            return False
+        self._remove_zombie_workers()
+
+        worker = Worker.by_uuid(self.uuid, self.db)
+
+        with self.db.begin():
+            if worker:
+                worker.last_ping = datetime.now()
+            else:
+                worker = Worker(uuid=self.uuid)
+                self.db.add(worker)
+
+        self.publish(dumps({
+            'type': 'worker-status',
+            'workerId': str(worker.uuid)
+        }))
+
+        return True
+
+    def _remove_zombie_workers(self):
+        self.db.flush()
+
+        dt = datetime.now() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
+
+        with self.db.begin():
+            self.db.query(Worker).filter(Worker.last_ping < dt).delete()
 
     def _load_next_job(self):
-        try:
-            response = self.get('/next')
-            if response and response.text:
-                return loads(response.text)
-        except ConnectionError:
-            logging.fatal('Fail to get next review from [%s]. Stopping Worker.' % self.config.HOLMES_API_URL)
-            self.stop_work()
-
-        return None
+        return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
-        if not url:
-            return False
+        worker = Worker.by_uuid(self.uuid, self.db)
 
-        try:
-            response = self.post('/worker/%s/start' % self.uuid, data=url)
-            if response.text == 'OK':
-                return True
+        with self.db.begin():
+            worker.url = url
+            worker.last_ping = datetime.now()
 
-            if response.text == 'NOK':
-                logging.debug('Failed to acquire lock on %s.' % url)
-                return False
-        except ConnectionError:
-            err = sys.exc_info()
-            logging.error('Fail to start review: %s.' % err[1])
-
-        return False
+        return True
 
     def _complete_job(self, error=None):
-        try:
-            url = '/worker/%s/complete' % self.uuid
-            response = self.post(url, data=dumps({'error': error}))
-            return ('OK' == response.text)
-        except ConnectionError:
-            logging.error('Fail to complete worker.')
+        worker = Worker.by_uuid(self.uuid, self.db)
 
-        return False
+        with self.db.begin():
+            worker.url = None
+            worker.last_ping = datetime.now()
 
-    def _load_validators(self):
-        return load_classes(default=self.config.VALIDATORS)
-
-    def _load_facters(self):
-        return load_classes(default=self.config.FACTERS)
+        return True
 
 
 def main():

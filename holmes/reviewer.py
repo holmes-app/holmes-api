@@ -12,7 +12,6 @@ import codecs
 from box.util.rotunicode import RotUnicode
 codecs.register(RotUnicode.search_function)
 
-import requests
 from requests.exceptions import ConnectionError
 import lxml.html
 import logging
@@ -21,6 +20,7 @@ from ujson import dumps
 from holmes.config import Config
 from holmes.facters import Facter
 from holmes.validators.base import Validator
+from holmes.models import Page
 
 
 class InvalidReviewError(RuntimeError):
@@ -64,8 +64,13 @@ class ReviewDAO(object):
 
 class Reviewer(object):
     def __init__(
-            self, api_url, page_uuid, page_url, page_score, ping_method=None, config=None, validators=[], facters=[],
-            async_get=None, wait=None, wait_timeout=None):
+            self, api_url, page_uuid, page_url, page_score, ping_method=None,
+            increase_lambda_tax_method=None, config=None, validators=[], facters=[],
+            async_get=None, wait=None, wait_timeout=None, db=None, cache=None, publish=None):
+
+        self.db = db
+        self.cache = cache
+        self.publish = publish
 
         self.api_url = api_url
 
@@ -74,6 +79,7 @@ class Reviewer(object):
         self.page_score = page_score
 
         self.ping_method = ping_method
+        self.increase_lambda_tax_method = increase_lambda_tax_method
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
 
@@ -119,20 +125,6 @@ class Reviewer(object):
     def _async_get(self, url, handler, method='GET', **kw):
         if self.async_get_func:
             self.async_get_func(url, handler, method, **kw)
-
-    def _get(self, url):
-        #if self.proxies:
-            #logging.debug('Getting "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
-            #return requests.get(url, proxies=self.proxies)
-
-        return requests.get(url)
-
-    def _post(self, url, data):
-        #if self.proxies:
-            #logging.debug('Posting to "%s" using proxy "%s"...' % (url, self.proxies.get('http', None)))
-            #return requests.post(url, data=data, proxies=self.proxies)
-
-        return requests.post(url, data=data)
 
     def review(self):
         self.load_content(self.content_loaded)
@@ -220,57 +212,45 @@ class Reviewer(object):
         return join(self.api_url.rstrip('/'), url.lstrip('/'))
 
     def increase_lambda_tax(self, tax):
-        post_url = self.get_url('/tax')
-        response = self._post(post_url, data={'tax': tax})
-
-        if response.status_code > 399:
-            logging.error('Failed to increase lambda tax by %.2f (Status: %s, Text: %s)' % (
-                tax,
-                response.status_code,
-                response.text
-            ))
+        self.increase_lambda_tax_method(tax)
 
     def enqueue(self, urls):
         if not urls:
             return
 
-        #if isinstance(urls, basestring):
-            #post_url = self.get_url('/page')
-            #data = dumps({
-                #'url': urls,
-                #'origin_uuid': str(self.page_uuid)
-            #})
-            #error_message = "Could not enqueue page '" + urls + "'! Status Code: %d, Error: %s"
+        with self.db.begin():
+            for url, score in urls:
+                Page.add_page(
+                    self.db, self.cache,
+                    url, score,
+                    self.async_get_func,
+                    self.publish,
+                    self.handle_page_added
+                )
 
-            #response = self._post(post_url, data=data)
+        self.wait_for_async_requests()
 
-            #if response.status_code > 399:
-                #logging.error(error_message % (
-                    #response.status_code,
-                    #response.text
-                #))
-        #else:
-        post_url = self.get_url('/page')
-        #post_url = self.get_url('/pages')
+    def handle_page_added(self, url, result, page):
+        if not result:
+            error_message = "Could not enqueue page '" + url + "'! Error: %s"
+            logging.error(error_message % page)
 
-        for url, score in urls:
-            data = dumps({
-                'url': url,
-                'score': score,
-                'origin_uuid': str(self.page_uuid)
-            })
+        self.ping()
 
-            error_message = "Could not enqueue page '" + url + "'! Status Code: %d, Error: %s"
+        #data = dumps({
+            #'url': url,
+            #'score': score,
+            #'origin_uuid': str(self.page_uuid)
+        #})
 
-            response = self._post(post_url, data=data)
+        #response = self._post(post_url, data=data)
 
-            if response.status_code > 399:
-                logging.error(error_message % (
-                    response.status_code,
-                    response.text
-                ))
+        #if response.status_code > 399:
+            #logging.error(error_message % (
+                #response.status_code,
+                #response.text
+            #))
 
-            self.ping()
 
     def add_fact(self, key, value):
         self.review_dao.add_fact(key, value)
