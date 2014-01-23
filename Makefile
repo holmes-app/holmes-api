@@ -58,7 +58,7 @@ worker:
 	@holmes-worker -vvv -c ./holmes/config/local.conf -t 1
 
 workers:
-	@holmes-worker -c ./holmes/config/local.conf -t 10 -w 40
+	@holmes-worker -c ./holmes/config/local.conf -t 10 -w 20
 
 docs:
 	@cd holmes/docs && make html && open _build/html/index.html

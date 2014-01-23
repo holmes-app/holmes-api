@@ -4,6 +4,7 @@
 from uuid import uuid4
 from datetime import datetime
 
+from ujson import dumps
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
@@ -112,3 +113,67 @@ class Review(Base):
             .filter(Review.is_active == True) \
             .filter(Violation.key_id == key_id) \
             .order_by(Review.completed_date.desc())[lower_bound:upper_bound]
+
+    @classmethod
+    def save_review(cls, page_uuid, review_data, db, fact_definitions, violation_definitions, cache, publish):
+        from holmes.models import Page
+
+        page = Page.by_uuid(page_uuid, db)
+
+        page.expires = review_data['expires']
+
+        page.last_modified = review_data['lastModified']
+
+        page.score = 0
+
+        review = Review(
+            domain_id=page.domain.id,
+            page_id=page.id,
+            is_active=True,
+            is_complete=False,
+            completed_date=datetime.utcnow(),
+            uuid=uuid4(),
+        )
+
+        db.add(review)
+
+        for fact in review_data['facts']:
+            name = fact['key']
+            key = fact_definitions[name]['key']
+            review.add_fact(key, fact['value'])
+
+        for violation in review_data['violations']:
+            name = violation['key']
+            key = violation_definitions[name]['key']
+            review.add_violation(key, violation['value'], violation['points'])
+
+        page.violations_count = len(review_data['violations'])
+
+        review.is_complete = True
+
+        if not page.last_review:
+            cache.increment_active_review_count(page.domain)
+
+            cache.increment_violations_count(
+                page.domain,
+                increment=page.violations_count
+            )
+        else:
+            old_violations_count = len(page.last_review.violations)
+            new_violations_count = len(review.violations)
+
+            cache.increment_violations_count(
+                page.domain,
+                increment=new_violations_count - old_violations_count
+            )
+
+            page.last_review.is_active = False
+
+        page.last_review_uuid = review.uuid
+        page.last_review = review
+        page.last_review_date = review.completed_date
+
+        publish(dumps({
+            'type': 'new-review',
+            'reviewId': str(review.uuid)
+        }))

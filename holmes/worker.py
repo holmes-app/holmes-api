@@ -118,11 +118,20 @@ class BaseWorker(Shepherd):
     def publish(self, data):
         self.redis_pub_sub.publish('events', data)
 
+    def _insert_keys(self, keys):
+        from holmes.models import Key
+
+        with self.db.begin():
+            for name in keys.keys():
+                key = Key.get_or_create(self.db, name)
+                keys[name]['key'] = key
+                self.db.add(key)
+
 
 class HolmesWorker(BaseWorker):
     def initialize(self):
         self.uuid = uuid4().hex
-        self.working = True
+        self.working_url =  None
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
@@ -131,6 +140,22 @@ class HolmesWorker(BaseWorker):
         self.start_otto()
         self.connect_sqlalchemy()
         self.connect_to_redis()
+
+        self.facters = self._load_facters()
+        self.validators = self._load_validators()
+
+        self.fact_definitions = {}
+        self.violation_definitions = {}
+
+        for facter in self.facters:
+            self.fact_definitions.update(facter.get_fact_definitions())
+
+        self._insert_keys(self.fact_definitions)
+
+        for validator in self.validators:
+            self.violation_definitions.update(validator.get_violation_definitions())
+
+        self._insert_keys(self.violation_definitions)
 
     def config_parser(self, parser):
         parser.add_argument(
@@ -190,7 +215,9 @@ class HolmesWorker(BaseWorker):
                 wait_timeout=0,  # max time to wait for all requests to finish
                 db=self.db,
                 cache=self.cache,
-                publish=self.publish
+                publish=self.publish,
+                fact_definitions=self.fact_definitions,
+                violation_definitions=self.violation_definitions
             )
 
             reviewer.review()
@@ -207,8 +234,9 @@ class HolmesWorker(BaseWorker):
         with self.db.begin():
             if worker:
                 worker.last_ping = datetime.now()
+                worker.current_url = self.working_url
             else:
-                worker = Worker(uuid=self.uuid)
+                worker = Worker(uuid=self.uuid, current_url=self.working_url)
                 self.db.add(worker)
 
         self.publish(dumps({
@@ -230,19 +258,22 @@ class HolmesWorker(BaseWorker):
         return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
+        self.working_url = url
+
         worker = Worker.by_uuid(self.uuid, self.db)
 
         with self.db.begin():
-            worker.url = url
+            worker.current_url = url
             worker.last_ping = datetime.now()
 
         return True
 
     def _complete_job(self, error=None):
+        self.working_url = None
         worker = Worker.by_uuid(self.uuid, self.db)
 
         with self.db.begin():
-            worker.url = None
+            worker.current_url = None
             worker.last_ping = datetime.now()
 
         return True
