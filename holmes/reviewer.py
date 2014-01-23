@@ -66,7 +66,8 @@ class Reviewer(object):
     def __init__(
             self, api_url, page_uuid, page_url, page_score, ping_method=None,
             increase_lambda_tax_method=None, config=None, validators=[], facters=[],
-            async_get=None, wait=None, wait_timeout=None, db=None, cache=None, publish=None):
+            async_get=None, wait=None, wait_timeout=None, db=None, cache=None, publish=None,
+            fact_definitions=None, violation_definitions=None):
 
         self.db = db
         self.cache = cache
@@ -117,6 +118,9 @@ class Reviewer(object):
         self.async_get_func = async_get
         self._wait_for_async_requests = wait
         self._wait_timeout = wait_timeout
+
+        self.fact_definitions = fact_definitions
+        self.violation_definitions = violation_definitions
 
     def ping(self):
         if self.ping_method is not None:
@@ -259,26 +263,35 @@ class Reviewer(object):
         self.review_dao.add_violation(key, value, points)
 
     def save_review(self):
-        url = self.get_url('/page/%s/review/' % (self.page_uuid))
+        from holmes.models import Review
 
-        try:
-            data = dumps(self.review_dao.to_dict())
-            response = self._post(url, data={
-                'review': data
-            })
-        except ConnectionError:
-            err = sys.exc_info()[1]
-            logging.error("Could not save review! ConnectionError - %s (%s)" % (
-                url,
-                str(err)
-            ))
-            return
+        #url = self.get_url('/page/%s/review/' % (self.page_uuid))
+        data = self.review_dao.to_dict()
 
-        if response.status_code > 399:
-            logging.error("Could not save review! Status Code: %d, Error: %s" % (
-                response.status_code,
-                response.text
-            ))
+        Review.save_review(
+            self.page_uuid, data, self.db,
+            self.fact_definitions, self.violation_definitions,
+            self.cache, self.publish
+        )
+
+        #try:
+            #data = dumps(self.review_dao.to_dict())
+            #response = self._post(url, data={
+                #'review': data
+            #})
+        #except ConnectionError:
+            #err = sys.exc_info()[1]
+            #logging.error("Could not save review! ConnectionError - %s (%s)" % (
+                #url,
+                #str(err)
+            #))
+            #return
+
+        #if response.status_code > 399:
+            #logging.error("Could not save review! Status Code: %d, Error: %s" % (
+                #response.status_code,
+                #response.text
+            #))
 
     def wait_for_async_requests(self):
         self._wait_for_async_requests(self._wait_timeout)
