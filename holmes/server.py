@@ -74,7 +74,6 @@ class HolmesApiServer(Server):
             (r'/page/([a-z0-9-]*)/?', PageHandler),
             (r'/search/?', SearchHandler),
             (r'/page/?', PageHandler),
-            (r'/pages/?', PagesHandler),
             (r'/domains/?', DomainsHandler),
             (r'/domains/([^/]+)/?', DomainDetailsHandler),
             (r'/domains/([^/]+)/violations-per-day/?', DomainViolationsPerDayHandler),
