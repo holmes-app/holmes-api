@@ -12,7 +12,7 @@ from tornado.httpclient import AsyncHTTPClient
 from holmes.handlers.worker import WorkerHandler, WorkersHandler, WorkersInfoHandler
 from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
-    PageHandler, PagesHandler, PageReviewsHandler, PageViolationsPerDayHandler
+    PageHandler, PageReviewsHandler, PageViolationsPerDayHandler
 )
 from holmes.handlers.violation import (
     MostCommonViolationsHandler, ViolationsHandler, ViolationHandler
