@@ -8,11 +8,11 @@ from preggy import expect
 from holmes.config import Config
 from holmes.reviewer import Reviewer
 from holmes.facters.links import LinkFacter
-from tests.unit.base import ValidatorTestCase
+from tests.unit.base import FacterTestCase
 from tests.fixtures import PageFactory
 
 
-class TestLinksFacter(ValidatorTestCase):
+class TestLinksFacter(FacterTestCase):
 
     def test_can_get_facts(self):
         page = PageFactory.create()
