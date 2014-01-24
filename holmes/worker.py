@@ -31,7 +31,6 @@ class BaseWorker(Shepherd):
 
     def debug(self, message):
         self.log(message, logging.debug)
-<<<<<<< HEAD
 
     def log(self, message, level=logging.info):
         name = self.get_description()
@@ -45,21 +44,6 @@ class BaseWorker(Shepherd):
     def _load_facters(self):
         return load_classes(default=self.config.FACTERS)
 
-=======
-
-    def log(self, message, level=logging.info):
-        name = self.get_description()
-        level('[%s - %s] %s' % (
-            name, self.parent_name, message
-        ))
-
-    def _load_validators(self):
-        return load_classes(default=self.config.VALIDATORS)
-
-    def _load_facters(self):
-        return load_classes(default=self.config.FACTERS)
-
->>>>>>> Workers should be working without pinging the API now.
     def start_otto(self):
         self.info('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
         self.otto = TornadoOctopus(
@@ -134,7 +118,6 @@ class BaseWorker(Shepherd):
     def publish(self, data):
         self.redis_pub_sub.publish('events', data)
 
-<<<<<<< HEAD
     def _insert_keys(self, keys):
         from holmes.models import Key
 
@@ -154,23 +137,10 @@ class HolmesWorker(BaseWorker):
         self.validators = self._load_validators()
         self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
 
-=======
-
-class HolmesWorker(BaseWorker):
-    def initialize(self):
-        self.uuid = uuid4().hex
-        self.working = True
-
-        self.facters = self._load_facters()
-        self.validators = self._load_validators()
-        self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
-
->>>>>>> Workers should be working without pinging the API now.
         self.start_otto()
         self.connect_sqlalchemy()
         self.connect_to_redis()
 
-<<<<<<< HEAD
         self.facters = self._load_facters()
         self.validators = self._load_validators()
 
@@ -187,8 +157,6 @@ class HolmesWorker(BaseWorker):
 
         self._insert_keys(self.violation_definitions)
 
-=======
->>>>>>> Workers should be working without pinging the API now.
     def config_parser(self, parser):
         parser.add_argument(
             '--concurrency',

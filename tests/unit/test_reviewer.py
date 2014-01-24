@@ -222,56 +222,6 @@ class TestReview(ApiTestCase):
         enqueue = reviewer.enqueue([])
         expect(enqueue).to_be_null()
 
-    @patch('requests.post')
-    def test_can_enqueue_one_url(self, mock_post):
-        mock_post.return_value = Mock(status_code=200, text='OK')
-        reviewer = self.get_reviewer()
-        reviewer.enqueue([('http://globo.com', 0.0)])
-        mock_post.assert_called_once_with(
-            '%spage' % reviewer.api_url,
-            data=dumps({
-                'url': 'http://globo.com',
-                'score': 0.0,
-                'origin_uuid': str(reviewer.page_uuid)
-            })
-        )
-
-    @patch('requests.post')
-    def test_can_enqueue_multiple_urls(self, mock_post):
-        mock_post.return_value = Mock(status_code=200, text='OK')
-        reviewer = self.get_reviewer()
-        reviewer.enqueue([('http://globo.com', 0.0), ('http://g1.globo.com', 0.0)])
-
-        expect(mock_post.call_args_list).to_include(
-            call(
-                '%spage' % reviewer.api_url,
-                data=dumps({
-                    'url': 'http://globo.com',
-                    'score': 0.0,
-                    'origin_uuid': str(reviewer.page_uuid)
-                })
-            ))
-
-        expect(mock_post.call_args_list).to_include(
-            call(
-                '%spage' % reviewer.api_url,
-                data=dumps({
-                    'url': 'http://g1.globo.com',
-                    'score': 0.0,
-                    'origin_uuid': str(reviewer.page_uuid)
-                })
-            ))
-
-    @patch('requests.post')
-    @patch('logging.error')
-    def test_enqueue_404(self, error_mock, mock_post):
-        mock_post.return_value = Mock(status_code=404, text='Not Found')
-        reviewer = self.get_reviewer()
-        reviewer.enqueue([('http://globo.com', 0.0)])
-        error_mock.assert_called_once_with(
-            "Could not enqueue page 'http://globo.com'! Status Code: 404, Error: Not Found"
-        )
-
     def test_is_root(self):
         reviewer = self.get_reviewer(page_url="http://g1.globo.com")
         expect(reviewer.is_root()).to_equal(True)
