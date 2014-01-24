@@ -30,7 +30,6 @@ class WorkerTestCase(ApiTestCase):
         worker.initialize()
 
         expect(worker.uuid).to_equal('my-uuid4')
-        expect(worker.working).to_be_true()
 
         expect(worker.facters).to_length(1)
         expect(worker.validators).to_length(1)
