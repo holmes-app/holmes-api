@@ -272,9 +272,16 @@ class HolmesWorker(BaseWorker):
         self.working_url = None
         worker = Worker.by_uuid(self.uuid, self.db)
 
-        with self.db.begin():
-            worker.current_url = None
-            worker.last_ping = datetime.now()
+        if worker:
+            for i in range(3):
+                try:
+                    with self.db.begin():
+                        worker.current_url = None
+                        worker.last_ping = datetime.now()
+                    break
+                except Exception:
+                    err = sys.exc_info()[1]
+                    logging.error('Deadlock detected... Try number %d. Error: %s' % (i, str(err)))
 
         return True
 
