@@ -64,7 +64,7 @@ class BaseWorker(Shepherd):
 
         self.info("Connecting to \"%s\" using SQLAlchemy" % connstr)
 
-        self.sqlalchemy_db_maker = sessionmaker(bind=engine, autoflush=autoflush, autocommit=True)
+        self.sqlalchemy_db_maker = sessionmaker(bind=engine, autoflush=autoflush)
         self.db = scoped_session(self.sqlalchemy_db_maker)
 
     def connect_to_redis(self):
