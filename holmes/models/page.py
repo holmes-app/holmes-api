@@ -181,7 +181,9 @@ class Page(Base):
     def handle_request(cls, callback):
         def handle(*args, **kw):
             response = args[-1]  # supports (url, response) and just response
-            callback(response.status_code, response.text, response.effective_url)
+            status_code = hasattr(response, 'status_code') and response.status_code or response.code
+            text = hasattr(response, 'body') and response.body or response.text
+            callback(status_code, text, response.effective_url)
 
         return handle
 
@@ -271,8 +273,11 @@ class Page(Base):
             url_hash = hashlib.sha512(domain_url).hexdigest()
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             db.add(domain)
+            db.flush()
 
             publish_method(dumps({
                 'type': 'new-domain',
                 'domainUrl': str(domain_url)
             }))
+
+        return domain

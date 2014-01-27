@@ -249,7 +249,7 @@ class Reviewer(object):
 
         self.wait_for_async_requests()
 
-    def handle_page_added(self, url, result, page):
+    def handle_page_added(self, (url, result, page)):
         if not result:
             error_message = "Could not enqueue page '" + url + "'! Error: %s"
             logging.error(error_message % page)
