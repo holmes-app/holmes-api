@@ -114,7 +114,6 @@ class LinkFacter(Facter):
 
     def handle_url_loaded(self, url, response):
         logging.debug('Got response (%s) from %s!' % (response.status_code, url))
-        self.reviewer.ping()
         self.review.facts['page.links']['value'].add(url)
         self.review.data['page.links'].add((url, response))
 
