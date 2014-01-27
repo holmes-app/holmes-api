@@ -333,20 +333,17 @@ class SyncCache(object):
     def set_request(self, url, status_code, headers, cookies, text, effective_url, error, request_time, expiration):
         cache_key = "urls-%s" % url
 
-        try:
-            self.redis.setex(
-                cache_key,
-                expiration,
-                dumps({
-                    'url': url,
-                    'status_code': status_code,
-                    'headers': headers,
-                    'cookies': cookies,
-                    'text': text,
-                    'effective_url': effective_url,
-                    'error': error,
-                    'request_time': str(request_time)
-                }),
-            )
-        except Exception, err:
-            import ipdb; ipdb.set_trace()
+        self.redis.setex(
+            cache_key,
+            expiration,
+            dumps({
+                'url': url,
+                'status_code': status_code,
+                'headers': headers,
+                'cookies': cookies,
+                'text': text,
+                'effective_url': effective_url,
+                'error': error,
+                'request_time': str(request_time)
+            }),
+        )
