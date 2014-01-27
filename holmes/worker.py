@@ -266,7 +266,7 @@ class HolmesWorker(BaseWorker):
 
         dt = datetime.now() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
 
-        with self.db.begin():
+        with self.db.begin(subtransactions=True):
             self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
 
     def _load_next_job(self):
