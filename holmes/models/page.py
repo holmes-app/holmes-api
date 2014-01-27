@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import or_
 from sqlalchemy.exc import OperationalError
 from ujson import dumps
+from tornado.concurrent import return_future
 
 from holmes.models import Base
 from holmes.utils import get_domain_from_url
@@ -157,13 +158,17 @@ class Page(Base):
             cls.update_scores(individual_score, db)
 
     @classmethod
+    @return_future
     def add_page(cls, db, cache, url, score, fetch_method, publish_method, callback):
         domain_name, domain_url = get_domain_from_url(url)
-        if not domain_name:
-            return False, {
+        if not url or not domain_name:
+            callback((False, url, {
                 'reason': 'invalid_url',
-                'url': url
-            }
+                'url': url,
+                'status': None,
+                'details': 'Domain name could not be determined.'
+            }))
+            return
 
         logging.info('Obtaining "%s"...' % url)
 
@@ -174,7 +179,8 @@ class Page(Base):
 
     @classmethod
     def handle_request(cls, callback):
-        def handle(url, response):
+        def handle(*args, **kw):
+            response = args[-1]  # supports (url, response) and just response
             callback(response.status_code, response.text, response.effective_url)
 
         return handle
@@ -183,19 +189,21 @@ class Page(Base):
     def handle_add_page(cls, db, cache, url, score, publish_method, callback):
         def handle(code, body, effective_url):
             if code > 399:
-                callback(False, url, {
+                callback((False, url, {
                     'reason': 'invalid_url',
                     'url': url,
                     'status': code,
                     'details': body
-                })
+                }))
+                return
 
             if effective_url != url:
-                callback(False, url, {
+                callback((False, url, {
                     'reason': 'redirect',
                     'url': url,
                     'effectiveUrl': effective_url
-                })
+                }))
+                return
 
             domain = cls.add_domain(url, db, publish_method)
             page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method)
@@ -203,7 +211,7 @@ class Page(Base):
             cache.increment_page_count(domain)
             cache.increment_page_count()
 
-            callback(True, url, page_uuid)
+            callback((True, url, page_uuid))
 
         return handle
 
@@ -233,6 +241,7 @@ class Page(Base):
 
         page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
         db.add(page)
+        db.flush()
 
         publish_method(dumps({
             'type': 'new-page',

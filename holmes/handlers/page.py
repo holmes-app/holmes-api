@@ -3,6 +3,9 @@
 
 from uuid import UUID
 
+from tornado import gen
+from ujson import loads
+
 from holmes.models import Page, Review
 from holmes.handlers import BaseHandler
 
@@ -23,6 +26,43 @@ class PageHandler(BaseHandler):
         }
 
         self.write(page_json)
+
+    @gen.coroutine
+    def post(self):
+        post_data = loads(self.request.body)
+        url = post_data['url']
+        score = float(post_data.get('score', self.application.config.DEFAULT_PAGE_SCORE))
+
+        result = yield Page.add_page(
+            self.db, self.application.cache,
+            url, score,
+            self.application.http_client.fetch,
+            self.application.event_bus.publish
+        )
+
+        created, url, result = result
+
+        if not created and result['reason'] == 'invalid_url':
+            self.set_status(400, 'Invalid url [%s]' % url)
+            self.write_json({
+                'reason': 'invalid_url',
+                'url': url,
+                'status': result['status'],
+                'details': result['details']
+            })
+            return
+
+        if not created and result['reason'] == 'redirect':
+            self.set_status(400, 'Redirect URL [%s]' % url)
+            self.write_json({
+                'reason': 'redirect',
+                'url': url,
+                'effectiveUrl': result['effectiveUrl']
+            })
+            return
+
+        self.write(str(result))
+        self.finish()
 
 
 class PageReviewsHandler(BaseHandler):

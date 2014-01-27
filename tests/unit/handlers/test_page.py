@@ -18,10 +18,13 @@ from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestPageHandler(ApiTestCase):
-    def mock_request(self, code, effective_url):
+    def mock_request(self, status_code, effective_url):
         def handle(*args, **kw):
-            response_mock = Mock(code=code, effective_url=effective_url)
-            kw['callback'](response_mock)
+            response_mock = Mock(status_code=status_code, effective_url=effective_url)
+            if 'callback' in kw:
+                kw['callback'](response_mock)
+            else:
+                args[-1](response_mock)
 
         client = Mock()
         self.server.application.http_client = client
@@ -54,6 +57,128 @@ class TestPageHandler(ApiTestCase):
         expect(returned_page['uuid']).to_equal(str(page.uuid))
         expect(returned_page['url']).to_equal(page.url)
 
+    @gen_test
+    def test_can_save(self):
+        def side_effect(*args, **kw):
+            response_mock = Mock(status_code=200, effective_url="http://www.globo.com")
+            kw['callback'](response_mock)
+
+        self.mock_request(status_code=200, effective_url="http://www.globo.com")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': 'http://www.globo.com'
+            })
+        )
+
+        expect(response.code).to_equal(200)
+
+        page_uuid = UUID(response.body)
+        page = Page.by_uuid(page_uuid, self.db)
+
+        expect(page).not_to_be_null()
+        expect(str(page_uuid)).to_equal(page.uuid)
+
+    def test_can_save_known_domain(self):
+        DomainFactory.create(url='http://www.globo.com', name='globo.com')
+
+        self.mock_request(status_code=200, effective_url="http://www.globo.com")
+
+        response = self.fetch(
+            '/page',
+            method='POST',
+            body=dumps({
+                'url': 'http://www.globo.com'
+            })
+        )
+
+        expect(response.code).to_equal(200)
+
+        page_uuid = UUID(response.body)
+        page = Page.by_uuid(page_uuid, self.db)
+
+        expect(page).not_to_be_null()
+        expect(str(page_uuid)).to_equal(page.uuid)
+
+    @gen_test
+    def test_error_when_invalid_url(self):
+        invalid_url = ''
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/page'),
+                method='POST',
+                body=dumps({
+                    'url': invalid_url
+                })
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_be_like('Invalid url [%s]' % invalid_url)
+        else:
+            assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_when_url_already_exists(self):
+        page = PageFactory.create(url="http://www.globo.com")
+
+        self.mock_request(status_code=200, effective_url="http://www.globo.com")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': page.url
+            })
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
+
+    @gen_test
+    def test_when_url_already_exists_with_slash(self):
+        page = PageFactory.create(url="http://www.globo.com/")
+
+        self.mock_request(status_code=200, effective_url="http://www.globo.com")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': "http://www.globo.com"
+            })
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
+
+        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com").count()
+        expect(page_count).to_equal(0)
+
+    @gen_test
+    def test_when_url_already_exists_without_slash(self):
+        page = PageFactory.create(url="http://www.globo.com")
+
+        self.mock_request(status_code=200, effective_url="http://www.globo.com/")
+
+        response = yield self.http_client.fetch(
+            self.get_url('/page'),
+            method='POST',
+            body=dumps({
+                'url': "http://www.globo.com/"
+            })
+        )
+
+        expect(response.code).to_equal(200)
+        expect(response.body).to_equal(str(page.uuid))
+
+        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com/").count()
+        expect(page_count).to_equal(0)
+
 
 class TestPageReviewsHandler(ApiTestCase):
 
@@ -85,7 +210,7 @@ class TestPageReviewsHandler(ApiTestCase):
 
         expect(page_details[1]['violationCount']).to_equal(20)
         expect(page_details[1]['uuid']).to_equal(str(review1.uuid))
-        expect(page_details[1]['completedAt']).to_equal(dt1_timestamp )
+        expect(page_details[1]['completedAt']).to_equal(dt1_timestamp)
 
 
 class TestViolationsPerDayHandler(ApiTestCase):
