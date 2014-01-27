@@ -17,7 +17,7 @@ import logging
 from holmes.config import Config
 from holmes.facters import Facter
 from holmes.validators.base import Validator
-from holmes.models import Page, Request
+from holmes.models import Page, Request, Domain
 from holmes.utils import get_domain_from_url
 
 
@@ -141,6 +141,8 @@ class Reviewer(object):
         status_code = response.status_code
 
         domain_name, domain_url = get_domain_from_url(url)
+        if domain_name not in Domain.get_domain_names(self.db):
+            return
 
         req = Request(
             domain_name=domain_name,

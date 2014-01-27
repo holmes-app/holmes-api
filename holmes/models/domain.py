@@ -134,3 +134,7 @@ class Domain(Base):
             query = query.filter(Page.url.like('%s%%' % url_starts_with))
 
         return query.scalar()
+
+    @classmethod
+    def get_domain_names(cls, db):
+        return [item.name for item in db.query(Domain.name).all()]
