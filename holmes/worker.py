@@ -272,11 +272,10 @@ class HolmesWorker(BaseWorker):
             except OperationalError:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
+                    self.db.rollback()
                     logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
                     raise
-
-
 
     def _load_next_job(self):
         return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
