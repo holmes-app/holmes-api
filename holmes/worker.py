@@ -144,7 +144,7 @@ class BaseWorker(Shepherd):
 class HolmesWorker(BaseWorker):
     def initialize(self):
         self.uuid = uuid4().hex
-        self.working_url =  None
+        self.working_url = None
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
