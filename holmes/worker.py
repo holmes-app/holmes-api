@@ -109,11 +109,26 @@ class BaseWorker(Shepherd):
         return proxies
 
     def async_get(self, url, handler, method='GET', **kw):
-        kw['proxy_host'] = self.config.HTTP_PROXY_HOST
-        kw['proxy_port'] = self.config.HTTP_PROXY_PORT
+        url, response = self.cache.get_request(url)
 
-        self.debug('Enqueueing %s for %s...' % (method, url))
-        self.otto.enqueue(url, handler, method, **kw)
+        if not response:
+            kw['proxy_host'] = self.config.HTTP_PROXY_HOST
+            kw['proxy_port'] = self.config.HTTP_PROXY_PORT
+
+            self.debug('Enqueueing %s for %s...' % (method, url))
+            self.otto.enqueue(url, self.handle_response(url, handler), method, **kw)
+        else:
+            handler(url, response)
+
+    def handle_response(self, url, handler):
+        def handle(url, response):
+            self.cache.set_request(
+                url, response.status_code, response.headers, response.cookies,
+                response.text, response.effective_url, response.error, response.request_time,
+                self.config.REQUEST_CACHE_EXPIRATION_IN_SECONDS
+            )
+            handler(url, response)
+        return handle
 
     def publish(self, data):
         self.redis_pub_sub.publish('events', data)

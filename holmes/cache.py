@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from tornado.concurrent import return_future
+from ujson import loads, dumps
+from octopus.model import Response
 
 from holmes.models import Domain, Page
 
@@ -305,3 +307,46 @@ class SyncCache(object):
         )
 
         return int(count)
+
+    def get_request(self, url):
+        cache_key = "urls-%s" % url
+
+        contents = self.redis.get(cache_key)
+
+        if not contents:
+            return url, None
+
+        item = loads(contents)
+        response = Response(
+            url=url,
+            status_code=item['status_code'],
+            headers=item['headers'],
+            cookies=item['cookies'],
+            text=item['text'].encode('utf-8'),
+            effective_url=item['effective_url'],
+            error=item['error'],
+            request_time=float(item['request_time'])
+        )
+
+        return url, response
+
+    def set_request(self, url, status_code, headers, cookies, text, effective_url, error, request_time, expiration):
+        cache_key = "urls-%s" % url
+
+        try:
+            self.redis.setex(
+                cache_key,
+                expiration,
+                dumps({
+                    'url': url,
+                    'status_code': status_code,
+                    'headers': headers,
+                    'cookies': cookies,
+                    'text': text,
+                    'effective_url': effective_url,
+                    'error': error,
+                    'request_time': str(request_time)
+                }),
+            )
+        except Exception, err:
+            import ipdb; ipdb.set_trace()
