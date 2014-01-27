@@ -20,3 +20,4 @@ class TestDomain(ApiTestCase):
         expect(request.status_code).to_equal(301)
         expect(request.response_time).to_equal(0.23)
         expect(request.completed_date).to_equal(datetime(2013, 2, 12, 0, 0))
+        expect(request.review_url).to_equal('http://globo.com/')

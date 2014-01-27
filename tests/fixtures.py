@@ -138,3 +138,4 @@ class RequestFactory(BaseFactory):
     status_code = 301
     response_time = 0.23
     completed_date = datetime.datetime(2013, 02, 12)
+    review_url = 'http://globo.com/'

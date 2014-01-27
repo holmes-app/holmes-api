@@ -16,3 +16,4 @@ class Request(Base):
     status_code = sa.Column('status_code', sa.Integer, nullable=False)
     response_time = sa.Column('response_time', sa.Float, nullable=False)
     completed_date = sa.Column('completed_date', sa.Date, nullable=False)
+    review_url = sa.Column('review_url', sa.Text(), nullable=False)
