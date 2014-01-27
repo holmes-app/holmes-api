@@ -316,13 +316,15 @@ class SyncCache(object):
         if not contents:
             return url, None
 
+        body = self.redis.get('%s-body' % cache_key)
+
         item = loads(contents)
         response = Response(
             url=url,
             status_code=item['status_code'],
             headers=item['headers'],
             cookies=item['cookies'],
-            text=item['text'].encode('utf-8'),
+            text=body,
             effective_url=item['effective_url'],
             error=item['error'],
             request_time=float(item['request_time'])
@@ -334,18 +336,27 @@ class SyncCache(object):
 
     def set_request(self, url, status_code, headers, cookies, text, effective_url, error, request_time, expiration):
         cache_key = "urls-%s" % url
+        body_key = '%s-body' % cache_key
 
-        self.redis.setex(
-            cache_key,
-            expiration,
-            dumps({
-                'url': url,
-                'status_code': status_code,
-                'headers': headers,
-                'cookies': cookies,
-                'text': text,
-                'effective_url': effective_url,
-                'error': error,
-                'request_time': str(request_time)
-            }),
-        )
+        try:
+            self.redis.setex(
+                cache_key,
+                expiration,
+                dumps({
+                    'url': url,
+                    'status_code': status_code,
+                    'headers': headers,
+                    'cookies': cookies,
+                    'effective_url': effective_url,
+                    'error': error,
+                    'request_time': str(request_time)
+                }),
+            )
+
+            self.redis.setex(
+                body_key,
+                expiration,
+                text
+            )
+        except Exception, err:
+            import pdb; pdb.set_trace()
