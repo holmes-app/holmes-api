@@ -130,7 +130,9 @@ class Reviewer(object):
 
     def handle_async_get(self, handler):
         def handle(url, response):
-            self.save_request(url, response)
+            if not hasattr(response, 'from_cache') or not response.from_cache:
+                self.save_request(url, response)
+
             handler(url, response)
 
         return handle

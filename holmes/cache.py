@@ -328,6 +328,8 @@ class SyncCache(object):
             request_time=float(item['request_time'])
         )
 
+        response.from_cache = True
+
         return url, response
 
     def set_request(self, url, status_code, headers, cookies, text, effective_url, error, request_time, expiration):
