@@ -14,7 +14,8 @@ from holmes.config import Config
 from holmes.server import HolmesApiServer
 from tests.fixtures import (
     DomainFactory, PageFactory, ReviewFactory, FactFactory,
-    ViolationFactory, WorkerFactory, KeyFactory, KeysCategoryFactory
+    ViolationFactory, WorkerFactory, KeyFactory, KeysCategoryFactory,
+    RequestFactory
 )
 
 
@@ -48,6 +49,7 @@ class ApiTestCase(CowTestCase):
         WorkerFactory.FACTORY_SESSION = self.db
         KeyFactory.FACTORY_SESSION = self.db
         KeysCategoryFactory.FACTORY_SESSION = self.db
+        RequestFactory.FACTORY_SESSION = self.db
 
         self.clean_cache('www.globo.com')
         self.clean_cache('globo.com')

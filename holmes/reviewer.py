@@ -17,7 +17,8 @@ import logging
 from holmes.config import Config
 from holmes.facters import Facter
 from holmes.validators.base import Validator
-from holmes.models import Page
+from holmes.models import Page, Request
+from holmes.utils import get_domain_from_url
 
 
 class InvalidReviewError(RuntimeError):
@@ -125,7 +126,31 @@ class Reviewer(object):
 
     def _async_get(self, url, handler, method='GET', **kw):
         if self.async_get_func:
-            self.async_get_func(url, handler, method, **kw)
+            self.async_get_func(url, self.handle_async_get(handler), method, **kw)
+
+    def handle_async_get(self, handler):
+        def handle(url, response):
+            self.save_request(url, response)
+            handler(url, response)
+
+        return handle
+
+    def save_request(self, url, response):
+        request_time = response.request_time
+        effective_url = response.effective_url
+        status_code = response.status_code
+
+        domain_name, domain_url = get_domain_from_url(url)
+
+        req = Request(
+            domain_name=domain_name,
+            url=url,
+            effective_url=effective_url,
+            status_code=int(status_code),
+            response_time=request_time
+        )
+
+        self.db.add(req)
 
     def review(self):
         self.load_content(self.content_loaded)

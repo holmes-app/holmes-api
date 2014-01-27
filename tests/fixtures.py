@@ -5,7 +5,7 @@ import factory
 import factory.alchemy
 
 from holmes.models import (
-    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory
+    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request
 )
 from uuid import uuid4
 
@@ -126,3 +126,13 @@ class WorkerFactory(BaseFactory):
     uuid = factory.LazyAttribute(lambda a: uuid4())
     last_ping = None
     current_url = None
+
+
+class RequestFactory(BaseFactory):
+    FACTORY_FOR = Request
+
+    domain_name = 'g1.globo.com'
+    url = 'http://g1.globo.com'
+    effective_url = 'http://g1.globo.com/'
+    status_code = 301
+    response_time = 0.23
