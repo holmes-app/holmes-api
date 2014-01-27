@@ -338,25 +338,22 @@ class SyncCache(object):
         cache_key = "urls-%s" % url
         body_key = '%s-body' % cache_key
 
-        try:
-            self.redis.setex(
-                cache_key,
-                expiration,
-                dumps({
-                    'url': url,
-                    'status_code': status_code,
-                    'headers': headers,
-                    'cookies': cookies,
-                    'effective_url': effective_url,
-                    'error': error,
-                    'request_time': str(request_time)
-                }),
-            )
+        self.redis.setex(
+            cache_key,
+            expiration,
+            dumps({
+                'url': url,
+                'status_code': status_code,
+                'headers': headers,
+                'cookies': cookies,
+                'effective_url': effective_url,
+                'error': error,
+                'request_time': str(request_time)
+            }),
+        )
 
-            self.redis.setex(
-                body_key,
-                expiration,
-                text
-            )
-        except Exception, err:
-            import pdb; pdb.set_trace()
+        self.redis.setex(
+            body_key,
+            expiration,
+            text
+        )
