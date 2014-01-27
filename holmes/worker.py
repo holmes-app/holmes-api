@@ -272,7 +272,6 @@ class HolmesWorker(BaseWorker):
             except OperationalError:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
-                    self.db.rollback()
                     logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
                     raise
