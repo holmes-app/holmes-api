@@ -15,6 +15,7 @@ from colorama import Fore, Style
 from octopus import TornadoOctopus
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.exc import OperationalError
 import redis
 
 from holmes import __version__
@@ -266,8 +267,19 @@ class HolmesWorker(BaseWorker):
 
         dt = datetime.now() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
 
-        with self.db.begin(subtransactions=True):
-            self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
+        for i in range(3):
+            try:
+                with self.db.begin(subtransactions=True):
+                    self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
+                break
+            except OperationalError:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                else:
+                    raise
+
+
 
     def _load_next_job(self):
         return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
