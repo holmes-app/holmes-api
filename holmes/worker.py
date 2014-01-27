@@ -4,12 +4,9 @@
 import sys
 import logging
 from uuid import uuid4
-from os.path import join
 from datetime import datetime, timedelta
 
-import requests
-from ujson import dumps, loads
-from requests.exceptions import ConnectionError
+from ujson import dumps
 from sheep import Shepherd
 from colorama import Fore, Style
 from octopus import TornadoOctopus
