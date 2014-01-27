@@ -243,7 +243,7 @@ class Reviewer(object):
         if not urls:
             return
 
-        with self.db.begin():
+        with self.db.begin(subtransactions=True):
             for url, score in urls:
                 Page.add_page(
                     self.db, self.cache,
