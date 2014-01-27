@@ -149,7 +149,8 @@ class Reviewer(object):
             url=url,
             effective_url=effective_url,
             status_code=int(status_code),
-            response_time=request_time
+            response_time=request_time,
+            completed_date=datetime.now()
         )
 
         self.db.add(req)
