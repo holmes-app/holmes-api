@@ -136,7 +136,7 @@ class BaseWorker(Shepherd):
     def _insert_keys(self, keys):
         from holmes.models import Key
 
-        with self.db.begin():
+        with self.db.begin(subtransactions=True):
             for name in keys.keys():
                 key = Key.get_or_create(self.db, name)
                 keys[name]['key'] = key
@@ -246,7 +246,7 @@ class HolmesWorker(BaseWorker):
 
         worker = Worker.by_uuid(self.uuid, self.db)
 
-        with self.db.begin():
+        with self.db.begin(subtransactions=True):
             if worker:
                 worker.last_ping = datetime.now()
                 worker.current_url = self.working_url
@@ -277,7 +277,7 @@ class HolmesWorker(BaseWorker):
 
         worker = Worker.by_uuid(self.uuid, self.db)
 
-        with self.db.begin():
+        with self.db.begin(subtransactions=True):
             worker.current_url = url
             worker.last_ping = datetime.now()
 
@@ -290,7 +290,7 @@ class HolmesWorker(BaseWorker):
         if worker:
             for i in range(3):
                 try:
-                    with self.db.begin():
+                    with self.db.begin(subtransactions=True):
                         worker.current_url = None
                         worker.last_ping = datetime.now()
                     break
