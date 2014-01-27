@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from preggy import expect
 
 from tests.unit.base import ApiTestCase
@@ -18,3 +19,4 @@ class TestDomain(ApiTestCase):
         expect(request.effective_url).to_equal('http://g1.globo.com/')
         expect(request.status_code).to_equal(301)
         expect(request.response_time).to_equal(0.23)
+        expect(request.completed_date).to_equal(datetime(2013, 2, 12, 0, 0))

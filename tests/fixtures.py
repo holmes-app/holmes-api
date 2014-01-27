@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import datetime
 import factory
 import factory.alchemy
 
@@ -136,3 +137,4 @@ class RequestFactory(BaseFactory):
     effective_url = 'http://g1.globo.com/'
     status_code = 301
     response_time = 0.23
+    completed_date = datetime.datetime(2013, 02, 12)
