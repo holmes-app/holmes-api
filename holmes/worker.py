@@ -134,11 +134,12 @@ class BaseWorker(Shepherd):
     def _insert_keys(self, keys):
         from holmes.models import Key
 
-        with self.db.begin(subtransactions=True):
-            for name in keys.keys():
-                key = Key.get_or_create(self.db, name)
-                keys[name]['key'] = key
-                self.db.add(key)
+        for name in keys.keys():
+            self.db.begin(subtransactions=True)
+            key = Key.get_or_create(self.db, name)
+            keys[name]['key'] = key
+            self.db.add(key)
+            self.db.commit()
 
 
 class HolmesWorker(BaseWorker):
@@ -237,20 +238,39 @@ class HolmesWorker(BaseWorker):
 
     def _increase_lambda_tax(self, tax):
         tax = float(tax)
-        self.db.query(Settings).update({'lambda_score': Settings.lambda_score + tax})
+        for i in range(3):
+            self.db.begin(subtransactions=True)
+            try:
+                self.db.query(Settings).update({'lambda_score': Settings.lambda_score + tax})
+                self.db.commit()
+                break
+            except Exception:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                else:
+                    self.db.rollback()
+                    raise
+
 
     def _ping_api(self):
         self._remove_zombie_workers()
 
         worker = Worker.by_uuid(self.uuid, self.db)
 
-        with self.db.begin(subtransactions=True):
+        self.db.begin(subtransactions=True)
+
+        try:
             if worker:
                 worker.last_ping = datetime.now()
                 worker.current_url = self.working_url
             else:
                 worker = Worker(uuid=self.uuid, current_url=self.working_url)
                 self.db.add(worker)
+            self.db.flush()
+            self.db.commit()
+        except OperationalError:
+            self.db.rollback()
 
         self.publish(dumps({
             'type': 'worker-status',
@@ -265,28 +285,36 @@ class HolmesWorker(BaseWorker):
         dt = datetime.now() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
 
         for i in range(3):
+            self.db.begin(subtransactions=True)
+
             try:
-                with self.db.begin(subtransactions=True):
-                    self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
+                self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
+                self.db.flush()
+                self.db.commit()
                 break
-            except OperationalError:
+            except Exception:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
                     logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
+                    self.db.rollback()
                     raise
 
     def _load_next_job(self):
         return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
+        self.db.begin(subtransactions=True)
+
         self.working_url = url
 
         worker = Worker.by_uuid(self.uuid, self.db)
 
-        with self.db.begin(subtransactions=True):
-            worker.current_url = url
-            worker.last_ping = datetime.now()
+        worker.current_url = url
+        worker.last_ping = datetime.now()
+
+        self.db.flush()
+        self.db.commit()
 
         return True
 
@@ -296,14 +324,21 @@ class HolmesWorker(BaseWorker):
 
         if worker:
             for i in range(3):
+                self.db.begin(subtransactions=True)
+
                 try:
-                    with self.db.begin(subtransactions=True):
-                        worker.current_url = None
-                        worker.last_ping = datetime.now()
+                    worker.current_url = None
+                    worker.last_ping = datetime.now()
+                    self.db.flush()
+                    self.db.commit()
                     break
                 except Exception:
                     err = sys.exc_info()[1]
-                    logging.error('Deadlock detected... Try number %d. Error: %s' % (i, str(err)))
+                    if 'Deadlock found' in str(err):
+                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    else:
+                        self.db.rollback()
+                        raise
 
         return True
 

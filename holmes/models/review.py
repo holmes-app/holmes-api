@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
+import logging
+
 from uuid import uuid4
 from datetime import datetime
 
@@ -120,12 +123,6 @@ class Review(Base):
 
         page = Page.by_uuid(page_uuid, db)
 
-        page.expires = review_data['expires']
-
-        page.last_modified = review_data['lastModified']
-
-        page.score = 0
-
         review = Review(
             domain_id=page.domain.id,
             page_id=page.id,
@@ -147,7 +144,25 @@ class Review(Base):
             key = violation_definitions[name]['key']
             review.add_violation(key, violation['value'], violation['points'])
 
-        page.violations_count = len(review_data['violations'])
+        for i in range(3):
+            db.begin(subtransactions=True)
+            try:
+                page.expires = review_data['expires']
+                page.last_modified = review_data['lastModified']
+                page.score = 0
+                page.last_review_uuid = review.uuid
+                page.last_review = review
+                page.last_review_date = review.completed_date
+                page.violations_count = len(review_data['violations'])
+                db.commit()
+                break
+            except Exception:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                else:
+                    db.rollback()
+                    raise
 
         review.is_complete = True
 
@@ -167,11 +182,19 @@ class Review(Base):
                 increment=new_violations_count - old_violations_count
             )
 
-            page.last_review.is_active = False
-
-        page.last_review_uuid = review.uuid
-        page.last_review = review
-        page.last_review_date = review.completed_date
+            for i in range(3):
+                db.begin(subtransactions=True)
+                try:
+                    page.last_review.is_active = False
+                    db.commit()
+                    break
+                except Exception:
+                    err = sys.exc_info()[1]
+                    if 'Deadlock found' in str(err):
+                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    else:
+                        db.rollback()
+                        raise
 
         publish(dumps({
             'type': 'new-review',

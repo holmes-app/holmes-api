@@ -104,7 +104,20 @@ class Page(Base):
 
     @classmethod
     def update_scores(cls, individual_score, db):
-        db.query(Page).update({'score': Page.score + individual_score})
+        for i in range(3):
+            db.begin(subtransactions=True)
+            try:
+                db.query(Page).update({'score': Page.score + individual_score})
+                db.flush()
+                db.commit()
+                break
+            except Exception:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                else:
+                    db.rollback()
+                    raise
 
     @classmethod
     def get_next_job(cls, db, expiration):
@@ -151,11 +164,10 @@ class Page(Base):
 
     @classmethod
     def update_pages_score_by(cls, settings, score, db):
-        with db.begin(subtransactions=True):
-            settings.lambda_score = 0
-            page_count = cls.get_page_count(db)
-            individual_score = float(score) / float(page_count)
-            cls.update_scores(individual_score, db)
+        settings.lambda_score = 0
+        page_count = cls.get_page_count(db)
+        individual_score = float(score) / float(page_count)
+        cls.update_scores(individual_score, db)
 
     @classmethod
     @return_future
@@ -227,23 +239,37 @@ class Page(Base):
 
         if page:
             for i in range(3):
+                db.begin(subtransactions=True)
                 try:
                     db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
+                    db.flush()
+                    db.commit()
                     break
-                except OperationalError:
+                except Exception:
                     err = sys.exc_info()[1]
                     if 'Deadlock found' in str(err):
                         logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
+                        db.rollback()
                         raise
 
             return page.uuid
 
         url_hash = hashlib.sha512(url).hexdigest()
 
-        page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
-        db.add(page)
-        db.flush()
+        db.begin(subtransactions=True)
+        try:
+            page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
+            db.add(page)
+            db.flush()
+            db.commit()
+        except Exception:
+            err = sys.exc_info()[1]
+            if 'Duplicate entry' in str(err):
+                logging.error('Duplicate entry! (Details: %s)' % str(err))
+            else:
+                db.rollback()
+                raise
 
         publish_method(dumps({
             'type': 'new-page',
@@ -274,6 +300,7 @@ class Page(Base):
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             db.add(domain)
             db.flush()
+            db.commit()
 
             publish_method(dumps({
                 'type': 'new-domain',

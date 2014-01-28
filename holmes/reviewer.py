@@ -243,15 +243,16 @@ class Reviewer(object):
         if not urls:
             return
 
-        with self.db.begin(subtransactions=True):
-            for url, score in urls:
-                Page.add_page(
-                    self.db, self.cache,
-                    url, score,
-                    self.async_get_func,
-                    self.publish,
-                    self.handle_page_added
-                )
+        for url, score in urls:
+            Page.add_page(
+                self.db,
+                self.cache,
+                url,
+                score,
+                self.async_get_func,
+                self.publish,
+                self.handle_page_added
+            )
 
         self.wait_for_async_requests()
 
