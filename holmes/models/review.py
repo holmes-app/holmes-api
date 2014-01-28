@@ -122,6 +122,7 @@ class Review(Base):
         from holmes.models import Page
 
         page = Page.by_uuid(page_uuid, db)
+        last_review = page.last_review
 
         review = Review(
             domain_id=page.domain.id,
@@ -166,7 +167,7 @@ class Review(Base):
 
         review.is_complete = True
 
-        if not page.last_review:
+        if not last_review:
             cache.increment_active_review_count(page.domain)
 
             cache.increment_violations_count(
@@ -174,7 +175,7 @@ class Review(Base):
                 increment=page.violations_count
             )
         else:
-            old_violations_count = len(page.last_review.violations)
+            old_violations_count = len(last_review.violations)
             new_violations_count = len(review.violations)
 
             cache.increment_violations_count(
@@ -185,7 +186,7 @@ class Review(Base):
             for i in range(3):
                 db.begin(subtransactions=True)
                 try:
-                    page.last_review.is_active = False
+                    last_review.is_active = False
                     db.commit()
                     break
                 except Exception:

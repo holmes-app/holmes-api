@@ -230,11 +230,8 @@ class Page(Base):
 
     @classmethod
     def insert_or_update_page(cls, url, score, domain, db, publish_method):
-        page = db.query(Page).filter(or_(
-            Page.url == url,
-            Page.url == url.rstrip('/'),
-            Page.url == "%s/" % url
-        )).first()
+        url_hash = hashlib.sha512(url).hexdigest()
+        page = db.query(Page).filter(Page.url_hash==url_hash).first()
 
         if page:
             for i in range(3):
@@ -256,7 +253,6 @@ class Page(Base):
 
         db.begin(subtransactions=True)
         try:
-            url_hash = hashlib.sha512(url).hexdigest()
             page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
             db.add(page)
             db.flush()
@@ -265,8 +261,7 @@ class Page(Base):
             db.rollback()
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):
-                # logging.error('Duplicate entry! (Details: %s)' % str(err))
-                pass
+                logging.error('Duplicate entry! (Details: %s)' % str(err))
             else:
                 raise
 
