@@ -11,7 +11,6 @@ import logging
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy import or_
-from sqlalchemy.exc import OperationalError
 from ujson import dumps
 from tornado.concurrent import return_future
 
@@ -255,20 +254,20 @@ class Page(Base):
 
             return page.uuid
 
-        url_hash = hashlib.sha512(url).hexdigest()
-
         db.begin(subtransactions=True)
         try:
+            url_hash = hashlib.sha512(url).hexdigest()
             page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
             db.add(page)
             db.flush()
             db.commit()
         except Exception:
+            db.rollback()
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):
-                logging.error('Duplicate entry! (Details: %s)' % str(err))
+                # logging.error('Duplicate entry! (Details: %s)' % str(err))
+                pass
             else:
-                db.rollback()
                 raise
 
         publish_method(dumps({
