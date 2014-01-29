@@ -252,7 +252,6 @@ class HolmesWorker(BaseWorker):
                     self.db.rollback()
                     raise
 
-
     def _ping_api(self):
         self._remove_zombie_workers()
 
