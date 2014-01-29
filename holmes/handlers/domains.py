@@ -3,7 +3,7 @@
 
 from tornado.gen import coroutine
 
-from holmes.models import Domain
+from holmes.models import Domain, Request
 from holmes.handlers import BaseHandler
 
 
@@ -56,6 +56,8 @@ class DomainDetailsHandler(BaseHandler):
         review_count = yield self.cache.get_active_review_count(domain)
         violation_count = yield self.cache.get_violation_count(domain)
 
+        status_code_info = Request.get_status_code_info(domain_name, self.db)
+
         if page_count > 0:
             review_percentage = round(float(review_count) / page_count * 100, 2)
         else:
@@ -69,6 +71,7 @@ class DomainDetailsHandler(BaseHandler):
             "violationCount": violation_count,
             "reviewPercentage": review_percentage,
             "is_active": domain.is_active,
+            "statusCodeInfo": status_code_info,
         }
 
         self.write_json(domain_json)

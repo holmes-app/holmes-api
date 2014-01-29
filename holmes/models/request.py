@@ -17,3 +17,23 @@ class Request(Base):
     response_time = sa.Column('response_time', sa.Float, nullable=False)
     completed_date = sa.Column('completed_date', sa.Date, nullable=False)
     review_url = sa.Column('review_url', sa.Text(), nullable=False)
+
+    @classmethod
+    def get_status_code_info(self, domain_name, db):
+        from holmes.models import Request
+
+        result = []
+
+        query = db \
+            .query(
+                Request.status_code,
+                sa.func.count(Request.status_code).label('total')
+            ) \
+            .filter(Request.domain_name == domain_name) \
+            .group_by(Request.status_code) \
+            .all()
+
+        for i in query:
+            result.append({'code': i.status_code, 'total': i.total})
+
+        return result
