@@ -175,30 +175,6 @@ class Cache(object):
     def release_lock_page(self, url, callback):
         self.redis.delete('%s-lock' % url, callback=callback)
 
-    @return_future
-    def lock_next_job(self, url, callback=None):
-        expiration = self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS
-
-        self.redis.setex(
-            key='%s-next-job-lock' % url,
-            value=1,
-            seconds=expiration,
-            callback=callback
-        )
-
-    @return_future
-    def has_next_job_lock(self, url, callback=None):
-        self.redis.get(
-            key='%s-next-job-lock' % url,
-            callback=self.handle_get_next_job_lock(url, callback)
-        )
-
-    def handle_get_next_job_lock(self, url, callback):
-        def handle(value):
-            callback(value == '1')
-
-        return handle
-
 
 class SyncCache(object):
     def __init__(self, db, redis):
@@ -357,3 +333,16 @@ class SyncCache(object):
             expiration,
             text
         )
+
+    def lock_next_job(self, url, expiration):
+        return self.redis.lock('%s-next-job-lock' % url, expiration)
+
+    def has_next_job_lock(self, url, expiration):
+        lock = self.lock_next_job(url, expiration)
+        has_acquired = lock.acquire(blocking=False)
+        if not has_acquired:
+            return None
+        return lock
+
+    def release_next_job(self, lock):
+        return lock.release()

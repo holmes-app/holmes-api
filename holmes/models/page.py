@@ -119,7 +119,7 @@ class Page(Base):
                     raise
 
     @classmethod
-    def get_next_job(cls, db, expiration):
+    def get_next_job(cls, db, expiration, cache, lock_expiration):
         from holmes.models import Settings, Domain
 
         expired_time = datetime.now() - timedelta(seconds=expiration)
@@ -155,10 +155,21 @@ class Page(Base):
 
         page = choice(pages_in_need_of_review)
 
+        for i in range(10):
+            lock = cache.has_next_job_lock(page.url, lock_expiration)
+            if lock is None:
+                page = choice(pages_in_need_of_review)
+            else:
+                break
+
+        if lock is None:
+            return None
+
         return {
             'page': str(page.uuid),
             'url': page.url,
-            'score': page.score
+            'score': page.score,
+            'lock': lock
         }
 
     @classmethod

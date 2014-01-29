@@ -207,7 +207,8 @@ class HolmesWorker(BaseWorker):
                     err = str(sys.exc_info()[1])
                     logging.error("Fail to review %s: %s" % (job['url'], err))
 
-                self._complete_job(error=err)
+                lock = job.get('lock', None)
+                self._complete_job(lock, error=err)
             elif job:
                 self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
 
@@ -300,24 +301,25 @@ class HolmesWorker(BaseWorker):
                     raise
 
     def _load_next_job(self):
-        return Page.get_next_job(self.db, self.config.REVIEW_EXPIRATION_IN_SECONDS)
+        return Page.get_next_job(
+            self.db,
+            self.config.REVIEW_EXPIRATION_IN_SECONDS,
+            self.cache,
+            self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
-        self.db.begin(subtransactions=True)
-
         self.working_url = url
 
+        self.db.begin(subtransactions=True)
         worker = Worker.by_uuid(self.uuid, self.db)
-
         worker.current_url = url
         worker.last_ping = datetime.now()
-
         self.db.flush()
         self.db.commit()
 
         return True
 
-    def _complete_job(self, error=None):
+    def _complete_job(self, lock, error=None):
         self.working_url = None
         worker = Worker.by_uuid(self.uuid, self.db)
 
@@ -326,6 +328,7 @@ class HolmesWorker(BaseWorker):
                 self.db.begin(subtransactions=True)
 
                 try:
+                    self.cache.release_next_job(lock)
                     worker.current_url = None
                     worker.last_ping = datetime.now()
                     self.db.flush()
