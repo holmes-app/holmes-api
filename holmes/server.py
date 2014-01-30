@@ -31,6 +31,7 @@ from holmes.handlers.search import (
 from holmes.handlers.settings import (
     TaxHandler
 )
+from holmes.handlers.request import RequestDomainHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
@@ -79,6 +80,7 @@ class HolmesApiServer(Server):
             (r'/domains/([^/]+)/violations-per-day/?', DomainViolationsPerDayHandler),
             (r'/domains/([^/]+)/reviews/?', DomainReviewsHandler),
             (r'/domains/([^/]+)/change-status/?', DomainsChangeStatusHandler),
+            (r'/domains/([^/]+)/requests/([0-9]*)/?', RequestDomainHandler),
             (r'/next/?', NextJobHandler),
             (r'/events/?', EventBusHandler),
             (r'/violations/?', ViolationsHandler),

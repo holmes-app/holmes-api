@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
+from sqlalchemy import func
+
 
 from holmes.models import Base
 
@@ -37,3 +39,24 @@ class Request(Base):
             result.append({'code': i.status_code, 'total': i.total})
 
         return result
+
+    @classmethod
+    def get_requests_by_status_code(self, domain_name, status_code, db, current_page=1, page_size=10):
+        lower_bound = (current_page - 1) * page_size
+        upper_bound = lower_bound + page_size
+
+        requests = db \
+            .query(Request.id, Request.url, Request.review_url, Request.completed_date) \
+            .filter(Request.domain_name == domain_name) \
+            .filter(Request.status_code == status_code) \
+            .order_by('completed_date desc')[lower_bound:upper_bound]
+
+        return requests
+
+    @classmethod
+    def get_requests_by_status_count(self, domain_name, status_code, db):
+        return db \
+            .query(func.count(Request.id)) \
+            .filter(Request.domain_name == domain_name) \
+            .filter(Request.status_code == status_code) \
+            .scalar()
