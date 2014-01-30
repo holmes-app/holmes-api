@@ -137,5 +137,5 @@ class RequestFactory(BaseFactory):
     effective_url = 'http://g1.globo.com/'
     status_code = 301
     response_time = 0.23
-    completed_date = datetime.datetime(2013, 02, 12)
+    completed_date = datetime.date(2013, 02, 12)
     review_url = 'http://globo.com/'

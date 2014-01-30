@@ -22,8 +22,6 @@ class Request(Base):
 
     @classmethod
     def get_status_code_info(self, domain_name, db):
-        from holmes.models import Request
-
         result = []
 
         query = db \
