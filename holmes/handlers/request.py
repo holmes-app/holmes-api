@@ -3,6 +3,7 @@
 
 from tornado.gen import coroutine
 
+from holmes.utils import get_status_code_title
 from holmes.models import Request
 from holmes.handlers import BaseHandler
 
@@ -42,6 +43,7 @@ class RequestDomainHandler(BaseHandler):
         )
 
         result = {
+            'statusCodeTitle': get_status_code_title(status_code),
             'requestsCount': requests_count,
             'requests': []
         }

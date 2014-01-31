@@ -3,6 +3,8 @@
 
 import logging
 
+from tornado import httputil
+
 from six.moves.urllib.parse import urlparse
 
 EMPTY_DOMAIN_RESULT = ('', '')
@@ -70,3 +72,16 @@ def load_classes(classes=None, classes_to_load=None, default=None):
             logging.warn('Module [%s] not found. Will be ignored.' % class_full_name)
 
     return classes
+
+
+def get_status_code_title(status_code):
+    status_code = int(status_code)
+    try:
+        title = httputil.responses[status_code]
+    except KeyError:
+        if status_code == 599:
+            title = 'Tornado Timeout'
+        else:
+            title = ''
+
+    return title

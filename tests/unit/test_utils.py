@@ -5,7 +5,9 @@ from unittest import TestCase
 
 from preggy import expect
 
-from holmes.utils import get_domain_from_url, get_class, load_classes
+from holmes.utils import (
+    get_domain_from_url, get_class, load_classes, get_status_code_title
+)
 
 
 class TestUtils(TestCase):
@@ -112,3 +114,13 @@ class TestUtils(TestCase):
         expect(classes[0]).to_equal(Domain)
         expect(classes[1]).to_equal(Page)
         expect(classes[2]).to_equal(Review)
+
+    def test_get_status_code_title(self):
+        title = get_status_code_title(500)
+        expect(title).to_equal('Internal Server Error')
+
+        title = get_status_code_title(599)
+        expect(title).to_equal('Tornado Timeout')
+
+        title = get_status_code_title(120)
+        expect(title).to_be_empty()

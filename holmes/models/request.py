@@ -4,7 +4,7 @@
 import sqlalchemy as sa
 from sqlalchemy import func
 
-
+from holmes.utils import get_status_code_title
 from holmes.models import Base
 
 
@@ -34,7 +34,11 @@ class Request(Base):
             .all()
 
         for i in query:
-            result.append({'code': i.status_code, 'total': i.total})
+            result.append({
+                'code': i.status_code,
+                'title': get_status_code_title(i.status_code),
+                'total': i.total
+            })
 
         return result
 
