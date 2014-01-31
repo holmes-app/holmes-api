@@ -69,17 +69,6 @@ class WorkerTestCase(ApiTestCase):
             'https': 'http://proxy:8080'
         })
 
-    def test_tornado_async_get(self):
-        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
-
-        otto_mock = Mock()
-        worker.otto = otto_mock
-
-        worker.async_get("url", "handler", 'GET', test="test")
-        otto_mock.enqueue.assert_called_once_with(
-            'url', 'handler', 'GET', test='test', proxy_host='http://proxy', proxy_port=8080
-        )
-
     def test_description(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
 

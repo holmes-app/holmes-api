@@ -4,6 +4,7 @@
 import datetime
 import factory
 import factory.alchemy
+import hashlib
 
 from holmes.models import (
     Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request
@@ -32,6 +33,7 @@ class PageFactory(BaseFactory):
     FACTORY_FOR = Page
 
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
+    url_hash = None
     uuid = factory.LazyAttribute(lambda a: uuid4())
 
     created_date = None
@@ -48,6 +50,11 @@ class PageFactory(BaseFactory):
     last_review_uuid = None
 
     score = 0.0
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        kwargs['url_hash'] = hashlib.sha512(kwargs['url']).hexdigest()
+        return kwargs
 
 
 class ReviewFactory(BaseFactory):

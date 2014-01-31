@@ -175,9 +175,14 @@ class TestDomain(ApiTestCase):
         expect(loaded_domain.id).to_equal(domain.id)
 
     def test_get_domain_names(self):
+        self.db.query(Domain).delete()
+
         DomainFactory.create(name="g1.globo.com")
         DomainFactory.create(name="globoesporte.globo.com")
 
         domain_names = Domain.get_domain_names(self.db)
 
-        expect(domain_names).to_be_like(['g1.globo.com', 'globoesporte.globo.com'])
+        expect(domain_names).to_be_like([
+            'g1.globo.com',
+            'globoesporte.globo.com'
+        ])

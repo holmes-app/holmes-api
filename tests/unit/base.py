@@ -92,6 +92,17 @@ class ApiTestCase(CowTestCase):
         self.server.application.redis.delete('%s-violation-count' % domain_name, callback=do_nothing)
         self.server.application.redis.delete('%s-active-review-count' % domain_name, callback=do_nothing)
 
+    def connect_to_sync_redis(self):
+        import redis
+        from holmes.cache import SyncCache
+
+        host = self.server.application.config.get('REDISHOST')
+        port = self.server.application.config.get('REDISPORT')
+
+        redis = redis.StrictRedis(host=host, port=port, db=0)
+
+        return SyncCache(self.db, redis)
+
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 
 

@@ -12,6 +12,10 @@ from tests.fixtures import PageFactory, ReviewFactory, DomainFactory
 
 
 class TestPage(ApiTestCase):
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
+
     def test_can_create_page(self):
         page = PageFactory.create()
 
@@ -74,7 +78,12 @@ class TestPage(ApiTestCase):
     def test_can_get_next_job(self):
         page = PageFactory.create()
 
-        next_job = Page.get_next_job(self.db, expiration=100)
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
 
         expect(next_job).not_to_be_null()
         expect(next_job['page']).to_equal(str(page.uuid))
@@ -83,14 +92,24 @@ class TestPage(ApiTestCase):
         domain = DomainFactory.create(is_active=False)
         PageFactory.create(domain=domain)
 
-        next_job = Page.get_next_job(self.db, expiration=100)
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
 
         expect(next_job).to_be_null()
 
     def test_can_get_next_job_when_expired(self):
         page = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
 
-        next_job = Page.get_next_job(self.db, expiration=100)
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
 
         expect(next_job).not_to_be_null()
         expect(next_job['page']).to_equal(str(page.uuid))
@@ -102,7 +121,12 @@ class TestPage(ApiTestCase):
         settings = Settings.instance(self.db)
         settings.lambda_score = 10000
 
-        next_job = Page.get_next_job(self.db, expiration=100)
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
 
         expect(next_job).to_be_null()
 
@@ -119,7 +143,12 @@ class TestPage(ApiTestCase):
         settings = Settings.instance(self.db)
         settings.lambda_score = 10000
 
-        next_job = Page.get_next_job(self.db, expiration=100)
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
 
         expect(next_job).to_be_null()
 
