@@ -6,6 +6,7 @@ from tornado.testing import gen_test
 from tornado.gen import Task
 
 from holmes.cache import Cache
+from holmes.models import Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -26,6 +27,8 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_page_count_per_domain(self):
+        self.db.query(Domain).delete()
+
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
         g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
@@ -49,6 +52,8 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_increment_page_count(self):
+        self.db.query(Domain).delete()
+
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
 
         for i in range(2):
@@ -62,6 +67,8 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_violation_count_for_domain(self):
+        self.db.query(Domain).delete()
+
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
 
         page = PageFactory.create(domain=globocom)
@@ -78,6 +85,8 @@ class CacheTestCase(ApiTestCase):
 
     @gen_test
     def test_can_get_active_review_count_for_domain(self):
+        self.db.query(Domain).delete()
+
         globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
