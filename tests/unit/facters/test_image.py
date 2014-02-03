@@ -26,7 +26,7 @@ class TestImageFacter(FacterTestCase):
             facters=[]
         )
 
-        content = '<img src="test.png" alt="a" title="b" /><img src="" />'
+        content = '<html><img src="test.png" alt="a" title="b" /><img src="" /></html>'
 
         result = {
             'url': page.url,
@@ -95,7 +95,7 @@ class TestImageFacter(FacterTestCase):
             facters=[]
         )
 
-        content = '<img src="test.png" alt="a" title="b" />'
+        content = '<html><img src="test.png" alt="a" title="b" /></html>'
 
         result = {
             'url': page.url,
@@ -116,14 +116,17 @@ class TestImageFacter(FacterTestCase):
         facter.handle_url_loaded(page.url, response)
 
         expect(facter.review.data).to_include('page.all_images')
-        expect(facter.review.data['page.all_images']).to_equal([])
+        expect(facter.review.data['page.all_images']).not_to_be_null()
+
+        img_src = facter.review.data['page.all_images'][0].get('src')
+        expect(img_src).to_equal('test.png')
 
         expect(facter.review.data).to_include('page.images')
         data = set([(page.url, response)])
         expect(facter.review.data['page.images']).to_equal(data)
 
         expect(facter.review.data).to_include('total.size.img')
-        expect(facter.review.data['total.size.img']).to_equal(0.0390625)
+        expect(facter.review.data['total.size.img']).to_equal(0.0517578125)
 
     def test_can_get_fact_definitions(self):
         reviewer = Mock()
@@ -147,7 +150,7 @@ class TestImageFacter(FacterTestCase):
             facters=[]
         )
 
-        content = '<img src="data:image/png;base64,iVBOR" alt="a" title="b" />'
+        content = '<html><img src="data:image/png;base64,iVBOR" alt="a" title="b" /></html>'
 
         result = {
             'url': page.url,
