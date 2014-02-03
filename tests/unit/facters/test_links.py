@@ -158,7 +158,7 @@ class TestLinksFacter(FacterTestCase):
             facters=[]
         )
 
-        content = '<a href="http://globo.com/metal.png">Metal</a>'
+        content = '<html><a href="http://globo.com/metal.png">Metal</a></html>'
 
         result = {
             'url': page.url,
