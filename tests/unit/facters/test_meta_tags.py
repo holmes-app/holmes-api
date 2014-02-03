@@ -79,3 +79,40 @@ class TestMetaTagsFacter(FacterTestCase):
 
         expect(definitions).to_length(1)
         expect('meta.tags' in definitions).to_be_true()
+
+    def test_when_content_is_empty(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<html><meta test="" property=""/></html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = MetaTagsFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        expect(facter.add_fact.call_args_list).to_include(
+            call(
+                key='meta.tags',
+                value=[{'content': None, 'property': 'test', 'key': ''}]
+            ))
