@@ -37,6 +37,11 @@ class Baser(object):
         except ValueError:
             return None
 
+    def url_ends_with_slash(self, url):
+        if url.endswith('/'):
+            return url[:-1]
+        return url
+
     def to_gzip(self, content):
         return content.encode('zip')
 

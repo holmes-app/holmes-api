@@ -91,6 +91,7 @@ class LinkFacter(Facter):
                     should_get = True
 
             if should_get and URL_RE.match(url):
+                url = self.url_ends_with_slash(url)
                 num_links += 1
                 links_to_get.add(url)
 

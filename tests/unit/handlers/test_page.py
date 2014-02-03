@@ -139,46 +139,6 @@ class TestPageHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(response.body).to_equal(str(page.uuid))
 
-    @gen_test
-    def test_when_url_already_exists_with_slash(self):
-        page = PageFactory.create(url="http://www.globo.com/")
-
-        self.mock_request(status_code=200, effective_url="http://www.globo.com")
-
-        response = yield self.http_client.fetch(
-            self.get_url('/page'),
-            method='POST',
-            body=dumps({
-                'url': "http://www.globo.com"
-            })
-        )
-
-        expect(response.code).to_equal(200)
-        expect(response.body).to_equal(str(page.uuid))
-
-        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com").count()
-        expect(page_count).to_equal(0)
-
-    @gen_test
-    def test_when_url_already_exists_without_slash(self):
-        page = PageFactory.create(url="http://www.globo.com")
-
-        self.mock_request(status_code=200, effective_url="http://www.globo.com/")
-
-        response = yield self.http_client.fetch(
-            self.get_url('/page'),
-            method='POST',
-            body=dumps({
-                'url': "http://www.globo.com/"
-            })
-        )
-
-        expect(response.code).to_equal(200)
-        expect(response.body).to_equal(str(page.uuid))
-
-        page_count = self.db.query(Page).filter(Page.url == "http://www.globo.com/").count()
-        expect(page_count).to_equal(0)
-
 
 class TestPageReviewsHandler(ApiTestCase):
 
