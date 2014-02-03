@@ -34,15 +34,8 @@ class ImageWithoutAltAttributeValidator(Validator):
             if not src:
                 continue
 
-            if not self.is_valid(src):
-                continue
-
-            is_absolute = self.is_absolute(src)
-
-            if not is_absolute:
-                src = self.rebase(src)
-
-            if not img.get('alt'):
+            src = self.normalize_url(src)
+            if src and not img.get('alt'):
                 name = src.rsplit('/', 1)[-1]
                 result.append((src, name))
 

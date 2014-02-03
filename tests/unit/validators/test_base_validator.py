@@ -195,3 +195,33 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
 
         self.assertRaises(NotImplementedError, validator.broken_link_violation)
         self.assertRaises(NotImplementedError, validator.moved_link_violation)
+
+    def test_normalize_url_with_valid_url(self):
+        validator = Validator(None)
+        url = validator.normalize_url('http://globo.com')
+
+        expect(url).to_equal('http://globo.com')
+
+    def test_normalize_url_with_invalid_url(self):
+        validator = Validator(None)
+        url = validator.normalize_url('http://]globo.com')
+
+        expect(url).to_be_null()
+
+    def test_normalize_url_with_not_absoulte_url(self):
+        page = PageFactory.create(url='http://globoi.com/test/index.html')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            validators=[]
+        )
+
+        validator = Validator(reviewer)
+
+        url = validator.normalize_url('/metal.html')
+
+        expect(url).to_equal('http://globoi.com/metal.html')

@@ -34,12 +34,9 @@ class AnchorWithoutAnyTextValidator(Validator):
             href = REMOVE_HASH.sub('', href)
 
             if href and not link.text_content() and not link.findall('img'):
-                if not self.is_valid(href):
+                href = self.normalize_url(href)
+                if not href:
                     continue
-
-                is_absolute = self.is_absolute(href)
-                if not is_absolute:
-                    href = self.rebase(href)
                 links_with_empty_anchor.append(href)
 
         if links_with_empty_anchor:

@@ -60,14 +60,10 @@ class JSFacter(Facter):
         for js_file in js_files:
             src = js_file.get('src')
 
-            if not self.is_valid(src):
-                continue
-
-            if not self.is_absolute(src):
-                src = self.rebase(src)
-
-            js_to_get.add(src)
-            num_js += 1
+            src = self.normalize_url(src)
+            if src:
+                js_to_get.add(src)
+                num_js += 1
 
         self.add_fact(
             key='total.requests.js',

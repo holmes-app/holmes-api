@@ -42,6 +42,14 @@ class Baser(object):
             return url[:-1]
         return url
 
+    def normalize_url(self, url):
+        parse = self.is_valid(url)
+        if parse:
+            if not self.is_absolute(url):
+                url = self.rebase(url)
+            return self.url_ends_with_slash(url)
+        return None
+
     def to_gzip(self, content):
         return content.encode('zip')
 

@@ -72,26 +72,22 @@ class LinkFacter(Facter):
             if not url:
                 continue
 
-            if not self.is_valid(url):
+            aux = self.normalize_url(url)
+            if not aux:
                 invalid_links.add(url)
                 continue
+
+            url = aux
 
             if self.looks_like_image(url):
                 continue
 
-            is_absolute = self.is_absolute(url)
-
             should_get = False
-            if not is_absolute:
-                url = self.rebase(url)
+            domain, domain_url = get_domain_from_url(url)
+            if domain in self.page_url:
                 should_get = True
-            else:
-                domain, domain_url = get_domain_from_url(url)
-                if domain in self.page_url:
-                    should_get = True
 
             if should_get and URL_RE.match(url):
-                url = self.url_ends_with_slash(url)
                 num_links += 1
                 links_to_get.add(url)
 

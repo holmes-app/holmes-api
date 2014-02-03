@@ -58,17 +58,11 @@ class ImageFacter(Facter):
             if self.looks_like_base64(src):
                 continue
 
-            if not self.is_valid(src):
-                continue
-
             images_without_base64.append(img_file)
 
-            is_absolute = self.is_absolute(src)
-
-            if not is_absolute:
-                src = self.rebase(src)
-
-            images_to_get.add(src)
+            src = self.normalize_url(src)
+            if src:
+                images_to_get.add(src)
 
         self.review.data['page.all_images'] = images_without_base64
 

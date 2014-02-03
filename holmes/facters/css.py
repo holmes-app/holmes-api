@@ -62,14 +62,10 @@ class CSSFacter(Facter):
             if not src.endswith('.css'):
                 continue
 
-            if not self.is_valid(src):
-                continue
-
-            if not self.is_absolute(src):
-                src = self.rebase(src)
-
-            css_to_get.append(src)
-            num_css += 1
+            src = self.normalize_url(src)
+            if src:
+                css_to_get.append(src)
+                num_css += 1
 
         self.add_fact(
             key='total.requests.css',
