@@ -194,8 +194,6 @@ class Page(Base):
 
         logging.info('Obtaining "%s"...' % url)
 
-        import pdb; pdb.set_trace()
-
         fetch_method(
             url,
             cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, callback)),
