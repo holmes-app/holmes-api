@@ -204,7 +204,14 @@ class Page(Base):
         def handle(*args, **kw):
             response = args[-1]  # supports (url, response) and just response
             status_code = hasattr(response, 'status_code') and response.status_code or response.code
-            text = hasattr(response, 'body') and response.body or response.text
+
+            if hasattr(response, 'body'):
+                text = response.body
+            elif hasattr(response, 'text'):
+                text = response.text
+            else:
+                text = 'Empty response.text'
+
             callback(status_code, text, response.effective_url)
 
         return handle
