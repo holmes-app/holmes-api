@@ -61,14 +61,6 @@ class WorkerTestCase(ApiTestCase):
                 help='Whether http requests should be cached by Octopus.'
             ))
 
-    def test_proxies_property(self):
-        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
-
-        expect(worker.proxies).to_be_like({
-            'http': 'http://proxy:8080',
-            'https': 'http://proxy:8080'
-        })
-
     def test_description(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
 

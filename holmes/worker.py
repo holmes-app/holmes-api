@@ -91,21 +91,6 @@ class BaseWorker(Shepherd):
                 }
             )
 
-    @property
-    def proxies(self):
-        proxies = None
-        if self.config.HTTP_PROXY_HOST is not None:
-            proxy = "%s:%s" % (self.config.HTTP_PROXY_HOST, self.config.HTTP_PROXY_PORT)
-            http_proxy = proxy
-            https_proxy = proxy
-
-            proxies = {
-                "http": http_proxy,
-                "https": https_proxy,
-            }
-
-        return proxies
-
     def async_get(self, url, handler, method='GET', **kw):
         url, response = self.cache.get_request(url)
 

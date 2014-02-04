@@ -102,17 +102,6 @@ class Reviewer(object):
         self.raw_responses = {}
         self.status_codes = {}
 
-        self.proxies = None
-        if self.config.HTTP_PROXY_HOST is not None:
-            proxy = "%s:%s" % (self.config.HTTP_PROXY_HOST, self.config.HTTP_PROXY_PORT)
-            http_proxy = proxy
-            https_proxy = proxy
-
-            self.proxies = {
-                "http": http_proxy,
-                "https": https_proxy,
-            }
-
         self.async_get_func = async_get
         self._wait_for_async_requests = wait
         self._wait_timeout = wait_timeout
