@@ -203,7 +203,13 @@ class Page(Base):
     def handle_request(cls, callback):
         def handle(*args, **kw):
             response = args[-1]  # supports (url, response) and just response
-            status_code = hasattr(response, 'status_code') and response.status_code or response.code
+
+            if hasattr(response, 'status_code'):
+                status_code = response.status_code
+            elif hasattr(response, 'code'):
+                status_code = response.code
+            else:
+                status_code = 400
 
             if hasattr(response, 'body'):
                 text = response.body
