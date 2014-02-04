@@ -251,6 +251,7 @@ class Reviewer(object):
                 score,
                 self.async_get_func,
                 self.publish,
+                self.config,
                 self.handle_page_added
             )
 
