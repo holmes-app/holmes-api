@@ -34,10 +34,13 @@ class PageHandler(BaseHandler):
         score = float(post_data.get('score', self.application.config.DEFAULT_PAGE_SCORE))
 
         result = yield Page.add_page(
-            self.db, self.application.cache,
-            url, score,
+            self.db,
+            self.application.cache,
+            url,
+            score,
             self.application.http_client.fetch,
-            self.application.event_bus.publish
+            self.application.event_bus.publish,
+            self.application.config
         )
 
         created, url, result = result

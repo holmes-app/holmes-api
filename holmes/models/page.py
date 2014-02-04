@@ -181,7 +181,7 @@ class Page(Base):
 
     @classmethod
     @return_future
-    def add_page(cls, db, cache, url, score, fetch_method, publish_method, callback):
+    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, callback):
         domain_name, domain_url = get_domain_from_url(url)
         if not url or not domain_name:
             callback((False, url, {
@@ -194,9 +194,13 @@ class Page(Base):
 
         logging.info('Obtaining "%s"...' % url)
 
+        import pdb; pdb.set_trace()
+
         fetch_method(
             url,
-            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, callback))
+            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, callback)),
+            proxy_host=config.HTTP_PROXY_HOST,
+            proxy_port=config.HTTP_PROXY_PORT
         )
 
     @classmethod
