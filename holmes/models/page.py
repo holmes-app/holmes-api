@@ -247,10 +247,10 @@ class Page(Base):
             domain = cls.add_domain(url, db, publish_method)
             page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method)
 
+            callback((True, url, page_uuid))
+
             cache.increment_page_count(domain)
             cache.increment_page_count()
-
-            callback((True, url, page_uuid))
 
         return handle
 
