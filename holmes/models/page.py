@@ -248,6 +248,7 @@ class Page(Base):
 
     @classmethod
     def insert_or_update_page(cls, url, score, domain, db, publish_method):
+        url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
         page = db.query(Page).filter(Page.url_hash==url_hash).first()
 
