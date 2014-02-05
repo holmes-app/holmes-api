@@ -35,7 +35,7 @@ def get_domain_from_url(url, default_scheme='http'):
     original_domain = domain.strip()
     domain = original_domain.replace('www.', '')
 
-    return domain, '%s://%s/' % (scheme, original_domain)
+    return domain, '%s://%s' % (scheme, original_domain)
 
 
 def get_class(klass):
