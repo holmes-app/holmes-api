@@ -98,6 +98,10 @@ class Page(Base):
         return db.query(Page).filter(Page.uuid == uuid).first()
 
     @classmethod
+    def by_url_hash(cls, url_hash, db):
+        return db.query(Page).filter(Page.url_hash==url_hash).first()
+
+    @classmethod
     def get_page_count(cls, db):
         return int(db.query(sa.func.count(Page.id)).scalar())
 
@@ -255,7 +259,7 @@ class Page(Base):
     def insert_or_update_page(cls, url, score, domain, db, publish_method, cache):
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
-        page = db.query(Page).filter(Page.url_hash==url_hash).first()
+        page = Page.by_url_hash(url_hash, db)
 
         if page:
             for i in range(3):

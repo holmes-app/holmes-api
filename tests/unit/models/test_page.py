@@ -75,6 +75,16 @@ class TestPage(ApiTestCase):
         invalid_page = Page.by_uuid(uuid4(), self.db)
         expect(invalid_page).to_be_null()
 
+    def test_can_get_page_by_url_hash(self):
+        page = PageFactory.create()
+        PageFactory.create()
+
+        loaded_page = Page.by_url_hash(page.url_hash, self.db)
+        expect(loaded_page.id).to_equal(page.id)
+
+        invalid_page = Page.by_uuid('123', self.db)
+        expect(invalid_page).to_be_null()
+
     def test_can_get_next_job(self):
         page = PageFactory.create()
 
