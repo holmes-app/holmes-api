@@ -271,7 +271,7 @@ class Page(Base):
                     break
                 except Exception:
                     err = sys.exc_info()[1]
-                    if 'Deadlock found' in str(err):
+                    if 'Deadlock found' in str(err) or 'Lock wait' in str(err):
                         logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
                         db.rollback()
