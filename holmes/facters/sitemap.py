@@ -36,8 +36,6 @@ class SitemapFacter(Facter):
         if not self.reviewer.is_root():
             return
 
-        self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
-
         self.review.data['sitemap.data'] = {}
         self.review.data['sitemap.urls'] = {}
         self.review.data['sitemap.files'] = set()
@@ -45,6 +43,8 @@ class SitemapFacter(Facter):
         self.review.data['sitemap.files.urls'] = {}
         self.review.data['total.size.sitemap'] = 0
         self.review.data['total.size.sitemap.gzipped'] = 0
+
+        self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
         self.add_fact(
             key='total.sitemap.indexes',
