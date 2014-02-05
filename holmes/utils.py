@@ -82,6 +82,6 @@ def get_status_code_title(status_code):
         if status_code == 599:
             title = 'Tornado Timeout'
         else:
-            title = ''
+            title = 'Unknown'
 
     return title
