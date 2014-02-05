@@ -44,8 +44,6 @@ class SitemapFacter(Facter):
         self.review.data['total.size.sitemap'] = 0
         self.review.data['total.size.sitemap.gzipped'] = 0
 
-        self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
-
         self.add_fact(
             key='total.sitemap.indexes',
             value=0
@@ -65,6 +63,8 @@ class SitemapFacter(Facter):
             key='total.size.sitemap.gzipped',
             value=0
         )
+
+        self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
     def get_sitemaps(self, response):
         sitemaps = [self.rebase('/sitemap.xml')]
