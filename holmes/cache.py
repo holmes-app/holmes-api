@@ -311,6 +311,9 @@ class SyncCache(object):
         return url, response
 
     def set_request(self, url, status_code, headers, cookies, text, effective_url, error, request_time, expiration):
+        if status_code > 399 or status_code < 100:
+            return
+
         cache_key = "urls-%s" % url
         body_key = '%s-body' % cache_key
 
