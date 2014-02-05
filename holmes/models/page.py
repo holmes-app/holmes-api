@@ -245,17 +245,14 @@ class Page(Base):
                 return
 
             domain = cls.add_domain(url, db, publish_method)
-            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method)
+            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache)
 
             callback((True, url, page_uuid))
-
-            cache.increment_page_count(domain)
-            cache.increment_page_count()
 
         return handle
 
     @classmethod
-    def insert_or_update_page(cls, url, score, domain, db, publish_method):
+    def insert_or_update_page(cls, url, score, domain, db, publish_method, cache):
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
         page = db.query(Page).filter(Page.url_hash==url_hash).first()
@@ -284,6 +281,8 @@ class Page(Base):
             db.add(page)
             db.flush()
             db.commit()
+            cache.increment_page_count(domain)
+            cache.increment_page_count()
         except Exception:
             db.rollback()
             err = sys.exc_info()[1]
