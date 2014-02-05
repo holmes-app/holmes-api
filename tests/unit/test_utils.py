@@ -123,4 +123,4 @@ class TestUtils(TestCase):
         expect(title).to_equal('Tornado Timeout')
 
         title = get_status_code_title(120)
-        expect(title).to_be_empty()
+        expect(title).to_equal('Unknown')
