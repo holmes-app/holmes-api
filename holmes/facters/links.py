@@ -82,6 +82,9 @@ class LinkFacter(Facter):
             if self.looks_like_image(url):
                 continue
 
+            if link.get('rel') == 'nofollow':
+                continue
+
             should_get = False
             domain, domain_url = get_domain_from_url(url)
             if domain in self.page_url:

@@ -343,3 +343,55 @@ class TestLinksFacter(FacterTestCase):
                 'http://my-site.com/todos-os-sites.html',
                 facter.handle_url_loaded
             ))
+
+    def test_not_get_links_with_nofollow(self):
+        page = PageFactory.create(url='http://m.com/')
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<html>' \
+                  '<a href="http://m.com/test/">test</a>' \
+                  '<a href="http://m.com/metal/" rel="nofollow">metal</a>' \
+                  '</html>'
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        response = Mock(status_code=200, text=content, headers={})
+        reviewer.content_loaded(page.url, response)
+
+        facter = LinkFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        expect(facter.add_fact.call_args_list).to_equal([
+            call(
+                key='page.links',
+                value=set([])
+            ),
+            call(
+                key='total.number.links',
+                value=1
+            ),
+            call(
+                key='total.number.invalid_links',
+                value=0
+            ),
+            call(
+                key='page.invalid_links',
+                value=set([])
+            )])
