@@ -147,7 +147,7 @@ class TestLinksFacter(FacterTestCase):
         expect('page.invalid_links' in definitions).to_be_true()
 
     def test_link_looks_like_image(self):
-        page = PageFactory.create()
+        page = PageFactory.create(url='http://globo.com/')
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
