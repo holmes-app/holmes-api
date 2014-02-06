@@ -89,3 +89,5 @@ Config.define('DEFAULT_PAGE_SCORE', 1000000, 'Page Score for pages that the user
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, 'Default tax rate for scoring pages.', 'General')
 
 Config.define('REQUEST_CACHE_EXPIRATION_IN_SECONDS', HOUR, 'Expiration in seconds for cache storage of responses.', 'Cache')
+
+Config.define('MAX_URL_LEVELS', 20, 'Maximum levels of URL')

@@ -50,6 +50,15 @@ class Baser(object):
             return self.url_ends_with_slash(url)
         return None
 
+    def count_url_levels(self, url):
+        parse = self.is_valid(url)
+        if parse:
+            path = parse.path
+            if path.startswith('/'):
+                path = path[1:]
+            return len(path.split('/'))
+        return None
+
     def to_gzip(self, content):
         return content.encode('zip')
 

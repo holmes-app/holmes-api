@@ -85,6 +85,9 @@ class LinkFacter(Facter):
             if link.get('rel') == 'nofollow':
                 continue
 
+            if self.count_url_levels(url) > self.config.MAX_URL_LEVELS:
+                continue
+
             should_get = False
             domain, domain_url = get_domain_from_url(url)
             if domain in self.page_url:
