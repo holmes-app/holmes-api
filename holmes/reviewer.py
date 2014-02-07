@@ -158,13 +158,17 @@ class Reviewer(object):
         if response.status_code > 399 or response.text is None:
             if response.text:
                 text = response.text.decode('rotunicode')
+                headers = None
             else:
                 text = 'Empty response.text'
+                headers = response.headers
 
             msg = "Could not load '%s' (%s) - %s!" % (url,
                                                       response.status_code,
                                                       text)
             logging.error(msg)
+            if headers is not None:
+                logging.debug('Headers for "%s": %s' % (url, headers))
             return
 
         logging.debug('Content for url %s loaded.' % url)
