@@ -7,7 +7,8 @@ import factory.alchemy
 import hashlib
 
 from holmes.models import (
-    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request
+    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request,
+    User, Delimiter
 )
 from uuid import uuid4
 
@@ -146,3 +147,25 @@ class RequestFactory(BaseFactory):
     response_time = 0.23
     completed_date = datetime.date(2013, 02, 12)
     review_url = 'http://globo.com/'
+
+
+class UserFactory(BaseFactory):
+    FACTORY_FOR = User
+
+    fullname = 'Marcelo Jorge Vieira'
+    email = 'marcelo.vieira@corp.globo.com'
+    is_superuser = True
+    last_login = datetime.datetime(2013, 12, 11, 10, 9, 8)
+
+
+class DelimiterFactory(BaseFactory):
+    FACTORY_FOR = Delimiter
+
+    url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
+    url_hash = None
+    value = 10
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        kwargs['url_hash'] = hashlib.sha512(kwargs['url']).hexdigest()
+        return kwargs

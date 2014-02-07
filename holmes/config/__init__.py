@@ -91,3 +91,8 @@ Config.define('PAGE_SCORE_TAX_RATE', 0.1, 'Default tax rate for scoring pages.',
 Config.define('REQUEST_CACHE_EXPIRATION_IN_SECONDS', HOUR, 'Expiration in seconds for cache storage of responses.', 'Cache')
 
 Config.define('MAX_URL_LEVELS', 20, 'Maximum levels of URL')
+
+Config.define('GOOGLE_CLIENT_ID', None, 'Google client ID')
+
+Config.define('LIMITER_LOCKS_EXPIRATION', 120, 'The expiration for locks in the limiter')
+Config.define('LIMITER_VALUES_CACHE_EXPIRATION', 600, 'The expiration for valus in the limiter')

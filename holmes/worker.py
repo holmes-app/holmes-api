@@ -10,6 +10,7 @@ from ujson import dumps
 from sheep import Shepherd
 from colorama import Fore, Style
 from octopus import TornadoOctopus
+from octopus.limiter.redis.per_domain import Limiter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.exc import OperationalError
@@ -42,12 +43,25 @@ class BaseWorker(Shepherd):
     def _load_facters(self):
         return load_classes(default=self.config.FACTERS)
 
+    def get_otto_limiter(self):
+        domains = self.cache.get_domain_limiters()
+
+        return Limiter(
+            *domains,
+            redis=self.redis,
+            expiration_in_seconds=self.config.LIMITER_LOCKS_EXPIRATION
+        )
+
+    def update_otto_limiter(self):
+        self.otto.limiter = self.get_otto_limiter()
+
     def start_otto(self):
         self.info('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
         self.otto = TornadoOctopus(
             concurrency=self.options.concurrency, cache=self.options.cache,
             connect_timeout_in_seconds=self.config.CONNECT_TIMEOUT_IN_SECONDS,
-            request_timeout_in_seconds=self.config.REQUEST_TIMEOUT_IN_SECONDS
+            request_timeout_in_seconds=self.config.REQUEST_TIMEOUT_IN_SECONDS,
+            limiter=self.get_otto_limiter()
         )
         self.otto.start()
 
@@ -77,7 +91,7 @@ class BaseWorker(Shepherd):
         self.info("Connecting pubsub to redis at %s:%d" % (host, port))
         self.redis_pub_sub = redis.StrictRedis(host=host, port=port, db=0)
 
-        self.cache = SyncCache(self.db, self.redis)
+        self.cache = SyncCache(self.db, self.redis, self.config)
 
     def load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
@@ -136,9 +150,9 @@ class HolmesWorker(BaseWorker):
         self.validators = self._load_validators()
         self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
 
-        self.start_otto()
         self.connect_sqlalchemy()
         self.connect_to_redis()
+        self.start_otto()
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
@@ -293,6 +307,8 @@ class HolmesWorker(BaseWorker):
             self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
+        self.update_otto_limiter()
+
         self.working_url = url
 
         self.db.begin(subtransactions=True)

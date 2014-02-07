@@ -15,7 +15,7 @@ from holmes.server import HolmesApiServer
 from tests.fixtures import (
     DomainFactory, PageFactory, ReviewFactory, FactFactory,
     ViolationFactory, WorkerFactory, KeyFactory, KeysCategoryFactory,
-    RequestFactory
+    RequestFactory, UserFactory, DelimiterFactory
 )
 
 
@@ -50,6 +50,8 @@ class ApiTestCase(CowTestCase):
         KeyFactory.FACTORY_SESSION = self.db
         KeysCategoryFactory.FACTORY_SESSION = self.db
         RequestFactory.FACTORY_SESSION = self.db
+        UserFactory.FACTORY_SESSION = self.db
+        DelimiterFactory.FACTORY_SESSION = self.db
 
         self.clean_cache('www.globo.com')
         self.clean_cache('globo.com')
@@ -101,7 +103,7 @@ class ApiTestCase(CowTestCase):
 
         redis = redis.StrictRedis(host=host, port=port, db=0)
 
-        return SyncCache(self.db, redis)
+        return SyncCache(self.db, redis, self.server.application.config)
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 

@@ -6,9 +6,11 @@ from tornado.testing import gen_test
 from tornado.gen import Task
 
 from holmes.cache import Cache
-from holmes.models import Domain
+from holmes.models import Domain, Delimiter
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import (
+    DomainFactory, PageFactory, ReviewFactory, DelimiterFactory
+)
 
 
 class CacheTestCase(ApiTestCase):
@@ -118,3 +120,52 @@ class CacheTestCase(ApiTestCase):
 
         result = yield self.cache.has_lock('http://www.globo.com')
         expect(result).to_be_true()
+
+
+class SyncCacheTestCase(ApiTestCase):
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
+
+    def test_cache_has_connection_to_redis(self):
+        expect(self.sync_cache.redis).not_to_be_null()
+
+    def test_cache_has_connection_to_db(self):
+        expect(self.sync_cache.db).not_to_be_null()
+
+    def test_can_get_domain_limiters(self):
+        self.db.query(Delimiter).delete()
+        self.sync_cache.redis.delete('domain-limiters')
+
+        domains = self.sync_cache.get_domain_limiters()
+        expect(domains).to_be_null()
+
+        delimiter = DelimiterFactory.create(url='http://test.com/')
+        DelimiterFactory.create()
+        DelimiterFactory.create()
+
+        domains = self.sync_cache.get_domain_limiters()
+
+        expect(domains).to_length(3)
+        expect(domains).to_include({delimiter.url: delimiter.value})
+
+        # should get from cache
+        self.sync_cache.db = None
+
+        domains = self.sync_cache.get_domain_limiters()
+        expect(domains).to_length(3)
+
+    def test_can_set_domain_limiters(self):
+        self.db.query(Delimiter).delete()
+        self.sync_cache.redis.delete('domain-limiters')
+
+        domains = self.sync_cache.get_domain_limiters()
+        expect(domains).to_be_null()
+
+        delimiters = [{u'http://test.com/': 10}]
+
+        self.sync_cache.set_domain_limiters(delimiters, 120)
+        domains = self.sync_cache.get_domain_limiters()
+
+        expect(domains).to_length(1)
+        expect(domains).to_include(delimiters[0])

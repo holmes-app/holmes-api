@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
 
-from holmes.models import Domain, Page
+from holmes.models import Domain, Page, Delimiter
 
 
 class Cache(object):
@@ -177,9 +177,10 @@ class Cache(object):
 
 
 class SyncCache(object):
-    def __init__(self, db, redis):
+    def __init__(self, db, redis, config):
         self.db = db
         self.redis = redis
+        self.config = config
 
     def has_key(self, key):
         return self.redis.exists(key)
@@ -349,3 +350,26 @@ class SyncCache(object):
 
     def release_next_job(self, lock):
         return lock.release()
+
+    def set_domain_limiters(self, domains, expiration):
+        self.redis.setex(
+            'domain-limiters',
+            expiration,
+            dumps(domains)
+        )
+
+    def get_domain_limiters(self):
+        domains = self.redis.get('domain-limiters')
+
+        if domains:
+            domains = loads(domains)
+        else:
+            delimiters = Delimiter.get_all(self.db)
+            if delimiters:
+                domains = [{d.url: d.value} for d in delimiters]
+                self.set_domain_limiters(
+                    domains,
+                    self.config.LIMITER_VALUES_CACHE_EXPIRATION
+                )
+
+        return domains

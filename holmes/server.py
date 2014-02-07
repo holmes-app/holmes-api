@@ -31,6 +31,7 @@ from holmes.handlers.settings import (
     TaxHandler
 )
 from holmes.handlers.request import RequestDomainHandler
+from holmes.handlers.delimiter import DelimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
@@ -84,6 +85,7 @@ class HolmesApiServer(Server):
             (r'/violations/?', ViolationsHandler),
             (r'/violation/([a-z0-9\.]*)/?', ViolationHandler),
             (r'/tax/?', TaxHandler),
+            (r'/delimiters/?', DelimiterHandler),
         ]
 
         return tuple(handlers)
