@@ -168,7 +168,7 @@ class Reviewer(object):
                                                       text)
             logging.error(msg)
             if headers is not None:
-                logging.debug('Headers for "%s": %s' % (url, headers))
+                logging.warning('Headers for "%s": %s' % (url, headers))
             return
 
         logging.debug('Content for url %s loaded.' % url)
