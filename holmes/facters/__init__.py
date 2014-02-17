@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urlparse
+from holmes.utils import is_valid
 
 
 class Baser(object):
@@ -31,32 +32,17 @@ class Baser(object):
     def rebase(self, url):
         return urlparse.urljoin(self.page_url, url)
 
-    def is_valid(self, url):
-        try:
-            return urlparse.urlparse(url)
-        except ValueError:
-            return None
-
     def url_ends_with_slash(self, url):
         if url.endswith('/'):
             return url[:-1]
         return url
 
     def normalize_url(self, url):
-        parse = self.is_valid(url)
+        parse = is_valid(url)
         if parse:
             if not self.is_absolute(url):
                 url = self.rebase(url)
             return self.url_ends_with_slash(url)
-        return None
-
-    def count_url_levels(self, url):
-        parse = self.is_valid(url)
-        if parse:
-            path = parse.path
-            if path.startswith('/'):
-                path = path[1:]
-            return len(path.split('/'))
         return None
 
     def to_gzip(self, content):

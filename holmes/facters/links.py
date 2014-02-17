@@ -5,7 +5,7 @@ import re
 import logging
 
 from holmes.facters import Facter
-from holmes.utils import get_domain_from_url
+from holmes.utils import get_domain_from_url, count_url_levels
 
 REMOVE_HASH = re.compile('([#].*)$')
 URL_RE = re.compile(
@@ -85,7 +85,8 @@ class LinkFacter(Facter):
             if link.get('rel') == 'nofollow':
                 continue
 
-            if self.count_url_levels(url) > self.config.MAX_URL_LEVELS:
+            if count_url_levels(url) > self.config.MAX_URL_LEVELS:
+                logging.info('Max URL levels! Details: %s' % url)
                 continue
 
             should_get = False

@@ -3,6 +3,7 @@
 
 from urlparse import urlparse
 
+from holmes.utils import is_valid
 from holmes.validators.base import Validator
 
 
@@ -29,7 +30,7 @@ class LinkWithRelCanonicalValidator(Validator):
         if not self.config.FORCE_CANONICAL:
             # Only pages with query string parameters
             if self.page_url:
-                if not self.is_valid(self.page_url):
+                if not is_valid(self.page_url):
                     return
 
                 if not urlparse(self.page_url).query:

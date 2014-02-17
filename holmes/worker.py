@@ -20,7 +20,7 @@ from holmes import __version__
 from holmes.cache import SyncCache
 from holmes.config import Config
 from holmes.reviewer import Reviewer, InvalidReviewError
-from holmes.utils import load_classes
+from holmes.utils import load_classes, count_url_levels
 from holmes.models import Settings, Worker, Page
 
 
@@ -216,6 +216,11 @@ class HolmesWorker(BaseWorker):
 
     def _start_reviewer(self, job):
         if job:
+
+            if count_url_levels(job['url']) > self.config.MAX_URL_LEVELS:
+                logging.info('Max URL levels! Details: %s' % job['url'])
+                return
+
             self.debug('Starting Review for [%s]' % job['url'])
             reviewer = Reviewer(
                 api_url=self.config.HOLMES_API_URL,

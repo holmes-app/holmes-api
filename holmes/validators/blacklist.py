@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from holmes.utils import get_domain_from_url
+from holmes.utils import get_domain_from_url, is_valid
 from holmes.validators.base import Validator
 
 
@@ -34,7 +34,7 @@ class BlackListValidator(Validator):
         for link in links:
             href = link.get('href')
 
-            if not self.is_valid(href):
+            if not is_valid(href):
                 continue
 
             link_domain, link_domain_url = get_domain_from_url(href)

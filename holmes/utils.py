@@ -85,3 +85,20 @@ def get_status_code_title(status_code):
             title = 'Unknown'
 
     return title
+
+
+def is_valid(url):
+    try:
+        return urlparse(url)
+    except ValueError:
+        return None
+
+
+def count_url_levels(url):
+    parse = is_valid(url)
+    if parse:
+        path = parse.path
+        if path.startswith('/'):
+            path = path[1:]
+        return len(path.split('/'))
+    return None
