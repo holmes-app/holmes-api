@@ -127,6 +127,9 @@ class Reviewer(object):
         return handle
 
     def save_request(self, url, response):
+        if not response:
+            return
+
         request_time = response.request_time
         effective_url = response.effective_url
         status_code = response.status_code
