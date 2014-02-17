@@ -46,11 +46,14 @@ class BaseWorker(Shepherd):
     def get_otto_limiter(self):
         domains = self.cache.get_domain_limiters()
 
-        return Limiter(
-            *domains,
-            redis=self.redis,
-            expiration_in_seconds=self.config.LIMITER_LOCKS_EXPIRATION
-        )
+        if domains:
+            return Limiter(
+                *domains,
+                redis=self.redis,
+                expiration_in_seconds=self.config.LIMITER_LOCKS_EXPIRATION
+            )
+        else:
+            return None
 
     def update_otto_limiter(self):
         self.otto.limiter = self.get_otto_limiter()
