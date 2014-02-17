@@ -235,7 +235,7 @@ class SyncCache(object):
             self.redis.set(key, value)
 
     def get_page_count(self, domain_name=None):
-        self.get_count(
+        return self.get_count(
             'page-count',
             domain_name,
             int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
@@ -243,7 +243,7 @@ class SyncCache(object):
         )
 
     def get_violation_count(self, domain_name):
-        self.get_count(
+        return self.get_count(
             'violation-count',
             domain_name,
             int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
@@ -251,7 +251,7 @@ class SyncCache(object):
         )
 
     def get_active_review_count(self, domain_name):
-        self.get_count(
+        return self.get_count(
             'active-review-count',
             domain_name,
             int(self.config.ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS),
@@ -278,9 +278,9 @@ class SyncCache(object):
         cache_key = '%s-%s' % (self.get_domain_name(domain), key)
 
         self.redis.setex(
-            key=cache_key,
-            value=int(count),
-            seconds=expiration,
+            cache_key,
+            expiration,
+            value=int(count)
         )
 
         return int(count)
