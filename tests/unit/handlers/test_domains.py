@@ -16,6 +16,10 @@ from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 class TestDomainsHandler(ApiTestCase):
 
+    def setUp(self):
+        super(TestDomainsHandler, self).setUp()
+        self.db.query(Domain).delete()
+
     @gen_test
     def test_can_get_domains_info(self):
         self.clean_cache('globo.com')
