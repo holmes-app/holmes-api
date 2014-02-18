@@ -30,6 +30,7 @@ class DomainsHandler(BaseHandler):
                 review_percentage = 0
 
             result.append({
+                "id": domain.id,
                 "url": domain.url,
                 "name": domain.name,
                 "violationCount": violation_count,
@@ -64,6 +65,7 @@ class DomainDetailsHandler(BaseHandler):
             review_percentage = 0
 
         domain_json = {
+            "id": domain.id,
             "name": domain.name,
             "url": domain.url,
             "pageCount": page_count,
@@ -89,6 +91,7 @@ class DomainViolationsPerDayHandler(BaseHandler):
         violations_per_day = domain.get_violations_per_day(self.db)
 
         domain_json = {
+            "id": domain.id,
             "name": domain.name,
             "url": domain.url,
             "violations": violations_per_day
@@ -125,6 +128,7 @@ class DomainReviewsHandler(BaseHandler):
             review_count = yield self.cache.get_active_review_count(domain)
 
         result = {
+            "domainId": domain.id,
             'domainName': domain.name,
             'domainURL': domain.url,
             'reviewCount': review_count,
