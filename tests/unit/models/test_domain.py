@@ -8,9 +8,9 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.web import HTTPError
 
-from holmes.models import Domain, Page, Review
+from holmes.models import Domain, Page, Review, Request
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
+from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, RequestFactory
 
 
 class TestDomain(ApiTestCase):
@@ -186,3 +186,24 @@ class TestDomain(ApiTestCase):
             'g1.globo.com',
             'globoesporte.globo.com'
         ])
+
+    def test_can_get_error_percentage(self):
+        self.db.query(Request).delete()
+
+        domain = DomainFactory.create()
+
+        error_pct = domain.get_error_percentage(self.db)
+        expect(error_pct).to_equal(0)
+
+        RequestFactory.create(status_code=200)
+        RequestFactory.create(status_code=304)
+
+        error_pct = domain.get_error_percentage(self.db)
+        expect(error_pct).to_equal(0)
+
+        RequestFactory.create(status_code=305)
+        RequestFactory.create(status_code=403)
+        RequestFactory.create(status_code=404)
+
+        error_pct = domain.get_error_percentage(self.db)
+        expect(error_pct).to_equal(60)
