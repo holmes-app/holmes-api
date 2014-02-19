@@ -23,6 +23,7 @@ class DomainsHandler(BaseHandler):
             page_count = yield self.cache.get_page_count(domain)
             review_count = yield self.cache.get_active_review_count(domain)
             violation_count = yield self.cache.get_violation_count(domain)
+            error_percentage = yield self.cache.get_error_percentage(domain)
 
             if page_count > 0:
                 review_percentage = round(float(review_count) / page_count * 100, 2)
@@ -37,6 +38,7 @@ class DomainsHandler(BaseHandler):
                 "pageCount": page_count,
                 "reviewCount": review_count,
                 "reviewPercentage": review_percentage,
+                "errorPercentage": error_percentage,
                 "is_active": domain.is_active,
             })
 

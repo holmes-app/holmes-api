@@ -7,10 +7,10 @@ from tornado.testing import gen_test
 from tornado.gen import Task
 
 from holmes.cache import Cache
-from holmes.models import Domain, Delimiter, Page
+from holmes.models import Domain, Delimiter, Page, Request
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
-    DomainFactory, PageFactory, ReviewFactory, DelimiterFactory
+    DomainFactory, PageFactory, ReviewFactory, DelimiterFactory, RequestFactory
 )
 
 
@@ -182,6 +182,27 @@ class CacheTestCase(ApiTestCase):
 
         count = yield self.cache.get_active_review_count('globo.com')
         expect(count).to_equal(2)
+
+    @gen_test
+    def test_can_get_error_percentage_for_domain(self):
+        self.db.query(Request).delete()
+
+        key = 'globo.com-error-percentage'
+        self.cache.redis.delete(key)
+
+        RequestFactory.create(status_code=200)
+        RequestFactory.create(status_code=304)
+        RequestFactory.create(status_code=400)
+        RequestFactory.create(status_code=403)
+        RequestFactory.create(status_code=404)
+
+        error_pct = yield self.cache.get_error_percentage('globo.com')
+        expect(error_pct).to_equal(60)
+
+        self.cache.db = None
+
+        error_pct = yield self.cache.get_error_percentage('globo.com')
+        expect(error_pct).to_equal(60)
 
     @gen_test
     def test_can_store_processed_page_lock(self):

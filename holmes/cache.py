@@ -111,6 +111,16 @@ class Cache(object):
             callback=callback
         )
 
+    @return_future
+    def get_error_percentage(self, domain_name, callback=None):
+        self.get_count(
+            'error-percentage',
+            domain_name,
+            int(self.config.ERROR_PERCENTAGE_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_error_percentage(self.db),
+            callback=callback
+        )
+
     def get_count(self, key, domain_name, expiration, get_count_method, callback=None):
         cache_key = '%s-%s' % (self.get_domain_name(domain_name), key)
         self.redis.get(cache_key, callback=self.handle_get_count(key, domain_name, expiration, get_count_method, callback))
