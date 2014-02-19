@@ -19,7 +19,7 @@ class TitleValidator(Validator):
             'page.title.multiple': {
                 'title': 'Too many titles.',
                 'description': lambda value: "Page '%s' has %d title tags." % (value['page_url'], value['title_count']),
-                'category': 'Syntax'
+                'category': 'Semantics'
             },
             'page.title.size': {
                 'title': 'Maximum size of a page title',

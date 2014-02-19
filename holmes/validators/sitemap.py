@@ -32,7 +32,7 @@ class SitemapValidator(Validator):
             'sitemap.empty': {
                 'title': 'SiteMap file is empty.',
                 'description': lambda value: "The sitemap file was found at '%s', but was empty." % value,
-                'category': 'Syntax'
+                'category': 'Semantics'
             },
             'total.size.sitemap': {
                 'title': 'SiteMap file is too big.',
@@ -53,7 +53,7 @@ class SitemapValidator(Validator):
                 'description': lambda value: "The sitemap file was found at '%s', but contains unencoded links (%s)." % (
                     value['url'], value['links']
                 ),
-                'category': 'Syntax'
+                'category': 'Semantics'
             }
         }
 
