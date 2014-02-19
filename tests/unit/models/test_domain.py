@@ -201,7 +201,7 @@ class TestDomain(ApiTestCase):
         error_pct = domain.get_error_percentage(self.db)
         expect(error_pct).to_equal(0)
 
-        RequestFactory.create(status_code=305)
+        RequestFactory.create(status_code=400)
         RequestFactory.create(status_code=403)
         RequestFactory.create(status_code=404)
 

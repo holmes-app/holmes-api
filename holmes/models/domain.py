@@ -143,6 +143,6 @@ class Domain(Base):
         from holmes.models import Request
 
         total = db.query(func.count(Request.id)).scalar()
-        erroneous = db.query(func.count(Request.id)).filter(Request.status_code > 304).scalar()
+        erroneous = db.query(func.count(Request.id)).filter(Request.status_code > 399).scalar()
 
         return erroneous * 100.0 / total if total > 0 else 0
