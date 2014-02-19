@@ -5,7 +5,7 @@ from preggy import expect
 
 from holmes.models import Violation, Key
 from tests.unit.base import ApiTestCase
-from tests.fixtures import ViolationFactory
+from tests.fixtures import ViolationFactory, KeyFactory, KeysCategoryFactory
 
 
 class TestViolations(ApiTestCase):
@@ -42,19 +42,48 @@ class TestViolations(ApiTestCase):
 
     def test_can_get_most_common_violations(self):
         self.db.query(Violation).delete()
+        self.db.query(Key).delete()
 
+        category = KeysCategoryFactory.create(name='SEO')
         for i in range(3):
+            key = KeyFactory.create(name='some.random.fact.%s' % i, category=category)
             for j in range(i):
                 ViolationFactory.create(
-                    key=Key.get_or_create(self.db, 'some.random.fact.%s' % i),
+                    key=key,
                     value='value',
                     points=10 * i + j
                 )
 
         violation_definitions = {
-            'some.random.fact.1': {},
-            'some.random.fact.2': {}
+            'some.random.fact.1': {
+                'title': 'SEO',
+                'category': 'SEO'
+            },
+            'some.random.fact.2': {
+                'title': 'SEO',
+                'category': 'SEO'
+            }
         }
+
+        violations = Violation.get_most_common_violations(
+            self.db,
+            violation_definitions
+        )
+
+        expect(violations).to_be_like([
+            {
+                'count': 1,
+                'key': 'some.random.fact.1',
+                'category': 'SEO',
+                'title': 'SEO'
+            },
+            {
+                'count': 2,
+                'key': 'some.random.fact.2',
+                'category': 'SEO',
+                'title': 'SEO'
+            }
+        ])
 
         violations = Violation.get_most_common_violations(
             self.db,
@@ -64,13 +93,9 @@ class TestViolations(ApiTestCase):
 
         expect(violations).to_be_like([
             {
-                'count': 1,
-                'key': 'some.random.fact.1',
-                'title': 'undefined'
-            },
-            {
                 'count': 2,
                 'key': 'some.random.fact.2',
-                'title': 'undefined'
+                'category': 'SEO',
+                'title': 'SEO'
             }
         ])
