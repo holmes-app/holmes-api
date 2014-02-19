@@ -22,23 +22,28 @@ class RobotsValidator(Validator):
         return {
             'robots.not_found': {
                 'title': 'Robots file not found.',
-                'description': lambda value: "The robots file at '%s' was not found." % value
+                'description': lambda value: "The robots file at '%s' was not found." % value,
+                'category': 'SEO'
             },
             'robots.empty': {
                 'title': 'Robots file was empty.',
-                'description': lambda value: "The robots file at '%s' was empty." % value
+                'description': lambda value: "The robots file at '%s' was empty." % value,
+                'category': 'SEO'
             },
             'robots.sitemap.not_found': {
                 'title': 'Sitemap in Robots not found',
-                'description': lambda value: cls.SITEMAP_NOT_FOUND
+                'description': lambda value: cls.SITEMAP_NOT_FOUND,
+                'category': 'SEO'
             },
             'robots.disallow.not_found': {
                 'title': 'Disallow in Robots not found',
-                'description': lambda value: cls.DISALLOW_NOT_FOUND
+                'description': lambda value: cls.DISALLOW_NOT_FOUND,
+                'category': 'SEO'
             },
             'robots.disallow.root_path': {
                 'title': 'Disallow: / in Robots',
-                'description': lambda value: cls.DISALLOW_ROOT_PATH
+                'description': lambda value: cls.DISALLOW_ROOT_PATH,
+                'category': 'SEO'
             },
         }
 

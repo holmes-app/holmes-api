@@ -15,7 +15,8 @@ class OpenGraphValidator(Validator):
         return {
             'absent.metatags.open_graph': {
                 'title': 'Open Graph tags not found',
-                'description': cls.get_open_graph_message
+                'description': cls.get_open_graph_message,
+                'category': 'SEO'
             },
         }
 

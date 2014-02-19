@@ -20,7 +20,8 @@ class AnchorWithoutAnyTextValidator(Validator):
         return {
             'empty.anchors': {
                 'title': 'Empty anchor(s) found',
-                'description': cls.get_empy_anchors_message
+                'description': cls.get_empy_anchors_message,
+                'category': 'SEO'
             }
         }
 

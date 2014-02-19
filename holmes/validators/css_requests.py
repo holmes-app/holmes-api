@@ -23,11 +23,13 @@ class CSSRequestsValidator(Validator):
         return {
             'total.requests.css': {
                 'title': 'Too many CSS requests.',
-                'description': cls.get_requests_css_message
+                'description': cls.get_requests_css_message,
+                'category': 'Performance'
             },
             'total.size.css': {
                 'title': 'CSS size in kb is too big.',
-                'description': cls.get_total_size_message
+                'description': cls.get_total_size_message,
+                'category': 'Performance'
             },
         }
 

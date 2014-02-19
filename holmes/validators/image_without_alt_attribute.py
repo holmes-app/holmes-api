@@ -21,7 +21,8 @@ class ImageWithoutAltAttributeValidator(Validator):
         return {
             'invalid.images.alt': {
                 'title': 'Image(s) without alt attribute',
-                'description': cls.get_empy_anchors_message
+                'description': cls.get_empy_anchors_message,
+                'category': 'SEO'
             }
         }
 

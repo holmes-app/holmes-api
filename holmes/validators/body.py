@@ -10,7 +10,8 @@ class BodyValidator(Validator):
         return {
             'page.body.not_found': {
                 'title': 'Page body not found.',
-                'description': lambda value: 'Body was not found on %s.' % value
+                'description': lambda value: 'Body was not found on %s.' % value,
+                'category': 'Syntax'
             }
         }
 

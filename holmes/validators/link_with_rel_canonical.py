@@ -22,7 +22,8 @@ class LinkWithRelCanonicalValidator(Validator):
         return {
             'absent.meta.canonical': {
                 'title': 'Link with rel="canonical" not found',
-                'description': cls.get_absent_meta_canonical_message
+                'description': cls.get_absent_meta_canonical_message,
+                'category': 'SEO'
             }
         }
 

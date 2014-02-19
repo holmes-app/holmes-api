@@ -22,7 +22,8 @@ class BlackListValidator(Validator):
         return {
             'blacklist.domains': {
                 'title': 'Domain Blacklist',
-                'description': cls.get_blacklist_message
+                'description': cls.get_blacklist_message,
+                'category': 'SEO'
             }
         }
 

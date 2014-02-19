@@ -11,7 +11,8 @@ class RequiredMetaTagsValidator(Validator):
         return {
             'absent.meta.tags': {
                 'title': 'Required Meta Tags were not found.',
-                'description': lambda value: "Meta tags for %s were not found." % (', '.join(value))
+                'description': lambda value: "Meta tags for %s were not found." % (', '.join(value)),
+                'category': 'HTTP'
             }
         }
 

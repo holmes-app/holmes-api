@@ -16,11 +16,13 @@ class LinkWithRedirectValidator(Validator):
         return {
             'link.redirect.302': {
                 'title': 'Link with 302 redirect',
-                'description': cls.get_link_with_redirect_message
+                'description': cls.get_link_with_redirect_message,
+                'category': 'HTTP'
             },
             'link.redirect.307': {
                 'title': 'Link with 307 redirect',
-                'description': cls.get_link_with_redirect_message
+                'description': cls.get_link_with_redirect_message,
+                'category': 'HTTP'
             },
         }
 

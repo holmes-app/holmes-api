@@ -67,6 +67,7 @@ class ViolationsHandler(BaseHandler):
             json.append({
                 'key_name': key,
                 'title': violation.get('title'),
+                'category': violation.get('category', None)
             })
 
         self.write_json(json)

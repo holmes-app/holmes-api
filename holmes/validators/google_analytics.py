@@ -24,15 +24,18 @@ class GoogleAnalyticsValidator(Validator):
         return {
             'google_analytics.not_found': {
                 'title': 'Google Analytics not found.',
-                'description': cls.get_analytics_message
+                'description': cls.get_analytics_message,
+                'category': 'SEO'
             },
             'google_analytics.account.not_found': {
                 'title': 'Google Analytics account not found.',
-                'description': cls.get_account_message
+                'description': cls.get_account_message,
+                'category': 'SEO'
             },
             'google_analytics.domain.not_found': {
                 'title': 'Google Analytics domain not found.',
-                'description': cls.get_domain_message
+                'description': cls.get_domain_message,
+                'category': 'SEO'
             }
         }
 

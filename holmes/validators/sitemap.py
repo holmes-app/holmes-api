@@ -26,29 +26,34 @@ class SitemapValidator(Validator):
         return {
             'sitemap.not_found': {
                 'title': 'SiteMap file not found.',
-                'description': lambda value: "The sitemap file was not found at '%s'." % value
+                'description': lambda value: "The sitemap file was not found at '%s'." % value,
+                'category': 'SEO'
             },
             'sitemap.empty': {
                 'title': 'SiteMap file is empty.',
-                'description': lambda value: "The sitemap file was found at '%s', but was empty." % value
+                'description': lambda value: "The sitemap file was found at '%s', but was empty." % value,
+                'category': 'Syntax'
             },
             'total.size.sitemap': {
                 'title': 'SiteMap file is too big.',
                 'description': lambda value: "The sitemap file was found at '%s', but was too big (%.2fMB)." % (
                     value['url'], value['size']
-                )
+                ),
+                'category': 'Performance'
             },
             'total.links.sitemap': {
                 'title': 'SiteMap file contains too many links.',
                 'description': lambda value: "The sitemap file was found at '%s', but contained too many links (%d). Maybe splitting it would help?" % (
                     value['url'], value['links']
-                )
+                ),
+                'category': 'SEO'
             },
             'sitemap.links.not_encoded': {
                 'title': 'SiteMap file contains unencoded links.',
                 'description': lambda value: "The sitemap file was found at '%s', but contains unencoded links (%s)." % (
                     value['url'], value['links']
-                )
+                ),
+                'category': 'Syntax'
             }
         }
 

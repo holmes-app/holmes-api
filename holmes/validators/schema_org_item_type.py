@@ -30,15 +30,18 @@ class SchemaOrgItemTypeValidator(Validator):
         return {
             'absent.schema.itemscope': {
                 'title': 'itemscope attribute missing in body',
-                'description': cls.get_itemscope_message
+                'description': cls.get_itemscope_message,
+                'category': 'SEO'
             },
             'absent.schema.itemtype': {
                 'title': 'itemtype attribute missing in body',
-                'description': cls.get_itemtype_message
+                'description': cls.get_itemtype_message,
+                'category': 'SEO'
             },
             'invalid.schema.itemtype': {
                 'title': 'itemtype attribute is invalid',
-                'description': cls.get_invalid_itemtype_message
+                'description': cls.get_invalid_itemtype_message,
+                'category': 'SEO'
             }
         }
 

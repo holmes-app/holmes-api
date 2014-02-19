@@ -11,7 +11,8 @@ class MetaTagsValidator(Validator):
         return {
             'absent.metatags': {
                 'title': 'Meta tags not present.',
-                'description': lambda value: "No meta tags found on this page. This is damaging for Search Engines."
+                'description': lambda value: "No meta tags found on this page. This is damaging for Search Engines.",
+                'category': 'HTTP'
             }
         }
 

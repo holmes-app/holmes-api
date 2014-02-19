@@ -46,11 +46,13 @@ class LinkCrawlerValidator(Validator):
         return {
             'link.broken': {
                 'title': 'Broken link(s) found.',
-                'description': cls.get_broken_link_message
+                'description': cls.get_broken_link_message,
+                'category': 'HTTP'
             },
             'link.moved.temporarily': {
                 'title': 'Moved Temporarily.',
-                'description': cls.get_redirect_message
+                'description': cls.get_redirect_message,
+                'category': 'HTTP'
             }
         }
 

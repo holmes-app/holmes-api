@@ -24,11 +24,13 @@ class JSRequestsValidator(Validator):
         return {
             'total.requests.js': {
                 'title': 'Too many javascript requests.',
-                'description': cls.get_requests_js_message
+                'description': cls.get_requests_js_message,
+                'category': 'Performance'
             },
             'total.size.js': {
                 'title': 'Javascript size in kb is too big.',
-                'description': cls.get_total_size_message
+                'description': cls.get_total_size_message,
+                'category': 'SEO'
             }
         }
 
