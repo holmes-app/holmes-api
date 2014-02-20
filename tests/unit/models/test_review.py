@@ -58,7 +58,7 @@ class TestReview(ApiTestCase):
 
         key = KeyFactory.create(name='a')
 
-        review.add_violation(key, 'b', 100)
+        review.add_violation(key, 'b', 100, review.domain)
         expect(review.violations).to_length(1)
         expect(review.violations[0].key.name).to_equal('a')
         expect(review.violations[0].value).to_equal('b')
@@ -85,7 +85,7 @@ class TestReview(ApiTestCase):
 
         try:
             key = KeyFactory.create(name='a')
-            review.add_violation(key, 'b', 10)
+            review.add_violation(key, 'b', 10, review.domain)
         except ValueError:
             err = sys.exc_info()[1]
             expect(err).to_have_an_error_message_of("Can't add anything to a completed review.")
@@ -136,7 +136,7 @@ class TestReview(ApiTestCase):
         page = PageFactory.build(uuid=page_id)
         review = ReviewFactory.build(page=page, uuid=review_id)
         key1 = KeyFactory.create(name='some.random.key1')
-        review.add_violation(key1, 'b', 100)
+        review.add_violation(key1, 'b', 100, review.domain)
         key2 = KeyFactory.create(name='some.random.key2')
         review.add_fact(key2, 'b')
 

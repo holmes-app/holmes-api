@@ -44,7 +44,7 @@ class TestReviewHandler(ApiTestCase):
         key1 = KeyFactory.create(name='fact')
         review.add_fact(key1, 'value')
         key2 = KeyFactory.create(name='violation')
-        review.add_violation(key2, 'value', 100)
+        review.add_violation(key2, 'value', 100, review.domain)
 
         self.db.flush()
 
@@ -99,7 +99,7 @@ class TestLastReviewsHandler(ApiTestCase):
         key1 = KeyFactory.create(name='fact')
         review.add_fact(key1, 'value')
         key2 = KeyFactory.create(name='violation')
-        review.add_violation(key2, 'value', 100)
+        review.add_violation(key2, 'value', 100, page.domain)
         review.is_complete = True
         self.db.flush()
 

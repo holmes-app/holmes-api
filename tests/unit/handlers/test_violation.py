@@ -29,11 +29,11 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         for i in range(5):
             key = Key.get_or_create(self.db, 'violation1')
-            review.add_violation(key, 'value', 100)
+            review.add_violation(key, 'value', 100, review.domain)
 
         for j in range(2):
             key = Key.get_or_create(self.db, 'violation2')
-            review.add_violation(key, 'value', 300)
+            review.add_violation(key, 'value', 300, review.domain)
 
         self.db.flush()
 

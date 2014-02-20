@@ -18,6 +18,8 @@ class Violation(Base):
     # review comes from Review relationship
     key_id = sa.Column('key_id', sa.Integer, sa.ForeignKey('keys.id'))
 
+    domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
+
     def __str__(self):
         return '%s: %s' % (self.key.name, self.value)
 

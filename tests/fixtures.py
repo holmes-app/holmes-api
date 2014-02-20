@@ -93,7 +93,12 @@ class ReviewFactory(BaseFactory):
                 db = cls.FACTORY_SESSION
                 key = Key.get_or_create(db, "violation.%d" % i)
                 violations.append(
-                    Violation(key=key, value="value %d" % i, points=i)
+                    Violation(
+                        key=key,
+                        value="value %d" % i,
+                        points=i,
+                        domain=kwargs['page'].domain
+                    )
                 )
 
             kwargs['violations'] = violations
@@ -127,6 +132,7 @@ class ViolationFactory(BaseFactory):
     key = factory.SubFactory(KeyFactory)
     value = None
     points = 0
+    domain = factory.SubFactory(DomainFactory)
 
 
 class WorkerFactory(BaseFactory):

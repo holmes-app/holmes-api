@@ -20,6 +20,8 @@ class Domain(Base):
 
     pages = relationship("Page", backref="domain")
     reviews = relationship("Review", backref="domain")
+    violations = relationship("Violation", backref="domain")
+
 
     def to_dict(self):
         return {

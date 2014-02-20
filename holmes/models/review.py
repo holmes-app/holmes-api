@@ -62,13 +62,18 @@ class Review(Base):
 
         self.facts.append(fact)
 
-    def add_violation(self, key, value, points):
+    def add_violation(self, key, value, points, domain):
         if self.is_complete:
             raise ValueError("Can't add anything to a completed review.")
 
         from holmes.models.violation import Violation  # to avoid circular dependency
 
-        violation = Violation(key=key, value=value, points=int(float(points)))
+        violation = Violation(
+            key=key,
+            value=value,
+            points=int(float(points)),
+            domain=domain
+        )
 
         self.violations.append(violation)
 
@@ -143,7 +148,12 @@ class Review(Base):
         for violation in review_data['violations']:
             name = violation['key']
             key = violation_definitions[name]['key']
-            review.add_violation(key, violation['value'], violation['points'])
+            review.add_violation(
+                key,
+                violation['value'],
+                violation['points'],
+                page.domain
+            )
 
         for i in range(3):
             db.begin(subtransactions=True)
