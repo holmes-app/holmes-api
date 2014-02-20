@@ -23,12 +23,19 @@ class DomainsHandler(BaseHandler):
             page_count = yield self.cache.get_page_count(domain)
             review_count = yield self.cache.get_active_review_count(domain)
             violation_count = yield self.cache.get_violation_count(domain)
-            error_percentage = yield self.cache.get_error_percentage(domain)
+            good_requests = yield self.cache.get_good_requests_count(domain)
+            bad_requests = yield self.cache.get_bad_requests_count(domain)
 
             if page_count > 0:
                 review_percentage = round(float(review_count) / page_count * 100, 2)
             else:
                 review_percentage = 0
+
+            total_requests = good_requests + bad_requests
+            if total_requests > 0:
+                error_percentage = round(float(bad_requests) / total_requests * 100, 2)
+            else:
+                error_percentage = 0
 
             result.append({
                 "id": domain.id,

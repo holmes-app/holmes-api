@@ -184,25 +184,50 @@ class CacheTestCase(ApiTestCase):
         expect(count).to_equal(2)
 
     @gen_test
-    def test_can_get_error_percentage_for_domain(self):
+    def test_can_get_good_requests_count_for_domain(self):
         self.db.query(Request).delete()
+        self.db.query(Domain).delete()
+        DomainFactory.create(url='http://globo.com', name='globo.com')
 
-        key = 'globo.com-error-percentage'
+        key = 'globo.com-good-requests-count'
         self.cache.redis.delete(key)
 
-        RequestFactory.create(status_code=200)
-        RequestFactory.create(status_code=304)
-        RequestFactory.create(status_code=400)
-        RequestFactory.create(status_code=403)
-        RequestFactory.create(status_code=404)
+        RequestFactory.create(status_code=200, domain_name='globo.com')
+        RequestFactory.create(status_code=304, domain_name='globo.com')
+        RequestFactory.create(status_code=400, domain_name='globo.com')
+        RequestFactory.create(status_code=403, domain_name='globo.com')
+        RequestFactory.create(status_code=404, domain_name='globo.com')
 
-        error_pct = yield self.cache.get_error_percentage('globo.com')
-        expect(error_pct).to_equal(60)
+        good = yield self.cache.get_good_requests_count('globo.com')
+        expect(good).to_equal(2)
 
         self.cache.db = None
 
-        error_pct = yield self.cache.get_error_percentage('globo.com')
-        expect(error_pct).to_equal(60)
+        good = yield self.cache.get_good_requests_count('globo.com')
+        expect(good).to_equal(2)
+
+    @gen_test
+    def test_can_get_bad_requests_count_for_domain(self):
+        self.db.query(Request).delete()
+        self.db.query(Domain).delete()
+        DomainFactory.create(url='http://globo.com', name='globo.com')
+
+        key = 'globo.com-bad-requests-count'
+        self.cache.redis.delete(key)
+
+        RequestFactory.create(status_code=200, domain_name='globo.com')
+        RequestFactory.create(status_code=304, domain_name='globo.com')
+        RequestFactory.create(status_code=400, domain_name='globo.com')
+        RequestFactory.create(status_code=403, domain_name='globo.com')
+        RequestFactory.create(status_code=404, domain_name='globo.com')
+
+        bad = yield self.cache.get_bad_requests_count('globo.com')
+        expect(bad).to_equal(3)
+
+        self.cache.db = None
+
+        bad = yield self.cache.get_bad_requests_count('globo.com')
+        expect(bad).to_equal(3)
 
     @gen_test
     def test_can_store_processed_page_lock(self):

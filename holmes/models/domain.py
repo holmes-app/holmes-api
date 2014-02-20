@@ -139,10 +139,20 @@ class Domain(Base):
     def get_domain_names(cls, db):
         return [item.name for item in db.query(Domain.name).all()]
 
-    def get_error_percentage(self, db):
+    def get_good_requests_count(self, db):
         from holmes.models import Request
 
-        total = db.query(func.count(Request.id)).scalar()
-        erroneous = db.query(func.count(Request.id)).filter(Request.status_code > 399).scalar()
+        return db \
+            .query(func.count(Request.id)) \
+            .filter(Request.domain_name == self.name) \
+            .filter(Request.status_code < 400) \
+            .scalar()
 
-        return erroneous * 100.0 / total if total > 0 else 0
+    def get_bad_requests_count(self, db):
+        from holmes.models import Request
+
+        return db \
+            .query(func.count(Request.id)) \
+            .filter(Request.domain_name == self.name) \
+            .filter(Request.status_code > 399) \
+            .scalar()

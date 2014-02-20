@@ -112,12 +112,22 @@ class Cache(object):
         )
 
     @return_future
-    def get_error_percentage(self, domain_name, callback=None):
+    def get_good_requests_count(self, domain_name, callback=None):
         self.get_count(
-            'error-percentage',
+            'good-requests-count',
             domain_name,
-            int(self.config.ERROR_PERCENTAGE_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_error_percentage(self.db),
+            int(self.config.GOOD_REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_good_requests_count(self.db),
+            callback=callback
+        )
+
+    @return_future
+    def get_bad_requests_count(self, domain_name, callback=None):
+        self.get_count(
+            'bad-requests-count',
+            domain_name,
+            int(self.config.BAD_REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_bad_requests_count(self.db),
             callback=callback
         )
 

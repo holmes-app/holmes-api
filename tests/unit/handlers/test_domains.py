@@ -9,7 +9,7 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Domain
+from holmes.models import Domain, Request
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -19,6 +19,7 @@ class TestDomainsHandler(ApiTestCase):
     def setUp(self):
         super(TestDomainsHandler, self).setUp()
         self.db.query(Domain).delete()
+        self.db.query(Request).delete()
 
     @gen_test
     def test_can_get_domains_info(self):
@@ -42,11 +43,13 @@ class TestDomainsHandler(ApiTestCase):
         expect(domains[0]['url']).to_equal("http://g1.globo.com")
         expect(domains[0]['violationCount']).to_equal(0)
         expect(domains[0]['pageCount']).to_equal(0)
+        expect(domains[0]['errorPercentage']).to_equal(0)
 
         expect(domains[1]['name']).to_equal("globo.com")
         expect(domains[1]['url']).to_equal("http://globo.com")
         expect(domains[1]['violationCount']).to_equal(0)
         expect(domains[1]['pageCount']).to_equal(0)
+        expect(domains[1]['errorPercentage']).to_equal(0)
 
     @gen_test
     def test_will_return_empty_list_when_no_domains(self):

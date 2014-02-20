@@ -187,23 +187,44 @@ class TestDomain(ApiTestCase):
             'globoesporte.globo.com'
         ])
 
-    def test_can_get_error_percentage(self):
+    def test_can_get_good_requests_count(self):
         self.db.query(Request).delete()
 
         domain = DomainFactory.create()
 
-        error_pct = domain.get_error_percentage(self.db)
-        expect(error_pct).to_equal(0)
+        good = domain.get_good_requests_count(self.db)
+        expect(good).to_equal(0)
 
-        RequestFactory.create(status_code=200)
-        RequestFactory.create(status_code=304)
+        RequestFactory.create(status_code=200, domain_name=domain.name)
+        RequestFactory.create(status_code=304, domain_name=domain.name)
 
-        error_pct = domain.get_error_percentage(self.db)
-        expect(error_pct).to_equal(0)
+        good = domain.get_good_requests_count(self.db)
+        expect(good).to_equal(2)
 
-        RequestFactory.create(status_code=400)
-        RequestFactory.create(status_code=403)
-        RequestFactory.create(status_code=404)
+        RequestFactory.create(status_code=400, domain_name=domain.name)
+        RequestFactory.create(status_code=403, domain_name=domain.name)
+        RequestFactory.create(status_code=404, domain_name=domain.name)
 
-        error_pct = domain.get_error_percentage(self.db)
-        expect(error_pct).to_equal(60)
+        good = domain.get_good_requests_count(self.db)
+        expect(good).to_equal(2)
+
+    def test_can_get_bad_requests_count(self):
+        self.db.query(Request).delete()
+
+        domain = DomainFactory.create()
+
+        bad = domain.get_bad_requests_count(self.db)
+        expect(bad).to_equal(0)
+
+        RequestFactory.create(status_code=200, domain_name=domain.name)
+        RequestFactory.create(status_code=304, domain_name=domain.name)
+
+        bad = domain.get_bad_requests_count(self.db)
+        expect(bad).to_equal(0)
+
+        RequestFactory.create(status_code=400, domain_name=domain.name)
+        RequestFactory.create(status_code=403, domain_name=domain.name)
+        RequestFactory.create(status_code=404, domain_name=domain.name)
+
+        bad = domain.get_bad_requests_count(self.db)
+        expect(bad).to_equal(3)
