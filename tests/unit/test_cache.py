@@ -230,6 +230,29 @@ class CacheTestCase(ApiTestCase):
         expect(bad).to_equal(3)
 
     @gen_test
+    def test_can_get_response_time_avg_for_domain(self):
+        self.db.query(Request).delete()
+        self.db.query(Domain).delete()
+        DomainFactory.create(url='http://globo.com', name='globo.com')
+
+        key = 'globo.com-response-time-avg'
+        self.cache.redis.delete(key)
+
+        RequestFactory.create(status_code=200, domain_name='globo.com', response_time=0.25)
+        RequestFactory.create(status_code=304, domain_name='globo.com', response_time=0.35)
+        RequestFactory.create(status_code=400, domain_name='globo.com', response_time=0.25)
+        RequestFactory.create(status_code=403, domain_name='globo.com', response_time=0.35)
+        RequestFactory.create(status_code=404, domain_name='globo.com', response_time=0.25)
+
+        avg = yield self.cache.get_response_time_avg('globo.com')
+        expect(avg).to_be_like(0.3)
+
+        self.cache.db = None
+
+        avg = yield self.cache.get_response_time_avg('globo.com')
+        expect(avg).to_be_like(0.3)
+
+    @gen_test
     def test_can_store_processed_page_lock(self):
         yield self.cache.lock_page('http://www.globo.com')
 

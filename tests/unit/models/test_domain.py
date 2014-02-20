@@ -228,3 +228,24 @@ class TestDomain(ApiTestCase):
 
         bad = domain.get_bad_request_count(self.db)
         expect(bad).to_equal(3)
+
+    def test_can_get_response_time_avg(self):
+        self.db.query(Request).delete()
+
+        domain = DomainFactory.create()
+
+        avg = domain.get_response_time_avg(self.db)
+        expect(avg).to_be_like(0)
+
+        RequestFactory.create(status_code=200, domain_name=domain.name, response_time=0.25)
+        RequestFactory.create(status_code=304, domain_name=domain.name, response_time=0.35)
+
+        avg = domain.get_response_time_avg(self.db)
+        expect(avg).to_be_like(0.3)
+
+        RequestFactory.create(status_code=400, domain_name=domain.name, response_time=0.25)
+        RequestFactory.create(status_code=403, domain_name=domain.name, response_time=0.35)
+        RequestFactory.create(status_code=404, domain_name=domain.name, response_time=0.25)
+
+        avg = domain.get_response_time_avg(self.db)
+        expect(avg).to_be_like(0.3)

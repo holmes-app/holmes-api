@@ -156,3 +156,13 @@ class Domain(Base):
             .filter(Request.domain_name == self.name) \
             .filter(Request.status_code > 399) \
             .scalar()
+
+    def get_response_time_avg(self, db):
+        from holmes.models import Request
+
+        time_avg = db \
+            .query(func.avg(Request.response_time)) \
+            .filter(Request.domain_name == self.name) \
+            .filter(Request.status_code < 400) \
+            .scalar()
+        return round(time_avg, 2) if time_avg is not None else 0

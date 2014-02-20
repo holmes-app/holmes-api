@@ -25,6 +25,7 @@ class DomainsHandler(BaseHandler):
             violation_count = yield self.cache.get_violation_count(domain)
             good_request_count = yield self.cache.get_good_request_count(domain)
             bad_request_count = yield self.cache.get_bad_request_count(domain)
+            response_time_avg = yield self.cache.get_response_time_avg(domain)
 
             if page_count > 0:
                 review_percentage = round(float(review_count) / page_count * 100, 2)
@@ -47,6 +48,7 @@ class DomainsHandler(BaseHandler):
                 "reviewPercentage": review_percentage,
                 "errorPercentage": error_percentage,
                 "is_active": domain.is_active,
+                "averageResponseTime": response_time_avg,
             })
 
         self.write_json(result)

@@ -131,6 +131,22 @@ class Cache(object):
             callback=callback
         )
 
+    @return_future
+    def get_response_time_avg(self, domain_name, callback=None):
+        self.get_avg(
+            'response-time-avg',
+            domain_name,
+            int(self.config.RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_response_time_avg(self.db),
+            callback=callback
+        )
+
+    def get_domain(self, domain_name):
+        domain = domain_name
+        if domain and not isinstance(domain, Domain):
+            domain = Domain.get_domain_by_name(domain_name, self.db)
+        return domain
+
     def get_count(self, key, domain_name, expiration, get_count_method, callback=None):
         cache_key = '%s-%s' % (self.get_domain_name(domain_name), key)
         self.redis.get(cache_key, callback=self.handle_get_count(key, domain_name, expiration, get_count_method, callback))
@@ -141,9 +157,7 @@ class Cache(object):
                 callback(int(count))
                 return
 
-            domain = domain_name
-            if domain and not isinstance(domain, Domain):
-                domain = Domain.get_domain_by_name(domain_name, self.db)
+            domain = self.get_domain(domain_name)
 
             if domain is None:
                 count = Page.get_page_count(self.db)
@@ -164,6 +178,37 @@ class Cache(object):
     def handle_set_count(self, count, callback):
         def handle(*args, **kw):
             callback(count)
+
+        return handle
+
+    def get_avg(self, key, domain_name, expiration, get_avg_method, callback=None):
+        cache_key = '%s-%s' % (self.get_domain_name(domain_name), key)
+        self.redis.get(cache_key, callback=self.handle_get_avg(key, domain_name, expiration, get_avg_method, callback))
+
+    def handle_get_avg(self, key, domain_name, expiration, get_avg_method, callback):
+        def handle(avg):
+            if avg is not None:
+                callback(float(avg))
+                return
+
+            domain = self.get_domain(domain_name)
+
+            avg = get_avg_method(domain)
+
+            cache_key = '%s-%s' % (self.get_domain_name(domain), key)
+
+            self.redis.setex(
+                key=cache_key,
+                value=float(avg),
+                seconds=expiration,
+                callback=self.handle_set_avg(avg, callback)
+            )
+
+        return handle
+
+    def handle_set_avg(self, avg, callback):
+        def handle(*args, **kw):
+            callback(avg)
 
         return handle
 

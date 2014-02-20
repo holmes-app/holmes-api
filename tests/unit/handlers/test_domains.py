@@ -33,9 +33,9 @@ class TestDomainsHandler(ApiTestCase):
 
         ReviewFactory.create(is_active=True, domain=domain, page=page)
 
-        RequestFactory.create(domain_name='globo.com', status_code=200)
-        RequestFactory.create(domain_name='globo.com', status_code=300)
-        RequestFactory.create(domain_name='globo.com', status_code=400)
+        RequestFactory.create(domain_name='globo.com', status_code=200, response_time=0.25)
+        RequestFactory.create(domain_name='globo.com', status_code=300, response_time=0.35)
+        RequestFactory.create(domain_name='globo.com', status_code=400, response_time=0.25)
 
         response = yield self.http_client.fetch(
             self.get_url('/domains')
@@ -53,6 +53,7 @@ class TestDomainsHandler(ApiTestCase):
         expect(domains[0]['pageCount']).to_equal(0)
         expect(domains[0]['reviewPercentage']).to_equal(0)
         expect(domains[0]['errorPercentage']).to_equal(0)
+        expect(domains[0]['averageResponseTime']).to_be_like(0)
 
         expect(domains[1]['name']).to_equal("globo.com")
         expect(domains[1]['url']).to_equal("http://globo.com")
@@ -60,6 +61,7 @@ class TestDomainsHandler(ApiTestCase):
         expect(domains[1]['pageCount']).to_equal(1)
         expect(domains[1]['reviewPercentage']).to_equal(100.00)
         expect(domains[1]['errorPercentage']).to_equal(33.33)
+        expect(domains[1]['averageResponseTime']).to_be_like(0.3)
 
     @gen_test
     def test_will_return_empty_list_when_no_domains(self):
