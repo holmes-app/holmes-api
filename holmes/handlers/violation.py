@@ -4,18 +4,25 @@
 from tornado import gen
 
 from holmes.handlers import BaseHandler
-from holmes.models import Violation, Review
+from holmes.models import Review
 
 
 class MostCommonViolationsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        violations = Violation.get_most_common_violations(self.db, self.application.violation_definitions)
+        violations = yield self.cache.get_most_common_violations(
+            self.application.violation_definitions,
+            self.application.config.get('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT')
+        )
 
         result = []
         for item in violations:
-            result.append({'name': item['title'], 'count': item['count']})
+            result.append({
+                'name': item['title'],
+                'category': item['category'],
+                'count': item['count']
+            })
 
         self.write_json(result)
         self.finish()

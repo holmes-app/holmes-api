@@ -253,6 +253,47 @@ class CacheTestCase(ApiTestCase):
         expect(avg).to_be_like(0.3)
 
     @gen_test
+    def test_can_get_most_common_violations(self):
+        self.db.query(Request).delete()
+        self.db.query(Domain).delete()
+        DomainFactory.create(url='http://globo.com', name='globo.com')
+
+        cache_key = 'most-common-violations'
+        self.cache.redis.delete(cache_key)
+
+        ReviewFactory.create(
+            is_active=True,
+            is_complete=True,
+            number_of_violations=9
+        )
+        ReviewFactory.create(
+            is_active=True,
+            is_complete=True,
+            number_of_violations=5
+        )
+        ReviewFactory.create(
+            is_active=True,
+            is_complete=True,
+            number_of_violations=3
+        )
+
+        violation_definitions = {}
+        for k in xrange(9):
+            violation_definitions['violation.%d' % k] = {
+                'title': 'violation.%d.title' % k,
+                'category': 'violation.%d.category' % k
+            }
+
+        violations = yield self.cache.get_most_common_violations(violation_definitions, 14)
+        expect(violations).to_length(9)
+
+        self.cache.db = None
+
+        violations_from_cache = yield self.cache.get_most_common_violations(violation_definitions, 14)
+        expect(violations_from_cache).to_length(9)
+        expect(violations_from_cache).to_be_like(violations)
+
+    @gen_test
     def test_can_store_processed_page_lock(self):
         yield self.cache.lock_page('http://www.globo.com')
 

@@ -88,7 +88,7 @@ class TestViolations(ApiTestCase):
         violations = Violation.get_most_common_violations(
             self.db,
             violation_definitions,
-            limit=2
+            sample_limit=2
         )
 
         expect(violations).to_be_like([

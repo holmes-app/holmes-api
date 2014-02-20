@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
 
-from holmes.models import Domain, Page, Delimiter
+from holmes.models import Domain, Page, Delimiter, Violation
 
 
 class Cache(object):
@@ -141,6 +141,15 @@ class Cache(object):
             callback=callback
         )
 
+    @return_future
+    def get_most_common_violations(self, violation_definitions, sample_limit, callback=None):
+        self.get_data(
+            'most-common-violations',
+            int(self.config.MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION),
+            lambda: Violation.get_most_common_violations(self.db, violation_definitions, sample_limit),
+            callback=callback
+        )
+
     def get_domain(self, domain_name):
         domain = domain_name
         if domain and not isinstance(domain, Domain):
@@ -209,6 +218,32 @@ class Cache(object):
     def handle_set_avg(self, avg, callback):
         def handle(*args, **kw):
             callback(avg)
+
+        return handle
+
+    def get_data(self, key, expiration, get_data_method, callback=None):
+        self.redis.get(key, callback=self.handle_get_data(key, expiration, get_data_method, callback))
+
+    def handle_get_data(self, key, expiration, get_data_method, callback):
+        def handle(data):
+            if data is not None:
+                callback(loads(data))
+                return
+
+            data = get_data_method()
+
+            self.redis.setex(
+                key=key,
+                value=dumps(data),
+                seconds=expiration,
+                callback=self.handle_set_data(data, callback)
+            )
+
+        return handle
+
+    def handle_set_data(self, data, callback):
+        def handle(*args, **kw):
+            callback(data)
 
         return handle
 

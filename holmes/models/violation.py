@@ -35,7 +35,7 @@ class Violation(Base):
         }
 
     @classmethod
-    def get_most_common_violations(cls, db, violation_definitions, limit=50000):
+    def get_most_common_violations(cls, db, violation_definitions, sample_limit=50000):
         violations = []
 
         sample = db \
@@ -46,7 +46,7 @@ class Violation(Base):
             ) \
             .filter(Violation.key_id == Key.id) \
             .order_by(Violation.id.desc()) \
-            .limit(limit) \
+            .limit(sample_limit) \
             .subquery()
 
         results = db \
