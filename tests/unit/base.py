@@ -93,8 +93,8 @@ class ApiTestCase(CowTestCase):
         self.server.application.redis.delete('%s-page-count' % domain_name, callback=do_nothing)
         self.server.application.redis.delete('%s-violation-count' % domain_name, callback=do_nothing)
         self.server.application.redis.delete('%s-active-review-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-good-requests-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-bad-requests-count' % domain_name, callback=do_nothing)
+        self.server.application.redis.delete('%s-good-request-count' % domain_name, callback=do_nothing)
+        self.server.application.redis.delete('%s-bad-request-count' % domain_name, callback=do_nothing)
 
     def connect_to_sync_redis(self):
         import redis

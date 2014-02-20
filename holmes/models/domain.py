@@ -139,7 +139,7 @@ class Domain(Base):
     def get_domain_names(cls, db):
         return [item.name for item in db.query(Domain.name).all()]
 
-    def get_good_requests_count(self, db):
+    def get_good_request_count(self, db):
         from holmes.models import Request
 
         return db \
@@ -148,7 +148,7 @@ class Domain(Base):
             .filter(Request.status_code < 400) \
             .scalar()
 
-    def get_bad_requests_count(self, db):
+    def get_bad_request_count(self, db):
         from holmes.models import Request
 
         return db \

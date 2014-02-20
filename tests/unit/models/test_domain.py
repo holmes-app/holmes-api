@@ -187,44 +187,44 @@ class TestDomain(ApiTestCase):
             'globoesporte.globo.com'
         ])
 
-    def test_can_get_good_requests_count(self):
+    def test_can_get_good_request_count(self):
         self.db.query(Request).delete()
 
         domain = DomainFactory.create()
 
-        good = domain.get_good_requests_count(self.db)
+        good = domain.get_good_request_count(self.db)
         expect(good).to_equal(0)
 
         RequestFactory.create(status_code=200, domain_name=domain.name)
         RequestFactory.create(status_code=304, domain_name=domain.name)
 
-        good = domain.get_good_requests_count(self.db)
+        good = domain.get_good_request_count(self.db)
         expect(good).to_equal(2)
 
         RequestFactory.create(status_code=400, domain_name=domain.name)
         RequestFactory.create(status_code=403, domain_name=domain.name)
         RequestFactory.create(status_code=404, domain_name=domain.name)
 
-        good = domain.get_good_requests_count(self.db)
+        good = domain.get_good_request_count(self.db)
         expect(good).to_equal(2)
 
-    def test_can_get_bad_requests_count(self):
+    def test_can_get_bad_request_count(self):
         self.db.query(Request).delete()
 
         domain = DomainFactory.create()
 
-        bad = domain.get_bad_requests_count(self.db)
+        bad = domain.get_bad_request_count(self.db)
         expect(bad).to_equal(0)
 
         RequestFactory.create(status_code=200, domain_name=domain.name)
         RequestFactory.create(status_code=304, domain_name=domain.name)
 
-        bad = domain.get_bad_requests_count(self.db)
+        bad = domain.get_bad_request_count(self.db)
         expect(bad).to_equal(0)
 
         RequestFactory.create(status_code=400, domain_name=domain.name)
         RequestFactory.create(status_code=403, domain_name=domain.name)
         RequestFactory.create(status_code=404, domain_name=domain.name)
 
-        bad = domain.get_bad_requests_count(self.db)
+        bad = domain.get_bad_request_count(self.db)
         expect(bad).to_equal(3)

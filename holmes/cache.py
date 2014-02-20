@@ -112,22 +112,22 @@ class Cache(object):
         )
 
     @return_future
-    def get_good_requests_count(self, domain_name, callback=None):
+    def get_good_request_count(self, domain_name, callback=None):
         self.get_count(
-            'good-requests-count',
+            'good-request-count',
             domain_name,
-            int(self.config.GOOD_REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_good_requests_count(self.db),
+            int(self.config.GOOD_REQUEST_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_good_request_count(self.db),
             callback=callback
         )
 
     @return_future
-    def get_bad_requests_count(self, domain_name, callback=None):
+    def get_bad_request_count(self, domain_name, callback=None):
         self.get_count(
-            'bad-requests-count',
+            'bad-request-count',
             domain_name,
-            int(self.config.BAD_REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_bad_requests_count(self.db),
+            int(self.config.BAD_REQUEST_COUNT_EXPIRATION_IN_SECONDS),
+            lambda domain: domain.get_bad_request_count(self.db),
             callback=callback
         )
 

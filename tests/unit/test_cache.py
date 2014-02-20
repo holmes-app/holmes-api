@@ -184,12 +184,12 @@ class CacheTestCase(ApiTestCase):
         expect(count).to_equal(2)
 
     @gen_test
-    def test_can_get_good_requests_count_for_domain(self):
+    def test_can_get_good_request_count_for_domain(self):
         self.db.query(Request).delete()
         self.db.query(Domain).delete()
         DomainFactory.create(url='http://globo.com', name='globo.com')
 
-        key = 'globo.com-good-requests-count'
+        key = 'globo.com-good-request-count'
         self.cache.redis.delete(key)
 
         RequestFactory.create(status_code=200, domain_name='globo.com')
@@ -198,21 +198,21 @@ class CacheTestCase(ApiTestCase):
         RequestFactory.create(status_code=403, domain_name='globo.com')
         RequestFactory.create(status_code=404, domain_name='globo.com')
 
-        good = yield self.cache.get_good_requests_count('globo.com')
+        good = yield self.cache.get_good_request_count('globo.com')
         expect(good).to_equal(2)
 
         self.cache.db = None
 
-        good = yield self.cache.get_good_requests_count('globo.com')
+        good = yield self.cache.get_good_request_count('globo.com')
         expect(good).to_equal(2)
 
     @gen_test
-    def test_can_get_bad_requests_count_for_domain(self):
+    def test_can_get_bad_request_count_for_domain(self):
         self.db.query(Request).delete()
         self.db.query(Domain).delete()
         DomainFactory.create(url='http://globo.com', name='globo.com')
 
-        key = 'globo.com-bad-requests-count'
+        key = 'globo.com-bad-request-count'
         self.cache.redis.delete(key)
 
         RequestFactory.create(status_code=200, domain_name='globo.com')
@@ -221,12 +221,12 @@ class CacheTestCase(ApiTestCase):
         RequestFactory.create(status_code=403, domain_name='globo.com')
         RequestFactory.create(status_code=404, domain_name='globo.com')
 
-        bad = yield self.cache.get_bad_requests_count('globo.com')
+        bad = yield self.cache.get_bad_request_count('globo.com')
         expect(bad).to_equal(3)
 
         self.cache.db = None
 
-        bad = yield self.cache.get_bad_requests_count('globo.com')
+        bad = yield self.cache.get_bad_request_count('globo.com')
         expect(bad).to_equal(3)
 
     @gen_test
