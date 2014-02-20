@@ -165,4 +165,4 @@ class Domain(Base):
             .filter(Request.domain_name == self.name) \
             .filter(Request.status_code < 400) \
             .scalar()
-        return round(time_avg, 2) if time_avg is not None else 0
+        return round(time_avg, 3) if time_avg is not None else 0
