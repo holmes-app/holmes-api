@@ -1,13 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from tornado import gen
-from ujson import loads, dumps
-
-from holmes.models import Review, Page
+from holmes.models import Review
 from holmes.handlers import BaseHandler
 
 
