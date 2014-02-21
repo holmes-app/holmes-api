@@ -66,11 +66,11 @@ class TestReviewHandler(ApiTestCase):
             'isComplete': False,
             'facts': [
                 {u'key': u'fact', u'value': u'value', u'title': u'unknown',
-                 u'unit': u'value'}
+                 u'unit': u'value', u'category': u'unknown'}
             ],
             'violations': [
                 {u'points': 100, u'description': u'value',
-                 u'key': u'violation', u'title': u'undefined'}
+                 u'key': u'violation', u'title': u'undefined', u'category': 'undefined'}
             ],
             'createdAt': dt_timestamp,
             'completedAt': None,
@@ -117,11 +117,11 @@ class TestLastReviewsHandler(ApiTestCase):
             'isComplete': True,
             'facts': [
                 {u'key': u'fact', u'unit': u'value', u'value': u'value',
-                 u'title': u'unknown'}
+                 u'title': u'unknown', u'category': u'unknown'}
             ],
             'violations': [
                 {u'points': 100, u'description': u'value',
-                 u'key': u'violation', u'title': u'undefined'}
+                 u'key': u'violation', u'title': u'undefined', u'category': 'undefined'}
             ],
             'createdAt': dt,
             'completedAt': dt,

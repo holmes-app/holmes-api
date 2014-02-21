@@ -28,7 +28,7 @@ class TestViolations(ApiTestCase):
         violation = ViolationFactory.create(
             key=Key(name='some.random.fact'),
             value='value',
-            points=1203
+            points=1203,
         )
 
         violations_definitions = {'some.random.fact': {}}
@@ -37,7 +37,8 @@ class TestViolations(ApiTestCase):
             'key': 'some.random.fact',
             'description': 'value',
             'title': 'undefined',
-            'points': 1203
+            'points': 1203,
+            'category': 'undefined'
         })
 
     def test_can_get_most_common_violations(self):

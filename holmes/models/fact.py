@@ -26,7 +26,8 @@ class Fact(Base):
             'title': definition.get('title', 'unknown'),
             'key': self.key.name,
             'unit': definition.get('unit', 'value'),
-            'value': definition.get('description', lambda value: value)(self.value)
+            'value': definition.get('description', lambda value: value)(self.value),
+            'category': definition.get('category', 'unknown')
         }
 
     def __str__(self):

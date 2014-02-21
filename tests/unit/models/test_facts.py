@@ -33,7 +33,8 @@ class TestFacts(ApiTestCase):
             'key': 'some.random.fact',
             'value': 'whatever',
             'unit': 'value',
-            'title': 'unknown'
+            'title': 'unknown',
+            'category': 'unknown'
         })
 
     def test_fact_str(self):

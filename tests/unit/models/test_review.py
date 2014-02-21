@@ -148,10 +148,10 @@ class TestReview(ApiTestCase):
             'uuid': str(review_id),
             'completedAt': None,
             'facts': [
-                {'value': 'b', 'key': 'some.random.key2', 'unit': 'value', 'title': 'unknown'}
+                {'value': 'b', 'key': 'some.random.key2', 'unit': 'value', 'title': 'unknown', 'category': 'unknown'}
             ],
             'violations': [
-                {'points': 100, 'key': 'some.random.key1', 'description': 'b', 'title': 'undefined'}
+                {'points': 100, 'key': 'some.random.key1', 'description': 'b', 'title': 'undefined', 'category': 'undefined'}
             ],
             'page': {
                 'url': page.url,

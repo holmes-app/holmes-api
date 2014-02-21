@@ -31,7 +31,8 @@ class Violation(Base):
             'key': self.key.name,
             'title': definition.get('title', 'undefined'),
             'description': definition.get('description', lambda value: value)(self.value),
-            'points': self.points
+            'points': self.points,
+            'category': definition.get('category', 'undefined')
         }
 
     @classmethod
