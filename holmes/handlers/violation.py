@@ -20,6 +20,7 @@ class MostCommonViolationsHandler(BaseHandler):
         for item in violations:
             result.append({
                 'name': item['title'],
+                'key': item['key'],
                 'category': item['category'],
                 'count': item['count']
             })

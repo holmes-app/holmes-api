@@ -45,8 +45,8 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(violations).to_be_like([
-            {'count': 5, 'name': 'undefined', 'category': 'undefined'},
-            {'count': 2, 'name': 'undefined', 'category': 'undefined'}
+            {'count': 5, 'name': 'undefined', 'category': 'undefined', 'key': 'violation1'},
+            {'count': 2, 'name': 'undefined', 'category': 'undefined', 'key': 'violation2'}
         ])
 
         self.db.query(Violation).delete()
