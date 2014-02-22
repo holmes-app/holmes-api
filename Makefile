@@ -1,4 +1,4 @@
-test: redis drop_test data_test unit integration kill_run
+test: redis_test drop_test data_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
@@ -22,6 +22,13 @@ kill_redis:
 redis: kill_redis
 	redis-server ./redis.conf; sleep 1
 	redis-cli -p 7575 info > /dev/null
+
+kill_redis_test:
+	-redis-cli -p 57575 shutdown
+
+redis_test: kill_redis_test
+	redis-server ./redis_test.conf; sleep 1
+	redis-cli -p 57575 info > /dev/null
 
 drop:
 	@-cd holmes/ && alembic downgrade base

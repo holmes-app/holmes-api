@@ -68,6 +68,8 @@ class ApiTestCase(CowTestCase):
             SQLALCHEMY_POOL_MAX_OVERFLOW=0,
             SQLALCHEMY_AUTO_FLUSH=True,
             COMMIT_ON_REQUEST_END=False,
+            REDISHOST='localhost',
+            REDISPORT=57575,
         )
 
     def get_server(self):
