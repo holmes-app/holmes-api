@@ -23,6 +23,9 @@ redis: kill_redis
 	redis-server ./redis.conf; sleep 1
 	redis-cli -p 7575 info > /dev/null
 
+flush_redis:
+	redis-cli -p 7575 FLUSHDB
+
 kill_redis_test:
 	-redis-cli -p 57575 shutdown
 
