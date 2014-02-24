@@ -7,6 +7,7 @@ from datetime import datetime
 import sqlalchemy as sa
 
 from holmes.models import Base
+from holmes.utils import get_domain_from_url
 
 
 class Worker(Base):
@@ -29,11 +30,13 @@ class Worker(Base):
         return self.current_url is not None
 
     def to_dict(self):
+        domain, domain_url = get_domain_from_url(self.current_url)
         return {
             'uuid': str(self.uuid),
             'last_ping': str(self.last_ping),
             'current_url': self.current_url,
-            'working': self.working
+            'working': self.working,
+            'domain_name': domain
         }
 
     @classmethod
