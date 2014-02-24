@@ -25,6 +25,19 @@ class MostCommonViolationsHandler(BaseHandler):
                 'count': item['count']
             })
 
+        s1 = set(self.application.violation_definitions.keys())
+        s2 = set((x.get('key') for x in result))
+
+        diff = s1 -s2
+        for item in diff:
+            violation = self.application.violation_definitions[item]
+            result.append({
+                'name': violation['title'],
+                'key': violation['key'].name,
+                'category': violation['category'],
+                'count': 1
+            })
+
         self.write_json(result)
         self.finish()
 
