@@ -105,6 +105,7 @@ class Review(Base):
 
         from holmes.models.violation import Violation  # to avoid circular dependency
         from holmes.models.page import Page  # to avoid circular dependency
+        from holmes.models.domain import Domain  # to avoid circular dependency
 
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
@@ -114,9 +115,11 @@ class Review(Base):
                 Review.uuid.label('review_uuid'),
                 Page.url,
                 Page.uuid.label('page_uuid'),
+                Domain.name.label('domain_name'),
                 Review.completed_date
             ) \
             .filter(Page.id == Review.page_id) \
+            .filter(Domain.id == Review.domain_id) \
             .filter(Violation.review_id == Review.id) \
             .filter(Review.is_active == True) \
             .filter(Violation.key_id == key_id) \

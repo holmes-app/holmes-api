@@ -66,7 +66,8 @@ class ViolationHandler(BaseHandler):
                     'uuid': item.page_uuid,
                     'url': item.url,
                     'completedAt': item.completed_date
-                }
+                },
+                'domain_name': item.domain_name
             })
 
         violation = {

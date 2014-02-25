@@ -6,7 +6,7 @@ from tests.unit.base import ApiTestCase
 from preggy import expect
 from tornado.testing import gen_test
 
-from tests.fixtures import ReviewFactory
+from tests.fixtures import ReviewFactory, PageFactory, DomainFactory
 from holmes.models import Key, Violation
 
 
@@ -59,3 +59,59 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(violations_from_cache).to_be_like(violations)
+
+
+class TestViolationHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_violation_by_key_name(self):
+        self.db.query(Violation).delete()
+
+        domain = DomainFactory.create(name='g.com')
+        page = PageFactory.create(uuid='some-uuid', domain=domain, url='http://g.com/1')
+        review = ReviewFactory.create(is_active=True, uuid='some-uuid', page=page)
+
+        key1 = Key.get_or_create(self.db, 'random.fact.1')
+        review.add_violation(key1, 'value', 100)
+
+        key2 = Key.get_or_create(self.db, 'random.fact.2')
+        review.add_violation(key2, 'value', 300)
+
+        self.db.flush()
+
+        self.server.application.violation_definitions = {
+            'random.fact.1': {
+                'title': 'SEO',
+                'category': 'SEO',
+                'key': key1
+            },
+            'random.fact.2': {
+                'title': 'HTTP',
+                'category': 'HTTP',
+                'key': key2
+            }
+        }
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/random.fact.1')
+        )
+
+        violations = loads(response.body)
+
+        expected_violations = {
+            'reviews': [{
+                'page': {
+                    'url': 'http://g.com/1',
+                    'uuid': 'some-uuid',
+                    'completedAt': None
+                },
+                'domain_name': 'g.com',
+                'uuid': 'some-uuid'
+            }],
+            'title': 'SEO'
+        }
+
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['reviews']).to_length(1)
+        expect(violations).to_be_like(expected_violations)
