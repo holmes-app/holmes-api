@@ -1,14 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 from datetime import datetime
 
 from preggy import expect
 from tornado.testing import gen_test
-from tornado.web import HTTPError
 
-from holmes.models import Domain, Page, Review, Request
+from holmes.models import Domain, Request
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, RequestFactory
 
