@@ -46,7 +46,7 @@ class ViolationHandler(BaseHandler):
     @gen.coroutine
     def get(self, key_name):
         current_page = int(self.get_argument('current_page', 1))
-        page_size = 100
+        page_size = int(self.get_argument('page_size', 100))
 
         violations = self.application.violation_definitions
         violation_title = violations[key_name]['title']
