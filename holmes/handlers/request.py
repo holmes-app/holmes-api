@@ -26,7 +26,7 @@ class RequestDomainHandler(BaseHandler):
             return
 
         current_page = int(self.get_argument('current_page', 1))
-        page_size = 10
+        page_size = int(self.get_argument('page_size', 10))
 
         requests = Request.get_requests_by_status_code(
             domain_name,
