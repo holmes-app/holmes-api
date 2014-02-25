@@ -15,6 +15,8 @@ class TestRequest(ApiTestCase):
     def test_can_create_request(self):
         request = RequestFactory.create()
 
+        expect(str(request)).to_equal('http://g1.globo.com (301)')
+
         expect(request.id).not_to_be_null()
         expect(request.domain_name).to_equal('g1.globo.com')
         expect(request.url).to_equal('http://g1.globo.com')
@@ -23,6 +25,19 @@ class TestRequest(ApiTestCase):
         expect(request.response_time).to_equal(0.23)
         expect(request.completed_date).to_equal(date(2013, 2, 12))
         expect(request.review_url).to_equal('http://globo.com/')
+
+    def test_can_convert_request_to_dict(self):
+        request = RequestFactory.create()
+
+        request_dict = request.to_dict()
+
+        expect(request_dict['domain_name']).to_equal(str(request.domain_name))
+        expect(request_dict['url']).to_equal(request.url)
+        expect(request_dict['effective_url']).to_equal(request.effective_url)
+        expect(request_dict['status_code']).to_equal(request.status_code)
+        expect(request_dict['response_time']).to_equal(request.response_time)
+        expect(request_dict['completed_date']).to_equal(request.completed_date)
+        expect(request_dict['review_url']).to_equal(request.review_url)
 
     def test_can_get_status_code_info(self):
         request = RequestFactory.create(domain_name='g1.globo.com')

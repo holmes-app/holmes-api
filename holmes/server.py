@@ -30,7 +30,7 @@ from holmes.handlers.search import (
 from holmes.handlers.settings import (
     TaxHandler
 )
-from holmes.handlers.request import RequestDomainHandler
+from holmes.handlers.request import RequestDomainHandler, LastRequestsHandler
 from holmes.handlers.delimiter import DelimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
@@ -87,6 +87,7 @@ class HolmesApiServer(Server):
             (r'/tax/?', TaxHandler),
             (r'/delimiters/?', DelimiterHandler),
             (r'/next-jobs/?', NextJobHandler),
+            (r'/last-requests/?', LastRequestsHandler),
         ]
 
         return tuple(handlers)

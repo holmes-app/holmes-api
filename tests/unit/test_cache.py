@@ -192,6 +192,24 @@ class CacheTestCase(ApiTestCase):
         expect(page_count).to_equal(10)
 
     @gen_test
+    def test_can_increment_requests_count(self):
+        self.db.query(Request).delete()
+        self.cache.redis.delete('requests-count')
+
+        for i in range(2):
+            RequestFactory.create()
+
+        yield self.cache.increment_requests_count(2)
+        request_count = yield self.cache.get_requests_count()
+        expect(request_count).to_equal(4)
+
+        # should get from cache
+        self.cache.db = None
+
+        request_count = yield self.cache.increment_requests_count(5)
+        expect(request_count).to_equal(9)
+
+    @gen_test
     def test_can_get_violation_count_for_domain(self):
         self.db.query(Domain).delete()
 
@@ -364,6 +382,25 @@ class CacheTestCase(ApiTestCase):
 
         page_count = yield self.cache.get_next_jobs_count()
         expect(page_count).to_equal(5)
+
+    @gen_test
+    def test_can_get_requests_count(self):
+        self.db.query(Request).delete()
+
+        key = 'requests-count'
+        self.cache.redis.delete(key)
+
+        for i in range(2):
+            RequestFactory.create()
+
+        request_count = yield self.cache.get_requests_count()
+        expect(request_count).to_equal(2)
+
+        # should get from cache
+        self.cache.db = None
+
+        request_count = yield self.cache.get_requests_count()
+        expect(request_count).to_equal(2)
 
     @gen_test
     def test_can_store_processed_page_lock(self):
@@ -912,3 +949,23 @@ class SyncCacheTestCase(ApiTestCase):
         self.sync_cache.increment_next_jobs_count(10)
         page_count = self.sync_cache.redis.get(key)
         expect(page_count).to_equal('10')
+
+    def test_can_increment_requests_count(self):
+        self.db.query(Request).delete()
+
+        key = 'requests-count'
+        self.sync_cache.redis.delete(key)
+
+        for i in range(5):
+            RequestFactory.create()
+
+        self.sync_cache.increment_requests_count(4)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('9')
+
+        # should get from cache
+        self.sync_cache.db = None
+
+        self.sync_cache.increment_requests_count(10)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('19')

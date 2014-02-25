@@ -150,6 +150,8 @@ class Reviewer(object):
 
         self.db.add(req)
 
+        self.cache.increment_requests_count()
+
     def review(self):
         self.load_content(self.content_loaded)
         self.wait_for_async_requests()

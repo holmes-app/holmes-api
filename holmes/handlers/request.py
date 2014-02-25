@@ -57,3 +57,25 @@ class RequestDomainHandler(BaseHandler):
             })
 
         self.write_json(result)
+
+
+class LastRequestsHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        current_page = int(self.get_argument('current_page', 1))
+        page_size = int(self.get_argument('page_size', 10))
+
+        requests = Request.get_last_requests(
+            self.db,
+            current_page=current_page,
+            page_size=page_size
+        )
+
+        requests_count = yield self.cache.get_requests_count()
+
+        result = {'requestsCount': requests_count, 'requests': []}
+
+        for request in requests:
+            result['requests'].append(request.to_dict())
+
+        self.write_json(result)

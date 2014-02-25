@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
 
-from holmes.models import Domain, Page, Delimiter, Violation
+from holmes.models import Domain, Page, Delimiter, Violation, Request
 
 
 class Cache(object):
@@ -86,6 +86,15 @@ class Cache(object):
         self.increment_data(
             'next-jobs',
             lambda: Page.get_next_jobs_count(self.db, self.config),
+            increment,
+            callback
+        )
+
+    @return_future
+    def increment_requests_count(self, increment=1, callback=None):
+        self.increment_data(
+            'requests-count',
+            lambda: Request.get_requests_count(self.db),
             increment,
             callback
         )
@@ -178,6 +187,15 @@ class Cache(object):
             'next-jobs',
             int(self.config.NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS),
             lambda: Page.get_next_jobs_count(self.db, self.config),
+            callback=callback
+        )
+
+    @return_future
+    def get_requests_count(self, callback=None):
+        self.get_data(
+            'requests-count',
+            int(self.config.REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
+            lambda: Request.get_requests_count(self.db),
             callback=callback
         )
 
@@ -369,6 +387,13 @@ class SyncCache(object):
         self.increment_data(
             'next-jobs',
             lambda: Page.get_next_jobs_count(self.db, self.config),
+            increment
+        )
+
+    def increment_requests_count(self, increment=1):
+        self.increment_data(
+            'requests-count',
+            lambda: Request.get_requests_count(self.db),
             increment
         )
 
