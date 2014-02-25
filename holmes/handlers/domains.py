@@ -129,7 +129,7 @@ class DomainReviewsHandler(BaseHandler):
     def get(self, domain_name):
         term = self.get_argument('term', None)
         current_page = int(self.get_argument('current_page', 1))
-        page_size = 10
+        page_size = int(self.get_argument('page_size', 10))
 
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
