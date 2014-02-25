@@ -174,6 +174,9 @@ class Review(Base):
                 page.domain,
                 increment=page.violations_count
             )
+
+            cache.increment_next_jobs_count(-1)
+
         else:
             old_violations_count = len(last_review.violations)
             new_violations_count = len(review.violations)

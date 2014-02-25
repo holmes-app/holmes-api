@@ -12,7 +12,7 @@ from tornado.httpclient import AsyncHTTPClient
 from holmes.handlers.worker import WorkerHandler, WorkersHandler, WorkersInfoHandler
 from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
-    PageHandler, PageReviewsHandler, PageViolationsPerDayHandler
+    PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
 )
 from holmes.handlers.violation import (
     MostCommonViolationsHandler, ViolationsHandler, ViolationHandler
@@ -86,6 +86,7 @@ class HolmesApiServer(Server):
             (r'/violation/([a-z0-9\.]*)/?', ViolationHandler),
             (r'/tax/?', TaxHandler),
             (r'/delimiters/?', DelimiterHandler),
+            (r'/next-jobs/?', NextJobHandler),
         ]
 
         return tuple(handlers)

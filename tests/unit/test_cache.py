@@ -144,6 +144,54 @@ class CacheTestCase(ApiTestCase):
         expect(page_count).to_equal(6)
 
     @gen_test
+    def test_can_increment_next_jobs_count(self):
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+        self.cache.redis.delete('next-jobs')
+
+        globocom = DomainFactory.create(
+            url="http://globo.com",
+            name="globo.com",
+            is_active=True
+        )
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        yield self.cache.increment_next_jobs_count(4)
+        page_count = yield self.cache.get_next_jobs_count()
+        expect(page_count).to_equal(6)
+
+        # should get from cache
+        self.cache.db = None
+
+        page_count = yield self.cache.increment_next_jobs_count(10)
+        expect(page_count).to_equal(16)
+
+    @gen_test
+    def test_can_decrement_next_jobs_count(self):
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+        self.cache.redis.delete('next-jobs')
+
+        globocom = DomainFactory.create(
+            url="http://globo.com",
+            name="globo.com",
+            is_active=True
+        )
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        yield self.cache.increment_next_jobs_count(-2)
+        page_count = yield self.cache.get_next_jobs_count()
+        expect(page_count).to_equal(0)
+
+        # should get from cache
+        self.cache.db = None
+
+        page_count = yield self.cache.increment_next_jobs_count(10)
+        expect(page_count).to_equal(10)
+
+    @gen_test
     def test_can_get_violation_count_for_domain(self):
         self.db.query(Domain).delete()
 
@@ -292,6 +340,30 @@ class CacheTestCase(ApiTestCase):
         violations_from_cache = yield self.cache.get_most_common_violations(violation_definitions, 14)
         expect(violations_from_cache).to_length(9)
         expect(violations_from_cache).to_be_like(violations)
+
+    @gen_test
+    def test_can_get_next_jobs_count(self):
+        self.db.query(Domain).delete()
+
+        key = 'next-jobs'
+        self.cache.redis.delete(key)
+
+        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
+        g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
+
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        for i in range(3):
+            PageFactory.create(domain=g1)
+
+        page_count = yield self.cache.get_next_jobs_count()
+        expect(page_count).to_equal(5)
+
+        self.cache.db = None
+
+        page_count = yield self.cache.get_next_jobs_count()
+        expect(page_count).to_equal(5)
 
     @gen_test
     def test_can_store_processed_page_lock(self):
@@ -788,3 +860,55 @@ class SyncCacheTestCase(ApiTestCase):
 
         lock = self.sync_cache.has_next_job_lock(test_url, 5)
         expect(lock).not_to_be_null()
+
+    def test_can_increment_next_jobs_count(self):
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+
+        key = 'next-jobs'
+        self.sync_cache.redis.delete(key)
+
+        globocom = DomainFactory.create(
+            url="http://globo.com",
+            name="globo.com",
+            is_active=True
+        )
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        self.sync_cache.increment_next_jobs_count(4)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('6')
+
+        # should get from cache
+        self.sync_cache.db = None
+
+        self.sync_cache.increment_next_jobs_count(10)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('16')
+
+    def test_can_decrement_next_jobs_count(self):
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+
+        key = 'next-jobs'
+        self.sync_cache.redis.delete(key)
+
+        globocom = DomainFactory.create(
+            url="http://globo.com",
+            name="globo.com",
+            is_active=True
+        )
+        for i in range(2):
+            PageFactory.create(domain=globocom)
+
+        self.sync_cache.increment_next_jobs_count(-2)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('0')
+
+        # should get from cache
+        self.sync_cache.db = None
+
+        self.sync_cache.increment_next_jobs_count(10)
+        page_count = self.sync_cache.redis.get(key)
+        expect(page_count).to_equal('10')

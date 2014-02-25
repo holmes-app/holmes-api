@@ -82,6 +82,28 @@ class Cache(object):
         return handle
 
     @return_future
+    def increment_next_jobs_count(self, increment=1, callback=None):
+        self.increment_data(
+            'next-jobs',
+            lambda: Page.get_next_jobs_count(self.db, self.config),
+            increment,
+            callback
+        )
+
+    def increment_data(self, key, get_default_method, increment=1, callback=None):
+        self.has_key(key, self.data_handle_has_key(key, get_default_method, increment, callback))
+
+    def data_handle_has_key(self, key, get_default_method, increment, callback):
+        def handle(has_key):
+            if has_key:
+                self.redis.incrby(key, increment, callback=callback)
+            else:
+                value = get_default_method() + increment
+                self.redis.set(key, value, callback=callback)
+
+        return handle
+
+    @return_future
     def get_page_count(self, domain_name=None, callback=None):
         self.get_count(
             'page-count',
@@ -147,6 +169,15 @@ class Cache(object):
             'most-common-violations',
             int(self.config.MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION),
             lambda: Violation.get_most_common_violations(self.db, violation_definitions, sample_limit),
+            callback=callback
+        )
+
+    @return_future
+    def get_next_jobs_count(self, callback=None):
+        self.get_data(
+            'next-jobs',
+            int(self.config.NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS),
+            lambda: Page.get_next_jobs_count(self.db, self.config),
             callback=callback
         )
 
@@ -332,6 +363,22 @@ class SyncCache(object):
             else:
                 value = get_default_method(domain) + increment - 1
 
+            self.redis.set(key, value)
+
+    def increment_next_jobs_count(self, increment=1):
+        self.increment_data(
+            'next-jobs',
+            lambda: Page.get_next_jobs_count(self.db, self.config),
+            increment
+        )
+
+    def increment_data(self, key, get_default_method, increment=1):
+        has_key = self.has_key(key)
+
+        if has_key:
+            self.redis.incrby(key, increment)
+        else:
+            value = get_default_method() + increment
             self.redis.set(key, value)
 
     def get_page_count(self, domain_name=None):

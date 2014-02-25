@@ -123,35 +123,90 @@ class Page(Base):
                     raise
 
     @classmethod
-    def get_next_job(cls, db, expiration, cache, lock_expiration):
-        from holmes.models import Settings, Domain
+    def get_next_job_list(cls, db, expiration, current_page=1, page_size=200):
+        from holmes.models import Domain
+
+        lower_bound = (current_page - 1) * page_size
+        upper_bound = lower_bound + page_size
 
         expired_time = datetime.now() - timedelta(seconds=expiration)
 
-        settings = Settings.instance(db)
-
-        active_domains = [item.id for item in db.query(Domain.id).filter(Domain.is_active).all()]
+        domains = db.query(Domain.id).filter(Domain.is_active).all()
+        active_domains = [item.id for item in domains]
 
         if not active_domains:
             return None
 
-        pages_query = db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
-                        .filter(Page.last_review_date == None) \
-                        .filter(Page.domain_id.in_(active_domains))
+        pages_query = db \
+            .query(
+                Page.uuid,
+                Page.url,
+                Page.score,
+                Page.last_review_date
+            ) \
+            .filter(Page.last_review_date == None) \
+            .filter(Page.domain_id.in_(active_domains))
 
-        pages_in_need_of_review = pages_query.order_by(Page.score.desc())[:200]
+        pages_in_need_of_review = \
+            pages_query.order_by(Page.score.desc())[lower_bound:upper_bound]
 
         if len(pages_in_need_of_review) == 0:
-            pages_query = db.query(Page.uuid, Page.url, Page.score, Page.last_review_date) \
-                            .filter(Page.last_review_date <= expired_time) \
-                            .filter(Page.domain_id.in_(active_domains))
+            pages_query = db \
+                .query(
+                    Page.uuid,
+                    Page.url,
+                    Page.score,
+                    Page.last_review_date
+                ) \
+                .filter(Page.last_review_date <= expired_time) \
+                .filter(Page.domain_id.in_(active_domains))
 
-            pages_in_need_of_review = pages_query.order_by(Page.score.desc())[:200]
+            pages_in_need_of_review = \
+                pages_query.order_by(Page.score.desc())[lower_bound:upper_bound]
 
-            if len(pages_in_need_of_review) == 0:
-                if settings.lambda_score > 0:
-                    cls.update_pages_score_by(settings, settings.lambda_score, db)
-                return None
+        return pages_in_need_of_review
+
+    @classmethod
+    def get_next_jobs_count(cls, db, config):
+        from holmes.models import Domain
+
+        expiration = config.REVIEW_EXPIRATION_IN_SECONDS
+        expired_time = datetime.now() - timedelta(seconds=expiration)
+
+        domains = db.query(Domain.id).filter(Domain.is_active).all()
+        active_domains = [item.id for item in domains]
+
+        without_review = db \
+            .query(sa.func.count(Page.id)) \
+            .filter(Page.last_review_date == None) \
+            .filter(Page.domain_id.in_(active_domains)) \
+            .scalar()
+
+        total = int(without_review)
+
+        if total == 0:
+            with_review = db \
+                .query(sa.func.count(Page.id)) \
+                .filter(Page.last_review_date <= expired_time) \
+                .filter(Page.domain_id.in_(active_domains)) \
+                .scalar()
+
+            total = int(with_review)
+
+        return total
+
+    @classmethod
+    def get_next_job(cls, db, expiration, cache, lock_expiration):
+        from holmes.models import Settings
+
+        settings = Settings.instance(db)
+
+        pages_in_need_of_review = cls.get_next_job_list(db, expiration)
+
+        if len(pages_in_need_of_review) == 0:
+            if settings.lambda_score > 0:
+                cls.update_pages_score_by(settings, settings.lambda_score, db)
+            return None
 
         if settings.lambda_score > pages_in_need_of_review[0].score:
             cls.update_pages_score_by(settings, settings.lambda_score, db)
@@ -287,6 +342,7 @@ class Page(Base):
             db.commit()
             cache.increment_page_count(domain)
             cache.increment_page_count()
+            cache.increment_next_jobs_count()
         except Exception:
             db.rollback()
             err = sys.exc_info()[1]

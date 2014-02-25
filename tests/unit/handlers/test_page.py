@@ -12,7 +12,7 @@ from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from mock import Mock
 
-from holmes.models import Page
+from holmes.models import Page, Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
@@ -212,3 +212,29 @@ class TestViolationsPerDayHandler(ApiTestCase):
                 u'violation_count': 30
             }
         ])
+
+
+class TestNextJobHandler(ApiTestCase):
+    @property
+    def cache(self):
+        return self.server.application.cache
+
+    @gen_test
+    def test_can_get_pages(self):
+        self.db.query(Page).delete()
+        self.cache.redis.delete('next-jobs')
+
+        page = PageFactory.create()
+        PageFactory.create()
+
+        response = yield self.http_client.fetch(self.get_url('/next-jobs'))
+
+        returned_page = loads(response.body)
+
+        expect(response.code).to_equal(200)
+        expect(returned_page['reviewCount']).to_equal(2)
+        expect(returned_page['pages']).to_length(2)
+        expect(returned_page['pages']).to_include({
+            'url': page.url,
+            'uuid': str(page.uuid)
+        })

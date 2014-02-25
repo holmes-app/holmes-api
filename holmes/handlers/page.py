@@ -111,3 +111,31 @@ class PageViolationsPerDayHandler(BaseHandler):
         }
 
         self.write_json(page_json)
+
+
+class NextJobHandler(BaseHandler):
+    @gen.coroutine
+    def get(self):
+        current_page = int(self.get_argument('current_page', 1))
+        page_size = int(self.get_argument('page_size', 10))
+
+        get_next_job_list = Page.get_next_job_list(
+            self.db,
+            self.application.config.REVIEW_EXPIRATION_IN_SECONDS,
+            current_page=current_page,
+            page_size=page_size
+        )
+
+        review_count = yield self.cache.get_next_jobs_count()
+
+        result = {'reviewCount': review_count}
+        pages = []
+        for item in get_next_job_list:
+            pages.append({
+                'uuid': item.uuid,
+                'url': item.url,
+            })
+
+        result['pages'] = pages
+
+        self.write_json(result)
