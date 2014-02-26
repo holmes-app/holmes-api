@@ -12,7 +12,7 @@ from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from mock import Mock
 
-from holmes.models import Page, Domain
+from holmes.models import Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
