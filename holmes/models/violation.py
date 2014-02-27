@@ -20,6 +20,8 @@ class Violation(Base):
 
     domain_id = sa.Column('domain_id', sa.Integer, sa.ForeignKey('domains.id'))
 
+    review_is_active = sa.Column('review_is_active', sa.Boolean, default=True, nullable=False)
+
     def __str__(self):
         return '%s: %s' % (self.key.name, self.value)
 
@@ -70,3 +72,21 @@ class Violation(Base):
             })
 
         return violations
+
+    @classmethod
+    def get_by_key_id_group_by_domain(cls, db, key_id):
+
+        from holmes.models.violation import Violation  # to avoid circular dependency
+        from holmes.models.domain import Domain  # to avoid circular dependency
+
+        return db \
+            .query(
+                Domain.name.label('domain_name'),
+                sa.func.count(Violation.id).label('violation_count')
+            ) \
+            .filter(Domain.id == Violation.domain_id) \
+            .filter(Violation.key_id == key_id) \
+            .filter(Violation.review_is_active == True) \
+            .group_by(Domain.id) \
+            .order_by('violation_count DESC') \
+            .all()

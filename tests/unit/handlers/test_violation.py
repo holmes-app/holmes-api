@@ -6,7 +6,7 @@ from tests.unit.base import ApiTestCase
 from preggy import expect
 from tornado.testing import gen_test
 
-from tests.fixtures import ReviewFactory, PageFactory, DomainFactory
+from tests.fixtures import ReviewFactory, PageFactory, DomainFactory, KeyFactory, ViolationFactory
 from holmes.models import Key, Violation
 
 
@@ -65,53 +65,124 @@ class TestViolationHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_violation_by_key_name(self):
-        self.db.query(Violation).delete()
+        domains = [DomainFactory.create(
+            name='g%s.com' % chr(i),
+            url='http://g%s.com/' % chr(i)
+        ) for i in xrange(ord('a'), ord('d'))]
 
-        domain = DomainFactory.create(name='g.com')
-        page = PageFactory.create(uuid='some-uuid', domain=domain, url='http://g.com/1')
-        review = ReviewFactory.create(is_active=True, uuid='some-uuid', page=page)
+        pages = [PageFactory.create(
+            domain=domains[i % 3],
+            url='%s%d' % (domains[i % 3].url, i % 2)
+        ) for i in xrange(6)]
 
-        key1 = Key.get_or_create(self.db, 'random.fact.1')
-        review.add_violation(key1, 'value', 100)
-
-        key2 = Key.get_or_create(self.db, 'random.fact.2')
-        review.add_violation(key2, 'value', 300)
+        for i, page in enumerate(pages):
+            ReviewFactory.create(page=page, is_active=True, number_of_violations=i)
 
         self.db.flush()
 
         self.server.application.violation_definitions = {
-            'random.fact.1': {
-                'title': 'SEO',
-                'category': 'SEO',
-                'key': key1
-            },
-            'random.fact.2': {
-                'title': 'HTTP',
-                'category': 'HTTP',
-                'key': key2
-            }
+            'violation.%s' % i: {
+                'title': 'title.%s' % i,
+                'category': 'category.%s' % (i % 3),
+                'key': Key.get_or_create(self.db, 'violation.%d' % i)
+            } for i in xrange(6)
         }
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/random.fact.1')
+            self.get_url('/violation/violation.1')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(4)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/violation.1?page_size=2&current_page=1')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(2)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/violation.1?page_filter=1')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(2)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/violation.1?domain_filter=gc.com')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(2)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/violation.1?domain_filter=foobar')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(4)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/violation.1?domain_filter=gc.com&page_filter=1')
+        )
+        violations = loads(response.body)
+        expect(response.code).to_equal(200)
+        expect(violations).to_length(2)
+        expect(violations['title']).to_equal('title.1')
+        expect(violations['reviews']).to_length(1)
+
+
+class TestViolationDomainsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_by_key_name_domains(self):
+        domains = [DomainFactory.create(name='g%d.com' % i) for i in xrange(2)]
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in xrange(3)]
+
+        for i in range(3):
+            for j in range(i + 1):
+                ViolationFactory.create(
+                    key=keys[i],
+                    domain=domains[j % 2]
+                )
+
+        self.db.flush()
+
+        self.server.application.violation_definitions = {
+            'random.fact.%s' % i: {
+                'title': 'SEO',
+                'category': 'SEO',
+                'key': keys[i]
+            } for i in xrange(3)
+        }
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/%s/domains' % keys[2].name)
         )
 
-        violations = loads(response.body)
+        violation = loads(response.body)
 
-        expected_violations = {
-            'reviews': [{
-                'page': {
-                    'url': 'http://g.com/1',
-                    'uuid': 'some-uuid',
-                    'completedAt': None
-                },
-                'domain_name': 'g.com',
-                'uuid': 'some-uuid'
-            }],
+        expected_violation = {
+            'domains': [
+                {'name': 'g0.com', 'count': 2},
+                {'name': 'g1.com', 'count': 1}
+            ],
+            'total': 3,
             'title': 'SEO'
         }
 
         expect(response.code).to_equal(200)
-        expect(violations).to_length(2)
-        expect(violations['reviews']).to_length(1)
-        expect(violations).to_be_like(expected_violations)
+        expect(violation).to_length(3)
+        expect(violation['domains']).to_length(2)
+        expect(violation).to_be_like(expected_violation)

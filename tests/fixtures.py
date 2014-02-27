@@ -133,6 +133,7 @@ class ViolationFactory(BaseFactory):
     value = None
     points = 0
     domain = factory.SubFactory(DomainFactory)
+    review_is_active = True
 
 
 class WorkerFactory(BaseFactory):

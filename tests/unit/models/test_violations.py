@@ -5,7 +5,7 @@ from preggy import expect
 
 from holmes.models import Violation, Key
 from tests.unit.base import ApiTestCase
-from tests.fixtures import ViolationFactory, KeyFactory, KeysCategoryFactory
+from tests.fixtures import ViolationFactory, KeyFactory, KeysCategoryFactory, DomainFactory
 
 
 class TestViolations(ApiTestCase):
@@ -100,3 +100,20 @@ class TestViolations(ApiTestCase):
                 'title': 'SEO'
             }
         ])
+
+    def test_can_get_by_key_id_group_by_domain(self):
+        domains = [DomainFactory.create(name='g%d.com' % i) for i in xrange(2)]
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in xrange(3)]
+
+        for i in range(3):
+            for j in range(i + 1):
+                ViolationFactory.create(
+                    key=keys[i],
+                    domain=domains[j % 2]
+                )
+
+        violations = Violation.get_by_key_id_group_by_domain(self.db, keys[1].id)
+        expect(violations).to_be_like([('g0.com', 1), ('g1.com', 1)])
+
+        violations = Violation.get_by_key_id_group_by_domain(self.db, keys[2].id)
+        expect(violations).to_be_like([('g0.com', 2), ('g1.com', 1)])

@@ -4,7 +4,7 @@
 from tornado import gen
 
 from holmes.handlers import BaseHandler
-from holmes.models import Review
+from holmes.models import Review, Violation
 
 
 class MostCommonViolationsHandler(BaseHandler):
@@ -46,7 +46,9 @@ class ViolationHandler(BaseHandler):
     @gen.coroutine
     def get(self, key_name):
         current_page = int(self.get_argument('current_page', 1))
-        page_size = int(self.get_argument('page_size', 100))
+        page_size = int(self.get_argument('page_size', 10))
+        domain_filter = self.get_argument('domain_filter', None)
+        page_filter = self.get_argument('page_filter', None)
 
         violations = self.application.violation_definitions
         violation_title = violations[key_name]['title']
@@ -56,7 +58,10 @@ class ViolationHandler(BaseHandler):
             self.db,
             key_id,
             current_page=current_page,
-            page_size=page_size)
+            page_size=page_size,
+            domain_filter=domain_filter,
+            page_filter=page_filter,
+        )
 
         reviews_data = []
         for item in reviews:
@@ -73,6 +78,25 @@ class ViolationHandler(BaseHandler):
         violation = {
             'title': violation_title,
             'reviews': reviews_data,
+        }
+
+        self.write_json(violation)
+        self.finish()
+
+
+class ViolationDomainsHandler(BaseHandler):
+    @gen.coroutine
+    def get(self, key_name):
+        violations = self.application.violation_definitions
+        violation_title = violations[key_name]['title']
+        key_id = violations[key_name]['key'].id
+
+        domains = Violation.get_by_key_id_group_by_domain(self.db, key_id)
+
+        violation = {
+            'title': violation_title,
+            'domains': [{'name': name, 'count': count} for (name, count) in domains],
+            'total': sum(count for (name, count) in domains)
         }
 
         self.write_json(violation)
