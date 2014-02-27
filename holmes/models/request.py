@@ -91,4 +91,4 @@ class Request(Base):
 
         return db \
             .query(Request) \
-            .order_by('completed_date desc')[lower_bound:upper_bound]
+            .order_by('id desc')[lower_bound:upper_bound]
