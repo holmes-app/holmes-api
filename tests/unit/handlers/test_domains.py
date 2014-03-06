@@ -29,13 +29,13 @@ class TestDomainsHandler(ApiTestCase):
         domain = DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
-        page = PageFactory.create(domain=domain)
+        # page = PageFactory.create(domain=domain)
 
-        ReviewFactory.create(is_active=True, domain=domain, page=page)
+        # ReviewFactory.create(is_active=True, domain=domain, page=page)
 
-        RequestFactory.create(domain_name='globo.com', status_code=200, response_time=0.25)
-        RequestFactory.create(domain_name='globo.com', status_code=300, response_time=0.35)
-        RequestFactory.create(domain_name='globo.com', status_code=400, response_time=0.25)
+        # RequestFactory.create(domain_name='globo.com', status_code=200, response_time=0.25)
+        # RequestFactory.create(domain_name='globo.com', status_code=300, response_time=0.35)
+        # RequestFactory.create(domain_name='globo.com', status_code=400, response_time=0.25)
 
         response = yield self.http_client.fetch(
             self.get_url('/domains')
@@ -49,19 +49,21 @@ class TestDomainsHandler(ApiTestCase):
 
         expect(domains[0]['name']).to_equal("g1.globo.com")
         expect(domains[0]['url']).to_equal("http://g1.globo.com")
-        expect(domains[0]['violationCount']).to_equal(0)
-        expect(domains[0]['pageCount']).to_equal(0)
-        expect(domains[0]['reviewPercentage']).to_equal(0)
-        expect(domains[0]['errorPercentage']).to_equal(0)
-        expect(domains[0]['averageResponseTime']).to_be_like(0)
+        expect(domains[0]['is_active']).to_be_true()
+        # expect(domains[0]['violationCount']).to_equal(0)
+        # expect(domains[0]['pageCount']).to_equal(0)
+        # expect(domains[0]['reviewPercentage']).to_equal(0)
+        # expect(domains[0]['errorPercentage']).to_equal(0)
+        # expect(domains[0]['averageResponseTime']).to_be_like(0)
 
         expect(domains[1]['name']).to_equal("globo.com")
         expect(domains[1]['url']).to_equal("http://globo.com")
-        expect(domains[1]['violationCount']).to_equal(0)
-        expect(domains[1]['pageCount']).to_equal(1)
-        expect(domains[1]['reviewPercentage']).to_equal(100.00)
-        expect(domains[1]['errorPercentage']).to_equal(33.33)
-        expect(domains[1]['averageResponseTime']).to_be_like(0.3)
+        expect(domains[1]['is_active']).to_be_true()
+        # expect(domains[1]['violationCount']).to_equal(0)
+        # expect(domains[1]['pageCount']).to_equal(1)
+        # expect(domains[1]['reviewPercentage']).to_equal(100.00)
+        # expect(domains[1]['errorPercentage']).to_equal(33.33)
+        # expect(domains[1]['averageResponseTime']).to_be_like(0.3)
 
     @gen_test
     def test_will_return_empty_list_when_no_domains(self):

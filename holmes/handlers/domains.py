@@ -27,41 +27,11 @@ class DomainsHandler(BaseHandler):
                 "is_active": domain.is_active
             })
 
-            #page_count = yield self.cache.get_page_count(domain)
-            #review_count = yield self.cache.get_active_review_count(domain)
-            #violation_count = yield self.cache.get_violation_count(domain)
-            #good_request_count = yield self.cache.get_good_request_count(domain)
-            #bad_request_count = yield self.cache.get_bad_request_count(domain)
-            #response_time_avg = yield self.cache.get_response_time_avg(domain)
-
-            #if page_count > 0:
-                #review_percentage = round(float(review_count) / page_count * 100, 2)
-            #else:
-                #review_percentage = 0
-
-            #total_request_count = good_request_count + bad_request_count
-            #if total_request_count > 0:
-                #error_percentage = round(float(bad_request_count) / total_request_count * 100, 2)
-            #else:
-                #error_percentage = 0
-
-            #result.append({
-                #"id": domain.id,
-                #"url": domain.url,
-                #"name": domain.name,
-                #"violationCount": violation_count,
-                #"pageCount": page_count,
-                #"reviewCount": review_count,
-                #"reviewPercentage": review_percentage,
-                #"errorPercentage": error_percentage,
-                #"is_active": domain.is_active,
-                #"averageResponseTime": response_time_avg,
-            #})
-
         self.write_json(result)
 
 
 class DomainsFullDataHandler(BaseHandler):
+
     @coroutine
     def get(self):
         domains = self.db.query(Domain).order_by(Domain.name.asc()).all()
@@ -149,6 +119,127 @@ class DomainDetailsHandler(BaseHandler):
             "is_active": domain.is_active,
             "statusCodeInfo": status_code_info,
             "errorPercentage": error_percentage,
+            "averageResponseTime": response_time_avg,
+        }
+
+        self.write_json(domain_json)
+
+
+class DomainPageCountHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        page_count = yield self.cache.get_page_count(domain)
+
+        domain_json = {
+            "id": domain.id,
+            "name": domain.name,
+            "url": domain.url,
+            "is_active": domain.is_active,
+            "pageCount": page_count
+        }
+
+        self.write_json(domain_json)
+
+
+class DomainReviewCountHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        review_count = yield self.cache.get_active_review_count(domain)
+
+        domain_json = {
+            "id": domain.id,
+            "name": domain.name,
+            "url": domain.url,
+            "is_active": domain.is_active,
+            "reviewCount": review_count
+        }
+
+        self.write_json(domain_json)
+
+
+class DomainViolationCountHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        violation_count = yield self.cache.get_violation_count(domain)
+
+        domain_json = {
+            "id": domain.id,
+            "name": domain.name,
+            "url": domain.url,
+            "is_active": domain.is_active,
+            "violationCount": violation_count
+        }
+
+        self.write_json(domain_json)
+
+
+class DomainErrorPercentageHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        bad_request_count = yield self.cache.get_bad_request_count(domain)
+        good_request_count = yield self.cache.get_good_request_count(domain)
+        total_request_count = good_request_count + bad_request_count
+        if total_request_count > 0:
+            error_percentage = round(float(bad_request_count) / total_request_count * 100, 2)
+        else:
+            error_percentage = 0
+
+        domain_json = {
+            "id": domain.id,
+            "name": domain.name,
+            "url": domain.url,
+            "is_active": domain.is_active,
+            "errorPercentage": error_percentage
+        }
+
+        self.write_json(domain_json)
+
+
+class DomainResponseTimeAvgHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        response_time_avg = yield self.cache.get_response_time_avg(domain)
+
+        domain_json = {
+            "id": domain.id,
+            "name": domain.name,
+            "url": domain.url,
+            "is_active": domain.is_active,
             "averageResponseTime": response_time_avg,
         }
 
