@@ -20,12 +20,12 @@ def upgrade():
     connection = op.get_bind()
     connection.execute('UPDATE violations AS viol SET viol.domain_id = (SELECT rev.domain_id FROM reviews AS rev WHERE rev.id = viol.review_id)')
 
+    op.alter_column('violations', 'domain_id', type_=sa.Integer, nullable=False)
+
     op.create_foreign_key(
         'fk_violation_domain', 'violations',
         'domains', ['domain_id'], ['id']
     )
-
-    op.alter_column('violations', 'domain_id', type_=sa.Integer, nullable=False)
 
 
 def downgrade():
