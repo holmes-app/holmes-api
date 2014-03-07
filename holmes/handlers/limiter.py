@@ -3,6 +3,7 @@
 
 from ujson import loads
 from tornado.gen import coroutine
+from decimal import Decimal
 
 from holmes.models import Limiter, User
 from holmes.handlers import BaseHandler
@@ -20,11 +21,16 @@ class LimiterHandler(BaseHandler):
                 'limit-for-%s' % limit.url
             )
 
+            percentage = 0
+            if limit.value > 0:
+                percentage = Decimal(current_value) / limit.value
+
             result.append({
                 'id': limit.id,
                 'url': limit.url,
                 'currentValue': current_value or 0,
                 'maxValue': limit.value or 0,
+                'concurrentRequestsPercentage': percentage
             })
 
         self.write_json(result)
