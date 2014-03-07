@@ -3,7 +3,7 @@
 
 from tornado.gen import coroutine
 
-from holmes.models import Domain, Request
+from holmes.models import Domain, Request, Violation
 from holmes.handlers import BaseHandler
 
 
@@ -311,6 +311,77 @@ class DomainReviewsHandler(BaseHandler):
                 "completedAt": page.last_review_date,
                 "reviewId": str(page.last_review_uuid)
             })
+
+        self.write_json(result)
+
+
+class DomainGroupedViolationsHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        violation_defs = self.application.violation_definitions
+
+        grouped_violations = yield self.cache.get_group_by_category_id_for_domain(domain)
+
+        total = 0
+        violations = []
+        for key_name, key_category_id, count in grouped_violations:
+            violations.append({
+                'categoryId': key_category_id,
+                'categoryName': violation_defs[key_name]['category'],
+                'count': count
+            })
+            total += count
+
+        result = {
+            "domainId": domain.id,
+            'domainName': domain.name,
+            'domainURL': domain.url,
+            'total': total,
+            'violations': violations
+        }
+
+        self.write_json(result)
+
+
+class DomainTopCategoryViolationsHandler(BaseHandler):
+
+    @coroutine
+    def get(self, domain_name, key_category_id):
+        domain = Domain.get_domain_by_name(domain_name, self.db)
+
+        if not domain:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
+
+        violation_defs = self.application.violation_definitions
+
+        top_violations = yield self.cache.get_top_in_category_for_domain(
+            domain,
+            key_category_id,
+            self.application.config.get('TOP_CATEGORY_VIOLATIONS_LIMIT')
+        )
+
+        violations = []
+        for key_name, count in top_violations:
+            violations.append({
+                'title': violation_defs[key_name]['title'],
+                'count': count
+            })
+
+        result = {
+            "domainId": domain.id,
+            'domainName': domain.name,
+            'domainURL': domain.url,
+            'categoryId': key_category_id,
+            'violations': violations
+        }
 
         self.write_json(result)
 

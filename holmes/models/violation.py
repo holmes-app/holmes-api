@@ -90,3 +90,38 @@ class Violation(Base):
             .group_by(Domain.id) \
             .order_by('violation_count DESC') \
             .all()
+
+    @classmethod
+    def get_group_by_category_id_for_domain(cls, db, domain):
+        from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.violation import Violation  # to avoid circular dependency
+
+        return db \
+            .query(
+                Key.name,
+                Key.category_id,
+                sa.func.count(Key.category_id).label('violation_count')
+            ) \
+            .filter(Key.id == Violation.key_id) \
+            .filter(Violation.domain_id == domain.id) \
+            .group_by(Key.category_id) \
+            .order_by('violation_count DESC') \
+            .all()
+
+    @classmethod
+    def get_top_in_category_for_domain(cls, db, domain, key_category_id, limit=10):
+        from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.violation import Violation  # to avoid circular dependency
+
+        return db \
+            .query(
+                Key.name,
+                sa.func.count(Key.category_id).label('violation_count')
+            ) \
+            .filter(Key.id == Violation.key_id) \
+            .filter(Violation.domain_id == domain.id) \
+            .filter(Key.category_id == key_category_id) \
+            .group_by(Key.id) \
+            .order_by('violation_count DESC') \
+            .limit(limit) \
+            .all()
