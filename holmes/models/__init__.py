@@ -42,4 +42,4 @@ from holmes.models.settings import Settings  # NOQA
 from holmes.models.keys_category import KeysCategory  # NOQA
 from holmes.models.request import Request  # NOQA
 from holmes.models.user import User  # NOQA
-from holmes.models.delimiter import Delimiter # NOQA
+from holmes.models.limiter import Limiter # NOQA

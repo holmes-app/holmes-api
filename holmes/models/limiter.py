@@ -7,8 +7,8 @@ import sqlalchemy as sa
 from holmes.models import Base
 
 
-class Delimiter(Base):
-    __tablename__ = "delimiters"
+class Limiter(Base):
+    __tablename__ = "limiters"
 
     id = sa.Column(sa.Integer, primary_key=True)
     url = sa.Column('url', sa.String(2000), nullable=False)
@@ -30,39 +30,39 @@ class Delimiter(Base):
     @classmethod
     def get_all(cls, db):
         return db \
-            .query(Delimiter) \
-            .order_by(sa.func.char_length(Delimiter.url)) \
+            .query(Limiter) \
+            .order_by(sa.func.char_length(Limiter.url)) \
             .all()
 
     @classmethod
     def by_url(cls, url, db):
-        return db.query(Delimiter).filter(Delimiter.url==url).first()
+        return db.query(Limiter).filter(Limiter.url==url).first()
 
     @classmethod
     def by_url_hash(cls, url_hash, db):
-        return db.query(Delimiter).filter(Delimiter.url_hash==url_hash).first()
+        return db.query(Limiter).filter(Limiter.url_hash==url_hash).first()
 
     @classmethod
-    def add_or_update_delimiter(cls, db, url, value):
+    def add_or_update_limiter(cls, db, url, value):
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
-        delimiter = Delimiter.by_url_hash(url_hash, db)
+        limiter = Limiter.by_url_hash(url_hash, db)
 
-        if delimiter:
+        if limiter:
             db \
-                .query(Delimiter) \
-                .filter(Delimiter.id == delimiter.id) \
+                .query(Limiter) \
+                .filter(Limiter.id == limiter.id) \
                 .update({'value': value})
 
             db.flush()
             db.commit()
 
-            return delimiter.url
+            return limiter.url
 
         db.begin(subtransactions=True)
-        delimiter = Delimiter(url=url, url_hash=url_hash, value=value)
-        db.add(delimiter)
+        limiter = Limiter(url=url, url_hash=url_hash, value=value)
+        db.add(limiter)
         db.flush()
         db.commit()
 
-        return delimiter.url
+        return limiter.url

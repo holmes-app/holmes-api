@@ -10,12 +10,12 @@ from ujson import loads, dumps
 from mock import Mock
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import DelimiterFactory, UserFactory
+from tests.fixtures import LimiterFactory, UserFactory
 
-from holmes.models import Delimiter, User
+from holmes.models import Limiter, User
 
 
-class TestDelimiterHandler(ApiTestCase):
+class TestLimiterHandler(ApiTestCase):
     def mock_request(self, code, body):
         def handle(*args, **kw):
             response_mock = Mock(code=code, body=body)
@@ -29,53 +29,53 @@ class TestDelimiterHandler(ApiTestCase):
         client.fetch.side_effect = handle
 
     @gen_test
-    def test_can_get_delimiters(self):
-        self.db.query(Delimiter).delete()
+    def test_can_get_limiters(self):
+        self.db.query(Limiter).delete()
 
-        DelimiterFactory.create(url='http://test.com/', value=100)
-        DelimiterFactory.create(url='http://globo.com/', value=2)
+        LimiterFactory.create(url='http://test.com/', value=100)
+        LimiterFactory.create(url='http://globo.com/', value=2)
 
         response = yield self.http_client.fetch(
-            self.get_url('/delimiters')
+            self.get_url('/limiters')
         )
 
         expect(response.code).to_equal(200)
 
-        delimiters = loads(response.body)
+        limiters = loads(response.body)
 
-        expect(delimiters).to_length(2)
+        expect(limiters).to_length(2)
 
-        expect(delimiters[0]['url']).to_equal('http://test.com/')
-        expect(delimiters[0]['value']).to_equal(100)
+        expect(limiters[0]['url']).to_equal('http://test.com/')
+        expect(limiters[0]['maxValue']).to_equal(100)
 
-        expect(delimiters[1]['url']).to_equal('http://globo.com/')
-        expect(delimiters[1]['value']).to_equal(2)
+        expect(limiters[1]['url']).to_equal('http://globo.com/')
+        expect(limiters[1]['maxValue']).to_equal(2)
 
     @gen_test
-    def test_will_return_empty_list_when_no_delimiters(self):
-        self.db.query(Delimiter).delete()
+    def test_will_return_empty_list_when_no_limiters(self):
+        self.db.query(Limiter).delete()
 
         response = yield self.http_client.fetch(
-            self.get_url('/delimiters')
+            self.get_url('/limiters')
         )
 
         expect(response.code).to_equal(200)
 
-        delimiters = loads(response.body)
+        limiters = loads(response.body)
 
-        expect(delimiters).to_length(0)
+        expect(limiters).to_length(0)
 
     @gen_test
-    def test_can_save_delimiters_without_access_token(self):
-        self.db.query(Delimiter).delete()
+    def test_can_save_limiters_without_access_token(self):
+        self.db.query(Limiter).delete()
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/delimiters'),
+                self.get_url('/limiters'),
                 method='POST',
                 body=dumps({
                     'url': 'http://globo.com/',
-                    'value': 10
+                    'maxValue': 10
                 })
             )
         except HTTPError:
@@ -87,8 +87,8 @@ class TestDelimiterHandler(ApiTestCase):
             assert False, 'Should not have got this far'
 
     @gen_test
-    def test_can_save_delimiters_with_access_token(self):
-        self.db.query(Delimiter).delete()
+    def test_can_save_limiters_with_access_token(self):
+        self.db.query(Limiter).delete()
         self.db.query(User).delete()
 
         dt = datetime(2014, 2, 14, 15, 0, 30)
@@ -105,21 +105,21 @@ class TestDelimiterHandler(ApiTestCase):
         self.mock_request(code=200, body=user_data)
 
         yield self.http_client.fetch(
-            self.get_url('/delimiters'),
+            self.get_url('/limiters'),
             method='POST',
             body=dumps({
                 'url': 'http://globo.com/',
-                'value': 10
+                'maxValue': 10
             }),
             headers={'X-AUTH-HOLMES': '111'}
         )
 
-        loaded_delimiter = Delimiter.by_url('http://globo.com/', self.db)
-        expect(loaded_delimiter).not_to_be_null()
+        loaded_limiter = Limiter.by_url('http://globo.com/', self.db)
+        expect(loaded_limiter).not_to_be_null()
 
     @gen_test
-    def test_can_save_delimiters_with_empty_values(self):
-        self.db.query(Delimiter).delete()
+    def test_can_save_limiters_with_empty_values(self):
+        self.db.query(Limiter).delete()
         self.db.query(User).delete()
 
         dt = datetime(2014, 2, 14, 15, 0, 30)
@@ -137,7 +137,7 @@ class TestDelimiterHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/delimiters'),
+                self.get_url('/limiters'),
                 method='POST',
                 body='{}',
                 headers={'X-AUTH-HOLMES': '111'}
@@ -151,8 +151,8 @@ class TestDelimiterHandler(ApiTestCase):
             )
 
     @gen_test
-    def test_can_save_delimiters_with_not_authorized_user(self):
-        self.db.query(Delimiter).delete()
+    def test_can_save_limiters_with_not_authorized_user(self):
+        self.db.query(Limiter).delete()
         self.db.query(User).delete()
 
         UserFactory(email='test@test.com')
@@ -165,7 +165,7 @@ class TestDelimiterHandler(ApiTestCase):
 
         try:
             yield self.http_client.fetch(
-                self.get_url('/delimiters'),
+                self.get_url('/limiters'),
                 method='POST',
                 body='{}',
                 headers={'X-AUTH-HOLMES': '111'}

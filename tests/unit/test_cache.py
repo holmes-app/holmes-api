@@ -7,10 +7,10 @@ from tornado.testing import gen_test
 from tornado.gen import Task
 
 from holmes.cache import Cache
-from holmes.models import Domain, Delimiter, Page, Request
+from holmes.models import Domain, Limiter, Page, Request
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
-    DomainFactory, PageFactory, ReviewFactory, DelimiterFactory, RequestFactory
+    DomainFactory, PageFactory, ReviewFactory, LimiterFactory, RequestFactory
 )
 
 
@@ -449,20 +449,20 @@ class SyncCacheTestCase(ApiTestCase):
         expect(self.sync_cache.db).not_to_be_null()
 
     def test_can_get_domain_limiters(self):
-        self.db.query(Delimiter).delete()
+        self.db.query(Limiter).delete()
         self.sync_cache.redis.delete('domain-limiters')
 
         domains = self.sync_cache.get_domain_limiters()
         expect(domains).to_be_null()
 
-        delimiter = DelimiterFactory.create(url='http://test.com/')
-        DelimiterFactory.create()
-        DelimiterFactory.create()
+        limiter = LimiterFactory.create(url='http://test.com/')
+        LimiterFactory.create()
+        LimiterFactory.create()
 
         domains = self.sync_cache.get_domain_limiters()
 
         expect(domains).to_length(3)
-        expect(domains).to_include({delimiter.url: delimiter.value})
+        expect(domains).to_include({limiter.url: limiter.value})
 
         # should get from cache
         self.sync_cache.db = None
@@ -471,19 +471,19 @@ class SyncCacheTestCase(ApiTestCase):
         expect(domains).to_length(3)
 
     def test_can_set_domain_limiters(self):
-        self.db.query(Delimiter).delete()
+        self.db.query(Limiter).delete()
         self.sync_cache.redis.delete('domain-limiters')
 
         domains = self.sync_cache.get_domain_limiters()
         expect(domains).to_be_null()
 
-        delimiters = [{u'http://test.com/': 10}]
+        limiters = [{u'http://test.com/': 10}]
 
-        self.sync_cache.set_domain_limiters(delimiters, 120)
+        self.sync_cache.set_domain_limiters(limiters, 120)
         domains = self.sync_cache.get_domain_limiters()
 
         expect(domains).to_length(1)
-        expect(domains).to_include(delimiters[0])
+        expect(domains).to_include(limiters[0])
 
     def test_has_key(self):
         self.sync_cache.redis.delete('my-key')

@@ -4,24 +4,27 @@
 from ujson import loads
 from tornado.gen import coroutine
 
-from holmes.models import Delimiter, User
+from holmes.models import Limiter, User
 from holmes.handlers import BaseHandler
 
 
 class LimiterHandler(BaseHandler):
     @coroutine
     def get(self):
-        limiters = Delimiter.get_all(self.db)
+        limiters = Limiter.get_all(self.db)
 
         result = []
 
         for limit in limiters:
-            current_value = yield self.cache.get_limit_usage('limit-for-%s' % limit.url)
+            current_value = yield self.cache.get_limit_usage(
+                'limit-for-%s' % limit.url
+            )
 
             result.append({
                 'id': limit.id,
                 'url': limit.url,
-                'currentValue': current_value or 0
+                'currentValue': current_value or 0,
+                'maxValue': limit.value or 0,
             })
 
         self.write_json(result)
@@ -56,6 +59,6 @@ class LimiterHandler(BaseHandler):
             self.write_json({'reason': 'Not url or value'})
             return
 
-        result = Delimiter.add_or_update_delimiter(self.db, url, value)
+        result = Limiter.add_or_update_limiter(self.db, url, value)
 
         self.write_json(result)

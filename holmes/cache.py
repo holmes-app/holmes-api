@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
 
-from holmes.models import Domain, Page, Delimiter, Violation, Request
+from holmes.models import Domain, Page, Limiter, Violation, Request
 
 
 class Cache(object):
@@ -540,9 +540,9 @@ class SyncCache(object):
         if domains:
             domains = loads(domains)
         else:
-            delimiters = Delimiter.get_all(self.db)
-            if delimiters:
-                domains = [{d.url: d.value} for d in delimiters]
+            limiters = Limiter.get_all(self.db)
+            if limiters:
+                domains = [{d.url: d.value} for d in limiters]
                 self.set_domain_limiters(
                     domains,
                     self.config.LIMITER_VALUES_CACHE_EXPIRATION

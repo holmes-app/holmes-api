@@ -8,7 +8,7 @@ import hashlib
 
 from holmes.models import (
     Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request,
-    User, Delimiter
+    User, Limiter
 )
 from uuid import uuid4
 
@@ -165,8 +165,8 @@ class UserFactory(BaseFactory):
     last_login = datetime.datetime(2013, 12, 11, 10, 9, 8)
 
 
-class DelimiterFactory(BaseFactory):
-    FACTORY_FOR = Delimiter
+class LimiterFactory(BaseFactory):
+    FACTORY_FOR = Limiter
 
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
     url_hash = None

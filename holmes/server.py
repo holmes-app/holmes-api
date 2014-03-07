@@ -33,7 +33,7 @@ from holmes.handlers.settings import (
     TaxHandler
 )
 from holmes.handlers.request import RequestDomainHandler, LastRequestsHandler
-from holmes.handlers.delimiter import LimiterHandler
+from holmes.handlers.limiter import LimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
