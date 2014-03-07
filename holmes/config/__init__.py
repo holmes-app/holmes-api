@@ -105,6 +105,7 @@ Config.define('GOOGLE_CLIENT_ID', None, 'Google client ID')
 
 Config.define('LIMITER_LOCKS_EXPIRATION', 120, 'The expiration for locks in the limiter')
 Config.define('LIMITER_VALUES_CACHE_EXPIRATION', 600, 'The expiration for valus in the limiter')
+Config.define('DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS', 5, 'Default number of concurrent connections', 'Limiter')
 
 Config.define('MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION', 3 * HOUR, 'Expiration for the cache key for the most common violations', 'Cache')
 Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, 'Limit for the size of the Vilation sample used in the aggregation', 'Violation Handler')

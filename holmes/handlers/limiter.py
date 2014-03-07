@@ -58,7 +58,8 @@ class LimiterHandler(BaseHandler):
 
         post_data = loads(self.request.body)
         url = post_data.get('url', None)
-        value = post_data.get('value', None)
+        connections = self.application.config.DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS
+        value = post_data.get('value', connections)
 
         if not url and not value:
             self.set_status(400)
