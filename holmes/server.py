@@ -33,7 +33,7 @@ from holmes.handlers.settings import (
     TaxHandler
 )
 from holmes.handlers.request import RequestDomainHandler, LastRequestsHandler
-from holmes.handlers.delimiter import DelimiterHandler
+from holmes.handlers.delimiter import LimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
@@ -94,7 +94,7 @@ class HolmesApiServer(Server):
             (r'/violation/([_a-z0-9\.]*)/?', ViolationHandler),
             (r'/violation/([_a-z0-9\.]*)/domains/?', ViolationDomainsHandler),
             (r'/tax/?', TaxHandler),
-            (r'/delimiters/?', DelimiterHandler),
+            (r'/limiters/?', LimiterHandler),
             (r'/next-jobs/?', NextJobHandler),
             (r'/last-requests/?', LastRequestsHandler),
         ]

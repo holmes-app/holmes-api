@@ -324,6 +324,10 @@ class Cache(object):
     def release_lock_page(self, url, callback):
         self.redis.delete('%s-lock' % url, callback=callback)
 
+    @return_future
+    def get_limit_usage(self, url, callback):
+        self.redis.zcard('limit-for-%s' % url, callback=callback)
+
 
 class SyncCache(object):
     def __init__(self, db, redis, config):

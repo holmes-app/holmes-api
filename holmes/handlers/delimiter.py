@@ -8,10 +8,23 @@ from holmes.models import Delimiter, User
 from holmes.handlers import BaseHandler
 
 
-class DelimiterHandler(BaseHandler):
+class LimiterHandler(BaseHandler):
+    @coroutine
     def get(self):
-        delimiters = Delimiter.get_all(self.db)
-        self.write_json([d.to_dict() for d in delimiters])
+        limiters = Delimiter.get_all(self.db)
+
+        result = []
+
+        for limit in limiters:
+            current_value = yield self.cache.get_limit_usage('limit-for-%s' % limit.url)
+
+            result.append({
+                'id': limit.id,
+                'url': limit.url,
+                'currentValue': current_value or 0
+            })
+
+        self.write_json(result)
 
     @coroutine
     def post(self):
