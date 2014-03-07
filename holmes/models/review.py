@@ -101,9 +101,44 @@ class Review(Base):
         return len(self.violations)
 
     @classmethod
-    def get_by_violation_key_name(cls, db, key_id, current_page=1, page_size=10, domain_filter=None, page_filter=None):
-
+    def _filter_violation_key_name(cls, db, query, key_id, domain_filter=None, page_filter=None):
+        from holmes.models.domain import Domain  # to avoid circular dependency
+        from holmes.models.page import Page  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency
+
+        query = query \
+            .filter(Page.id == Review.page_id) \
+            .filter(Domain.id == Review.domain_id) \
+            .filter(Violation.review_id == Review.id) \
+            .filter(Review.is_active == 1) \
+            .filter(Violation.key_id == key_id)
+
+        page_filter_prefix = '%'
+        if domain_filter:
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain:
+                query = query.filter(Review.domain_id == domain.id)
+                page_filter_prefix = domain.url
+
+        if page_filter:
+            query = query.filter(
+                Page.url.like(
+                    '{0}{1}%'.format(page_filter_prefix, page_filter)
+                )
+            )
+
+        return query
+
+    @classmethod
+    def count_by_violation_key_name(cls, db, key_id, domain_filter=None, page_filter=None):
+        query = db.query(sa.func.count(Review.id))
+        query = cls._filter_violation_key_name(
+            db, query, key_id, domain_filter, page_filter
+        )
+        return query.scalar()
+
+    @classmethod
+    def get_by_violation_key_name(cls, db, key_id, current_page=1, page_size=10, domain_filter=None, page_filter=None):
         from holmes.models.page import Page  # to avoid circular dependency
         from holmes.models.domain import Domain  # to avoid circular dependency
 
@@ -117,21 +152,11 @@ class Review(Base):
                 Page.uuid.label('page_uuid'),
                 Domain.name.label('domain_name'),
                 Review.completed_date
-            ) \
-            .filter(Page.id == Review.page_id) \
-            .filter(Domain.id == Review.domain_id) \
-            .filter(Violation.review_id == Review.id) \
-            .filter(Review.is_active == 1) \
-            .filter(Violation.key_id == key_id)
+            )
 
-        page_filter_prefix = '%'
-        if domain_filter:
-            domain = Domain.get_domain_by_name(domain_filter, db)
-            if domain:
-                query = query.filter(Review.domain_id == domain.id)
-                page_filter_prefix = domain.url
-        if page_filter:
-            query = query.filter(Page.url.like('{0}{1}%'.format(page_filter_prefix, page_filter)))
+        query = cls._filter_violation_key_name(
+            db, query, key_id, domain_filter, page_filter
+        )
 
         return query.order_by(Review.completed_date.desc())[lower_bound:upper_bound]
 

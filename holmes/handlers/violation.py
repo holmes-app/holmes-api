@@ -63,6 +63,13 @@ class ViolationHandler(BaseHandler):
             page_filter=page_filter,
         )
 
+        reviews_count = Review.count_by_violation_key_name(
+            self.db,
+            key_id,
+            domain_filter=domain_filter,
+            page_filter=page_filter
+        )
+
         reviews_data = []
         for item in reviews:
             reviews_data.append({
@@ -78,6 +85,7 @@ class ViolationHandler(BaseHandler):
         violation = {
             'title': violation_title,
             'reviews': reviews_data,
+            'reviewsCount': reviews_count
         }
 
         self.write_json(violation)
