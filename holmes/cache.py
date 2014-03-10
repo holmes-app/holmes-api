@@ -346,6 +346,10 @@ class Cache(object):
     def get_limit_usage(self, url, callback):
         self.redis.zcard('limit-for-%s' % url, callback=callback)
 
+    @return_future
+    def remove_domain_limiters_key(self, callback):
+        self.redis.delete('domain-limiters', callback=callback)
+
 
 class SyncCache(object):
     def __init__(self, db, redis, config):

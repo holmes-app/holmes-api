@@ -67,4 +67,6 @@ class LimiterHandler(BaseHandler):
 
         result = Limiter.add_or_update_limiter(self.db, url, value)
 
+        yield self.cache.remove_domain_limiters_key()
+
         self.write_json(result)

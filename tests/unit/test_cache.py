@@ -428,6 +428,24 @@ class CacheTestCase(ApiTestCase):
         result = yield self.cache.has_lock('http://www.globo.com')
         expect(result).to_be_false()
 
+    @gen_test
+    def test_can_remove_domain_limiters_key(self):
+        self.cache.redis.delete('domain-limiters')
+
+        domains = yield Task(self.cache.redis.get, 'domain-limiters')
+        expect(domains).to_be_null()
+
+        yield Task(self.cache.redis.setex, 'domain-limiters', 10, 10)
+
+        domains = yield Task(self.cache.redis.get, 'domain-limiters')
+        expect(domains).to_equal('10')
+
+        yield self.cache.remove_domain_limiters_key()
+
+        domains = yield Task(self.cache.redis.get, 'domain-limiters')
+        expect(domains).to_be_null()
+
+
 class SyncCacheTestCase(ApiTestCase):
     def setUp(self):
         super(SyncCacheTestCase, self).setUp()
