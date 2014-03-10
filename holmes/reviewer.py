@@ -6,6 +6,7 @@ import urlparse
 import inspect
 import email.utils as eut
 from datetime import datetime
+from ujson import dumps
 
 import codecs
 from box.util.rotunicode import RotUnicode
@@ -151,6 +152,11 @@ class Reviewer(object):
         self.db.add(req)
 
         self.cache.increment_requests_count()
+
+        self.publish(dumps({
+            'type': 'new-request',
+            'url': str(url)
+        }))
 
     def review(self):
         self.load_content(self.content_loaded)
