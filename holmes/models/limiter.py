@@ -44,6 +44,9 @@ class Limiter(Base):
 
     @classmethod
     def add_or_update_limiter(cls, db, url, value):
+        if not url:
+            return
+
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
         limiter = Limiter.by_url_hash(url_hash, db)
