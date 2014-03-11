@@ -10,7 +10,8 @@ class HeadingHierarchyFacter(Facter):
         return {
             'page.heading_hierarchy': {
                 'title': 'Heading Hierarchy',
-                'description': lambda value: list(value)
+                'description': lambda value: list(value),
+                'unit': 'heading-hierarchy'
             },
         }
 
