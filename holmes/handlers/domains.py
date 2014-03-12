@@ -3,7 +3,7 @@
 
 from tornado.gen import coroutine
 
-from holmes.models import Domain, Request, Violation
+from holmes.models import Domain, Request
 from holmes.handlers import BaseHandler
 
 
