@@ -130,10 +130,13 @@ class Domain(Base):
     def get_active_review_count(self, db, url_starts_with=None):
         from holmes.models import Review, Page
 
-        query = db.query(func.count(Review.id)).join(Page, Page.id == Review.page_id).filter(Review.is_active == True, Review.domain_id == self.id)
+        query = db.query(func.count(Review.id))
 
         if url_starts_with:
-            query = query.filter(Page.url.like('%s%%' % url_starts_with))
+            query = query.join(Page, Page.id == Review.page_id) \
+                .filter(Page.url.like('%s%%' % url_starts_with))
+
+        query = query.filter(Review.is_active == True, Review.domain_id == self.id)
 
         return query.scalar()
 
