@@ -32,5 +32,5 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index('idx_key_domain_review_active', 'violations'),
+    op.drop_index('idx_key_domain_review_active', 'violations')
     op.drop_column('violations', 'review_is_active')
