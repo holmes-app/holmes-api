@@ -255,7 +255,7 @@ class Page(Base):
 
         fetch_method(
             url,
-            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, callback)),
+            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, callback)),
             proxy_host=config.HTTP_PROXY_HOST,
             proxy_port=config.HTTP_PROXY_PORT
         )
@@ -284,7 +284,7 @@ class Page(Base):
         return handle
 
     @classmethod
-    def handle_add_page(cls, db, cache, url, score, publish_method, callback):
+    def handle_add_page(cls, db, cache, url, score, publish_method, config, callback):
         def handle(code, body, effective_url):
             if code > 399:
                 callback((False, url, {
@@ -303,7 +303,7 @@ class Page(Base):
                 }))
                 return
 
-            domain = cls.add_domain(url, db, publish_method)
+            domain = cls.add_domain(url, db, publish_method, config)
             page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache)
 
             callback((True, url, page_uuid))
@@ -359,7 +359,7 @@ class Page(Base):
         return page.uuid
 
     @classmethod
-    def add_domain(cls, url, db, publish_method):
+    def add_domain(cls, url, db, publish_method, config):
         from holmes.models import Domain
 
         domain_name, domain_url = get_domain_from_url(url)
@@ -386,5 +386,9 @@ class Page(Base):
                 'type': 'new-domain',
                 'domainUrl': str(domain_url)
             }))
+
+            from holmes.models import Limiter
+            connections = config.DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS
+            Limiter.add_or_update_limiter(db, domain_url, connections)
 
         return domain
