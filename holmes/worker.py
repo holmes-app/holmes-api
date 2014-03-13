@@ -2,41 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import logging
 from uuid import uuid4
 from datetime import datetime, timedelta
 
 from ujson import dumps
-from sheep import Shepherd
 from colorama import Fore, Style
 from octopus import TornadoOctopus
 from octopus.limiter.redis.per_domain import Limiter
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.exc import OperationalError
-import redis
 
 from holmes import __version__
-from holmes.cache import SyncCache
-from holmes.config import Config
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels
 from holmes.models import Settings, Worker, Page
+from holmes.cli import BaseCLI
 
 
-class BaseWorker(Shepherd):
-    def info(self, message):
-        self.log(message, logging.info)
-
-    def debug(self, message):
-        self.log(message, logging.debug)
-
-    def log(self, message, level=logging.info):
-        name = self.get_description()
-        level('[%s - %s] %s' % (
-            name, self.parent_name, message
-        ))
-
+class BaseWorker(BaseCLI):
     def _load_validators(self):
         return load_classes(default=self.config.VALIDATORS)
 
@@ -67,37 +49,6 @@ class BaseWorker(Shepherd):
             limiter=self.get_otto_limiter()
         )
         self.otto.start()
-
-    def connect_sqlalchemy(self):
-        autoflush = self.config.get('SQLALCHEMY_AUTO_FLUSH', False)
-        connstr = self.config.SQLALCHEMY_CONNECTION_STRING
-        engine = create_engine(
-            connstr,
-            convert_unicode=True,
-            pool_size=self.config.SQLALCHEMY_POOL_SIZE,
-            max_overflow=self.config.SQLALCHEMY_POOL_MAX_OVERFLOW,
-            echo=self.options.verbose == 3
-        )
-
-        self.info("Connecting to \"%s\" using SQLAlchemy" % connstr)
-
-        self.sqlalchemy_db_maker = sessionmaker(bind=engine, autoflush=autoflush, autocommit=True)
-        self.db = scoped_session(self.sqlalchemy_db_maker)
-
-    def connect_to_redis(self):
-        host = self.config.get('REDISHOST')
-        port = self.config.get('REDISPORT')
-
-        self.info("Connecting to redis at %s:%d" % (host, port))
-        self.redis = redis.StrictRedis(host=host, port=port, db=0)
-
-        self.info("Connecting pubsub to redis at %s:%d" % (host, port))
-        self.redis_pub_sub = redis.StrictRedis(host=host, port=port, db=0)
-
-        self.cache = SyncCache(self.db, self.redis, self.config)
-
-    def load_error_handlers(self):
-        return load_classes(default=self.config.ERROR_HANDLERS)
 
     def handle_error(self, exc_type, exc_value, tb):
         for handler in self.error_handlers:
@@ -195,9 +146,6 @@ class HolmesWorker(BaseWorker):
             __version__
         )
 
-    def get_config_class(self):
-        return Config
-
     def do_work(self):
         if self._ping_api():
             err = None
@@ -207,7 +155,7 @@ class HolmesWorker(BaseWorker):
                     self._start_reviewer(job=job)
                 except InvalidReviewError:
                     err = str(sys.exc_info()[1])
-                    logging.error("Fail to review %s: %s" % (job['url'], err))
+                    self.error("Fail to review %s: %s" % (job['url'], err))
 
                 lock = job.get('lock', None)
                 self._complete_job(lock, error=err)
@@ -218,7 +166,7 @@ class HolmesWorker(BaseWorker):
         if job:
 
             if count_url_levels(job['url']) > self.config.MAX_URL_LEVELS:
-                logging.info('Max URL levels! Details: %s' % job['url'])
+                self.info('Max URL levels! Details: %s' % job['url'])
                 return
 
             self.debug('Starting Review for [%s]' % job['url'])
@@ -255,7 +203,7 @@ class HolmesWorker(BaseWorker):
             except Exception:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
-                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
                     self.db.rollback()
                     raise
@@ -302,7 +250,7 @@ class HolmesWorker(BaseWorker):
             except Exception:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
-                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
                     self.db.rollback()
                     raise
@@ -346,7 +294,7 @@ class HolmesWorker(BaseWorker):
                 except Exception:
                     err = sys.exc_info()[1]
                     if 'Deadlock found' in str(err):
-                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                        self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
                         self.db.rollback()
                         raise

@@ -64,6 +64,10 @@ Config.define('REDISHOST', 'localhost', 'Redis host', 'Redis')
 Config.define('REDISPORT', 7575, 'Redis port', 'Redis')
 Config.define('REDISPASS', None, 'Redis password in case of auth', 'Redis')
 
+Config.define('MATERIAL_GIRL_REDISPORT', 7575, 'Redis port', 'Redis')
+Config.define('MATERIAL_GIRL_REDISHOST', 'localhost', 'Redis host', 'Redis')
+Config.define('MATERIAL_GIRL_REDISPASS', None, 'Redis password in case of auth', 'Redis')
+
 Config.define('REQUIRED_META_TAGS', [], 'List of required meta tags', 'Meta tag Validator')
 
 Config.define('SCHEMA_ORG_ITEMTYPE', [], 'List of Schema.Org ItemType', 'Schema.Org ItemType')

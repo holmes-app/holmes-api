@@ -34,46 +34,7 @@ class DomainsFullDataHandler(BaseHandler):
 
     @coroutine
     def get(self):
-        domains = self.db.query(Domain).order_by(Domain.name.asc()).all()
-
-        if not domains:
-            self.write("[]")
-            return
-
-        result = []
-
-        for domain in domains:
-            page_count = yield self.cache.get_page_count(domain)
-            review_count = yield self.cache.get_active_review_count(domain)
-            violation_count = yield self.cache.get_violation_count(domain)
-            good_request_count = yield self.cache.get_good_request_count(domain)
-            bad_request_count = yield self.cache.get_bad_request_count(domain)
-            response_time_avg = yield self.cache.get_response_time_avg(domain)
-
-            if page_count > 0:
-                review_percentage = round(float(review_count) / page_count * 100, 2)
-            else:
-                review_percentage = 0
-
-            total_request_count = good_request_count + bad_request_count
-            if total_request_count > 0:
-                error_percentage = round(float(bad_request_count) / total_request_count * 100, 2)
-            else:
-                error_percentage = 0
-
-            result.append({
-                "id": domain.id,
-                "url": domain.url,
-                "name": domain.name,
-                "violationCount": violation_count,
-                "pageCount": page_count,
-                "reviewCount": review_count,
-                "reviewPercentage": review_percentage,
-                "errorPercentage": error_percentage,
-                "is_active": domain.is_active,
-                "averageResponseTime": response_time_avg,
-            })
-
+        result = self.girl.get('domains_details')
         self.write_json(result)
 
 

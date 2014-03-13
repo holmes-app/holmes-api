@@ -61,3 +61,8 @@ class BaseHandler(RequestHandler):
             #self._session = self.application.get_sqlalchemy_session()
 
         #return self._session
+
+    @property
+    def girl(self):
+        return self.application.girl
+

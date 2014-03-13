@@ -8,6 +8,9 @@ from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
 from tornado.httpclient import AsyncHTTPClient
 #from toredis import Client
+import redis
+from materialgirl import Materializer
+from materialgirl.storage.redis import RedisStorage
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler, WorkersInfoHandler
 from holmes.handlers.worker_state import WorkerStateHandler
@@ -142,6 +145,20 @@ class HolmesApiServer(Server):
         self.connect_pub_sub(io_loop)
 
         self.application.cache = Cache(self.application)
+
+        self.configure_material_girl()
+
+    def configure_material_girl(self):
+        from holmes.material import configure_materials
+
+        host = self.config.get('MATERIAL_GIRL_REDISHOST')
+        port = self.config.get('MATERIAL_GIRL_REDISPORT')
+
+        self.redis_material = redis.StrictRedis(host=host, port=port, db=0)
+
+        self.application.girl = Materializer(storage=RedisStorage(redis=self.redis_material))
+
+        configure_materials(self.application.girl, self.db)
 
     def _insert_key_category(self, key, name):
         category = KeysCategory.get_or_create(self.application.db, name)

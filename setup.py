@@ -58,7 +58,8 @@ Holmes is a service to investigate your website health.
         'redis',
         'toredis',
         'raven',
-        'rotunicode'
+        'rotunicode',
+        'materialgirl',
     ],
     extras_require={
         'tests': tests_require,
@@ -67,6 +68,7 @@ Holmes is a service to investigate your website health.
         'console_scripts': [
             'holmes-api=holmes.server:main',
             'holmes-worker=holmes.worker:main',
+            'holmes-material=holmes.material:main',
         ],
     },
 )

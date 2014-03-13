@@ -70,5 +70,8 @@ worker:
 workers:
 	@holmes-worker -c ./holmes/config/local.conf -t 10 -w 20
 
+girl:
+	@holmes-material -c ./holmes/config/local.conf -vvv
+
 docs:
 	@cd holmes/docs && make html && open _build/html/index.html

@@ -171,3 +171,46 @@ class Domain(Base):
             .filter(Request.status_code < 400) \
             .scalar()
         return round(time_avg, 3) if time_avg is not None else 0
+
+    @classmethod
+    def get_domains_details(cls, db):
+        domains = db.query(Domain).order_by(Domain.name.asc()).all()
+
+        if not domains:
+            return []
+
+        result = []
+
+        for domain in domains:
+            page_count = domain.get_page_count(db)
+            review_count = domain.get_active_review_count(db)
+            violation_count = domain.get_violation_data(db)
+            good_request_count = domain.get_good_request_count(db)
+            bad_request_count = domain.get_bad_request_count(db)
+            response_time_avg = domain.get_response_time_avg(db)
+
+            if page_count > 0:
+                review_percentage = round(float(review_count) / page_count * 100, 2)
+            else:
+                review_percentage = 0
+
+            total_request_count = good_request_count + bad_request_count
+            if total_request_count > 0:
+                error_percentage = round(float(bad_request_count) / total_request_count * 100, 2)
+            else:
+                error_percentage = 0
+
+            result.append({
+                "id": domain.id,
+                "url": domain.url,
+                "name": domain.name,
+                "violationCount": violation_count,
+                "pageCount": page_count,
+                "reviewCount": review_count,
+                "reviewPercentage": review_percentage,
+                "errorPercentage": error_percentage,
+                "is_active": domain.is_active,
+                "averageResponseTime": response_time_avg,
+            })
+
+        return result
