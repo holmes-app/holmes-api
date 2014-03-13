@@ -3,7 +3,6 @@
 
 import sys
 from uuid import uuid4
-import time
 from functools import partial
 
 from holmes.cli import BaseCLI
@@ -14,7 +13,7 @@ def configure_materials(girl, db):
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
-        5 * 60
+        30
     )
 
 
@@ -32,7 +31,6 @@ class MaterialWorker(BaseCLI):
     def do_work(self):
         self.info('Running material girl...')
         self.girl.run()
-        time.sleep(5000)
 
 def main():
     worker = MaterialWorker(sys.argv[1:])
