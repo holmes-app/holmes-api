@@ -126,7 +126,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(2)
-        expect(violations['reviewsCount']).to_equal(2)
+        expect(violations['reviewsCount']).to_equal(8)
 
         response = yield self.http_client.fetch(
             self.get_url('/violation/violation.1?domain_filter=foobar')
