@@ -16,9 +16,7 @@ class LimiterHandler(BaseHandler):
         result = []
 
         for limit in limiters:
-            current_value = yield self.cache.get_limit_usage(
-                'limit-for-%s' % limit.url
-            )
+            current_value = yield self.cache.get_limit_usage(limit.url)
 
             percentage = 0
             if limit.value > 0:
