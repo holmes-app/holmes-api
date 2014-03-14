@@ -63,7 +63,7 @@ class ReviewDAO(object):
 
 class Reviewer(object):
     def __init__(
-            self, api_url, page_uuid, page_url, page_score, ping_method=None,
+            self, api_url, page_uuid, page_url, page_score,
             increase_lambda_tax_method=None, config=None, validators=[], facters=[],
             async_get=None, wait=None, wait_timeout=None, db=None, cache=None, publish=None,
             fact_definitions=None, violation_definitions=None):
@@ -78,7 +78,7 @@ class Reviewer(object):
         self.page_url = page_url
         self.page_score = page_score
 
-        self.ping_method = ping_method
+        self.ping_method = None
         self.increase_lambda_tax_method = increase_lambda_tax_method
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)

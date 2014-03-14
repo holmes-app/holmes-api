@@ -175,7 +175,6 @@ class HolmesWorker(BaseWorker):
                 page_uuid=job['page'],
                 page_url=job['url'],
                 page_score=job['score'],
-                ping_method=self._ping_api,
                 increase_lambda_tax_method=self._increase_lambda_tax,
                 config=self.config,
                 validators=self.validators,
