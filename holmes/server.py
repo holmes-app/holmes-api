@@ -11,6 +11,7 @@ from tornado.httpclient import AsyncHTTPClient
 import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
+import tornado
 
 from holmes.handlers.worker import WorkerHandler, WorkersHandler, WorkersInfoHandler
 from holmes.handlers.worker_state import WorkerStateHandler
@@ -45,11 +46,17 @@ from holmes.utils import load_classes
 from holmes.models import Key
 from holmes.models import KeysCategory
 from holmes.cache import Cache
+from holmes import __version__
 
 
 def main():
     AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
     HolmesApiServer.run()
+
+
+class VersionHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(__version__)
 
 
 class HolmesApiServer(Server):
@@ -103,6 +110,7 @@ class HolmesApiServer(Server):
             (r'/limiters/?', LimiterHandler),
             (r'/next-jobs/?', NextJobHandler),
             (r'/last-requests/?', LastRequestsHandler),
+            (r'/version/?', VersionHandler),
         ]
 
         return tuple(handlers)
