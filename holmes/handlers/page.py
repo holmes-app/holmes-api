@@ -126,7 +126,8 @@ class NextJobHandler(BaseHandler):
             page_size=page_size
         )
 
-        review_count = self.girl.get('next_jobs_count')
+        #review_count = self.girl.get('next_jobs_count')
+        review_count = 0
 
         result = {'reviewCount': review_count}
         pages = []

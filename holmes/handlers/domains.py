@@ -34,7 +34,8 @@ class DomainsFullDataHandler(BaseHandler):
 
     @coroutine
     def get(self):
-        result = self.girl.get('domains_details')
+        #result = self.girl.get('domains_details')
+        result = []
         self.write_json(result)
 
 
@@ -288,11 +289,12 @@ class DomainGroupedViolationsHandler(BaseHandler):
 
         violation_defs = self.application.violation_definitions
 
-        grouped_violations = self.girl.get('violation_count_by_category_for_domains')
+        #grouped_violations = self.girl.get('violation_count_by_category_for_domains')
+        grouped_violations = {}
 
         total = 0
         violations = []
-        for item in grouped_violations[domain.id]:
+        for item in grouped_violations.get(domain.id, []):
             key_name, key_category_id, count = item['key_name'], item['category_id'], item['violation_count']
             violations.append({
                 'categoryId': key_category_id,
