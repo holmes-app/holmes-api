@@ -66,6 +66,11 @@ class HolmesApiServer(Server):
         self.force_debug = debug
         self.db = db
 
+    def get_extra_server_parameters(self):
+        return {
+            'no_keep_alive': False
+        }
+
     def initialize_app(self, *args, **kw):
         super(HolmesApiServer, self).initialize_app(*args, **kw)
 
