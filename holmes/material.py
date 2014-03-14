@@ -8,6 +8,7 @@ from functools import partial
 from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
 from holmes.models.page import Page
+from holmes.models.violation import Violation
 
 
 def configure_materials(girl, db, config):
@@ -21,6 +22,12 @@ def configure_materials(girl, db, config):
         'next_jobs_count',
         partial(Page.get_next_jobs_count, db, config),
         10
+    )
+
+    girl.add_material(
+        'violation_count_by_category_for_domains',
+        partial(Violation.get_group_by_category_id_for_all_domains, db),
+        60
     )
 
 

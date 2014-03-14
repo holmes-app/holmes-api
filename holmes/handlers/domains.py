@@ -288,11 +288,12 @@ class DomainGroupedViolationsHandler(BaseHandler):
 
         violation_defs = self.application.violation_definitions
 
-        grouped_violations = yield self.cache.get_group_by_category_id_for_domain(domain)
+        grouped_violations = self.girl.get('violation_count_by_category_for_domains')
 
         total = 0
         violations = []
-        for key_name, key_category_id, count in grouped_violations:
+        for item in grouped_violations[domain.id]:
+            key_name, key_category_id, count = item['key_name'], item['category_id'], item['violation_count']
             violations.append({
                 'categoryId': key_category_id,
                 'categoryName': violation_defs[key_name]['category'],

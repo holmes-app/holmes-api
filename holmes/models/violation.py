@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
+from collections import defaultdict
 
 from holmes.models import Base, JsonType
 from holmes.models.keys import Key
@@ -93,6 +94,7 @@ class Violation(Base):
 
     @classmethod
     def get_group_by_category_id_for_domain(cls, db, domain):
+        # TODO: Remove this useless method and point its tests to the method below (get_group_by_category_id_for_all_domains)
         from holmes.models.keys import Key  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency
 
@@ -107,6 +109,36 @@ class Violation(Base):
             .group_by(Key.category_id) \
             .order_by('violation_count DESC') \
             .all()
+
+    @classmethod
+    def get_group_by_category_id_for_all_domains(cls, db):
+        from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.violation import Violation  # to avoid circular dependency
+
+        data = db \
+            .query(
+                Violation.domain_id,
+                Key.name,
+                Key.category_id,
+                sa.func.count(Key.category_id).label('violation_count')
+            ) \
+            .filter(Key.id == Violation.key_id) \
+            .group_by(Violation.domain_id) \
+            .group_by(Key.category_id) \
+            .order_by('violation_count DESC') \
+            .all()
+
+        result = defaultdict(list)
+
+        for item in data:
+            result[item.domain_id].append({
+                'key_name': item.name,
+                'category_id': item.category_id,
+                'violation_count': item.violation_count
+            })
+
+        return result
+
 
     @classmethod
     def get_top_in_category_for_domain(cls, db, domain, key_category_id, limit=10):
