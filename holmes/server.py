@@ -120,8 +120,8 @@ class HolmesApiServer(Server):
             self.application.db = self.application.get_sqlalchemy_session()
 
         if self.debug:
-            import sqltap
-            sqltap.start()
+            from sqltap import sqltap
+            self.sqltap = sqltap.start()
 
         self.application.facters = self._load_facters()
         self.application.validators = self._load_validators()
@@ -193,9 +193,10 @@ class HolmesApiServer(Server):
     def before_end(self, io_loop):
         self.application.db.remove()
 
-        if self.debug:
-            import sqltap
-            statistics = sqltap.collect()
+        if self.debug and getattr(self, 'sqltap', None) is not None:
+            from sqltap import sqltap
+
+            statistics = self.sqltap.collect()
             sqltap.report(statistics, "report.html")
 
     def connect_pub_sub(self, io_loop):

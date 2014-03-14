@@ -75,3 +75,6 @@ girl:
 
 docs:
 	@cd holmes/docs && make html && open _build/html/index.html
+
+sqltap:
+	@open 'http://localhost:8000/report.html'; python -m SimpleHTTPServer
