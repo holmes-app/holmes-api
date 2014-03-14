@@ -15,7 +15,7 @@ class User(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     fullname = sa.Column('fullname', sa.String(200), nullable=False)
-    email = sa.Column('email', sa.String(100), nullable=False)
+    email = sa.Column('email', sa.String(100), nullable=False, unique=True)
     is_superuser = sa.Column(
         'is_superuser',
         sa.Boolean,
