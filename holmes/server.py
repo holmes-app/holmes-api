@@ -158,7 +158,7 @@ class HolmesApiServer(Server):
 
         self.application.girl = Materializer(storage=RedisStorage(redis=self.redis_material))
 
-        configure_materials(self.application.girl, self.application.db)
+        configure_materials(self.application.girl, self.application.db, self.config)
 
     def _insert_key_category(self, key, name):
         category = KeysCategory.get_or_create(self.application.db, name)

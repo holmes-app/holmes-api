@@ -7,13 +7,20 @@ from functools import partial
 
 from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
+from holmes.models.page import Page
 
 
-def configure_materials(girl, db):
+def configure_materials(girl, db, config):
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
         30
+    )
+
+    girl.add_material(
+        'next_jobs_count',
+        partial(Page.get_next_jobs_count, db, config),
+        10
     )
 
 

@@ -126,7 +126,7 @@ class NextJobHandler(BaseHandler):
             page_size=page_size
         )
 
-        review_count = yield self.cache.get_next_jobs_count()
+        review_count = self.material.get('next_jobs_count')
 
         result = {'reviewCount': review_count}
         pages = []

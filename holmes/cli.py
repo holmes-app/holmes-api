@@ -78,4 +78,4 @@ class BaseCLI(Shepherd):
         from holmes.material import configure_materials
         self.girl = Materializer(storage=RedisStorage(redis=self.redis_material))
 
-        configure_materials(self.girl, self.db)
+        configure_materials(self.girl, self.db, self.config)
