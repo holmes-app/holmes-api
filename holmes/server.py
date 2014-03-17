@@ -159,7 +159,7 @@ class HolmesApiServer(Server):
 
         self.application.cache = Cache(self.application)
 
-        #self.configure_material_girl()
+        self.configure_material_girl()
 
     def configure_material_girl(self):
         from holmes.material import configure_materials
