@@ -107,7 +107,7 @@ class HolmesApiServer(Server):
             (r'/domains/([^/]+)/reviews/?', DomainReviewsHandler),
             (r'/domains/([^/]+)/change-status/?', DomainsChangeStatusHandler),
             (r'/domains/([^/]+)/requests/([0-9]*)/?', RequestDomainHandler),
-            #(r'/events/?', EventBusHandler),
+            (r'/events/?', EventBusHandler),
             (r'/violations/?', ViolationsHandler),
             (r'/violation/([_a-z0-9\.]*)/?', ViolationHandler),
             (r'/violation/([_a-z0-9\.]*)/domains/?', ViolationDomainsHandler),
