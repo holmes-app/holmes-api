@@ -16,7 +16,7 @@ class LimiterHandler(BaseHandler):
         result = []
 
         for limit in limiters:
-            current_value = yield self.cache.get_limit_usage(limit.url)
+            current_value = yield self.cache.get_limit_usage(limit.url) or 0
 
             percentage = 0
             if limit.value > 0:
@@ -25,7 +25,7 @@ class LimiterHandler(BaseHandler):
             result.append({
                 'id': limit.id,
                 'url': limit.url,
-                'currentValue': current_value or 0,
+                'currentValue': current_value,
                 'maxValue': limit.value or 0,
                 'concurrentRequestsPercentage': percentage
             })
