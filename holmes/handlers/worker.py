@@ -39,7 +39,7 @@ class WorkerHandler(BaseHandler):
     def _remove_zombie_workers(self):
         self.db.flush()
 
-        dt = datetime.now() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
+        dt = datetime.utcnow() - timedelta(seconds=self.application.config.ZOMBIE_WORKER_TIME)
 
         workers_to_delete = self.db.query(Worker).filter(Worker.last_ping < dt).order_by(Worker.id).all()
 
