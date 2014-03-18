@@ -37,7 +37,7 @@ class TestWorker(ApiTestCase):
         worker_dict = worker.to_dict()
 
         expect(worker_dict['uuid']).to_equal(str(worker.uuid))
-        expect(worker_dict['last_ping']).to_equal(str(worker.last_ping))
+        expect(worker_dict['last_ping']).to_equal(worker.last_ping)
         expect(worker_dict['working']).to_be_true()
 
     def test_worker_is_working(self):
