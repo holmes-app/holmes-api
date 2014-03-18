@@ -153,6 +153,8 @@ class Reviewer(object):
 
         self.cache.increment_requests_count()
 
+        url = url.encode('utf-8')
+
         self.publish(dumps({
             'type': 'new-request',
             'url': str(url)
