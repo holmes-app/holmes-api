@@ -15,7 +15,7 @@ class Worker(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     uuid = sa.Column('uuid', sa.String(36), default=uuid4, nullable=False)
-    last_ping = sa.Column('last_ping', sa.DateTime, default=datetime.now, nullable=False)
+    last_ping = sa.Column('last_ping', sa.DateTime, default=datetime.utcnow, nullable=False)
 
     current_url = sa.Column('current_url', sa.Text)
 
@@ -33,7 +33,7 @@ class Worker(Base):
         domain, domain_url = get_domain_from_url(self.current_url)
         return {
             'uuid': str(self.uuid),
-            'last_ping': str(self.last_ping),
+            'last_ping': self.last_ping,
             'current_url': self.current_url,
             'working': self.working,
             'domain_name': domain

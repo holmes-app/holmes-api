@@ -20,7 +20,7 @@ class WorkerHandler(BaseHandler):
 
         if worker:
             if i_am == 'alive':
-                worker.last_ping = datetime.now()
+                worker.last_ping = datetime.utcnow()
             elif i_am == 'dead':
                 self.db.delete(worker)
         else:

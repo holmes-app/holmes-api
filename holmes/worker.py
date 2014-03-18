@@ -217,7 +217,7 @@ class HolmesWorker(BaseWorker):
 
         try:
             if worker:
-                worker.last_ping = datetime.now()
+                worker.last_ping = datetime.utcnow()
                 worker.current_url = self.working_url
             else:
                 worker = Worker(uuid=self.uuid, current_url=self.working_url)
@@ -237,7 +237,7 @@ class HolmesWorker(BaseWorker):
     def _remove_zombie_workers(self):
         self.db.flush()
 
-        dt = datetime.now() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
+        dt = datetime.utcnow() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
 
         for i in range(3):
             self.db.begin(subtransactions=True)
@@ -270,7 +270,7 @@ class HolmesWorker(BaseWorker):
         self.db.begin(subtransactions=True)
         worker = Worker.by_uuid(self.uuid, self.db)
         worker.current_url = url
-        worker.last_ping = datetime.now()
+        worker.last_ping = datetime.utcnow()
         self.db.flush()
         self.db.commit()
 
@@ -287,7 +287,7 @@ class HolmesWorker(BaseWorker):
                 try:
                     self.cache.release_next_job(lock)
                     worker.current_url = None
-                    worker.last_ping = datetime.now()
+                    worker.last_ping = datetime.utcnow()
                     self.db.flush()
                     self.db.commit()
                     break
