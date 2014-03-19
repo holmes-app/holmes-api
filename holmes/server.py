@@ -47,6 +47,7 @@ from holmes.models import Key
 from holmes.models import KeysCategory
 from holmes.cache import Cache
 from holmes import __version__
+from holmes.handlers import BaseHandler
 
 
 def main():
@@ -54,7 +55,7 @@ def main():
     HolmesApiServer.run()
 
 
-class VersionHandler(tornado.web.RequestHandler):
+class VersionHandler(BaseHandler):
     def get(self):
         self.write(__version__)
 
