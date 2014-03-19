@@ -293,7 +293,7 @@ class DomainGroupedViolationsHandler(BaseHandler):
         total = 0
         violations = []
 
-        for item in grouped_violations.get(domain.id, None):
+        for item in grouped_violations.get(domain.id, violations):
             key_name, key_category_id, count = item['key_name'], item['category_id'], item['violation_count']
             violations.append({
                 'categoryId': key_category_id,
