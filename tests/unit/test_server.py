@@ -22,7 +22,7 @@ class ApiServerTestCase(ApiTestCase):
         handlers = srv.get_handlers()
 
         expect(handlers).not_to_be_null()
-        expect(handlers).to_length(35)
+        expect(handlers).to_length(34)
 
     def test_server_plugins(self):
         srv = holmes.server.HolmesApiServer()
