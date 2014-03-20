@@ -114,7 +114,6 @@ class Domain(Base):
             ) \
             .filter(Page.last_review_date != None) \
             .filter(Page.domain == self) \
-            .order_by(Page.last_review_date)
 
         if url_starts_with:
             items_query = items_query.filter(Page.url.like('%s%%' % url_starts_with))
