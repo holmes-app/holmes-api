@@ -27,15 +27,18 @@ class BaseWorker(BaseCLI):
 
     def get_otto_limiter(self):
         domains = self.cache.get_domain_limiters()
+        limiter = None
 
         if domains:
-            return Limiter(
+            limiter = Limiter(
                 *domains,
                 redis=self.redis,
                 expiration_in_seconds=self.config.LIMITER_LOCKS_EXPIRATION
             )
-        else:
-            return None
+
+            limiter.subscribe_to_lock_miss(self.handle_limiter_miss)
+
+        return limiter
 
     def update_otto_limiter(self):
         self.otto.limiter = self.get_otto_limiter()
@@ -80,6 +83,9 @@ class BaseWorker(BaseCLI):
             )
             handler(url, response)
         return handle
+
+    def handle_limiter_miss(self, url):
+        pass
 
     def publish(self, data):
         self.redis_pub_sub.publish('events', data)
@@ -224,7 +230,10 @@ class HolmesWorker(BaseWorker):
             self.db.flush()
             self.db.commit()
         except OperationalError:
+            exc = sys.exc_info()[1]
             self.db.rollback()
+            self.error("Could not ping API due to error: %s" % str(exc))
+            return False
 
         self.publish(dumps({
             'type': 'worker-status',
@@ -232,6 +241,9 @@ class HolmesWorker(BaseWorker):
         }))
 
         return True
+
+    def handle_limiter_miss(self, url):
+        self._ping_api()
 
     def _remove_zombie_workers(self):
         self.db.flush()
