@@ -81,15 +81,15 @@ class TestViolationHandler(ApiTestCase):
         self.db.flush()
 
         self.server.application.violation_definitions = {
-            'violation.%s' % i: {
+            'key.%s' % i: {
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
-                'key': Key.get_or_create(self.db, 'violation.%d' % i)
+                'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
             } for i in xrange(6)
         }
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1')
+            self.get_url('/violation/key.1')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -99,7 +99,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(4)
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1?page_size=2&current_page=1')
+            self.get_url('/violation/key.1?page_size=2&current_page=1')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -109,7 +109,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(4)
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1?page_filter=1')
+            self.get_url('/violation/key.1?page_filter=1')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -119,7 +119,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(2)
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1?domain_filter=gc.com')
+            self.get_url('/violation/key.1?domain_filter=gc.com')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -129,7 +129,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(8)
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1?domain_filter=foobar')
+            self.get_url('/violation/key.1?domain_filter=foobar')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -139,7 +139,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(4)
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/violation.1?domain_filter=gc.com&page_filter=1')
+            self.get_url('/violation/key.1?domain_filter=gc.com&page_filter=1')
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)

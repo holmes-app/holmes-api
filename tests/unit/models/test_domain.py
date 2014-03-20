@@ -6,7 +6,7 @@ from datetime import datetime
 from preggy import expect
 from tornado.testing import gen_test
 
-from holmes.models import Domain, Request
+from holmes.models import Domain, Request, Violation
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, RequestFactory
 
@@ -247,3 +247,42 @@ class TestDomain(ApiTestCase):
 
         avg = domain.get_response_time_avg(self.db)
         expect(avg).to_be_like(0.3)
+
+    def test_can_get_domains_details(self):
+        self.db.query(Domain).delete()
+
+        details = Domain.get_domains_details(self.db)
+
+        expect(details).to_length(0)
+
+        domain = DomainFactory.create(name='domain-1.com', url='http://domain-1.com/')
+        domain2 = DomainFactory.create(name='domain-2.com', url='http://domain-2.com/')
+        DomainFactory.create()
+
+        page = PageFactory.create(domain=domain)
+        page2 = PageFactory.create(domain=domain)
+        page3 = PageFactory.create(domain=domain2)
+
+        ReviewFactory.create(domain=domain, page=page, is_active=True, number_of_violations=20)
+        ReviewFactory.create(domain=domain, page=page2, is_active=True, number_of_violations=10)
+        ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=30)
+
+        RequestFactory.create(status_code=200, domain_name=domain.name, response_time=0.25)
+        RequestFactory.create(status_code=304, domain_name=domain.name, response_time=0.35)
+        RequestFactory.create(status_code=400, domain_name=domain.name, response_time=0.25)
+        RequestFactory.create(status_code=403, domain_name=domain.name, response_time=0.35)
+        RequestFactory.create(status_code=404, domain_name=domain.name, response_time=0.25)
+
+        details = Domain.get_domains_details(self.db)
+
+        expect(details).to_length(3)
+        expect(details[0]).to_length(10)
+        expect(details[0]['url']).to_equal('http://domain-1.com/')
+        expect(details[0]['name']).to_equal('domain-1.com')
+        expect(details[0]['violationCount']).to_equal(30)
+        expect(details[0]['pageCount']).to_equal(2)
+        expect(details[0]['reviewCount']).to_equal(2)
+        expect(details[0]['reviewPercentage']).to_equal(100.0)
+        expect(details[0]['errorPercentage']).to_equal(60.0)
+        expect(details[0]['is_active']).to_be_true()
+        expect(details[0]['averageResponseTime']).to_equal(0.3)

@@ -9,33 +9,20 @@ from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 
-from holmes.models import Domain, Request
+from holmes.models import Domain, Key
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, RequestFactory
 
 
 class TestDomainsHandler(ApiTestCase):
 
-    def setUp(self):
-        super(TestDomainsHandler, self).setUp()
-        self.db.query(Domain).delete()
-        self.db.query(Request).delete()
-
     @gen_test
     def test_can_get_domains_info(self):
         self.clean_cache('globo.com')
         self.clean_cache('g1.globo.com')
 
-        domain = DomainFactory.create(url="http://globo.com", name="globo.com")
+        DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
-
-        # page = PageFactory.create(domain=domain)
-
-        # ReviewFactory.create(is_active=True, domain=domain, page=page)
-
-        # RequestFactory.create(domain_name='globo.com', status_code=200, response_time=0.25)
-        # RequestFactory.create(domain_name='globo.com', status_code=300, response_time=0.35)
-        # RequestFactory.create(domain_name='globo.com', status_code=400, response_time=0.25)
 
         response = yield self.http_client.fetch(
             self.get_url('/domains')
@@ -50,20 +37,10 @@ class TestDomainsHandler(ApiTestCase):
         expect(domains[0]['name']).to_equal("g1.globo.com")
         expect(domains[0]['url']).to_equal("http://g1.globo.com")
         expect(domains[0]['is_active']).to_be_true()
-        # expect(domains[0]['violationCount']).to_equal(0)
-        # expect(domains[0]['pageCount']).to_equal(0)
-        # expect(domains[0]['reviewPercentage']).to_equal(0)
-        # expect(domains[0]['errorPercentage']).to_equal(0)
-        # expect(domains[0]['averageResponseTime']).to_be_like(0)
 
         expect(domains[1]['name']).to_equal("globo.com")
         expect(domains[1]['url']).to_equal("http://globo.com")
         expect(domains[1]['is_active']).to_be_true()
-        # expect(domains[1]['violationCount']).to_equal(0)
-        # expect(domains[1]['pageCount']).to_equal(1)
-        # expect(domains[1]['reviewPercentage']).to_equal(100.00)
-        # expect(domains[1]['errorPercentage']).to_equal(33.33)
-        # expect(domains[1]['averageResponseTime']).to_be_like(0.3)
 
     @gen_test
     def test_will_return_empty_list_when_no_domains(self):
@@ -76,6 +53,63 @@ class TestDomainsHandler(ApiTestCase):
         domains = loads(response.body)
 
         expect(domains).to_length(0)
+
+
+class TestDomainsFullDataHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_domains_full_data(self):
+        domains = []
+        for i in xrange(3):
+            domains.append(DomainFactory.create(name='domain-%d.com' % i))
+
+        pages = []
+        for i, domain in enumerate(domains):
+            pages.append([])
+            for j in xrange(3):
+                pages[i].append(PageFactory.create(domain=domain))
+
+        requests = reviews = []
+        for i, (domain, page) in enumerate(zip(domains, pages)):
+            for j in xrange(i + 1):
+                reviews.append(ReviewFactory.create(
+                    domain=domain,
+                    page=page[j],
+                    is_active=True,
+                    number_of_violations=(5 + 2 * j)
+                ))
+                requests.append(RequestFactory.create(
+                    status_code=200 if j % 2 == 0 else 404,
+                    domain_name=domain.name,
+                    response_time=0.25 * (i + 1)
+                ))
+
+        self.server.application.violation_definitions = {
+            'key.%s' % i: {
+                'title': 'title.%s' % i,
+                'category': 'category.%s' % (i % 3),
+                'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
+            } for i in xrange(9)
+        }
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains-details')
+        )
+
+        expect(response.code).to_equal(200)
+
+        full_data = loads(response.body)
+
+        expect(full_data).to_length(3)
+        expect(full_data[0].keys()).to_length(10)
+
+        expect(map(lambda d: d['name'], full_data)).to_be_like(['domain-0.com', 'domain-1.com', 'domain-2.com'])
+        expect(map(lambda d: d['pageCount'], full_data)).to_be_like([3, 3, 3])
+        expect(map(lambda d: d['reviewCount'], full_data)).to_be_like([1, 2, 3])
+        expect(map(lambda d: d['violationCount'], full_data)).to_be_like([5, 12, 21])
+        expect(map(lambda d: d['reviewPercentage'], full_data)).to_be_like([33.33, 66.67, 100.0])
+        expect(map(lambda d: d['errorPercentage'], full_data)).to_be_like([0.0, 50.0, 33.33])
+        expect(map(lambda d: d['averageResponseTime'], full_data)).to_be_like([0.25, 0.5, 0.75])
 
 
 class TestDomainDetailsHandler(ApiTestCase):
@@ -102,9 +136,13 @@ class TestDomainDetailsHandler(ApiTestCase):
 
         expect(domain_details['name']).to_equal('domain-details.com')
         expect(domain_details['pageCount']).to_equal(2)
+        expect(domain_details['reviewCount']).to_equal(2)
         expect(domain_details['violationCount']).to_equal(50)
+        expect(domain_details['reviewPercentage']).to_equal(100.00)
+        expect(domain_details['statusCodeInfo']).to_equal([])
         expect(domain_details['errorPercentage']).to_equal(0)
         expect(domain_details['averageResponseTime']).to_equal(0)
+        expect(domain_details['is_active']).to_be_true()
 
     @gen_test
     def test_domain_not_found(self):
@@ -118,6 +156,47 @@ class TestDomainDetailsHandler(ApiTestCase):
             expect(err.code).to_equal(404)
         else:
             assert False, 'Should not have got this far'
+
+
+class TestDomainViolationsPerDayHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_violations_per_day(self):
+        dt = datetime(2013, 10, 10, 10, 10, 10)
+        dt2 = datetime(2013, 10, 11, 10, 10, 10)
+        dt3 = datetime(2013, 10, 12, 10, 10, 10)
+
+        page = PageFactory.create()
+
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
+        ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/%s/violations-per-day/' % page.domain.name)
+        )
+
+        expect(response.code).to_equal(200)
+
+        domain_details = loads(response.body)
+
+        expect(domain_details['violations']).to_be_like([
+            {
+                u'completedAt': u'2013-10-10',
+                u'violation_points': 190,
+                u'violation_count': 20
+            },
+            {
+                u'completedAt': u'2013-10-11',
+                u'violation_points': 45,
+                u'violation_count': 10
+            },
+            {
+                u'completedAt': u'2013-10-12',
+                u'violation_points': 435,
+                u'violation_count': 30
+            }
+        ])
 
 
 class TestDomainReviewsHandler(ApiTestCase):
@@ -211,45 +290,85 @@ class TestDomainReviewsHandler(ApiTestCase):
             expect(domain_details['pages'][i]['uuid']).to_equal(str(pages[10 + i].uuid))
 
 
-class TestViolationsPerDayHandler(ApiTestCase):
+class TestDomainGroupedViolationsHandler(ApiTestCase):
 
     @gen_test
-    def test_can_get_violations_per_day(self):
-        dt = datetime(2013, 10, 10, 10, 10, 10)
-        dt2 = datetime(2013, 10, 11, 10, 10, 10)
-        dt3 = datetime(2013, 10, 12, 10, 10, 10)
+    def test_can_get_domain_grouped_violations(self):
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
 
-        page = PageFactory.create()
+        page1 = PageFactory.create(domain=domain1)
+        page2 = PageFactory.create(domain=domain1)
+        page3 = PageFactory.create(domain=domain2)
 
-        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
-        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
-        ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
+        ReviewFactory.create(domain=domain1, page=page1, is_active=True, number_of_violations=5)
+        ReviewFactory.create(domain=domain1, page=page2, is_active=True, number_of_violations=7)
+        ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=9)
+
+        self.server.application.violation_definitions = {
+            'key.%s' % i: {
+                'title': 'title.%s' % i,
+                'category': 'category.%s' % (i % 3),
+                'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
+            } for i in xrange(9)
+        }
 
         response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/violations-per-day/' % page.domain.name)
+            self.get_url('/domains/%s/violations' % domain1.name)
         )
 
         expect(response.code).to_equal(200)
 
-        domain_details = loads(response.body)
+        domain_violations = loads(response.body)
 
-        expect(domain_details['violations']).to_be_like([
-            {
-                u'completedAt': u'2013-10-10',
-                u'violation_points': 190,
-                u'violation_count': 20
-            },
-            {
-                u'completedAt': u'2013-10-11',
-                u'violation_points': 45,
-                u'violation_count': 10
-            },
-            {
-                u'completedAt': u'2013-10-12',
-                u'violation_points': 435,
-                u'violation_count': 30
-            }
-        ])
+        expect(domain_violations).to_length(5)
+        expect(domain_violations.keys()).to_be_like(['domainName', 'violations', 'total', 'domainURL', 'domainId'])
+        expect(domain_violations['total']).to_equal(12)
+        expect(domain_violations['violations']).to_length(3)
+
+        counts = map(lambda v: v['count'], domain_violations['violations'])
+        expect(counts).to_be_like([5, 4, 3])
+
+
+class DomainTopCategoryViolationsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_domain_top_category_violations(self):
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
+
+        page1 = PageFactory.create(domain=domain1)
+        page2 = PageFactory.create(domain=domain1)
+        page3 = PageFactory.create(domain=domain2)
+
+        ReviewFactory.create(domain=domain1, page=page1, is_active=True, number_of_violations=5)
+        ReviewFactory.create(domain=domain1, page=page2, is_active=True, number_of_violations=7)
+        ReviewFactory.create(domain=domain2, page=page3, is_active=True, number_of_violations=9)
+
+        self.server.application.violation_definitions = {
+            'key.%s' % i: {
+                'title': 'title.%s' % i,
+                'category': 'category.%s' % (i % 3),
+                'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
+            } for i in xrange(9)
+        }
+
+        key = Key.get_or_create(self.db, 'key.0')
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/%s/violations/%d/' % (domain1.name, key.category_id))
+        )
+
+        expect(response.code).to_equal(200)
+
+        domain_top_category = loads(response.body)
+
+        expect(domain_top_category).to_length(5)
+        expect(domain_top_category.keys()).to_be_like(['violations', 'domainId', 'categoryId', 'domainURL', 'domainName'])
+        expect(domain_top_category['violations']).to_length(3)
+
+        counts = map(lambda v: v['count'], domain_top_category['violations'])
+        expect(counts).to_be_like([2, 1, 1])
 
 
 class TestChangeDomainStatus(ApiTestCase):

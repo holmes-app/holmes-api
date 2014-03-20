@@ -91,13 +91,14 @@ class ReviewFactory(BaseFactory):
             violations = []
             for i in range(number_of_violations):
                 db = cls.FACTORY_SESSION
-                key = Key.get_or_create(db, "violation.%d" % i)
+                key = Key.get_or_create(db, 'key.%d' % i, 'category.%d' % (i % 3))
                 violations.append(
                     Violation(
                         key=key,
                         value="value %d" % i,
                         points=i,
-                        domain=kwargs['page'].domain
+                        domain=kwargs['page'].domain,
+                        review_is_active=kwargs['is_active']
                     )
                 )
 

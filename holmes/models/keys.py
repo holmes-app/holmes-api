@@ -29,10 +29,15 @@ class Key(Base):
         return str(self)
 
     @classmethod
-    def get_or_create(cls, db, key_name):
+    def get_or_create(cls, db, key_name, category_name=None):
         key = db.query(Key).filter(Key.name == key_name).scalar()
 
         if not key:
-            key = Key(name=key_name)
+            if category_name is None:
+                key = Key(name=key_name)
+            else:
+                from holmes.models import KeysCategory
+                category = KeysCategory.get_or_create(db, category_name)
+                key = Key(name=key_name, category=category)
 
         return key

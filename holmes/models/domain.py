@@ -22,7 +22,6 @@ class Domain(Base):
     reviews = relationship("Review", backref="domain")
     violations = relationship("Violation", backref="domain")
 
-
     def to_dict(self):
         return {
             "url": self.url,
@@ -114,7 +113,8 @@ class Domain(Base):
                 Page.last_review_uuid, Page.violations_count
             ) \
             .filter(Page.last_review_date != None) \
-            .filter(Page.domain == self)
+            .filter(Page.domain == self) \
+            .order_by(Page.last_review_date)
 
         if url_starts_with:
             items_query = items_query.filter(Page.url.like('%s%%' % url_starts_with))

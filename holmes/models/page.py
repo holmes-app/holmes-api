@@ -135,7 +135,7 @@ class Page(Base):
         active_domains = [item.id for item in domains]
 
         if not active_domains:
-            return None
+            return []
 
         pages_query = db \
             .query(

@@ -93,24 +93,6 @@ class Violation(Base):
             .all()
 
     @classmethod
-    def get_group_by_category_id_for_domain(cls, db, domain):
-        # TODO: Remove this useless method and point its tests to the method below (get_group_by_category_id_for_all_domains)
-        from holmes.models.keys import Key  # to avoid circular dependency
-        from holmes.models.violation import Violation  # to avoid circular dependency
-
-        return db \
-            .query(
-                Key.name,
-                Key.category_id,
-                sa.func.count(Key.category_id).label('violation_count')
-            ) \
-            .filter(Key.id == Violation.key_id) \
-            .filter(Violation.domain_id == domain.id) \
-            .group_by(Key.category_id) \
-            .order_by('violation_count DESC') \
-            .all()
-
-    @classmethod
     def get_group_by_category_id_for_all_domains(cls, db):
         from holmes.models.keys import Key  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency

@@ -27,9 +27,7 @@ from holmes.handlers.review import (
 from holmes.handlers.domains import (
     DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler,
     DomainReviewsHandler, DomainsChangeStatusHandler, DomainsFullDataHandler,
-    DomainPageCountHandler, DomainReviewCountHandler, DomainViolationCountHandler,
-    DomainErrorPercentageHandler, DomainResponseTimeAvgHandler, DomainGroupedViolationsHandler,
-    DomainTopCategoryViolationsHandler
+    DomainGroupedViolationsHandler, DomainTopCategoryViolationsHandler
 )
 from holmes.handlers.search import (
     SearchHandler
@@ -96,11 +94,6 @@ class HolmesApiServer(Server):
             (r'/domains/?', DomainsHandler),
             (r'/domains-details/?', DomainsFullDataHandler),
             (r'/domains/([^/]+)/?', DomainDetailsHandler),
-            (r'/domains/([^/]+)/page-count/?', DomainPageCountHandler),
-            (r'/domains/([^/]+)/review-count/?', DomainReviewCountHandler),
-            (r'/domains/([^/]+)/violation-count/?', DomainViolationCountHandler),
-            (r'/domains/([^/]+)/error-percentage/?', DomainErrorPercentageHandler),
-            (r'/domains/([^/]+)/response-time-avg/?', DomainResponseTimeAvgHandler),
             (r'/domains/([^/]+)/violations-per-day/?', DomainViolationsPerDayHandler),
             (r'/domains/([^/]+)/violations/?', DomainGroupedViolationsHandler),
             (r'/domains/([^/]+)/violations/([0-9]+)/?', DomainTopCategoryViolationsHandler),

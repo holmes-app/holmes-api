@@ -173,15 +173,6 @@ class Cache(object):
         )
 
     @return_future
-    def get_group_by_category_id_for_domain(self, domain, callback=None):
-        self.get_data(
-            '%s-violations-by-category' % domain.name,
-            int(self.config.VIOLATIONS_BY_CATEGORY_EXPIRATION_IN_SECONDS),
-            lambda: Violation.get_group_by_category_id_for_domain(self.db, domain),
-            callback=callback
-        )
-
-    @return_future
     def get_top_in_category_for_domain(self, domain, key_category_id, limit, callback=None):
         self.get_data(
             '%s-top-violations-cat-%s' % (domain.name, key_category_id),
