@@ -33,6 +33,9 @@ redis_test: kill_redis_test
 	redis-server ./redis_test.conf; sleep 1
 	redis-cli -p 57575 info > /dev/null
 
+flush_redis_test:
+	redis-cli -p 57575 FLUSHDB
+
 drop:
 	@-cd holmes/ && alembic downgrade base
 	@mysql -u root -e "DROP DATABASE IF EXISTS holmes; CREATE DATABASE IF NOT EXISTS holmes"

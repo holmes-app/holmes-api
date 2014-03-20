@@ -70,6 +70,8 @@ class ApiTestCase(CowTestCase):
             COMMIT_ON_REQUEST_END=False,
             REDISHOST='localhost',
             REDISPORT=57575,
+            MATERIAL_GIRL_REDISHOST='localhost',
+            MATERIAL_GIRL_REDISPORT=57575,
         )
 
     def get_server(self):
