@@ -227,8 +227,6 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         domain_details = loads(response.body)
 
-        expect(domain_details['domainName']).to_equal('domain-details.com')
-        expect(domain_details['domainURL']).to_equal('http://www.domain-details.com')
         expect(domain_details['pages']).to_length(2)
 
         expect(domain_details['pages'][1]['url']).to_equal(page2.url)

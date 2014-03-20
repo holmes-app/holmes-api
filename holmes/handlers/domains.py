@@ -128,18 +128,13 @@ class DomainReviewsHandler(BaseHandler):
             page_size=page_size
         )
 
-        page_count = yield self.cache.get_page_count(domain)
         if term:
-            review_count = domain.get_active_review_count(url_starts_with=term, db=self.db)
+            review_count = len(reviews)
         else:
             review_count = yield self.cache.get_active_review_count(domain)
 
         result = {
-            "domainId": domain.id,
-            'domainName': domain.name,
-            'domainURL': domain.url,
             'reviewCount': review_count,
-            'pageCount': page_count,
             'pages': [],
         }
 
