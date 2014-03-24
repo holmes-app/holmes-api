@@ -81,3 +81,6 @@ docs:
 
 sqltap:
 	@open 'http://localhost:8000/report.html'; python -m SimpleHTTPServer
+
+publish:
+	@python setup.py sdist upload
