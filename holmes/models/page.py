@@ -251,7 +251,7 @@ class Page(Base):
             }))
             return
 
-        logging.info('Obtaining "%s"...' % url)
+        logging.debug('Obtaining "%s"...' % url)
 
         fetch_method(
             url,

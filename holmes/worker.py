@@ -41,7 +41,8 @@ class BaseWorker(BaseCLI):
         return limiter
 
     def update_otto_limiter(self):
-        self.otto.limiter = self.get_otto_limiter()
+        domains = self.cache.get_domain_limiters()
+        self.otto.limiter.update_domain_definitions(*domains)
 
     def start_otto(self):
         self.info('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
@@ -145,19 +146,23 @@ class HolmesWorker(BaseWorker):
         )
 
     def get_description(self):
-        return "%s%sholmes-worker%s (holmes-api v%s)" % (
+        uuid = str(getattr(self, 'uuid', ''))
+
+        return "%s%sholmes-worker-%s%s" % (
             Fore.BLUE,
             Style.BRIGHT,
+            uuid,
             Style.RESET_ALL,
-            __version__
         )
 
     def do_work(self):
+        self.debug('Started doing work...')
         if self._ping_api():
             err = None
             job = self._load_next_job()
             if job and self._start_job(job['url']):
                 try:
+                    self.info('Starting new job for %s...' % job['url'])
                     self._start_reviewer(job=job)
                 except InvalidReviewError:
                     err = str(sys.exc_info()[1])
@@ -214,6 +219,7 @@ class HolmesWorker(BaseWorker):
                     raise
 
     def _ping_api(self):
+        self.debug('Pinging that this worker is still alive...')
         self._remove_zombie_workers()
 
         worker = Worker.by_uuid(self.uuid, self.db)
