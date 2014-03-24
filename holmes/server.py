@@ -11,10 +11,8 @@ from tornado.httpclient import AsyncHTTPClient
 import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
-import tornado
 
 from holmes.handlers.worker import WorkersHandler, WorkersInfoHandler
-from holmes.handlers.worker_state import WorkerStateHandler
 from holmes.handlers.page import (
     PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
 )
@@ -84,7 +82,6 @@ class HolmesApiServer(Server):
             (r'/last-reviews/?', LastReviewsHandler),
             (r'/workers/?', WorkersHandler),
             (r'/workers/info/?', WorkersInfoHandler),
-            (r'/worker/([a-z0-9-]*)/(start|complete)/?', WorkerStateHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/reviews/?', PageReviewsHandler),
             (r'/page/([a-z0-9-]*)/violations-per-day/?', PageViolationsPerDayHandler),
