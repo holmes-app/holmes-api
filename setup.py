@@ -54,7 +54,7 @@ Holmes is a service to investigate your website health.
         'alembic',
         'mysql-python',
         'six',
-        'octopus-http',
+        'octopus-http==0.6.3',
         'redis',
         'toredis',
         'raven',
