@@ -157,6 +157,9 @@ class HolmesWorker(BaseWorker):
 
     def do_work(self):
         self.debug('Started doing work...')
+
+        self._remove_zombie_workers()
+
         if self._ping_api():
             err = None
             job = self._load_next_job()
@@ -220,7 +223,6 @@ class HolmesWorker(BaseWorker):
 
     def _ping_api(self):
         self.debug('Pinging that this worker is still alive...')
-        self._remove_zombie_workers()
 
         worker = Worker.by_uuid(self.uuid, self.db)
 
