@@ -7,7 +7,7 @@ from preggy import expect
 from mock import patch, Mock, call
 from octopus import TornadoOctopus
 
-from holmes import __version__
+from colorama import Fore, Style
 from holmes.worker import HolmesWorker
 from holmes.config import Config
 from tests.unit.base import ApiTestCase
@@ -64,8 +64,11 @@ class WorkerTestCase(ApiTestCase):
     def test_description(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
 
-        expected = "holmes-worker (holmes-api v%s)" % (
-            __version__
+        expected = "%s%sholmes-worker-%s%s" % (
+            Fore.BLUE,
+            Style.BRIGHT,
+            '',
+            Style.RESET_ALL,
         )
 
         expect(worker.get_description()).to_be_like(expected)
