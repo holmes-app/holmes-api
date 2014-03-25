@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
+from ujson import dumps
 from preggy import expect
-from mock import Mock
+from mock import Mock, patch
 
 from holmes.event_bus import EventBus
 from tests.unit.base import ApiTestCase
@@ -100,7 +100,9 @@ class TestEventBus(ApiTestCase):
 
         bus.handlers['events']['uuid'] = handler_mock
 
-        bus.on_message(('type', 'events', 'value'))
+        value = dumps({'type': 'test'})
+
+        bus.on_message(('type', 'events', value))
 
         expect(handler_mock.called).to_be_false()
 
@@ -108,8 +110,39 @@ class TestEventBus(ApiTestCase):
         redis, app, bus = self.get_bus()
         handler_mock = Mock()
 
+        bus.throttling = {}
+
         bus.handlers['events']['uuid'] = handler_mock
 
-        bus.on_message(('message', 'events', 'value'))
+        value = dumps({'type': 'test'})
 
+        bus.on_message(('message', 'events', value))
+
+        expect(handler_mock.called).to_be_true()
+
+    @patch.object(EventBus, 'get_time')
+    def test_throttling_message_by_message_type(self, time_mock):
+        redis, app, bus = self.get_bus()
+
+        bus.throttling = {'new-request': 1}
+
+        time_mock.return_value = 10
+        handler_mock = Mock()
+        bus.handlers['events']['uuid'] = handler_mock
+        value = dumps({'type': 'new-request', 'url': 'http://globo.com/'})
+        bus.on_message(('message', 'events', value))
+        expect(handler_mock.called).to_be_true()
+
+        time_mock.return_value = 10
+        handler_mock = Mock()
+        bus.handlers['events']['uuid'] = handler_mock
+        value = dumps({'type': 'new-request', 'url': 'http://g1.globo.com/'})
+        bus.on_message(('message', 'events', value))
+        expect(handler_mock.called).to_be_false()
+
+        time_mock.return_value = 15
+        handler_mock = Mock()
+        bus.handlers['events']['uuid'] = handler_mock
+        value = dumps({'type': 'new-request', 'url': 'http://g2.globo.com/'})
+        bus.on_message(('message', 'events', value))
         expect(handler_mock.called).to_be_true()

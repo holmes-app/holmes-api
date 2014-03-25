@@ -113,3 +113,5 @@ Config.define('DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS', 5, 'Default number of 
 
 Config.define('MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION', 3 * HOUR, 'Expiration for the cache key for the most common violations', 'Cache')
 Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, 'Limit for the size of the Vilation sample used in the aggregation', 'Violation Handler')
+
+Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', {}, 'Trottling by message type', 'Event Bus')
