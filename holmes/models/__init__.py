@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy.types as types
+from gzip import GzipFile
+from cStringIO import StringIO
 from sqlalchemy.ext.declarative import declarative_base
 from ujson import dumps, loads
 Base = declarative_base()
@@ -30,6 +32,24 @@ class JsonType(types.TypeDecorator):
             value = None
         return value
 
+
+class JsonTypeGzipped(types.TypeDecorator):
+    impl = types.BLOB
+
+    def process_bind_param(self, value, dialect):
+        value = dumps(value)
+        out = StringIO()
+        with GzipFile(fileobj=out, mode="w") as f:
+            f.write(value)
+        return out.getvalue()
+
+    def process_result_value(self, value, dialect):
+        if value:
+            gzipped = GzipFile(mode='r', fileobj=StringIO(value))
+            out = loads(gzipped.read())
+        else:
+            out = ''
+        return out
 
 from holmes.models.domain import Domain  # NOQA
 from holmes.models.page import Page  # NOQA

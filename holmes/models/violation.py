@@ -4,7 +4,7 @@
 import sqlalchemy as sa
 from collections import defaultdict
 
-from holmes.models import Base, JsonType
+from holmes.models import Base, JsonTypeGzipped
 from holmes.models.keys import Key
 
 
@@ -12,7 +12,7 @@ class Violation(Base):
     __tablename__ = "violations"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    value = sa.Column('value', JsonType, nullable=True)
+    value = sa.Column('value', JsonTypeGzipped, nullable=True)
     points = sa.Column('points', sa.Integer, nullable=False)
 
     review_id = sa.Column('review_id', sa.Integer, sa.ForeignKey('reviews.id'))
