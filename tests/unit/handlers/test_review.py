@@ -3,7 +3,7 @@
 
 import sys
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from preggy import expect
 from tornado.testing import gen_test
@@ -129,3 +129,26 @@ class TestLastReviewsHandler(ApiTestCase):
         }]
 
         expect(loads(response.body)).to_be_like(expected)
+
+
+class TestLastReviewsInLastHourHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_last_reviews_count_in_last_hour(self):
+        ReviewFactory.create(is_active=True,
+                             completed_date=datetime.today() - timedelta(minutes=61))
+        ReviewFactory.create(is_active=True,
+                             completed_date=datetime.today() - timedelta(minutes=59))
+        ReviewFactory.create(is_active=True,
+                             completed_date=datetime.today() - timedelta(minutes=5))
+        ReviewFactory.create(is_active=True,
+                             completed_date=datetime.today() - timedelta(minutes=1))
+
+        self.db.flush()
+
+        url = self.get_url('/reviews-in-last-hour')
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        expect(loads(response.body)).to_be_like({'count': 3})

@@ -86,6 +86,16 @@ class Review(Base):
         return db.query(Review).filter(Review.is_active == True) \
                                .order_by(Review.completed_date.desc())[:limit]
 
+    @classmethod
+    def get_reviews_count_in_period(cls, db, from_date, to_date=None):
+        if to_date is None:
+            to_date = datetime.today()
+
+        return db.query(sa.func.count(Review.id)) \
+            .filter(Review.is_active == True) \
+            .filter(Review.completed_date.between(from_date, to_date)) \
+            .scalar()
+
     def get_violation_points(self):
         points = 0
         for violation in self.violations:

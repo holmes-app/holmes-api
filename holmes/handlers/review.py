@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from uuid import UUID
+from datetime import datetime, timedelta
 
 from holmes.models import Review
 from holmes.handlers import BaseHandler
@@ -48,3 +49,11 @@ class LastReviewsHandler(BaseReviewHandler):
             reviews_json.append(review_dict)
 
         self.write_json(reviews_json)
+
+
+class ReviewsInLastHourHandler(BaseReviewHandler):
+    def get(self):
+        from_date = datetime.today() - timedelta(hours=1)
+        count = Review.get_reviews_count_in_period(self.db, from_date=from_date)
+
+        self.write_json({'count': count})

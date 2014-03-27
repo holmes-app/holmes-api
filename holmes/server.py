@@ -20,7 +20,7 @@ from holmes.handlers.violation import (
     MostCommonViolationsHandler, ViolationsHandler, ViolationHandler, ViolationDomainsHandler
 )
 from holmes.handlers.review import (
-    ReviewHandler, LastReviewsHandler
+    ReviewHandler, LastReviewsHandler, ReviewsInLastHourHandler
 )
 from holmes.handlers.domains import (
     DomainsHandler, DomainDetailsHandler, DomainViolationsPerDayHandler,
@@ -80,6 +80,7 @@ class HolmesApiServer(Server):
         handlers = [
             (r'/most-common-violations/?', MostCommonViolationsHandler),
             (r'/last-reviews/?', LastReviewsHandler),
+            (r'/reviews-in-last-hour/?', ReviewsInLastHourHandler),
             (r'/workers/?', WorkersHandler),
             (r'/workers/info/?', WorkersInfoHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
