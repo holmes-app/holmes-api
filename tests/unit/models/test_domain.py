@@ -286,3 +286,14 @@ class TestDomain(ApiTestCase):
         expect(details[0]['errorPercentage']).to_equal(60.0)
         expect(details[0]['is_active']).to_be_true()
         expect(details[0]['averageResponseTime']).to_equal(0.3)
+
+    def test_can_get_active_domains(self):
+        self.db.query(Domain).delete()
+
+        domain = DomainFactory(is_active=True)
+        DomainFactory(is_active=False)
+
+        domains = Domain.get_active_domains(self.db)
+
+        expect(domains).to_length(1)
+        expect(domains[0].id).to_equal(domain.id)
