@@ -3,8 +3,7 @@
 
 import sys
 from uuid import uuid4
-from datetime import datetime, timedelta
-from random import choice
+from datetime import datetime
 import hashlib
 import logging
 
@@ -129,13 +128,8 @@ class Page(Base):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
-        expired_time = datetime.now() - timedelta(seconds=expiration)
-
-        domains = db.query(Domain.id).filter(Domain.is_active).all()
-        active_domains = [item.id for item in domains]
-
-        if not active_domains:
-            return []
+        active_domains = Domain.get_active_domains(db)
+        active_domains_ids = [item.id for item in active_domains]
 
         pages_query = db \
             .query(
@@ -144,84 +138,90 @@ class Page(Base):
                 Page.score,
                 Page.last_review_date
             ) \
-            .filter(Page.last_review_date == None) \
-            .filter(Page.domain_id.in_(active_domains))
+            .filter(Page.domain_id.in_(active_domains_ids)) \
+            .order_by(Page.score.desc())
 
-        pages_in_need_of_review = \
-            pages_query.order_by(Page.score.desc())[lower_bound:upper_bound]
+        return pages_query[lower_bound:upper_bound]
 
-        if len(pages_in_need_of_review) == 0:
-            pages_query = db \
+    @classmethod
+    def get_next_jobs_count(cls, db, config):
+        from holmes.models import Domain
+
+        active_domains = Domain.get_active_domains(db)
+        active_domains_ids = [item.id for item in active_domains]
+
+        return db \
+                .query(
+                    sa.func.count(Page.id)
+                ) \
+                .filter(Page.domain_id.in_(active_domains_ids)) \
+                .scalar()
+
+    @classmethod
+    def get_next_job(cls, db, expiration, cache, lock_expiration, avg_links_per_page=10):
+        from holmes.models import Settings, Worker, Domain, Limiter  # Avoid circular dependency
+
+        page = None
+        lock = None
+        settings = Settings.instance(db)
+        workers = db.query(Worker).all()
+        number_of_workers = len(workers)
+
+        active_domains = Domain.get_active_domains(db)
+        active_domains_ids = [item.id for item in active_domains]
+
+        all_domains_pages_in_need_of_review = {}
+
+        for domain_id in active_domains_ids:
+            pages = db \
                 .query(
                     Page.uuid,
                     Page.url,
                     Page.score,
                     Page.last_review_date
                 ) \
-                .filter(Page.last_review_date <= expired_time) \
-                .filter(Page.domain_id.in_(active_domains))
+                .filter(Page.domain_id == domain_id) \
+                .order_by(Page.score.desc())[:number_of_workers]
+            if pages:
+                all_domains_pages_in_need_of_review[domain_id] = pages
 
-            pages_in_need_of_review = \
-                pages_query.order_by(Page.score.desc())[lower_bound:upper_bound]
+        pages_in_need_of_review = []
+        current_domain = 0
+        while all_domains_pages_in_need_of_review:
+            domains = all_domains_pages_in_need_of_review.keys()
+            if current_domain >= len(domains):
+                current_domain = 0
 
-        return pages_in_need_of_review
+            domain_id = domains[current_domain]
 
-    @classmethod
-    def get_next_jobs_count(cls, db, config):
-        from holmes.models import Domain
+            item = all_domains_pages_in_need_of_review[domain_id].pop(0)
+            pages_in_need_of_review.append(item)
 
-        expiration = config.REVIEW_EXPIRATION_IN_SECONDS
-        expired_time = datetime.now() - timedelta(seconds=expiration)
+            if not all_domains_pages_in_need_of_review[domain_id]:
+                del all_domains_pages_in_need_of_review[domain_id]
 
-        domains = db.query(Domain.id).filter(Domain.is_active).all()
-        active_domains = [item.id for item in domains]
+            current_domain += 1
 
-        without_review = db \
-            .query(sa.func.count(Page.id)) \
-            .filter(Page.last_review_date == None) \
-            .filter(Page.domain_id.in_(active_domains)) \
-            .scalar()
-
-        total = int(without_review)
-
-        if total == 0:
-            with_review = db \
-                .query(sa.func.count(Page.id)) \
-                .filter(Page.last_review_date <= expired_time) \
-                .filter(Page.domain_id.in_(active_domains)) \
-                .scalar()
-
-            total = int(with_review)
-
-        return total
-
-    @classmethod
-    def get_next_job(cls, db, expiration, cache, lock_expiration):
-        from holmes.models import Settings
-
-        settings = Settings.instance(db)
-
-        pages_in_need_of_review = cls.get_next_job_list(db, expiration)
-
-        if len(pages_in_need_of_review) == 0:
-            if settings.lambda_score > 0:
-                cls.update_pages_score_by(settings, settings.lambda_score, db)
+        if not pages_in_need_of_review:
             return None
 
-        if settings.lambda_score > pages_in_need_of_review[0].score:
+        if settings.lambda_score > 0 and settings.lambda_score > pages_in_need_of_review[0].score:
             cls.update_pages_score_by(settings, settings.lambda_score, db)
-            return None
 
-        page = choice(pages_in_need_of_review)
+        for i in range(len(pages_in_need_of_review)):
+            if not Limiter.has_limit_to_work(db, active_domains, pages_in_need_of_review[i].url, avg_links_per_page):
+                continue
 
-        for i in range(10):
-            lock = cache.has_next_job_lock(page.url, lock_expiration)
-            if lock is None:
-                page = choice(pages_in_need_of_review)
-            else:
+            lock = cache.has_next_job_lock(
+                pages_in_need_of_review[i].url,
+                lock_expiration
+            )
+
+            if lock is not None:
+                page = pages_in_need_of_review[i]
                 break
 
-        if lock is None:
+        if page is None:
             return None
 
         return {

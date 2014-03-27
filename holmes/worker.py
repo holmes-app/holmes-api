@@ -14,7 +14,8 @@ from sqlalchemy.exc import OperationalError
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels
-from holmes.models import Settings, Worker, Page
+from holmes.models import Settings, Worker, Page, Domain
+from holmes.models import Limiter as LimiterModel
 from holmes.cli import BaseCLI
 
 
@@ -283,6 +284,8 @@ class HolmesWorker(BaseWorker):
 
     def _start_job(self, url):
         self.update_otto_limiter()
+        if not self._verify_workers_limits(url):
+            return False
 
         self.working_url = url
 
@@ -294,6 +297,10 @@ class HolmesWorker(BaseWorker):
         self.db.commit()
 
         return True
+
+    def _verify_workers_limits(self, url, avg_links_per_page=10):
+        active_domains = Domain.get_active_domains(self.db)
+        return LimiterModel.has_limit_to_work(self.db, active_domains, url, avg_links_per_page)
 
     def _complete_job(self, lock, error=None):
         self.working_url = None

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import math
+
 import sqlalchemy as sa
 
 from holmes.models import Base
@@ -72,3 +74,44 @@ class Limiter(Base):
         db.commit()
 
         return limiter.url
+
+    @classmethod
+    def get_limiters_for_domains(cls, db, active_domains):
+        from holmes.models import Limiter  # Avoid circular dependency
+
+        all_limiters = Limiter.get_all(db)
+
+        limiters = []
+        for limiter in all_limiters:
+            for domain in active_domains:
+                if limiter.matches(domain.url):
+                    limiters.append(limiter)
+
+        return limiters
+
+    @classmethod
+    def __get_limiter_for_url(cls, limiters, url):
+        for limiter in limiters:
+            if limiter.matches(url):
+                return limiter
+
+        return None
+
+    @classmethod
+    def has_limit_to_work(cls, db, active_domains, url, avg_links_per_page=10):
+        from holmes.models import Worker  # Avoid circular dependency
+
+        if avg_links_per_page < 1:
+            avg_links_per_page = 1
+
+        limiters = cls.get_limiters_for_domains(db, active_domains)
+
+        limiter = cls.__get_limiter_for_url(limiters, url)
+
+        if limiter:
+            worker_count = Worker.number_of_workers_in_same_limiter_url(db, limiter.url)
+
+            if worker_count >= math.ceil(float(limiter.value) / float(avg_links_per_page)):
+                return False
+
+        return True

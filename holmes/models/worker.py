@@ -42,3 +42,11 @@ class Worker(Base):
     @classmethod
     def by_uuid(cls, uuid, db):
         return db.query(Worker).filter(Worker.uuid == uuid).first()
+
+    @classmethod
+    def number_of_workers_in_same_limiter_url(cls, db, limiter_url):
+        return db.query(
+            sa.func.count(Worker.id)
+        ).filter(
+            Worker.current_url.like('%s%%' % limiter_url)
+        ).scalar()

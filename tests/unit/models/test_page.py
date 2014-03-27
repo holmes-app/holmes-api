@@ -7,9 +7,9 @@ from datetime import datetime
 from preggy import expect
 
 from holmes.config import Config
-from holmes.models import Page, Settings
+from holmes.models import Domain, Page, Settings
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory, DomainFactory
+from tests.fixtures import PageFactory, ReviewFactory, DomainFactory, WorkerFactory, LimiterFactory
 
 
 class TestPage(ApiTestCase):
@@ -87,19 +87,28 @@ class TestPage(ApiTestCase):
         expect(invalid_page).to_be_null()
 
     def test_can_get_next_job(self):
-        page = PageFactory.create()
+        domain = DomainFactory.create()
+        pages = []
+        for i in range(20):
+            WorkerFactory.create()
+            pages.append(PageFactory.create(
+                domain=domain,
+                score=float(i)
+            ))
 
-        next_job = Page.get_next_job(
-            self.db,
-            expiration=100,
-            cache=self.sync_cache,
-            lock_expiration=1
-        )
+        for i in range(20):
+            next_job = Page.get_next_job(
+                self.db,
+                expiration=100,
+                cache=self.sync_cache,
+                lock_expiration=100
+            )
 
-        expect(next_job).not_to_be_null()
-        expect(next_job['page']).to_equal(str(page.uuid))
+            expect(next_job).not_to_be_null()
+            expect(next_job['page']).to_equal(str(pages[19 - i].uuid))
 
     def test_get_next_job_does_not_get_from_inactive_domains(self):
+        WorkerFactory.create()
         domain = DomainFactory.create(is_active=False)
         PageFactory.create(domain=domain)
 
@@ -112,9 +121,61 @@ class TestPage(ApiTestCase):
 
         expect(next_job).to_be_null()
 
-    def test_can_get_next_job_when_expired(self):
-        page = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
+    def test_increases_page_score_when_lambda_is_top_page(self):
+        WorkerFactory.create()
+        page = PageFactory.create()
+        page2 = PageFactory.create()
 
+        settings = Settings.instance(self.db)
+        settings.lambda_score = 10000
+
+        Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1
+        )
+
+        self.db.refresh(page)
+        self.db.refresh(page2)
+
+        expect(page.score).to_equal(5000)
+        expect(page2.score).to_equal(5000)
+
+    def test_can_get_next_job_when_domain_limited(self):
+        self.db.query(Domain).delete()
+        self.db.query(Page).delete()
+
+        domain_a = DomainFactory.create()
+        domain_b = DomainFactory.create()
+
+        LimiterFactory.create(url=domain_a.url, value=2)
+
+        pages_a = []
+        pages_b = []
+        workers = []
+        for i in range(10):
+            for j in range(2):
+                workers.append(WorkerFactory.create())
+
+            pages_a.append(PageFactory.create(domain=domain_a, url="%s/%d.html" % (domain_a.url, i), score=i * 10))
+            pages_b.append(PageFactory.create(domain=domain_b, url="%s/%d.html" % (domain_b.url, i), score=i))
+
+        # first one should not be limited
+        next_job = Page.get_next_job(
+            self.db,
+            expiration=100,
+            cache=self.sync_cache,
+            lock_expiration=1,
+            avg_links_per_page=10
+        )
+
+        expect(next_job).not_to_be_null()
+        expect(next_job['page']).to_equal(str(pages_a[-1].uuid))
+        workers[0].current_url = next_job['url']
+        self.db.flush()
+
+        # second one should be limited (2 / 10 = 0.2, rounded up = 1 job at a time)
         next_job = Page.get_next_job(
             self.db,
             expiration=100,
@@ -123,51 +184,7 @@ class TestPage(ApiTestCase):
         )
 
         expect(next_job).not_to_be_null()
-        expect(next_job['page']).to_equal(str(page.uuid))
-
-    def test_increases_page_score_when_lambda_is_top_page(self):
-        page = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
-        page2 = PageFactory.create(last_review_date=datetime(2010, 10, 10, 10, 10, 10))
-
-        settings = Settings.instance(self.db)
-        settings.lambda_score = 10000
-
-        next_job = Page.get_next_job(
-            self.db,
-            expiration=100,
-            cache=self.sync_cache,
-            lock_expiration=1
-        )
-
-        expect(next_job).to_be_null()
-
-        self.db.refresh(page)
-        self.db.refresh(page2)
-
-        expect(page.score).to_equal(5000)
-        expect(page2.score).to_equal(5000)
-
-    def test_increases_page_score_when_all_pages_have_been_reviewed(self):
-        page = PageFactory.create(last_review_date=datetime(2014, 10, 10, 10, 10, 10))
-        page2 = PageFactory.create(last_review_date=datetime(2014, 10, 10, 10, 10, 10))
-
-        settings = Settings.instance(self.db)
-        settings.lambda_score = 10000
-
-        next_job = Page.get_next_job(
-            self.db,
-            expiration=100,
-            cache=self.sync_cache,
-            lock_expiration=1
-        )
-
-        expect(next_job).to_be_null()
-
-        self.db.refresh(page)
-        self.db.refresh(page2)
-
-        expect(page.score).to_equal(5000)
-        expect(page2.score).to_equal(5000)
+        expect(next_job['page']).to_equal(str(pages_b[-1].uuid))
 
     def test_get_next_job_list(self):
         page = PageFactory.create()
