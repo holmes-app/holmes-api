@@ -42,6 +42,9 @@ class Limiter(Base):
     def by_url_hash(cls, url_hash, db):
         return db.query(Limiter).filter(Limiter.url_hash==url_hash).first()
 
+    def matches(self, url):
+        return url.startswith(self.url)
+
     @classmethod
     def add_or_update_limiter(cls, db, url, value):
         if not url:
