@@ -286,8 +286,6 @@ class Review(Base):
                         db.rollback()
                         raise
 
-
-
         publish(dumps({
             'type': 'new-review',
             'reviewId': str(review.uuid)
