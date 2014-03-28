@@ -89,7 +89,7 @@ class Review(Base):
     @classmethod
     def get_reviews_count_in_period(cls, db, from_date, to_date=None):
         if to_date is None:
-            to_date = datetime.today()
+            to_date = datetime.utcnow()
 
         return db.query(sa.func.count(Review.id)) \
             .filter(Review.is_active == True) \

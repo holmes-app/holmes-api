@@ -135,14 +135,22 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_last_reviews_count_in_last_hour(self):
-        ReviewFactory.create(is_active=True,
-                             completed_date=datetime.today() - timedelta(minutes=61))
-        ReviewFactory.create(is_active=True,
-                             completed_date=datetime.today() - timedelta(minutes=59))
-        ReviewFactory.create(is_active=True,
-                             completed_date=datetime.today() - timedelta(minutes=5))
-        ReviewFactory.create(is_active=True,
-                             completed_date=datetime.today() - timedelta(minutes=1))
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=datetime.utcnow() - timedelta(minutes=61)
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=datetime.utcnow() - timedelta(minutes=59)
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=datetime.utcnow() - timedelta(minutes=5)
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=datetime.utcnow() - timedelta(minutes=1)
+        )
 
         self.db.flush()
 

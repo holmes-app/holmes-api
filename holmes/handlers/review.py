@@ -53,7 +53,7 @@ class LastReviewsHandler(BaseReviewHandler):
 
 class ReviewsInLastHourHandler(BaseReviewHandler):
     def get(self):
-        from_date = datetime.today() - timedelta(hours=1)
+        from_date = datetime.utcnow() - timedelta(hours=1)
         count = Review.get_reviews_count_in_period(self.db, from_date=from_date)
 
         self.write_json({'count': count})
