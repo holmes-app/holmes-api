@@ -135,21 +135,27 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_last_reviews_count_in_last_hour(self):
+        dt = datetime.utcnow()
+
         ReviewFactory.create(
             is_active=True,
-            completed_date=datetime.utcnow() - timedelta(minutes=61)
+            completed_date=dt - timedelta(minutes=1)
         )
+
+        first_date = dt - timedelta(minutes=59)
         ReviewFactory.create(
             is_active=True,
-            completed_date=datetime.utcnow() - timedelta(minutes=59)
+            completed_date=first_date
         )
+
         ReviewFactory.create(
             is_active=True,
-            completed_date=datetime.utcnow() - timedelta(minutes=5)
+            completed_date=dt - timedelta(minutes=5)
         )
+
         ReviewFactory.create(
             is_active=True,
-            completed_date=datetime.utcnow() - timedelta(minutes=1)
+            completed_date=dt - timedelta(minutes=61)
         )
 
         self.db.flush()
@@ -159,4 +165,6 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
 
-        expect(loads(response.body)).to_be_like({'count': 3})
+        result = loads(response.body)
+        expect(result['count']).to_equal(3)
+        expect(round(result['ellapsed'], 0)).to_be_like(59.0 * 60)

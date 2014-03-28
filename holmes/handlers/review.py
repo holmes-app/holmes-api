@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import datetime
 from uuid import UUID
-from datetime import datetime, timedelta
 
 from holmes.models import Review
 from holmes.handlers import BaseHandler
@@ -53,14 +53,14 @@ class LastReviewsHandler(BaseReviewHandler):
 
 class ReviewsInLastHourHandler(BaseReviewHandler):
     def get(self):
-        from_date = datetime.utcnow() - timedelta(hours=1)
+        from_date = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
         count, first_date = Review.get_reviews_count_in_period(
             self.db,
             from_date=from_date
         )
 
         if first_date:
-            ellapsed = (datetime.utcnow() - first_date).total_seconds()
+            ellapsed = (datetime.datetime.utcnow() - first_date).total_seconds()
         else:
             ellapsed = 3600
 
