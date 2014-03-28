@@ -43,7 +43,9 @@ class BaseWorker(BaseCLI):
 
     def update_otto_limiter(self):
         domains = self.cache.get_domain_limiters()
-        self.otto.limiter.update_domain_definitions(*domains)
+
+        if hasattr(self.otto, 'limiter'):
+            self.otto.limiter.update_domain_definitions(*domains)
 
     def start_otto(self):
         self.info('Starting Octopus with %d concurrent threads.' % self.options.concurrency)
