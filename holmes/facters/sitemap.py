@@ -67,12 +67,14 @@ class SitemapFacter(Facter):
         self.async_get(self.rebase('/robots.txt'), self.handle_robots_loaded)
 
     def get_sitemaps(self, response):
-        sitemaps = [self.rebase('/sitemap.xml')]
+        sitemaps = set([self.rebase('/sitemap.xml')])
 
         if response.status_code > 399:
             return sitemaps
 
-        return sitemaps + ROBOTS_SITEMAP.findall(response.text)
+        sitemaps.update(ROBOTS_SITEMAP.findall(response.text))
+
+        return sitemaps
 
     def handle_sitemap_loaded(self, url, response):
         logging.debug('Got sitemap %s with status %s' % (url, response.status_code))
