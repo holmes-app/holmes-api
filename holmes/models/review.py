@@ -91,10 +91,20 @@ class Review(Base):
         if to_date is None:
             to_date = datetime.utcnow()
 
-        return db.query(sa.func.count(Review.id)) \
+        reviews = db \
+            .query(Review.completed_date) \
             .filter(Review.is_active == True) \
             .filter(Review.completed_date.between(from_date, to_date)) \
-            .scalar()
+            .order_by(Review.completed_date.asc()) \
+            .all()
+
+        count = len(reviews)
+
+        first_date = None
+        if count > 0:
+            first_date = reviews[0].completed_date
+
+        return count, first_date
 
     def get_violation_points(self):
         points = 0
