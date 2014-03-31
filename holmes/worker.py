@@ -117,9 +117,6 @@ class HolmesWorker(BaseWorker):
         self.connect_to_redis()
         self.start_otto()
 
-        self.facters = self._load_facters()
-        self.validators = self._load_validators()
-
         self.fact_definitions = {}
         self.violation_definitions = {}
 
