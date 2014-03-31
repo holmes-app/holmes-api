@@ -106,7 +106,7 @@ class TestSitemapFacter(FacterTestCase):
         facter = SitemapFacter(reviewer)
         facter.review.data['robots.response'] = ''
 
-        expect(facter.get_sitemaps(Mock(status_code=404))).to_equal(['http://g1.globo.com/sitemap.xml'])
+        expect(facter.get_sitemaps(Mock(status_code=404))).to_equal(set(['http://g1.globo.com/sitemap.xml']))
 
     def test_get_sitemaps_with_robots_txt(self):
         page = PageFactory.create(url="http://g1.globo.com/")
@@ -126,11 +126,11 @@ class TestSitemapFacter(FacterTestCase):
             Sitemap: http://g1.globo.com/2.xml
             """)
 
-        expect(facter.get_sitemaps(response)).to_equal([
+        expect(facter.get_sitemaps(response)).to_equal(set([
             'http://g1.globo.com/sitemap.xml',
             'http://g1.globo.com/1.xml',
             'http://g1.globo.com/2.xml'
-        ])
+        ]))
 
     def test_handle_sitemap_return_404(self):
         page = PageFactory.create(url="http://g1.globo.com/")
