@@ -30,7 +30,7 @@ class JSRequestsValidator(Validator):
             'total.size.js': {
                 'title': 'Javascript size in kb is too big.',
                 'description': cls.get_total_size_message,
-                'category': 'SEO'
+                'category': 'Performance'
             }
         }
 

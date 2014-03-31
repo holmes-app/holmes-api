@@ -58,7 +58,7 @@ class ImageRequestsValidator(Validator):
             'single.size.img': {
                 'title': 'Single image size in kb is too big.',
                 'description': cls.get_single_image_size_message,
-                'category': 'SEO'
+                'category': 'Performance'
             },
             'total.requests.img': {
                 'title': 'Too many image requests.',
@@ -68,7 +68,7 @@ class ImageRequestsValidator(Validator):
             'total.size.img': {
                 'title': 'Total image size in kb is too big.',
                 'description': cls.get_total_size_message,
-                'category': 'SEO'
+                'category': 'Performance'
             }
         }
 
