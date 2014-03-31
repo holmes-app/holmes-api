@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 from preggy import expect
 from ujson import loads
 from tests.unit.base import ApiTestCase
@@ -43,3 +43,45 @@ class TestLastRequestsHandler(ApiTestCase):
                 u'response_time': request.response_time
             }]
         })
+
+
+class TestRequestsInLastDayHandler(ApiTestCase):
+    @gen_test
+    def test_get_requests_in_last_day(self):
+        utcnow = datetime.utcnow().date()
+
+        for i in range(3):
+            RequestFactory.create(
+                status_code=200,
+                completed_date=utcnow - timedelta(days=1)
+            )
+            RequestFactory.create(
+                status_code=404,
+                completed_date=utcnow - timedelta(days=i)
+            )
+            RequestFactory.create(
+                status_code=599,
+                completed_date=utcnow - timedelta(days=i + 1)
+            )
+
+        self.db.flush()
+
+        response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/'))
+
+        expect(response.code).to_equal(200)
+
+        expect(loads(response.body)).to_be_like([
+            {
+                'statusCode': 200,
+                'statusCodeTitle': 'OK',
+                'count': 3
+            }, {
+                'statusCode': 404,
+                'statusCodeTitle': 'Not Found',
+                'count': 2
+            }, {
+                'statusCode': 599,
+                'statusCodeTitle': 'Tornado Timeout',
+                'count': 1
+            }
+        ])

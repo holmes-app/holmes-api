@@ -3,6 +3,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy import func
+from datetime import datetime
 
 from holmes.utils import get_status_code_title
 from holmes.models import Base
@@ -92,3 +93,15 @@ class Request(Base):
         return db \
             .query(Request) \
             .order_by('id desc')[lower_bound:upper_bound]
+
+    @classmethod
+    def get_requests_count_by_status_in_period_of_days(self, db, from_date, to_date=None):
+        if to_date is None:
+            to_date = datetime.utcnow()
+
+        return db \
+            .query(Request.status_code, sa.func.count(Request.id).label('count')) \
+            .filter(Request.completed_date.between(from_date.date(), to_date.date())) \
+            .group_by(Request.status_code) \
+            .order_by('count DESC') \
+            .all()

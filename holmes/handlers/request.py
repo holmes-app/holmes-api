@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import datetime
 from tornado.gen import coroutine
 
 from holmes.utils import get_status_code_title
@@ -77,5 +78,22 @@ class LastRequestsHandler(BaseHandler):
 
         for request in requests:
             result['requests'].append(request.to_dict())
+
+        self.write_json(result)
+
+
+class RequestsInLastDayHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        from_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        requests = Request.get_requests_count_by_status_in_period_of_days(self.db, from_date=from_date)
+
+        result = []
+        for request in requests:
+            result.append({
+                'statusCode': request.status_code,
+                'statusCodeTitle': get_status_code_title(request.status_code),  # FIXME: is it code or title??
+                'count': request.count,
+            })
 
         self.write_json(result)

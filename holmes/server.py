@@ -33,7 +33,9 @@ from holmes.handlers.search import (
 from holmes.handlers.settings import (
     TaxHandler
 )
-from holmes.handlers.request import RequestDomainHandler, LastRequestsHandler
+from holmes.handlers.request import (
+    RequestDomainHandler, LastRequestsHandler, RequestsInLastDayHandler
+)
 from holmes.handlers.limiter import LimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
@@ -106,6 +108,7 @@ class HolmesApiServer(Server):
             (r'/limiters/?', LimiterHandler),
             (r'/next-jobs/?', NextJobHandler),
             (r'/last-requests/?', LastRequestsHandler),
+            (r'/requests-in-last-day/?', RequestsInLastDayHandler),
             (r'/version/?', VersionHandler),
         ]
 
