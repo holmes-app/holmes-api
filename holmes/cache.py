@@ -517,7 +517,7 @@ class SyncCache(object):
                 'cookies': cookies,
                 'effective_url': effective_url,
                 'error': error,
-                'request_time': str(request_time)
+                'request_time': request_time
             }),
         )
 
