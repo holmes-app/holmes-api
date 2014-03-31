@@ -14,7 +14,8 @@ class GoogleAnalyticsFacter(Facter):
             'page.google_analytics': {
                 'title': 'Google Analytics',
                 'description': lambda value: list(value),
-                'unit': 'google-analytics'
+                'unit': 'google-analytics',
+                'category': 'SEO',
             }
         }
 

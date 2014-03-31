@@ -12,7 +12,8 @@ class MetaTagsFacter(Facter):
             'meta.tags': {
                 'title': 'Meta Tags',
                 'description': lambda value: value,
-                'unit': 'values'
+                'unit': 'values',
+                'category': 'Meta',
             }
         }
 

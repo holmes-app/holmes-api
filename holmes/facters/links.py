@@ -24,19 +24,23 @@ class LinkFacter(Facter):
             'page.links': {
                 'title': 'Links to',
                 'description': lambda value: list(value),
-                'unit': 'links'
+                'unit': 'links',
+                'category': 'SEO',
             },
             'total.number.links': {
                 'title': 'Link count',
-                'description': lambda value: "This page has %d outbound links." % (value or 0)
+                'description': lambda value: "This page has %d outbound links." % (value or 0),
+                'category': 'HTTP',
             },
             'total.number.invalid_links': {
                 'title': 'Total invalid links',
-                'description': lambda value: "This page has %d invalid links." % (value or 0)
+                'description': lambda value: "This page has %d invalid links." % (value or 0),
+                'category': 'Semantic',
             },
             'page.invalid_links': {
                 'title': 'Invalid Links',
                 'description': lambda value: list(value),
+                'category': 'Semantic',
             }
         }
 

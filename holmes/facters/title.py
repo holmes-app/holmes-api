@@ -11,7 +11,8 @@ class TitleFacter(Facter):
         return {
             'page.title': {
                 'title': 'Page Title',
-                'description': lambda value: value
+                'description': lambda value: value,
+                'category': 'SEO',
             }
         }
 

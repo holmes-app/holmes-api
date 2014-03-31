@@ -17,18 +17,22 @@ class SitemapFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'total.sitemap.indexes': {
-                'title': 'Total SiteMap indexes'
+                'title': 'Total SiteMap indexes',
+                'category': 'SEO',
             },
             'total.sitemap.urls': {
-                'title': 'Total SiteMap urls'
+                'title': 'Total SiteMap urls',
+                'category': 'SEO',
             },
             'total.size.sitemap': {
                 'title': 'Total SiteMap size',
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             },
             'total.size.sitemap.gzipped': {
                 'title': 'Total SiteMap gzipped size',
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             }
         }
 

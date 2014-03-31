@@ -13,21 +13,25 @@ class JSFacter(Facter):
             'page.js': {
                 'title': 'JS',
                 'description': lambda value: list(value),
-                'unit': 'js'
+                'unit': 'js',
+                'category': 'Static',
             },
             'total.requests.js': {
                 'title': 'Total JS requests',
                 'description': lambda value: '%d' % value,
+                'category': 'HTTP',
             },
             'total.size.js': {
                 'title': 'Total JS size',
                 'description': lambda value: '%d' % value,
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             },
             'total.size.js.gzipped': {
                 'title': 'Total JS size gzipped',
                 'description': lambda value: '%d' % value,
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO'
             }
         }
 

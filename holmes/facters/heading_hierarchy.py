@@ -11,7 +11,8 @@ class HeadingHierarchyFacter(Facter):
             'page.heading_hierarchy': {
                 'title': 'Heading Hierarchy',
                 'description': lambda value: list(value),
-                'unit': 'heading-hierarchy'
+                'unit': 'heading-hierarchy',
+                'category': 'SEO',
             },
         }
 

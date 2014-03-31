@@ -13,21 +13,25 @@ class CSSFacter(Facter):
             'page.css': {
                 'title': 'CSS',
                 'description': lambda value: list(value),
-                'unit': 'css'
+                'unit': 'css',
+                'category': 'Static',
             },
             'total.requests.css': {
                 'title': 'Total CSS requests',
                 'description': lambda value: '%d' % value,
+                'category': 'HTTP',
             },
             'total.size.css': {
                 'title': 'Total CSS size',
                 'description': lambda value: '%d' % value,
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             },
             'total.size.css.gzipped': {
                 'title': 'Total CSS size gzipped',
                 'description': lambda value: '%d' % value,
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             }
         }
 

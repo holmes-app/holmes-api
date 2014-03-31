@@ -13,16 +13,19 @@ class ImageFacter(Facter):
             'page.images': {
                 'title': 'Images',
                 'description': lambda value: list(value),
-                'unit': 'images'
+                'unit': 'images',
+                'category': 'Static',
             },
             'total.size.img': {
                 'title': 'Total images size',
                 'description': lambda value: '%d' % value,
-                'unit': 'kb'
+                'unit': 'kb',
+                'category': 'SEO',
             },
             'total.requests.img': {
                 'title': 'Total images requests',
                 'description': lambda value: '%d' % value,
+                'category': 'HTTP',
             }
         }
 
