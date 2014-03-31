@@ -227,19 +227,24 @@ class HolmesWorker(BaseWorker):
     def _ping_api(self):
         self.debug('Pinging that this worker is still alive...')
 
-        worker = Worker.by_uuid(self.uuid, self.db)
-
         self.db.begin(subtransactions=True)
 
         try:
-            if worker:
-                worker.last_ping = datetime.utcnow()
-                worker.current_url = self.working_url
-            else:
-                worker = Worker(uuid=self.uuid, current_url=self.working_url)
-                self.db.add(worker)
+            # FIXME: Replace statement works only in MySQL.
+            query_params = {
+                'uuid': self.uuid,
+                'dt': datetime.utcnow(),
+                'current_url': self.working_url
+            }
+
+            self.db.execute(
+                'REPLACE INTO workers SET uuid = :uuid, last_ping = :dt, current_url = :current_url',
+                query_params
+            )
+
             self.db.flush()
             self.db.commit()
+
         except OperationalError:
             exc = sys.exc_info()[1]
             self.db.rollback()
@@ -248,7 +253,7 @@ class HolmesWorker(BaseWorker):
 
         self.publish(dumps({
             'type': 'worker-status',
-            'workerId': str(worker.uuid)
+            'workerId': str(self.uuid)
         }))
 
         return True
