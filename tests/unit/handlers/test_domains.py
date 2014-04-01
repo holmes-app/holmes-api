@@ -18,9 +18,6 @@ class TestDomainsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_domains_info(self):
-        self.clean_cache('globo.com')
-        self.clean_cache('g1.globo.com')
-
         DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
@@ -116,8 +113,6 @@ class TestDomainDetailsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_domain_details(self):
-        self.clean_cache('domain-details.com')
-
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
         page = PageFactory.create(domain=domain)

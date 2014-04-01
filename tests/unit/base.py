@@ -53,12 +53,9 @@ class ApiTestCase(CowTestCase):
         UserFactory.FACTORY_SESSION = self.db
         LimiterFactory.FACTORY_SESSION = self.db
 
-        self.clean_cache('www.globo.com')
-        self.clean_cache('globo.com')
-        self.clean_cache('g1.globo.com')
-
     def tearDown(self):
         self.db.rollback()
+        self.server.application.redis.flushdb()
         super(ApiTestCase, self).tearDown()
 
     def get_config(self):
@@ -87,19 +84,6 @@ class ApiTestCase(CowTestCase):
         self.db = app.db
 
         return app
-
-    def clean_cache(self, domain_name):
-        do_nothing = lambda *args, **kw: None
-
-        url_hash = hashlib.sha512('http://%s' % domain_name).hexdigest()
-
-        self.server.application.redis.delete('%s-lock' % url_hash, callback=do_nothing)
-        self.server.application.redis.delete('%s-page-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-violation-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-active-review-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-good-request-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-bad-request-count' % domain_name, callback=do_nothing)
-        self.server.application.redis.delete('%s-response-time-avg' % domain_name, callback=do_nothing)
 
     def connect_to_sync_redis(self):
         import redis

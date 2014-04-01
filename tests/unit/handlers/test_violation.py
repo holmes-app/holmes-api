@@ -12,18 +12,9 @@ from holmes.models import Key, Violation
 
 class TestMostCommonViolationsHandler(ApiTestCase):
 
-    def clean_cache(self, domain_name=None, cache_keys=[]):
-        if domain_name:
-            super(TestMostCommonViolationsHandler, self).clean_cache(domain_name)
-
-        do_nothing = lambda *args, **kw: None
-        for cache_key in cache_keys:
-            self.server.application.redis.delete(cache_key, callback=do_nothing)
-
     @gen_test
     def test_can_get_most_common_violations(self):
         self.db.query(Violation).delete()
-        self.clean_cache(cache_keys=['most-common-violations'])
 
         review = ReviewFactory.create()
 
