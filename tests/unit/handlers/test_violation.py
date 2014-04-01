@@ -168,7 +168,7 @@ class TestViolationHandler(ApiTestCase):
         }
 
         response = yield self.http_client.fetch(
-            self.get_url('/violation/blacklist.domains')
+            self.get_url('/violation/blacklist.domains/domains')
         )
         expect(response.code).to_equal(200)
 
