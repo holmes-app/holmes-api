@@ -104,6 +104,18 @@ class ReviewFactory(BaseFactory):
 
             kwargs['violations'] = violations
 
+        if 'number_of_facts' in kwargs:
+            number_of_facts = kwargs['number_of_facts']
+            del kwargs['number_of_facts']
+
+            facts = []
+            for i in range(number_of_facts):
+                db = cls.FACTORY_SESSION
+                key = Key.get_or_create(db, 'key.%d' % i, 'category.%d' % (i % 3))
+                facts.append(Fact(key=key, value="value %d" % i))
+
+            kwargs['facts'] = facts
+
         return kwargs
 
 

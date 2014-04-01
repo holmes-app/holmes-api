@@ -8,7 +8,8 @@ from datetime import datetime
 from preggy import expect
 #from tornado.testing import gen_test
 
-from holmes.models import Review, Violation, Key
+from holmes.config import Config
+from holmes.models import Review, Violation, Key, Page, Fact
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
     ReviewFactory, PageFactory, KeyFactory
@@ -188,3 +189,55 @@ class TestReview(ApiTestCase):
         key_id = review.violations[0].key_id
         count = Review.count_by_violation_key_name(self.db, key_id)
         expect(count).to_equal(4)
+
+    def test_remove_old_reviews(self):
+        self.db.query(Violation).delete()
+        self.db.query(Fact).delete()
+        self.db.query(Key).delete()
+        self.db.query(Review).delete()
+        self.db.query(Page).delete()
+
+        config = Config()
+        config.MAX_OLD_REVIEWS = 4
+
+        dt = datetime(2013, 12, 11, 10, 9, 8)
+
+        page1 = PageFactory.create()
+        ReviewFactory.create(
+            page=page1,
+            is_active=True,
+            completed_date=dt,
+            number_of_violations=1,
+            number_of_facts=1
+        )
+
+        page2 = PageFactory.create()
+        ReviewFactory.create(page=page2, is_active=True, completed_date=dt)
+
+        for x in range(6):
+            dt = datetime(2013, 12, 11, 10, 10, x)
+            ReviewFactory.create(
+                page=page1,
+                is_active=False,
+                completed_date=dt,
+                number_of_violations=2,
+                number_of_facts=1
+            )
+
+        self.db.flush()
+
+        reviews = self.db.query(Review).all()
+        expect(reviews).to_length(8)
+        violations = self.db.query(Violation).all()
+        expect(violations).to_length(13)
+        facts = self.db.query(Fact).all()
+        expect(facts).to_length(7)
+
+        Review.delete_old_reviews(self.db, config, page1)
+
+        reviews = self.db.query(Review).all()
+        expect(reviews).to_length(6)
+        violations = self.db.query(Violation).all()
+        expect(violations).to_length(9)
+        facts = self.db.query(Fact).all()
+        expect(facts).to_length(5)

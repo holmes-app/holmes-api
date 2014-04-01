@@ -217,7 +217,7 @@ class Review(Base):
         return query.order_by(Review.completed_date.desc())[lower_bound:upper_bound]
 
     @classmethod
-    def save_review(cls, page_uuid, review_data, db, fact_definitions, violation_definitions, cache, publish):
+    def save_review(cls, page_uuid, review_data, db, fact_definitions, violation_definitions, cache, publish, config):
         from holmes.models import Page
 
         page = Page.by_uuid(page_uuid, db)
@@ -297,6 +297,9 @@ class Review(Base):
                         violation.review_is_active = False
                     last_review.is_active = False
                     db.commit()
+
+                    Review.delete_old_reviews(db, config, page)
+
                     break
                 except Exception:
                     err = sys.exc_info()[1]
@@ -310,3 +313,24 @@ class Review(Base):
             'type': 'new-review',
             'reviewId': str(review.uuid)
         }))
+
+    @classmethod
+    def delete_review(cls, db, review):
+        db.begin(subtransactions=True)
+        db.delete(review)
+        db.commit()
+
+    @classmethod
+    def delete_old_reviews(cls, db, config, page):
+        reviews = db \
+            .query(Review) \
+            .filter(Review.is_active == 0) \
+            .filter(Review.page_id == page.id) \
+            .order_by(Review.completed_date.desc()) \
+            .all()
+
+        last_reviews = reviews[config.MAX_OLD_REVIEWS:]
+
+        if len(last_reviews) > 0:
+            for review in last_reviews:
+               cls.delete_review(db, review)

@@ -284,7 +284,7 @@ class Reviewer(object):
         Review.save_review(
             self.page_uuid, data, self.db,
             self.fact_definitions, self.violation_definitions,
-            self.cache, self.publish
+            self.cache, self.publish, self.config
         )
 
     def wait_for_async_requests(self):

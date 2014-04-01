@@ -17,7 +17,7 @@ from tests.fixtures import PageFactory, ReviewFactory, KeyFactory
 class TestReviewHandler(ApiTestCase):
 
     @gen_test
-    def test_invalid_review_returns_404(self):
+    def test_invalid_page_uuid_returns_404(self):
         page = PageFactory.create()
 
         url = self.get_url('/page/%s/review/invalid' % page.uuid)
@@ -31,9 +31,21 @@ class TestReviewHandler(ApiTestCase):
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
-            expect(err.response.reason).to_be_like('Review with uuid of invalid not found!')
+            expect(err.response.reason).to_be_like('Not found')
         else:
             assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_invalid_review_uuid_returns_redirect(self):
+        page = PageFactory.create()
+        review = ReviewFactory.create(page=page)
+
+        url = self.get_url('/page/%s/review/invalid' % page.uuid)
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        expect(str(review.uuid)).to_equal(loads(response.body).get('uuid'))
 
     @gen_test
     def test_can_get_review(self):

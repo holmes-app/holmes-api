@@ -4,7 +4,7 @@
 import datetime
 from uuid import UUID
 
-from holmes.models import Review
+from holmes.models import Review, Page
 from holmes.handlers import BaseHandler
 
 
@@ -19,11 +19,19 @@ class BaseReviewHandler(BaseHandler):
 class ReviewHandler(BaseReviewHandler):
     def get(self, page_uuid, review_uuid):
         review = None
+        page = None
         if self._parse_uuid(review_uuid):
             review = Review.by_uuid(review_uuid, self.db)
 
-        if not review:
-            self.set_status(404, 'Review with uuid of %s not found!' % review_uuid)
+        if self._parse_uuid(page_uuid):
+            page = Page.by_uuid(page_uuid, self.db)
+
+        if not review and page:
+            self.redirect('/page/%s/review/%s/' % (page_uuid, page.last_review_uuid))
+            return
+
+        if not page:
+            self.set_status(404, 'Page with uuid of %s not found!' % page_uuid)
             return
 
         result = review.to_dict(self.application.fact_definitions, self.application.violation_definitions)
