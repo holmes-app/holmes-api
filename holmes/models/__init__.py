@@ -16,7 +16,7 @@ class JsonType(types.TypeDecorator):
 
     """
 
-    impl = types.Unicode
+    impl = types.String
 
     def process_bind_param(self, value, dialect):
         value = dumps(value)
