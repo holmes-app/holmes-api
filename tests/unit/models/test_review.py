@@ -11,7 +11,7 @@ from preggy import expect
 from holmes.models import Review, Violation, Key
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
-    ReviewFactory, PageFactory, KeyFactory, ViolationFactory
+    ReviewFactory, PageFactory, KeyFactory
 )
 
 
