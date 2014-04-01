@@ -121,6 +121,21 @@ class Violation(Base):
 
         return result
 
+    @classmethod
+    def get_group_by_value_for_key(cls, db, key_name):
+        from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.violation import Violation  # to avoid circular dependency
+
+        return db \
+            .query(
+                Violation.value,
+                sa.func.count(Violation.key_id).label('count')
+            ) \
+            .filter(Key.name == key_name) \
+            .filter(Key.id == Violation.key_id) \
+            .group_by(Violation.value) \
+            .order_by('count DESC') \
+            .all()
 
     @classmethod
     def get_top_in_category_for_domain(cls, db, domain, key_category_id, limit=10):

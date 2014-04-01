@@ -9,6 +9,7 @@ from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
 from holmes.models.page import Page
 from holmes.models.violation import Violation
+from holmes.utils import get_domain_from_url
 
 
 def configure_materials(girl, db, config):
@@ -30,6 +31,26 @@ def configure_materials(girl, db, config):
         60
     )
 
+    girl.add_material(
+        'blacklist_domain_count',
+        partial(MaterialConveyor.get_blacklist_domain_count, db),
+        600
+    )
+
+
+class MaterialConveyor(object):
+    @classmethod
+    def get_blacklist_domain_count(cls, db):
+        ungrouped = {}
+        for urls, count in Violation.get_group_by_value_for_key(db, 'blacklist.domains'):
+            for url in urls:
+                domain, null = get_domain_from_url(url)
+                if domain not in ungrouped:
+                    ungrouped[domain] = 0
+                ungrouped[domain] += count
+        blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
+        return [dict(zip(('domain', 'count'), x)) for x in blacklist]
+
 
 class MaterialWorker(BaseCLI):
     def initialize(self):
@@ -45,6 +66,7 @@ class MaterialWorker(BaseCLI):
     def do_work(self):
         self.info('Running material girl...')
         self.girl.run()
+
 
 def main():
     worker = MaterialWorker(sys.argv[1:])

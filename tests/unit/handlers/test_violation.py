@@ -148,6 +148,47 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(1)
         expect(violations['reviewsCount']).to_equal(1)
 
+    @gen_test
+    def test_can_get_blacklist_domains(self):
+        key = KeyFactory.create(name='blacklist.domains')
+
+        for i in xrange(3):
+            for j in xrange(i + 1):
+                ViolationFactory.create(
+                    key=key,
+                    value=[
+                        'http://www.blacklist-domain-%d.com/' % i,
+                        'http://blacklist-domain-%d.com/' % i
+                    ]
+                )
+                ViolationFactory.create(
+                    key=key,
+                    value=['http://www.blacklist-domain-%d.com/' % i]
+                )
+
+        self.db.flush()
+
+        self.server.application.violation_definitions = {
+            'blacklist.domains': {
+                'title': 'title',
+                'category': 'category',
+                'key': key
+            }
+        }
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violation/blacklist.domains')
+        )
+        expect(response.code).to_equal(200)
+
+        violation = loads(response.body)
+        expect(violation['details']).to_length(3)
+        expect(violation['details']).to_be_like([
+            {'count': 9, 'domain': 'blacklist-domain-2.com'},
+            {'count': 6, 'domain': 'blacklist-domain-1.com'},
+            {'count': 3, 'domain': 'blacklist-domain-0.com'}
+        ])
+
 
 class TestViolationDomainsHandler(ApiTestCase):
 

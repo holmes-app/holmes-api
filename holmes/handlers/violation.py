@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tornado import gen
+from functools import partial
 
 from holmes.handlers import BaseHandler
 from holmes.models import Review, Violation
@@ -43,6 +44,13 @@ class MostCommonViolationsHandler(BaseHandler):
 
 
 class ViolationHandler(BaseHandler):
+
+    def __init__(self, *args, **kw):
+        super(ViolationHandler, self).__init__(*args, **kw)
+        self.key_details_handler = {
+            'blacklist.domains': partial(self.girl.get, 'blacklist_domain_count')
+        }
+
     @gen.coroutine
     def get(self, key_name):
         current_page = int(self.get_argument('current_page', 1))
@@ -86,6 +94,9 @@ class ViolationHandler(BaseHandler):
             'reviews': reviews_data,
             'reviewsCount': reviews_count
         }
+
+        if key_name in self.key_details_handler:
+            violation['details'] = self.key_details_handler[key_name]()
 
         self.write_json(violation)
         self.finish()
