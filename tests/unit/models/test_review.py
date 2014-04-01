@@ -198,7 +198,7 @@ class TestReview(ApiTestCase):
         self.db.query(Page).delete()
 
         config = Config()
-        config.MAX_OLD_REVIEWS = 4
+        config.NUMBER_OF_REVIEWS_TO_KEEP = 4
 
         dt = datetime(2013, 12, 11, 10, 9, 8)
 

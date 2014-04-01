@@ -22,7 +22,7 @@ Config.define('LOG_DATE_FORMAT', '%Y-%m-%d %H:%M:%S',
 Config.define('FACTERS', [], 'List of classes to get facts about a website', 'Review')
 Config.define('VALIDATORS', [], 'List of classes to validate a website', 'Review')
 Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, 'Number of seconds that a review expires in.', 'Review')
-Config.define('MAX_OLD_REVIEWS', 4, 'Maximum number of old reviews', 'Review')
+Config.define('NUMBER_OF_REVIEWS_TO_KEEP', 4, 'Maximum number of reviews to keep', 'Review')
 
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               'Number of urls to enqueue before submitting to the /pages route', 'Validators')

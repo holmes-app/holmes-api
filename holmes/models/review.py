@@ -329,7 +329,7 @@ class Review(Base):
             .order_by(Review.completed_date.desc()) \
             .all()
 
-        last_reviews = reviews[config.MAX_OLD_REVIEWS:]
+        last_reviews = reviews[config.NUMBER_OF_REVIEWS_TO_KEEP:]
 
         if len(last_reviews) > 0:
             for review in last_reviews:
