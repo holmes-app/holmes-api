@@ -45,12 +45,6 @@ class MostCommonViolationsHandler(BaseHandler):
 
 class ViolationHandler(BaseHandler):
 
-    def __init__(self, *args, **kw):
-        super(ViolationHandler, self).__init__(*args, **kw)
-        self.key_details_handler = {
-            'blacklist.domains': partial(self.girl.get, 'blacklist_domain_count')
-        }
-
     @gen.coroutine
     def get(self, key_name):
         current_page = int(self.get_argument('current_page', 1))
@@ -95,14 +89,18 @@ class ViolationHandler(BaseHandler):
             'reviewsCount': reviews_count
         }
 
-        if key_name in self.key_details_handler:
-            violation['details'] = self.key_details_handler[key_name]()
-
         self.write_json(violation)
         self.finish()
 
 
 class ViolationDomainsHandler(BaseHandler):
+
+    def __init__(self, *args, **kw):
+        super(ViolationDomainsHandler, self).__init__(*args, **kw)
+        self.key_details_handler = {
+            'blacklist.domains': partial(self.girl.get, 'blacklist_domain_count')
+        }
+
     @gen.coroutine
     def get(self, key_name):
         violations = self.application.violation_definitions
@@ -116,6 +114,9 @@ class ViolationDomainsHandler(BaseHandler):
             'domains': [{'name': name, 'count': count} for (name, count) in domains],
             'total': sum(count for (name, count) in domains)
         }
+
+        if key_name in self.key_details_handler:
+            violation['details'] = self.key_details_handler[key_name]()
 
         self.write_json(violation)
         self.finish()

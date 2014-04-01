@@ -4,6 +4,7 @@
 import sys
 from uuid import uuid4
 from functools import partial
+from collections import defaultdict
 
 from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
@@ -41,12 +42,10 @@ def configure_materials(girl, db, config):
 class MaterialConveyor(object):
     @classmethod
     def get_blacklist_domain_count(cls, db):
-        ungrouped = {}
+        ungrouped = defaultdict(int)
         for urls, count in Violation.get_group_by_value_for_key(db, 'blacklist.domains'):
             for url in urls:
                 domain, null = get_domain_from_url(url)
-                if domain not in ungrouped:
-                    ungrouped[domain] = 0
                 ungrouped[domain] += count
         blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
