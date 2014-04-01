@@ -9,7 +9,6 @@ from ujson import dumps
 from colorama import Fore, Style
 from octopus import TornadoOctopus
 from octopus.limiter.redis.per_domain import Limiter
-from sqlalchemy.exc import OperationalError
 
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
@@ -227,36 +226,42 @@ class HolmesWorker(BaseWorker):
     def _ping_api(self):
         self.debug('Pinging that this worker is still alive...')
 
-        self.db.begin(subtransactions=True)
+        for i in range(3):
+            self.db.begin(subtransactions=True)
+            try:
+                # FIXME: this statement works only in MySQL.
+                query_params = {
+                    'uuid': self.uuid,
+                    'dt': datetime.utcnow(),
+                    'current_url': self.working_url
+                }
 
-        try:
-            # FIXME: Replace statement works only in MySQL.
-            query_params = {
-                'uuid': self.uuid,
-                'dt': datetime.utcnow(),
-                'current_url': self.working_url
-            }
+                self.db.execute(
+                    'INSERT INTO workers (uuid, last_ping, current_url) ' \
+                    'VALUES (:uuid, :dt, :current_url) ON DUPLICATE KEY ' \
+                    'UPDATE last_ping = :dt, current_url = :current_url',
+                    query_params
+                )
 
-            self.db.execute(
-                'REPLACE INTO workers SET uuid = :uuid, last_ping = :dt, current_url = :current_url',
-                query_params
-            )
+                self.db.flush()
+                self.db.commit()
 
-            self.db.flush()
-            self.db.commit()
+                self.publish(dumps({
+                    'type': 'worker-status',
+                    'workerId': str(self.uuid)
+                }))
 
-        except OperationalError:
-            exc = sys.exc_info()[1]
-            self.db.rollback()
-            self.error("Could not ping API due to error: %s" % str(exc))
-            return False
+                return True
 
-        self.publish(dumps({
-            'type': 'worker-status',
-            'workerId': str(self.uuid)
-        }))
+            except Exception:
+                err = sys.exc_info()[1]
+                if 'Deadlock found' in str(err):
+                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
+                else:
+                    self.db.rollback()
+                    self.error("Could not ping API due to error: %s" % str(err))
 
-        return True
+        return False
 
     def handle_limiter_miss(self, url):
         self._ping_api()
