@@ -3,7 +3,7 @@
 
 import sys
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import logging
 
@@ -128,6 +128,8 @@ class Page(Base):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
+        expired_time = datetime.utcnow() - timedelta(seconds=expiration)
+
         active_domains = Domain.get_active_domains(db)
         active_domains_ids = [item.id for item in active_domains]
 
@@ -139,6 +141,10 @@ class Page(Base):
                 Page.last_review_date
             ) \
             .filter(Page.domain_id.in_(active_domains_ids)) \
+            .filter(or_(
+                Page.last_review_date == None,
+                Page.last_review_date <= expired_time
+            )) \
             .order_by(Page.score.desc())
 
         return pages_query[lower_bound:upper_bound]
@@ -146,6 +152,9 @@ class Page(Base):
     @classmethod
     def get_next_jobs_count(cls, db, config):
         from holmes.models import Domain
+
+        expiration = config.REVIEW_EXPIRATION_IN_SECONDS
+        expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
         active_domains = Domain.get_active_domains(db)
         active_domains_ids = [item.id for item in active_domains]
@@ -155,6 +164,10 @@ class Page(Base):
                     sa.func.count(Page.id)
                 ) \
                 .filter(Page.domain_id.in_(active_domains_ids)) \
+                .filter(or_(
+                    Page.last_review_date == None,
+                    Page.last_review_date <= expired_time
+                )) \
                 .scalar()
 
     @classmethod
@@ -166,6 +179,8 @@ class Page(Base):
         settings = Settings.instance(db)
         workers = db.query(Worker).all()
         number_of_workers = len(workers)
+
+        expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
         active_domains = Domain.get_active_domains(db)
         active_domains_ids = [item.id for item in active_domains]
@@ -181,6 +196,10 @@ class Page(Base):
                     Page.last_review_date
                 ) \
                 .filter(Page.domain_id == domain_id) \
+                .filter(or_(
+                    Page.last_review_date == None,
+                    Page.last_review_date <= expired_time
+                )) \
                 .order_by(Page.score.desc())[:number_of_workers]
             if pages:
                 all_domains_pages_in_need_of_review[domain_id] = pages
