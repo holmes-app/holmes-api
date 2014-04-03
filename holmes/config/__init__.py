@@ -3,6 +3,8 @@
 
 from derpconf.config import Config  # NOQA
 
+MINUTE = 60
+HOUR = MINUTE * 60
 
 Config.define('WORKER_SLEEP_TIME', 10, 'Main loop sleep time', 'Worker')
 Config.define('ZOMBIE_WORKER_TIME', 200,
@@ -83,7 +85,6 @@ Config.define('ERROR_HANDLERS', [], 'List of classes to handle errors', 'General
 Config.define('USE_SENTRY', False, 'If set to true errors will be sent to sentry.', 'Sentry')
 Config.define('SENTRY_DSN_URL', '', 'URL to use as sentry DSN.', 'Sentry')
 
-HOUR = 60 * 60
 Config.define('PAGE_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain page count', 'Cache')
 Config.define('VIOLATION_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
 Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
@@ -99,18 +100,18 @@ Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the
 Config.define('REQUESTS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for requests count', 'Cache')
 
 materials_expiration_in_seconds = {
-    'domains_details': 31,
+    'domains_details': 0.5 * MINUTE + 1,
     'next_jobs_count': 13,
-    'violation_count_by_category_for_domains': 59,
-    'blacklist_domain_count': 601
+    'violation_count_by_category_for_domains': 3 * MINUTE + 7,
+    'blacklist_domain_count': 10 * MINUTE + 1
 }
 Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
 
 materials_grace_period_in_seconds = {
-    'domains_details': 31,
-    'next_jobs_count': 13,
-    'violation_count_by_category_for_domains': 59,
-    'blacklist_domain_count': 601
+    'domains_details': 2 * materials_expiration_in_seconds['domains_details'],
+    'next_jobs_count': 2 * materials_expiration_in_seconds['next_jobs_count'],
+    'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
+    'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 
