@@ -249,7 +249,6 @@ class Page(Base):
     @classmethod
     @return_future
     def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, callback):
-        url = url_ends_with_slash(url)
         domain_name, domain_url = get_domain_from_url(url)
         if not url or not domain_name:
             callback((False, url, {
@@ -321,6 +320,7 @@ class Page(Base):
 
     @classmethod
     def insert_or_update_page(cls, url, score, domain, db, publish_method, cache):
+        url = url_ends_with_slash(url)
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
         page = Page.by_url_hash(url_hash, db)
