@@ -14,7 +14,6 @@ from holmes.utils import get_domain_from_url
 
 
 def configure_materials(girl, db, config):
-    import ipdb; ipdb.set_trace()  # BREAKPOINT
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
