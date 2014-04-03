@@ -3,11 +3,10 @@
 
 import sys
 from uuid import uuid4
-from ujson import dumps
 
 import requests
 from preggy import expect
-from mock import patch, Mock, call
+from mock import patch, Mock
 
 from holmes.reviewer import Reviewer, ReviewDAO
 from holmes.config import Config
