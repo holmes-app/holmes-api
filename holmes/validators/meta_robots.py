@@ -17,12 +17,12 @@ class MetaRobotsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'presence.meta.robots.noindex': {
-                'title': 'Meta Robots with value of noindex.',
+                'title': 'Meta Robots with value of noindex',
                 'description': lambda value: cls.META_ROBOTS_NO_INDEX,
                 'category': 'SEO'
             },
             'presence.meta.robots.nofollow': {
-                'title': 'Meta Robots with value of nofollow.',
+                'title': 'Meta Robots with value of nofollow',
                 'description': lambda value: cls.META_ROBOTS_NO_FOLLOW,
                 'category': 'SEO'
             }

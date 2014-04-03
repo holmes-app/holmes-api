@@ -51,22 +51,22 @@ class ImageRequestsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'broken.img': {
-                'title': 'Image not found.',
+                'title': 'Image not found',
                 'description': cls.get_broken_images_message,
                 'category': 'HTTP'
             },
             'single.size.img': {
-                'title': 'Single image size in kb is too big.',
+                'title': 'Single image size in kb is too big',
                 'description': cls.get_single_image_size_message,
                 'category': 'Performance'
             },
             'total.requests.img': {
-                'title': 'Too many image requests.',
+                'title': 'Too many image requests',
                 'description': cls.get_requests_images_message,
                 'category': 'Performance'
             },
             'total.size.img': {
-                'title': 'Total image size in kb is too big.',
+                'title': 'Total image size in kb is too big',
                 'description': cls.get_total_size_message,
                 'category': 'Performance'
             }

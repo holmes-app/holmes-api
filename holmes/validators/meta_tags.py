@@ -10,7 +10,7 @@ class MetaTagsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'absent.metatags': {
-                'title': 'Meta tags not present.',
+                'title': 'Meta tags not present',
                 'description': lambda value: "No meta tags found on this page. This is damaging for Search Engines.",
                 'category': 'HTTP'
             }

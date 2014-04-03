@@ -12,12 +12,12 @@ class TitleValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.title.not_found': {
-                'title': 'Page title not found.',
+                'title': 'Page title not found',
                 'description': lambda value: "Title was not found on '%s'." % value,
                 'category': 'HTTP'
             },
             'page.title.multiple': {
-                'title': 'Too many titles.',
+                'title': 'Too many titles',
                 'description': lambda value: "Page '%s' has %d title tags." % (value['page_url'], value['title_count']),
                 'category': 'Semantics'
             },

@@ -21,12 +21,12 @@ class RobotsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'robots.not_found': {
-                'title': 'Robots file not found.',
+                'title': 'Robots file not found',
                 'description': lambda value: "The robots file at '%s' was not found." % value,
                 'category': 'SEO'
             },
             'robots.empty': {
-                'title': 'Robots file was empty.',
+                'title': 'Robots file was empty',
                 'description': lambda value: "The robots file at '%s' was empty." % value,
                 'category': 'SEO'
             },

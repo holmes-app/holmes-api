@@ -10,7 +10,7 @@ class LastModifiedValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.last_modified.not_found': {
-                'title': 'Last-Modified not found.',
+                'title': 'Last-Modified not found',
                 'description': lambda value: 'Last-Modified was not found on %s.' % value,
                 'category': 'HTTP'
             }

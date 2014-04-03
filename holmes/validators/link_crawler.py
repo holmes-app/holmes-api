@@ -45,12 +45,12 @@ class LinkCrawlerValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'link.broken': {
-                'title': 'Broken link(s) found.',
+                'title': 'Broken link(s) found',
                 'description': cls.get_broken_link_message,
                 'category': 'HTTP'
             },
             'link.moved.temporarily': {
-                'title': 'Moved Temporarily.',
+                'title': 'Moved Temporarily',
                 'description': cls.get_redirect_message,
                 'category': 'HTTP'
             }
