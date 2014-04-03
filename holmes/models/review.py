@@ -254,7 +254,6 @@ class Review(Base):
             try:
                 page.expires = review_data['expires']
                 page.last_modified = review_data['lastModified']
-                page.score = 0
                 page.last_review_uuid = review.uuid
                 page.last_review = review
                 page.last_review_date = review.completed_date

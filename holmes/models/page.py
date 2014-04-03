@@ -172,11 +172,10 @@ class Page(Base):
 
     @classmethod
     def get_next_job(cls, db, expiration, cache, lock_expiration, avg_links_per_page=10):
-        from holmes.models import Settings, Worker, Domain, Limiter  # Avoid circular dependency
+        from holmes.models import Worker, Domain, Limiter  # Avoid circular dependency
 
         page = None
         lock = None
-        settings = Settings.instance(db)
         workers = db.query(Worker).all()
         number_of_workers = len(workers)
 
@@ -224,9 +223,6 @@ class Page(Base):
         if not pages_in_need_of_review:
             return None
 
-        if settings.lambda_score > 0 and settings.lambda_score > pages_in_need_of_review[0].score:
-            cls.update_pages_score_by(settings, settings.lambda_score, db)
-
         for i in range(len(pages_in_need_of_review)):
             if not Limiter.has_limit_to_work(db, active_domains, pages_in_need_of_review[i].url, avg_links_per_page):
                 continue
@@ -249,13 +245,6 @@ class Page(Base):
             'score': page.score,
             'lock': lock
         }
-
-    @classmethod
-    def update_pages_score_by(cls, settings, score, db):
-        settings.lambda_score = 0
-        page_count = cls.get_page_count(db)
-        individual_score = float(score) / float(page_count)
-        cls.update_scores(individual_score, db)
 
     @classmethod
     @return_future

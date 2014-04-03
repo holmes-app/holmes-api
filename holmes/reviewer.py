@@ -64,8 +64,8 @@ class ReviewDAO(object):
 class Reviewer(object):
     def __init__(
             self, api_url, page_uuid, page_url, page_score,
-            increase_lambda_tax_method=None, config=None, validators=[], facters=[],
-            async_get=None, wait=None, wait_timeout=None, db=None, cache=None, publish=None,
+            config=None, validators=[], facters=[], async_get=None,
+            wait=None, wait_timeout=None, db=None, cache=None, publish=None,
             fact_definitions=None, violation_definitions=None):
 
         self.db = db
@@ -79,7 +79,6 @@ class Reviewer(object):
         self.page_score = page_score
 
         self.ping_method = None
-        self.increase_lambda_tax_method = increase_lambda_tax_method
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
 
@@ -241,9 +240,6 @@ class Reviewer(object):
 
     def get_url(self, url):
         return join(self.api_url.rstrip('/'), url.lstrip('/'))
-
-    def increase_lambda_tax(self, tax):
-        self.increase_lambda_tax_method(tax)
 
     def enqueue(self, urls):
         if not urls:

@@ -188,7 +188,6 @@ class HolmesWorker(BaseWorker):
                 page_uuid=job['page'],
                 page_url=job['url'],
                 page_score=job['score'],
-                increase_lambda_tax_method=self._increase_lambda_tax,
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,
@@ -203,22 +202,6 @@ class HolmesWorker(BaseWorker):
             )
 
             reviewer.review()
-
-    def _increase_lambda_tax(self, tax):
-        tax = float(tax)
-        for i in range(3):
-            self.db.begin(subtransactions=True)
-            try:
-                self.db.query(Settings).update({'lambda_score': Settings.lambda_score + tax})
-                self.db.commit()
-                break
-            except Exception:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err):
-                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                else:
-                    self.db.rollback()
-                    raise
 
     def _ping_api(self):
         self.debug('Pinging that this worker is still alive...')

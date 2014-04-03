@@ -69,9 +69,6 @@ class LinkCrawlerValidator(Validator):
         for url, response in links:
             self.send_url(response.effective_url, link_score, response)
 
-        if links:
-            self.reviewer.increase_lambda_tax(tax)
-
         if self.broken_links:
             self.add_violation(
                 key='link.broken',

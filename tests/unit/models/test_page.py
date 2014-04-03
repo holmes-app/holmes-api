@@ -121,27 +121,6 @@ class TestPage(ApiTestCase):
 
         expect(next_job).to_be_null()
 
-    def test_increases_page_score_when_lambda_is_top_page(self):
-        WorkerFactory.create()
-        page = PageFactory.create()
-        page2 = PageFactory.create()
-
-        settings = Settings.instance(self.db)
-        settings.lambda_score = 10000
-
-        Page.get_next_job(
-            self.db,
-            expiration=100,
-            cache=self.sync_cache,
-            lock_expiration=1
-        )
-
-        self.db.refresh(page)
-        self.db.refresh(page2)
-
-        expect(page.score).to_equal(5000)
-        expect(page2.score).to_equal(5000)
-
     def test_can_get_next_job_when_domain_limited(self):
         self.db.query(Domain).delete()
         self.db.query(Page).delete()
