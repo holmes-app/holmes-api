@@ -98,6 +98,21 @@ Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, 'Expiration for
 Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for next jobs count', 'Cache')
 Config.define('REQUESTS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for requests count', 'Cache')
 
+materials_expiration_in_seconds = {
+    'domains_details': 31,
+    'next_jobs_count': 13,
+    'violation_count_by_category_for_domains': 59,
+    'blacklist_domain_count': 601
+}
+Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
+
+materials_grace_period_in_seconds = {
+    'domains_details': 31,
+    'next_jobs_count': 13,
+    'violation_count_by_category_for_domains': 59,
+    'blacklist_domain_count': 601
+}
+Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 
 Config.define('DEFAULT_PAGE_SCORE', 1000000, 'Page Score for pages that the user includes through the UI', 'General')
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, 'Default tax rate for scoring pages.', 'General')

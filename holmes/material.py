@@ -14,28 +14,33 @@ from holmes.utils import get_domain_from_url
 
 
 def configure_materials(girl, db, config):
+    import ipdb; ipdb.set_trace()  # BREAKPOINT
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
-        30
+        config.MATERIALS_EXPIRATION_IN_SECONDS['domains_details'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['domains_details']
     )
 
     girl.add_material(
         'next_jobs_count',
         partial(Page.get_next_jobs_count, db, config),
-        10
+        config.MATERIALS_EXPIRATION_IN_SECONDS['next_jobs_count'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['next_jobs_count']
     )
 
     girl.add_material(
         'violation_count_by_category_for_domains',
         partial(Violation.get_group_by_category_id_for_all_domains, db),
-        60
+        config.MATERIALS_EXPIRATION_IN_SECONDS['violation_count_by_category_for_domains'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['violation_count_by_category_for_domains']
     )
 
     girl.add_material(
         'blacklist_domain_count',
         partial(MaterialConveyor.get_blacklist_domain_count, db),
-        600
+        config.MATERIALS_EXPIRATION_IN_SECONDS['blacklist_domain_count'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['blacklist_domain_count']
     )
 
 
