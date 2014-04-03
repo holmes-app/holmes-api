@@ -105,3 +105,8 @@ def count_url_levels(url):
             path = path[1:]
         return len(path.split('/'))
     return None
+
+def url_ends_with_slash(url):
+    if url.endswith('/'):
+        return url[:-1]
+    return url
