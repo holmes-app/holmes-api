@@ -143,33 +143,60 @@ class Domain(Base):
     def get_domain_names(cls, db):
         return [item.name for item in db.query(Domain.name).all()]
 
+    def get_sample_requests(self, db, status_code_filter, limit=20000):
+        from holmes.models import Request
+
+        query = db \
+            .query(
+                Request.id,
+                Request.response_time.label('response_time')
+            ) \
+            .filter(Request.domain_name == self.name)
+
+        query = status_code_filter(query)
+
+        return query \
+            .order_by(Request.id.desc()) \
+            .limit(limit) \
+            .subquery()
+
     def get_good_request_count(self, db):
         from holmes.models import Request
 
+        sample_query = self.get_sample_requests(
+            db,
+            lambda query: query.filter(Request.status_code < 400)
+        )
+
         return db \
-            .query(func.count(Request.id)) \
-            .filter(Request.domain_name == self.name) \
-            .filter(Request.status_code < 400) \
+            .query(func.count(sample_query.columns.id)) \
             .scalar()
 
     def get_bad_request_count(self, db):
         from holmes.models import Request
 
+        sample_query = self.get_sample_requests(
+            db,
+            lambda query: query.filter(Request.status_code > 399)
+        )
+
         return db \
-            .query(func.count(Request.id)) \
-            .filter(Request.domain_name == self.name) \
-            .filter(Request.status_code > 399) \
+            .query(func.count(sample_query.columns.id)) \
             .scalar()
 
     def get_response_time_avg(self, db):
         from holmes.models import Request
 
+        sample_query = self.get_sample_requests(
+            db,
+            lambda query: query.filter(Request.status_code < 400)
+        )
+
         time_avg = db \
-            .query(func.avg(Request.response_time)) \
-            .filter(Request.domain_name == self.name) \
-            .filter(Request.status_code < 400) \
-            .scalar()
-        return round(time_avg, 3) if time_avg is not None else 0
+            .query(func.avg(sample_query.columns.response_time)) \
+            .scalar() or 0
+
+        return round(time_avg, 3)
 
     @classmethod
     def get_domains_details(cls, db):
