@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from gzip import GzipFile
+from cStringIO import StringIO
+
 from ujson import dumps
 from preggy import expect
 from tornado.testing import gen_test
@@ -794,18 +797,26 @@ class SyncCacheTestCase(ApiTestCase):
 
         self.sync_cache.redis.delete(key)
 
+        value = dumps({
+            'url': url,
+            'body': None,
+            'status_code': 200,
+            'headers': None,
+            'cookies': None,
+            'effective_url': 'http://g.com/test.html',
+            'error': None,
+            'request_time': str(100)
+        })
+
+        out = StringIO()
+        with GzipFile(fileobj=out, mode="w") as f:
+            f.write(value)
+        zipped = out.getvalue()
+
         self.sync_cache.redis.setex(
             key,
             10,
-            dumps({
-                'url': url,
-                'status_code': 200,
-                'headers': None,
-                'cookies': None,
-                'effective_url': 'http://g.com/test.html',
-                'error': None,
-                'request_time': str(100)
-            })
+            zipped
         )
 
         url, response = self.sync_cache.get_request(url)
