@@ -115,7 +115,7 @@ materials_grace_period_in_seconds = {
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 
-Config.define('DEFAULT_PAGE_SCORE', 1000000, 'Page Score for pages that the user includes through the UI', 'General')
+Config.define('DEFAULT_PAGE_SCORE', 1, 'Page Score for pages that the user includes through the UI', 'General')
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, 'Default tax rate for scoring pages.', 'General')
 
 Config.define('REQUEST_CACHE_EXPIRATION_IN_SECONDS', HOUR, 'Expiration in seconds for cache storage of responses.', 'Cache')
