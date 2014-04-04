@@ -312,14 +312,14 @@ class Page(Base):
                 return
 
             domain = cls.add_domain(url, db, publish_method, config)
-            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache)
+            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache, config)
 
             callback((True, url, page_uuid))
 
         return handle
 
     @classmethod
-    def insert_or_update_page(cls, url, score, domain, db, publish_method, cache):
+    def insert_or_update_page(cls, url, score, domain, db, publish_method, cache, config):
         url = url_ends_with_slash(url)
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
@@ -329,7 +329,12 @@ class Page(Base):
             for i in range(3):
                 db.begin(subtransactions=True)
                 try:
-                    db.query(Page).filter(Page.id == page.id).update({'score': Page.score + score})
+                    db \
+                        .query(Page).filter(Page.id == page.id) \
+                        .update(
+                            {'score': sa.func.least(config.MAX_PAGE_SCORE, Page.score + score)},
+                            synchronize_session=False
+                        )
                     db.flush()
                     db.commit()
                     break
