@@ -4,6 +4,7 @@
 from gzip import GzipFile
 from cStringIO import StringIO
 
+import msgpack
 from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
@@ -485,15 +486,16 @@ class SyncCache(object):
         if not contents:
             return url, None
 
-        gzipped = GzipFile(mode='r', fileobj=StringIO(contents))
-        item = loads(gzipped.read())
+        item = msgpack.unpackb(contents)
+
+        text = GzipFile(mode='r', fileobj=StringIO(item['body'])).read()
 
         response = Response(
             url=url,
             status_code=item['status_code'],
             headers=item['headers'],
             cookies=item['cookies'],
-            text=item['body'],
+            text=text,
             effective_url=item['effective_url'],
             error=item['error'],
             request_time=float(item['request_time'])
@@ -509,7 +511,12 @@ class SyncCache(object):
 
         cache_key = "urls-%s" % url
 
-        value = dumps({
+        out = StringIO()
+        with GzipFile(fileobj=out, mode="w") as f:
+            f.write(text)
+        text = out.getvalue()
+
+        value = msgpack.packb({
             'url': url,
             'body': text,
             'status_code': status_code,
@@ -520,15 +527,10 @@ class SyncCache(object):
             'request_time': request_time
         })
 
-        out = StringIO()
-        with GzipFile(fileobj=out, mode="w") as f:
-            f.write(value)
-        zipped = out.getvalue()
-
         self.redis.setex(
             cache_key,
             expiration,
-            zipped,
+            value,
         )
 
     def lock_next_job(self, url, expiration):
