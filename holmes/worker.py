@@ -157,8 +157,6 @@ class HolmesWorker(BaseWorker):
     def do_work(self):
         self.debug('Started doing work...')
 
-        self._remove_zombie_workers()
-
         if self._ping_api():
             err = None
             job = self._load_next_job()

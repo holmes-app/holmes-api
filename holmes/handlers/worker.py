@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
+from datetime import datetime, timedelta
 
 from holmes.models.worker import Worker
 from holmes.handlers import BaseHandler
@@ -10,7 +11,9 @@ from holmes.handlers import BaseHandler
 class WorkersHandler(BaseHandler):
 
     def get(self):
-        workers = self.db.query(Worker).all()
+        zombie_time = self.application.config.ZOMBIE_WORKER_TIME
+        dt = datetime.utcnow() - timedelta(seconds=zombie_time)
+        workers = self.db.query(Worker).filter(Worker.last_ping > dt).all()
 
         workers_json = [worker.to_dict() for worker in workers]
         self.write_json(workers_json)
