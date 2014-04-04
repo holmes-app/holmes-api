@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from gzip import GzipFile
+from cStringIO import StringIO
+
 from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
@@ -482,15 +485,15 @@ class SyncCache(object):
         if not contents:
             return url, None
 
-        body = self.redis.get('%s-body' % cache_key)
+        gzipped = GzipFile(mode='r', fileobj=StringIO(contents))
+        item = loads(gzipped.read())
 
-        item = loads(contents)
         response = Response(
             url=url,
             status_code=item['status_code'],
             headers=item['headers'],
             cookies=item['cookies'],
-            text=body,
+            text=item['body'],
             effective_url=item['effective_url'],
             error=item['error'],
             request_time=float(item['request_time'])
@@ -505,26 +508,27 @@ class SyncCache(object):
             return
 
         cache_key = "urls-%s" % url
-        body_key = '%s-body' % cache_key
+
+        value = dumps({
+            'url': url,
+            'body': text,
+            'status_code': status_code,
+            'headers': headers,
+            'cookies': cookies,
+            'effective_url': effective_url,
+            'error': error,
+            'request_time': request_time
+        })
+
+        out = StringIO()
+        with GzipFile(fileobj=out, mode="w") as f:
+            f.write(value)
+        zipped = out.getvalue()
 
         self.redis.setex(
             cache_key,
             expiration,
-            dumps({
-                'url': url,
-                'status_code': status_code,
-                'headers': headers,
-                'cookies': cookies,
-                'effective_url': effective_url,
-                'error': error,
-                'request_time': request_time
-            }),
-        )
-
-        self.redis.setex(
-            body_key,
-            expiration,
-            text
+            zipped,
         )
 
     def lock_next_job(self, url, expiration):

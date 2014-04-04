@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sqlalchemy.types as types
 from gzip import GzipFile
 from cStringIO import StringIO
+
+import sqlalchemy.types as types
 from sqlalchemy.ext.declarative import declarative_base
 from ujson import dumps, loads
+
 Base = declarative_base()
 
 
