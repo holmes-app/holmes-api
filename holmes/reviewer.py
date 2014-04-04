@@ -180,6 +180,7 @@ class Reviewer(object):
                                                       text)
             logging.error(msg)
             if headers is not None:
+                logging.warning('Response is from cache: %s' % response.from_cache)
                 logging.warning('Headers for "%s": %s' % (url, headers))
             return
 
