@@ -4,6 +4,7 @@
 from gzip import GzipFile
 from cStringIO import StringIO
 
+import msgpack
 from ujson import dumps
 from preggy import expect
 from tornado.testing import gen_test
@@ -797,9 +798,14 @@ class SyncCacheTestCase(ApiTestCase):
 
         self.sync_cache.redis.delete(key)
 
-        value = dumps({
+        out = StringIO()
+        with GzipFile(fileobj=out, mode="w") as f:
+            f.write('')
+        text = out.getvalue()
+
+        value = msgpack.packb({
             'url': url,
-            'body': None,
+            'body': text,
             'status_code': 200,
             'headers': None,
             'cookies': None,
@@ -808,15 +814,11 @@ class SyncCacheTestCase(ApiTestCase):
             'request_time': str(100)
         })
 
-        out = StringIO()
-        with GzipFile(fileobj=out, mode="w") as f:
-            f.write(value)
-        zipped = out.getvalue()
 
         self.sync_cache.redis.setex(
             key,
             10,
-            zipped
+            value
         )
 
         url, response = self.sync_cache.get_request(url)
@@ -841,7 +843,7 @@ class SyncCacheTestCase(ApiTestCase):
             status_code=200,
             headers={'X-HEADER': 'test'},
             cookies=None,
-            text=None,
+            text='',
             effective_url='http://g.com/test.html',
             error=None,
             request_time=100,
