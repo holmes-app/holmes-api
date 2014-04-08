@@ -327,7 +327,6 @@ class Page(Base):
 
         if page:
             for i in range(3):
-                db.begin(subtransactions=True)
                 try:
                     db \
                         .query(Page).filter(Page.id == page.id) \
@@ -335,30 +334,23 @@ class Page(Base):
                             {'score': sa.func.least(config.MAX_PAGE_SCORE, Page.score + score)},
                             synchronize_session=False
                         )
-                    db.flush()
-                    db.commit()
                     break
                 except Exception:
                     err = sys.exc_info()[1]
                     if 'Deadlock found' in str(err) or 'Lock wait' in str(err):
                         logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
-                        db.rollback()
                         raise
 
             return page.uuid
 
-        db.begin(subtransactions=True)
         try:
             page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
             db.add(page)
-            db.flush()
-            db.commit()
             cache.increment_page_count(domain)
             cache.increment_page_count()
             cache.increment_next_jobs_count()
         except Exception:
-            db.rollback()
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):
                 logging.error('Duplicate entry! (Details: %s)' % str(err))
