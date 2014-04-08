@@ -43,7 +43,7 @@ class BaseWorker(BaseCLI):
     def update_otto_limiter(self):
         domains = self.cache.get_domain_limiters()
 
-        if hasattr(self.otto, 'limiter'):
+        if hasattr(self.otto, 'limiter') and self.otto.limiter is not None:
             self.otto.limiter.update_domain_definitions(*domains)
 
     def start_otto(self):
