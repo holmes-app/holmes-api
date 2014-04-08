@@ -345,11 +345,13 @@ class Page(Base):
             return page.uuid
 
         try:
-            page = Page(url=url, url_hash=url_hash, domain=domain, score=score)
+            page_uuid = uuid4()
+            page = Page(url=url, url_hash=url_hash, domain=domain, score=score, uuid=page_uuid)
             db.add(page)
             cache.increment_page_count(domain)
             cache.increment_page_count()
             cache.increment_next_jobs_count()
+
         except Exception:
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):
@@ -362,7 +364,7 @@ class Page(Base):
             'pageUrl': str(url)
         }))
 
-        return page.uuid
+        return page_uuid
 
     @classmethod
     def add_domain(cls, url, db, publish_method, config):
