@@ -250,7 +250,6 @@ class Review(Base):
             )
 
         for i in range(3):
-            db.begin(subtransactions=True)
             try:
                 page.expires = review_data['expires']
                 page.last_modified = review_data['lastModified']
@@ -258,14 +257,12 @@ class Review(Base):
                 page.last_review = review
                 page.last_review_date = review.completed_date
                 page.violations_count = len(review_data['violations'])
-                db.commit()
                 break
             except Exception:
                 err = sys.exc_info()[1]
                 if 'Deadlock found' in str(err):
                     logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                 else:
-                    db.rollback()
                     raise
 
         review.is_complete = True
@@ -290,12 +287,10 @@ class Review(Base):
             )
 
             for i in range(3):
-                db.begin(subtransactions=True)
                 try:
                     for violation in last_review.violations:
                         violation.review_is_active = False
                     last_review.is_active = False
-                    db.commit()
 
                     Review.delete_old_reviews(db, config, page)
 
@@ -305,19 +300,12 @@ class Review(Base):
                     if 'Deadlock found' in str(err):
                         logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
-                        db.rollback()
                         raise
 
         publish(dumps({
             'type': 'new-review',
             'reviewId': str(review.uuid)
         }))
-
-    @classmethod
-    def delete_review(cls, db, review):
-        db.begin(subtransactions=True)
-        db.delete(review)
-        db.commit()
 
     @classmethod
     def delete_old_reviews(cls, db, config, page):
@@ -332,4 +320,4 @@ class Review(Base):
 
         if len(last_reviews) > 0:
             for review in last_reviews:
-               cls.delete_review(db, review)
+                db.delete(review)

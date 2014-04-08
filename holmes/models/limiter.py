@@ -67,11 +67,8 @@ class Limiter(Base):
 
             return limiter.url
 
-        db.begin(subtransactions=True)
         limiter = Limiter(url=url, url_hash=url_hash, value=value)
         db.add(limiter)
-        db.flush()
-        db.commit()
 
         return limiter.url
 

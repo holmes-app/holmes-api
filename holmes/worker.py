@@ -153,6 +153,7 @@ class HolmesWorker(BaseWorker):
         )
 
     def do_work(self):
+        errored = False
         try:
             self.debug('Started doing work...')
 
@@ -166,8 +167,10 @@ class HolmesWorker(BaseWorker):
                         self.info('Starting new job for %s...' % job['url'])
                         self._start_reviewer(job=job)
                     except InvalidReviewError:
+                        errored = True
                         err = str(sys.exc_info()[1])
                         self.error("Fail to review %s: %s" % (job['url'], err))
+                        self.db.rollback()
 
                     lock = job.get('lock', None)
                     self._complete_job(lock, error=err)
@@ -175,8 +178,11 @@ class HolmesWorker(BaseWorker):
                 elif job:
                     self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
 
-            self.db.commit()
+            if not errored:
+                self.db.commit()
         except Exception:
+            err = str(sys.exc_info()[1])
+            self.error("Fail to complete work: %s" % err)
             self.db.rollback()
 
     def _start_reviewer(self, job):
@@ -294,7 +300,6 @@ class HolmesWorker(BaseWorker):
                     if 'Deadlock found' in str(err):
                         self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
                     else:
-                        self.db.rollback()
                         raise
 
         return True
