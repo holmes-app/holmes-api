@@ -19,6 +19,10 @@ class Worker(Base):
 
     current_url = sa.Column('current_url', sa.Text)
 
+    __mapper_args__ = {
+        'confirm_deleted_rows': False
+    }
+
     def __str__(self):
         return 'Worker %s' % str(self.uuid)
 

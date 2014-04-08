@@ -97,11 +97,9 @@ class BaseWorker(BaseCLI):
         from holmes.models import Key
 
         for name in keys.keys():
-            self.db.begin(subtransactions=True)
             key = Key.get_or_create(self.db, name)
             keys[name]['key'] = key
             self.db.add(key)
-            self.db.commit()
 
 
 class HolmesWorker(BaseWorker):
@@ -155,23 +153,31 @@ class HolmesWorker(BaseWorker):
         )
 
     def do_work(self):
-        self.debug('Started doing work...')
+        try:
+            self.debug('Started doing work...')
 
-        if self._ping_api():
-            err = None
-            job = self._load_next_job()
-            if job and self._start_job(job['url']):
-                try:
-                    self.info('Starting new job for %s...' % job['url'])
-                    self._start_reviewer(job=job)
-                except InvalidReviewError:
-                    err = str(sys.exc_info()[1])
-                    self.error("Fail to review %s: %s" % (job['url'], err))
+            self._remove_zombie_workers()
 
-                lock = job.get('lock', None)
-                self._complete_job(lock, error=err)
-            elif job:
-                self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
+            if self._ping_api():
+                err = None
+                job = self._load_next_job()
+                if job and self._start_job(job['url']):
+                    try:
+                        self.info('Starting new job for %s...' % job['url'])
+                        self._start_reviewer(job=job)
+                    except InvalidReviewError:
+                        err = str(sys.exc_info()[1])
+                        self.error("Fail to review %s: %s" % (job['url'], err))
+
+                    lock = job.get('lock', None)
+                    self._complete_job(lock, error=err)
+
+                elif job:
+                    self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
+
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
 
     def _start_reviewer(self, job):
         if job:
@@ -205,7 +211,6 @@ class HolmesWorker(BaseWorker):
         self.debug('Pinging that this worker is still alive...')
 
         for i in range(3):
-            self.db.begin(subtransactions=True)
             try:
                 # FIXME: this statement works only in MySQL.
                 query_params = {
@@ -220,9 +225,6 @@ class HolmesWorker(BaseWorker):
                     'UPDATE last_ping = :dt, current_url = :current_url',
                     query_params
                 )
-
-                self.db.flush()
-                self.db.commit()
 
                 self.publish(dumps({
                     'type': 'worker-status',
@@ -245,25 +247,12 @@ class HolmesWorker(BaseWorker):
         self._ping_api()
 
     def _remove_zombie_workers(self):
-        self.db.flush()
-
         dt = datetime.utcnow() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
 
-        for i in range(3):
-            self.db.begin(subtransactions=True)
+        workers = self.db.query(Worker).filter(Worker.last_ping < dt).all()
 
-            try:
-                self.db.execute('DELETE FROM workers WHERE last_ping < :dt', {'dt': dt})
-                self.db.flush()
-                self.db.commit()
-                break
-            except Exception:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err):
-                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                else:
-                    self.db.rollback()
-                    raise
+        for worker in workers:
+            self.db.delete(worker)
 
     def _load_next_job(self):
         return Page.get_next_job(
@@ -279,12 +268,9 @@ class HolmesWorker(BaseWorker):
 
         self.working_url = url
 
-        self.db.begin(subtransactions=True)
         worker = Worker.by_uuid(self.uuid, self.db)
         worker.current_url = url
         worker.last_ping = datetime.utcnow()
-        self.db.flush()
-        self.db.commit()
 
         return True
 
@@ -298,14 +284,10 @@ class HolmesWorker(BaseWorker):
 
         if worker:
             for i in range(3):
-                self.db.begin(subtransactions=True)
-
                 try:
                     self.cache.release_next_job(lock)
                     worker.current_url = None
                     worker.last_ping = datetime.utcnow()
-                    self.db.flush()
-                    self.db.commit()
                     break
                 except Exception:
                     err = sys.exc_info()[1]
