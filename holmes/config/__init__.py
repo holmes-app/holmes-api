@@ -102,7 +102,7 @@ Config.define('REQUESTS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the 
 materials_expiration_in_seconds = {
     'domains_details': 0.5 * MINUTE + 1,
     'next_jobs_count': 13,
-    'violation_count_by_category_for_domains': 3 * MINUTE + 7,
+    'violation_count_by_category_for_domains': 3 * MINUTE + 11,
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
 }
