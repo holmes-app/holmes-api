@@ -12,12 +12,22 @@ from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from mock import Mock
 
-from holmes.models import Page
+from holmes.models import Domain, Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestPageHandler(ApiTestCase):
+    # test_can_save, test_can_save_known_domain, test_error_when_invalid_url
+    # and test_when_url_already_exists perform a POST, which issues a commit()
+    # so domains and pages need to be truncated on tear down
+    def tearDown(self):
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+        self.db.flush()
+        self.db.commit()
+        super(TestPageHandler, self).tearDown()
+
     def mock_request(self, status_code, effective_url):
         def handle(*args, **kw):
             response_mock = Mock(status_code=status_code, effective_url=effective_url)
