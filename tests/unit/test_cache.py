@@ -463,6 +463,26 @@ class CacheTestCase(ApiTestCase):
         limit = yield self.cache.get_limit_usage(url)
         expect(limit).to_equal(3)
 
+    @gen_test
+    def test_can_remove_limit_usage_by_domain(self):
+        domain_url = 'http://globo.com'
+
+        key1 = 'limit-for-%s' % domain_url
+        self.cache.redis.delete(key1)
+
+        key2 = 'limit-for-%s/sa/' % domain_url
+        self.cache.redis.delete(key2)
+
+        yield Task(self.cache.redis.zadd, key1, {'a': 1})
+        yield Task(self.cache.redis.zadd, key2, {'b': 1})
+
+        keys = yield Task(self.cache.redis.keys, 'limit-for-%s*' % domain_url)
+        expect(keys).to_length(2)
+
+        yield Task(self.cache.delete_limit_usage_by_domain, domain_url)
+        keys = yield Task(self.cache.redis.keys, 'limit-for-%s*' % domain_url)
+        expect(keys).to_length(0)
+
 
 class SyncCacheTestCase(ApiTestCase):
     def setUp(self):

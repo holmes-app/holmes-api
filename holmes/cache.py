@@ -342,6 +342,23 @@ class Cache(object):
         self.redis.zcard('limit-for-%s' % url, callback=callback)
 
     @return_future
+    def get_limit_usage_by_domain(self, domain_url, callback):
+        self.redis.keys('limit-for-%s*' % domain_url, callback)
+
+    @return_future
+    def delete_limit_usage_by_domain(self, domain_url, callback):
+        self.get_limit_usage_by_domain(
+            domain_url,
+            callback=self.handle_delete_limit_usage_by_domain(domain_url, callback)
+        )
+
+    def handle_delete_limit_usage_by_domain(self, domain_url, callback):
+        def handle(keys):
+            self.redis.delete(keys)
+            callback()
+        return handle
+
+    @return_future
     def remove_domain_limiters_key(self, callback):
         self.redis.delete('domain-limiters', callback=callback)
 
