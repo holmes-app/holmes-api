@@ -304,6 +304,9 @@ class HolmesWorker(BaseWorker):
 
         return True
 
+    def _remove_last_requests(self):
+        pass
+
 
 def main():
     worker = HolmesWorker(sys.argv[1:])

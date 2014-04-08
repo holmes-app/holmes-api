@@ -3,7 +3,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy import func
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from holmes.utils import get_status_code_title
 from holmes.models import Base
@@ -105,3 +105,12 @@ class Request(Base):
             .group_by(Request.status_code) \
             .order_by('count DESC') \
             .all()
+
+    @classmethod
+    def delete_old_requests(self, db, config):
+        dt = date.today() - timedelta(days=config.DAYS_TO_KEEP_REQUESTS)
+
+        return db \
+            .query(Request) \
+            .filter(Request.completed_date <= dt) \
+            .delete()

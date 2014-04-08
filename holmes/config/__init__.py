@@ -5,6 +5,7 @@ from derpconf.config import Config  # NOQA
 
 MINUTE = 60
 HOUR = MINUTE * 60
+DAY = 24 * HOUR
 
 Config.define('WORKER_SLEEP_TIME', 10, 'Main loop sleep time', 'Worker')
 Config.define('ZOMBIE_WORKER_TIME', 200,
@@ -25,6 +26,8 @@ Config.define('FACTERS', [], 'List of classes to get facts about a website', 'Re
 Config.define('VALIDATORS', [], 'List of classes to validate a website', 'Review')
 Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, 'Number of seconds that a review expires in.', 'Review')
 Config.define('NUMBER_OF_REVIEWS_TO_KEEP', 4, 'Maximum number of reviews to keep', 'Review')
+
+Config.define('DAYS_TO_KEEP_REQUESTS', 12, 'Number of days to keep requests', 'Requests')
 
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               'Number of urls to enqueue before submitting to the /pages route', 'Validators')
@@ -105,6 +108,7 @@ materials_expiration_in_seconds = {
     'violation_count_by_category_for_domains': 3 * MINUTE + 11,
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
+    'old_requests': (lambda config: config.get('DAYS_TO_KEEP_REQUESTS') * DAY - 1),
 }
 Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
 
@@ -114,6 +118,7 @@ materials_grace_period_in_seconds = {
     'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
     'most_common_violations': 2 * materials_expiration_in_seconds['most_common_violations'],
+    'old_requests': (lambda config: 2 * materials_expiration_in_seconds['old_requests'](config)),
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import inspect
 from uuid import uuid4
 from functools import partial
 from collections import defaultdict
@@ -10,6 +11,7 @@ from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
 from holmes.models.page import Page
 from holmes.models.violation import Violation
+from holmes.models.request import Request
 from holmes.utils import get_domain_from_url
 
 
@@ -53,6 +55,19 @@ def configure_materials(girl, db, config):
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['most_common_violations']
     )
 
+    girl.add_material(
+        'old_requests',
+        partial(Request.delete_old_requests, db, config),
+        get_func_or_value(config.MATERIALS_EXPIRATION_IN_SECONDS['old_requests'], config),
+        get_func_or_value(config.MATERIALS_GRACE_PERIOD_IN_SECONDS['old_requests'], config)
+    )
+
+def get_func_or_value(value, config):
+    if inspect.ismethod(value) or inspect.isfunction(value):
+        return value(config)
+
+    return value
+
 
 class MaterialConveyor(object):
     @classmethod
@@ -79,7 +94,13 @@ class MaterialWorker(BaseCLI):
 
     def do_work(self):
         self.info('Running material girl...')
-        self.girl.run()
+        self.db.begin(subtransactions=True)
+        try:
+            self.girl.run()
+            self.db.commit()
+        except:
+            self.db.rollback()
+            raise
 
 
 def main():

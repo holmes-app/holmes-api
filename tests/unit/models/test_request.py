@@ -1,13 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from datetime import date
+from datetime import date, timedelta
 from preggy import expect
 
 from tests.unit.base import ApiTestCase
 from tests.fixtures import RequestFactory
 
 from holmes.models import Request
+from holmes.config import Config
 
 
 class TestRequest(ApiTestCase):
@@ -100,3 +101,22 @@ class TestRequest(ApiTestCase):
             self.db
         )
         expect(invalid_code).to_equal([])
+
+    def test_can_remove_old_requests(self):
+        self.db.query(Request).delete()
+
+        config = Config()
+        config.DAYS_TO_KEEP_REQUESTS = 1
+
+        for i in range(4):
+            RequestFactory.create(
+                url='http://m.com/page-%d' % i,
+                domain_name='m.com',
+                status_code=200,
+                completed_date=date.today() - timedelta(days=i)
+            )
+
+        Request.delete_old_requests(self.db, config)
+
+        requests = self.db.query(Request).all()
+        expect(requests).to_length(1)
