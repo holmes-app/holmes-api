@@ -346,8 +346,22 @@ class Page(Base):
 
         try:
             page_uuid = uuid4()
-            page = Page(url=url, url_hash=url_hash, domain=domain, score=score, uuid=page_uuid)
-            db.add(page)
+            query_params = {
+                'url': url,
+                'url_hash': url_hash,
+                'uuid': page_uuid,
+                'domain_id': domain.id,
+                'created_date': datetime.utcnow(),
+                'score': score
+            }
+
+            db.execute(
+                'INSERT INTO pages (url, url_hash, uuid, domain_id, created_date, score) ' \
+                'VALUES (:url, :url_hash, :uuid, :domain_id, :created_date, :score) ON DUPLICATE KEY ' \
+                'UPDATE score = :score',
+                query_params
+            )
+
             cache.increment_page_count(domain)
             cache.increment_page_count()
             cache.increment_next_jobs_count()
