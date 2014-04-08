@@ -12,31 +12,15 @@ class MostCommonViolationsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        violations = yield self.cache.get_most_common_violations(
-            self.application.violation_definitions,
-            self.application.config.get('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT')
-        )
+        violations = dict(self.girl.get('most_common_violations'))
 
         result = []
-        for item in violations:
-            result.append({
-                'name': item['title'],
-                'key': item['key'],
-                'category': item['category'],
-                'count': item['count']
-            })
-
-        s1 = set(self.application.violation_definitions.keys())
-        s2 = set((x.get('key') for x in result))
-
-        diff = s1 - s2
-        for item in diff:
-            violation = self.application.violation_definitions[item]
+        for violation in self.application.violation_definitions.values():
             result.append({
                 'name': violation['title'],
                 'key': violation['key'].name,
                 'category': violation['category'],
-                'count': 1
+                'count': violations.get(violation['key'].name, 0),
             })
 
         self.write_json(result)

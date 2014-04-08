@@ -19,12 +19,20 @@ class TestMostCommonViolationsHandler(ApiTestCase):
         review = ReviewFactory.create()
 
         for i in range(5):
-            key = Key.get_or_create(self.db, 'violation1')
+            key = Key.get_or_create(self.db, 'violation.0')
             review.add_violation(key, 'value', 100, review.domain)
 
         for j in range(2):
-            key = Key.get_or_create(self.db, 'violation2')
+            key = Key.get_or_create(self.db, 'violation.1')
             review.add_violation(key, 'value', 300, review.domain)
+
+        self.server.application.violation_definitions = {
+            'violation.%d' % i: {
+                'title': 'title.%s' % i,
+                'category': 'category.%s' % i,
+                'key': Key.get_or_create(self.db, 'violation.%d' % i, 'category.%d' % i)
+            } for i in xrange(3)
+        }
 
         self.db.flush()
 
@@ -36,8 +44,9 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(violations).to_be_like([
-            {'count': 5, 'name': 'undefined', 'category': 'undefined', 'key': 'violation1'},
-            {'count': 2, 'name': 'undefined', 'category': 'undefined', 'key': 'violation2'}
+            {'count': 5, 'name': 'title.0', 'category': 'category.0', 'key': 'violation.0'},
+            {'count': 2, 'name': 'title.1', 'category': 'category.1', 'key': 'violation.1'},
+            {'count': 0, 'name': 'title.2', 'category': 'category.2', 'key': 'violation.2'},
         ])
 
         self.db.query(Violation).delete()

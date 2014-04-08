@@ -42,6 +42,17 @@ def configure_materials(girl, db, config):
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['blacklist_domain_count']
     )
 
+    girl.add_material(
+        'most_common_violations',
+        partial(
+            Violation.get_most_common_violations_names,
+            db,
+            config.get('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT')
+        ),
+        config.MATERIALS_EXPIRATION_IN_SECONDS['most_common_violations'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['most_common_violations']
+    )
+
 
 class MaterialConveyor(object):
     @classmethod

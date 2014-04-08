@@ -41,9 +41,7 @@ class Violation(Base):
         }
 
     @classmethod
-    def get_most_common_violations(cls, db, violation_definitions, sample_limit=50000):
-        violations = []
-
+    def get_most_common_violations_names(cls, db, sample_limit=50000):
         sample = db \
             .query(
                 Violation.id,
@@ -55,15 +53,19 @@ class Violation(Base):
             .limit(sample_limit) \
             .subquery()
 
-        results = db \
+        return db \
             .query(
                 sample.columns.key_name,
                 sa.func.count(sample.columns.key_id).label('count')
             ) \
             .group_by(sample.columns.key_id) \
-            .order_by('count desc')
+            .order_by('count desc').all()
 
-        for key_name, count in results:
+    @classmethod
+    def get_most_common_violations(cls, db, violation_definitions, sample_limit=50000):
+        violations = []
+
+        for key_name, count in cls.get_most_common_violations_names(db, sample_limit):
             definition = violation_definitions.get(key_name, {})
             violations.append({
                 "key": key_name,

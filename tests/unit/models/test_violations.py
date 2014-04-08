@@ -41,6 +41,16 @@ class TestViolations(ApiTestCase):
             'category': 'undefined'
         })
 
+    def test_can_get_most_common_violations_names(self):
+        for i in range(3):
+            key = KeyFactory.create(name='some.random.fact.%s' % i)
+            for j in range(i):
+                ViolationFactory.create(key=key)
+
+        violations = Violation.get_most_common_violations_names(self.db)
+
+        expect(violations).to_be_like([('some.random.fact.1', 1), ('some.random.fact.2', 2)])
+
     def test_can_get_most_common_violations(self):
         self.db.query(Violation).delete()
         self.db.query(Key).delete()
