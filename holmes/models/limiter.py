@@ -38,11 +38,19 @@ class Limiter(Base):
 
     @classmethod
     def by_url(cls, url, db):
-        return db.query(Limiter).filter(Limiter.url==url).first()
+        return db.query(Limiter).filter(Limiter.url == url).first()
 
     @classmethod
     def by_url_hash(cls, url_hash, db):
-        return db.query(Limiter).filter(Limiter.url_hash==url_hash).first()
+        return db.query(Limiter).filter(Limiter.url_hash == url_hash).first()
+
+    @classmethod
+    def by_id(cls, id_, db):
+        return db.query(Limiter).filter(Limiter.id == id_).first()
+
+    @classmethod
+    def delete(cls, id_, db):
+        return db.query(Limiter).filter(Limiter.id == id_).delete()
 
     def matches(self, url):
         return url.startswith(self.url)

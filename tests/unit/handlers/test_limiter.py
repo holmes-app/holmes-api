@@ -173,10 +173,153 @@ class TestLimiterHandler(ApiTestCase):
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
+            expect(err.code).to_equal(401)
+            expect(err.response.reason).to_be_like('Unauthorized')
+            expect(err.response.body).to_equal(
+                '{"reason":"Unauthorized user"}'
+            )
+        else:
+            assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_can_delete_limiter_without_access_token(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/limiters/1'),
+                method='DELETE',
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
             expect(err.code).to_equal(403)
             expect(err.response.reason).to_be_like('Forbidden')
+        else:
+            assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_can_delete_limiter_with_access_token(self):
+        self.db.query(Limiter).delete()
+        self.db.query(User).delete()
+
+        dt = datetime(2014, 4, 9, 17, 13, 22)
+
+        UserFactory(email='test@test.com')
+
+        user_data = dumps({
+            'is_superuser': True,
+            'fullname': u'Sherlock Holmes',
+            'last_login': dt,
+            'email': u'test@test.com'
+        })
+
+        self.mock_request(code=200, body=user_data)
+
+        limiter = LimiterFactory.create()
+
+        loaded_limiter = Limiter.by_id(limiter.id, self.db)
+        expect(loaded_limiter).not_to_be_null()
+
+        response = yield self.http_client.fetch(
+            self.get_url('/limiters/%d' % limiter.id),
+            method='DELETE',
+            headers={'X-AUTH-HOLMES': '111'}
+        )
+
+        expect(response.code).to_equal(204)
+        expect(response.body).to_length(0)
+
+        loaded_limiter = Limiter.by_id(limiter.id, self.db)
+        expect(loaded_limiter).to_be_null()
+
+    @gen_test
+    def test_can_delete_limiter_with_empty_values(self):
+        self.db.query(Limiter).delete()
+        self.db.query(User).delete()
+
+        dt = datetime(2014, 4, 9, 17, 13, 22)
+
+        UserFactory(email='sherlock@holmes.com')
+
+        user_data = dumps({
+            'is_superuser': True,
+            'fullname': u'Sherlock Holmes',
+            'last_login': dt,
+            'email': u'sherlock@holmes.com'
+        })
+
+        self.mock_request(code=200, body=user_data)
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/limiters'),
+                method='DELETE',
+                headers={'X-AUTH-HOLMES': '111'}
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(400)
+            expect(err.response.reason).to_equal('Bad Request')
             expect(err.response.body).to_equal(
-                '{"reason":"Not authorized user."}'
+                '{"reason":"Invalid data"}'
+            )
+
+    @gen_test
+    def test_can_delete_nonexistent_limiter(self):
+        self.db.query(Limiter).delete()
+        self.db.query(User).delete()
+
+        dt = datetime(2014, 4, 9, 17, 13, 22)
+
+        UserFactory(email='sherlock@holmes.com')
+
+        user_data = dumps({
+            'is_superuser': True,
+            'fullname': u'Sherlock Holmes',
+            'last_login': dt,
+            'email': u'sherlock@holmes.com'
+        })
+
+        self.mock_request(code=200, body=user_data)
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/limiters/1'),
+                method='DELETE',
+                headers={'X-AUTH-HOLMES': '111'}
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_equal('Not Found')
+            expect(err.response.body).to_equal(
+                '{"reason":"Not Found"}'
+            )
+
+    @gen_test
+    def test_can_delete_limiter_with_not_authorized_user(self):
+        self.db.query(Limiter).delete()
+
+        user_data = dumps({
+            'reason': 'Unauthorized user',
+        })
+
+        self.mock_request(code=402, body=user_data)
+
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/limiters/1'),
+                method='DELETE',
+                headers={'X-AUTH-HOLMES': '111'}
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(401)
+            expect(err.response.reason).to_be_like('Unauthorized')
+            expect(err.response.body).to_equal(
+                '{"reason":"Unauthorized user"}'
             )
         else:
             assert False, 'Should not have got this far'

@@ -9,7 +9,7 @@ from tests.unit.base import ApiTestCase
 from tests.fixtures import LimiterFactory
 
 
-class TestUser(ApiTestCase):
+class TestLimiter(ApiTestCase):
 
     def test_can_create_limiter(self):
         limiter = LimiterFactory.create(url='http://test.com/')
@@ -51,6 +51,27 @@ class TestUser(ApiTestCase):
 
         invalid_limiter = Limiter.by_url('http://test.com/1', self.db)
         expect(invalid_limiter).to_be_null()
+
+    def test_can_get_limiter_by_id(self):
+        limiter = LimiterFactory.create()
+
+        loaded_limiter = Limiter.by_id(limiter.id, self.db)
+        expect(loaded_limiter.id).to_equal(limiter.id)
+
+        invalid_limiter = Limiter.by_id(-1, self.db)
+        expect(invalid_limiter).to_be_null()
+
+    def test_can_delete_one_limiter(self):
+        limiter = LimiterFactory.create()
+
+        loaded_limiter = Limiter.by_id(limiter.id, self.db)
+        expect(loaded_limiter.id).to_equal(limiter.id)
+
+        affected = Limiter.delete(limiter.id, self.db)
+        expect(affected).to_equal(1)
+
+        deleted_limiter = Limiter.by_id(limiter.id, self.db)
+        expect(deleted_limiter).to_be_null()
 
     def test_can_get_all_limiters(self):
         self.db.query(Limiter).delete()

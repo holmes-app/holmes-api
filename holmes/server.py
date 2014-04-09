@@ -106,6 +106,7 @@ class HolmesApiServer(Server):
             (r'/violation/([_a-z0-9\.]*)/domains/?', ViolationDomainsHandler),
             (r'/tax/?', TaxHandler),
             (r'/limiters/?', LimiterHandler),
+            (r'/limiters/([0-9]+)/?', LimiterHandler),
             (r'/next-jobs/?', NextJobHandler),
             (r'/last-requests/?', LastRequestsHandler),
             (r'/requests-in-last-day/?', RequestsInLastDayHandler),

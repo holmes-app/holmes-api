@@ -10,6 +10,10 @@ from holmes.handlers import BaseHandler
 
 class LimiterHandler(BaseHandler):
     @coroutine
+    def options(self, id=None):
+        super(LimiterHandler, self).options()
+
+    @coroutine
     def get(self):
         limiters = Limiter.get_all(self.db)
 
@@ -49,8 +53,8 @@ class LimiterHandler(BaseHandler):
         )
 
         if result and result.get('user', None) is None:
-            self.set_status(403)
-            self.write_json({'reason': 'Not authorized user.'})
+            self.set_status(401)
+            self.write_json({'reason': 'Unauthorized user'})
             return
 
         post_data = loads(self.request.body)
@@ -68,3 +72,42 @@ class LimiterHandler(BaseHandler):
         yield self.cache.remove_domain_limiters_key()
 
         self.write_json(result)
+
+    @coroutine
+    def delete(self, limiter_id=None):
+        if not limiter_id:
+            self.set_status(400)
+            self.write_json({'reason': 'Invalid data'})
+            return
+
+        access_token = self.request.headers.get('X-AUTH-HOLMES', None)
+
+        if access_token is None:
+            self.set_status(403)
+            self.write_json({'reason': 'Empty access token'})
+            return
+
+        result = yield User.authenticate(
+            access_token,
+            self.application.http_client.fetch,
+            self.db,
+            self.application.config
+        )
+
+        if result and result.get('user', None) is None:
+            self.set_status(401)
+            self.write_json({'reason': 'Unauthorized user'})
+            return
+
+        limiter = Limiter.by_id(limiter_id, self.db)
+
+        if not limiter or not limiter.id:
+            self.set_status(404)
+            self.write_json({'reason': 'Not Found'})
+            return
+
+        Limiter.delete(limiter.id, self.db)
+
+        yield self.cache.remove_domain_limiters_key()
+
+        self.set_status(204)
