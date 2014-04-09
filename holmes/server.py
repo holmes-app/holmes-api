@@ -12,7 +12,6 @@ import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
 
-from holmes.handlers.worker import WorkersHandler, WorkersInfoHandler
 from holmes.handlers.page import (
     PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
 )
@@ -83,8 +82,6 @@ class HolmesApiServer(Server):
             (r'/most-common-violations/?', MostCommonViolationsHandler),
             (r'/last-reviews/?', LastReviewsHandler),
             (r'/reviews-in-last-hour/?', ReviewsInLastHourHandler),
-            (r'/workers/?', WorkersHandler),
-            (r'/workers/info/?', WorkersInfoHandler),
             (r'/page/([a-z0-9-]*)/review/([a-z0-9-]*)/?', ReviewHandler),
             (r'/page/([a-z0-9-]*)/reviews/?', PageReviewsHandler),
             (r'/page/([a-z0-9-]*)/violations-per-day/?', PageViolationsPerDayHandler),

@@ -171,13 +171,11 @@ class Page(Base):
                 .scalar()
 
     @classmethod
-    def get_next_job(cls, db, expiration, cache, lock_expiration, avg_links_per_page=10):
-        from holmes.models import Worker, Domain, Limiter  # Avoid circular dependency
+    def get_next_job(cls, db, look_ahead_pages, expiration, cache, lock_expiration, avg_links_per_page=10):
+        from holmes.models import Domain, Limiter  # Avoid circular dependency
 
         page = None
         lock = None
-        workers = db.query(Worker).all()
-        number_of_workers = len(workers)
 
         expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
@@ -199,7 +197,7 @@ class Page(Base):
                     Page.last_review_date == None,
                     Page.last_review_date <= expired_time
                 )) \
-                .order_by(Page.score.desc())[:number_of_workers]
+                .order_by(Page.score.desc())[:look_ahead_pages]
             if pages:
                 all_domains_pages_in_need_of_review[domain_id] = pages
 
@@ -224,7 +222,7 @@ class Page(Base):
             return None
 
         for i in range(len(pages_in_need_of_review)):
-            if not Limiter.has_limit_to_work(db, active_domains, pages_in_need_of_review[i].url, avg_links_per_page):
+            if not Limiter.has_limit_to_work(db, cache, active_domains, pages_in_need_of_review[i].url, avg_links_per_page):
                 continue
 
             lock = cache.has_next_job_lock(
@@ -238,6 +236,8 @@ class Page(Base):
 
         if page is None:
             return None
+
+
 
         return {
             'page': str(page.uuid),

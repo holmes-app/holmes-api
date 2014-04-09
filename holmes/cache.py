@@ -585,3 +585,6 @@ class SyncCache(object):
                 )
 
         return domains
+
+    def get_limit_usage(self, url):
+        return self.redis.zcard('limit-for-%s' % url)

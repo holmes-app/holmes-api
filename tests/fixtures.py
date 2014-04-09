@@ -7,7 +7,7 @@ import factory.alchemy
 import hashlib
 
 from holmes.models import (
-    Domain, Page, Review, Worker, Violation, Fact, Key, KeysCategory, Request,
+    Domain, Page, Review, Violation, Fact, Key, KeysCategory, Request,
     User, Limiter
 )
 from uuid import uuid4
@@ -147,14 +147,6 @@ class ViolationFactory(BaseFactory):
     points = 0
     domain = factory.SubFactory(DomainFactory)
     review_is_active = True
-
-
-class WorkerFactory(BaseFactory):
-    FACTORY_FOR = Worker
-
-    uuid = factory.LazyAttribute(lambda a: uuid4())
-    last_ping = None
-    current_url = None
 
 
 class RequestFactory(BaseFactory):

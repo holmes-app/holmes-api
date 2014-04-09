@@ -95,7 +95,7 @@ class Limiter(Base):
         return limiters
 
     @classmethod
-    def __get_limiter_for_url(cls, limiters, url):
+    def _get_limiter_for_url(cls, limiters, url):
         for limiter in limiters:
             if limiter.matches(url):
                 return limiter
@@ -103,18 +103,16 @@ class Limiter(Base):
         return None
 
     @classmethod
-    def has_limit_to_work(cls, db, active_domains, url, avg_links_per_page=10):
-        from holmes.models import Worker  # Avoid circular dependency
-
+    def has_limit_to_work(cls, db, cache, active_domains, url, avg_links_per_page=10):
         if avg_links_per_page < 1:
             avg_links_per_page = 1
 
-        limiters = cls.get_limiters_for_domains(db, active_domains)
+        limiters = Limiter.get_limiters_for_domains(db, active_domains)
 
-        limiter = cls.__get_limiter_for_url(limiters, url)
+        limiter = Limiter._get_limiter_for_url(limiters, url)
 
         if limiter:
-            worker_count = Worker.number_of_workers_in_same_limiter_url(db, limiter.url)
+            worker_count = cache.get_limit_usage(limiter.url)
 
             if worker_count >= math.ceil(float(limiter.value) / float(avg_links_per_page)):
                 return False

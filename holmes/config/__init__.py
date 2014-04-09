@@ -11,6 +11,8 @@ Config.define('WORKER_SLEEP_TIME', 10, 'Main loop sleep time', 'Worker')
 Config.define('ZOMBIE_WORKER_TIME', 200,
               'Time to remove a Worker from API List (must be greater than WORKER_SLEEP_TIME + Validation time)', 'API')
 
+Config.define('WORKERS_LOOK_AHEAD_PAGES', 1000, 'Number of pages that will be retrieved when looking for the next job', 'Worker')
+
 Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, 'Number of seconds a connection can take.', 'Worker')
 Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, 'Number of seconds a request can take.', 'Worker')
 
@@ -141,6 +143,5 @@ Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, 'Limit for the size 
 
 throttling_message_type = {
     'new-request': 5,
-    'worker-status': 2,
 }
 Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, 'Trottling by message type', 'Event Bus')

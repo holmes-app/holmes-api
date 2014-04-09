@@ -179,4 +179,4 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
 
         result = loads(response.body)
         expect(result['count']).to_equal(3)
-        expect(round(result['ellapsed'], 0)).to_be_like(59.0 * 60)
+        expect(round(result['ellapsed'], 0)).to_be_like(59 * 60)

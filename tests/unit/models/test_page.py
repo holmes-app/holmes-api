@@ -7,9 +7,9 @@ from datetime import datetime
 from preggy import expect
 
 from holmes.config import Config
-from holmes.models import Domain, Page, Settings
+from holmes.models import Domain, Page
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory, DomainFactory, WorkerFactory, LimiterFactory
+from tests.fixtures import PageFactory, ReviewFactory, DomainFactory, LimiterFactory
 
 
 class TestPage(ApiTestCase):
@@ -87,10 +87,10 @@ class TestPage(ApiTestCase):
         expect(invalid_page).to_be_null()
 
     def test_can_get_next_job(self):
-        domain = DomainFactory.create()
         pages = []
+
+        domain = DomainFactory.create()
         for i in range(20):
-            WorkerFactory.create()
             pages.append(PageFactory.create(
                 domain=domain,
                 score=float(i)
@@ -99,6 +99,7 @@ class TestPage(ApiTestCase):
         for i in range(20):
             next_job = Page.get_next_job(
                 self.db,
+                look_ahead_pages=1000,
                 expiration=100,
                 cache=self.sync_cache,
                 lock_expiration=100
@@ -108,12 +109,12 @@ class TestPage(ApiTestCase):
             expect(next_job['page']).to_equal(str(pages[19 - i].uuid))
 
     def test_get_next_job_does_not_get_from_inactive_domains(self):
-        WorkerFactory.create()
         domain = DomainFactory.create(is_active=False)
         PageFactory.create(domain=domain)
 
         next_job = Page.get_next_job(
             self.db,
+            look_ahead_pages=100,
             expiration=100,
             cache=self.sync_cache,
             lock_expiration=1
@@ -132,17 +133,14 @@ class TestPage(ApiTestCase):
 
         pages_a = []
         pages_b = []
-        workers = []
         for i in range(10):
-            for j in range(2):
-                workers.append(WorkerFactory.create())
-
             pages_a.append(PageFactory.create(domain=domain_a, url="%s/%d.html" % (domain_a.url, i), score=i * 10))
             pages_b.append(PageFactory.create(domain=domain_b, url="%s/%d.html" % (domain_b.url, i), score=i))
 
         # first one should not be limited
         next_job = Page.get_next_job(
             self.db,
+            look_ahead_pages=1000,
             expiration=100,
             cache=self.sync_cache,
             lock_expiration=1,
@@ -151,12 +149,12 @@ class TestPage(ApiTestCase):
 
         expect(next_job).not_to_be_null()
         expect(next_job['page']).to_equal(str(pages_a[-1].uuid))
-        workers[0].current_url = next_job['url']
         self.db.flush()
 
         # second one should be limited (2 / 10 = 0.2, rounded up = 1 job at a time)
         next_job = Page.get_next_job(
             self.db,
+            look_ahead_pages=1000,
             expiration=100,
             cache=self.sync_cache,
             lock_expiration=1

@@ -14,7 +14,7 @@ from holmes.config import Config
 from holmes.server import HolmesApiServer
 from tests.fixtures import (
     DomainFactory, PageFactory, ReviewFactory, FactFactory,
-    ViolationFactory, WorkerFactory, KeyFactory, KeysCategoryFactory,
+    ViolationFactory, KeyFactory, KeysCategoryFactory,
     RequestFactory, UserFactory, LimiterFactory
 )
 
@@ -46,7 +46,6 @@ class ApiTestCase(CowTestCase):
         ReviewFactory.FACTORY_SESSION = self.db
         FactFactory.FACTORY_SESSION = self.db
         ViolationFactory.FACTORY_SESSION = self.db
-        WorkerFactory.FACTORY_SESSION = self.db
         KeyFactory.FACTORY_SESSION = self.db
         KeysCategoryFactory.FACTORY_SESSION = self.db
         RequestFactory.FACTORY_SESSION = self.db

@@ -12,8 +12,8 @@ from octopus.limiter.redis.per_domain import Limiter
 
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
-from holmes.utils import load_classes, count_url_levels
-from holmes.models import Worker, Page, Domain
+from holmes.utils import load_classes, count_url_levels, get_domain_from_url
+from holmes.models import Page, Domain
 from holmes.models import Limiter as LimiterModel
 from holmes.cli import BaseCLI
 
@@ -106,6 +106,8 @@ class HolmesWorker(BaseWorker):
     def initialize(self):
         self.uuid = uuid4().hex
         self.working_url = None
+        self.domain_name = None
+        self.last_ping = None
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
@@ -157,26 +159,24 @@ class HolmesWorker(BaseWorker):
         try:
             self.debug('Started doing work...')
 
-            self._remove_zombie_workers()
+            err = None
+            job = self._load_next_job()
 
-            if self._ping_api():
-                err = None
-                job = self._load_next_job()
-                if job and self._start_job(job['url']):
-                    try:
-                        self.info('Starting new job for %s...' % job['url'])
-                        self._start_reviewer(job=job)
-                    except InvalidReviewError:
-                        errored = True
-                        err = str(sys.exc_info()[1])
-                        self.error("Fail to review %s: %s" % (job['url'], err))
-                        self.db.rollback()
+            if job and self._start_job(job['url']):
+                try:
+                    self.info('Starting new job for %s...' % job['url'])
+                    self._start_reviewer(job=job)
+                except InvalidReviewError:
+                    errored = True
+                    err = str(sys.exc_info()[1])
+                    self.error("Fail to review %s: %s" % (job['url'], err))
+                    self.db.rollback()
 
-                    lock = job.get('lock', None)
-                    self._complete_job(lock, error=err)
+                lock = job.get('lock', None)
+                self._complete_job(lock, error=err)
 
-                elif job:
-                    self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
+            elif job:
+                self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
 
             if not errored:
                 self.db.commit()
@@ -216,53 +216,26 @@ class HolmesWorker(BaseWorker):
     def _ping_api(self):
         self.debug('Pinging that this worker is still alive...')
 
-        for i in range(3):
-            try:
-                # FIXME: this statement works only in MySQL.
-                query_params = {
-                    'uuid': self.uuid,
-                    'dt': datetime.utcnow(),
-                    'current_url': self.working_url
-                }
+        self.last_ping = datetime.utcnow()
 
-                self.db.execute(
-                    'INSERT INTO workers (uuid, last_ping, current_url) ' \
-                    'VALUES (:uuid, :dt, :current_url) ON DUPLICATE KEY ' \
-                    'UPDATE last_ping = :dt, current_url = :current_url',
-                    query_params
-                )
-
-                self.publish(dumps({
-                    'type': 'worker-status',
-                    'workerId': str(self.uuid)
-                }))
-
-                return True
-
-            except Exception:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err):
-                    self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                else:
-                    self.db.rollback()
-                    self.error("Could not ping API due to error: %s" % str(err))
-
-        return False
+        self.publish(dumps({
+            'type': 'worker-status',
+            'workerId': str(self.uuid),
+            'dt': self.last_ping,
+            'url': self.working_url,
+            'domainName': self.domain_name,
+        }))
 
     def handle_limiter_miss(self, url):
-        self._ping_api()
+        self.working_url = url
 
-    def _remove_zombie_workers(self):
-        dt = datetime.utcnow() - timedelta(seconds=self.config.ZOMBIE_WORKER_TIME)
-
-        workers = self.db.query(Worker).filter(Worker.last_ping < dt).all()
-
-        for worker in workers:
-            self.db.delete(worker)
+        if self.last_ping < datetime.utcnow() - timedelta(seconds=1):
+            self._ping_api()
 
     def _load_next_job(self):
         return Page.get_next_job(
             self.db,
+            self.config.WORKERS_LOOK_AHEAD_PAGES,
             self.config.REVIEW_EXPIRATION_IN_SECONDS,
             self.cache,
             self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
@@ -274,39 +247,21 @@ class HolmesWorker(BaseWorker):
 
         self.working_url = url
 
-        worker = Worker.by_uuid(self.uuid, self.db)
-        worker.current_url = url
-        worker.last_ping = datetime.utcnow()
+        if self.working_url:
+            self.domain_name, _ = get_domain_from_url(self.working_url)
+
+        self._ping_api()
 
         return True
 
     def _verify_workers_limits(self, url, avg_links_per_page=10):
         active_domains = Domain.get_active_domains(self.db)
-        return LimiterModel.has_limit_to_work(self.db, active_domains, url, avg_links_per_page)
+        return LimiterModel.has_limit_to_work(self.db, self.cache, active_domains, url, avg_links_per_page)
 
     def _complete_job(self, lock, error=None):
         self.working_url = None
-        worker = Worker.by_uuid(self.uuid, self.db)
-
-        if worker:
-            for i in range(3):
-                try:
-                    self.cache.release_next_job(lock)
-                    worker.current_url = None
-                    worker.last_ping = datetime.utcnow()
-                    break
-                except Exception:
-                    err = sys.exc_info()[1]
-                    if 'Deadlock found' in str(err):
-                        self.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                    else:
-                        raise
-
-        return True
-
-    def _remove_last_requests(self):
-        pass
-
+        self.domain_name = None
+        self._ping_api()
 
 def main():
     worker = HolmesWorker(sys.argv[1:])
