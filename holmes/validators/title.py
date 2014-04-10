@@ -5,8 +5,6 @@ from holmes.validators.base import Validator
 
 
 class TitleValidator(Validator):
-    def required_facters(self):
-        return ("holmes.facters.title.Title", )
 
     @classmethod
     def get_violation_definitions(cls):
