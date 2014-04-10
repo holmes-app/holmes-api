@@ -9,10 +9,10 @@ class HeadingHierarchyValidator(Validator):
     @classmethod
     def get_violation_description(cls, value):
         return (
-            'Heading hierarchy values bigger than %s aren`t good for Search Engines. '
+            'Heading hierarchy values bigger than %s characters aren`t good for Search Engines. '
             'This elements were found: <ul class="violation-hh-list">%s</ul>' % (
                 value['max_size'],
-                ', '.join([
+                ''.join([
                     '<li><span class="hh-type">%s</span>: %s</li>' % (x[0], x[1])
                     for x in value['hh_list']
                 ])
