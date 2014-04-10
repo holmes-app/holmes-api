@@ -67,9 +67,9 @@ class TestImageWithoutAltAttributeValidator(ValidatorTestCase):
         expect('invalid.images.alt' in definitions).to_be_true()
 
         data = [('http://my-site.com/the-src', 'the-src')]
-        empy_anchors_message = validator.get_empy_anchors_message(data)
+        empty_anchors_message = validator.get_empty_anchors_message(data)
 
-        expect(empy_anchors_message).to_equal(
+        expect(empty_anchors_message).to_equal(
             'Images without alt text are not good for Search Engines. Images '
             'without alt were found for: <a href="http://my-site.com/the-src" '
             'target="_blank">the-src</a>.'

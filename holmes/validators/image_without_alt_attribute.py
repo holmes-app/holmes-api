@@ -6,7 +6,7 @@ from holmes.validators.base import Validator
 
 class ImageWithoutAltAttributeValidator(Validator):
     @classmethod
-    def get_empy_anchors_message(cls, value):
+    def get_empty_anchors_message(cls, value):
         result = []
         for src, name in value:
             data = '<a href="%s" target="_blank">%s</a>' % (src, name)
@@ -21,7 +21,7 @@ class ImageWithoutAltAttributeValidator(Validator):
         return {
             'invalid.images.alt': {
                 'title': 'Image(s) without alt attribute',
-                'description': cls.get_empy_anchors_message,
+                'description': cls.get_empty_anchors_message,
                 'category': 'SEO'
             }
         }

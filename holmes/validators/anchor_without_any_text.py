@@ -7,7 +7,7 @@ from holmes.facters.links import REMOVE_HASH
 
 class AnchorWithoutAnyTextValidator(Validator):
     @classmethod
-    def get_empy_anchors_message(cls, value):
+    def get_empty_anchors_message(cls, value):
         return 'Empty anchors are not good for Search Engines. ' \
                'Empty anchors were found for links to: %s.' % (
                    ', '.join([
@@ -20,7 +20,7 @@ class AnchorWithoutAnyTextValidator(Validator):
         return {
             'empty.anchors': {
                 'title': 'Empty anchor(s) found',
-                'description': cls.get_empy_anchors_message,
+                'description': cls.get_empty_anchors_message,
                 'category': 'SEO'
             }
         }

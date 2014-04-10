@@ -66,9 +66,9 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         expect('empty.anchors' in definitions).to_be_true()
 
         links = ['http://globo.com']
-        empy_anchors_message = validator.get_empy_anchors_message(links)
+        empty_anchors_message = validator.get_empty_anchors_message(links)
 
-        expect(empy_anchors_message).to_equal(
+        expect(empty_anchors_message).to_equal(
             'Empty anchors are not good for Search Engines. '
             'Empty anchors were found for links to: '
             '<a href="http://globo.com" target="_blank">#0</a>.'
