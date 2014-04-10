@@ -198,7 +198,9 @@ class TestDomainViolationsPerDayHandler(ApiTestCase):
 class TestDomainReviewsHandler(ApiTestCase):
 
     @gen_test
-    def test_can_get_domain_reviews(self):
+    def test_can_get_domain_reviews_using_no_external_search_provider(self):
+        self.use_no_external_search_provider()
+
         dt = datetime(2010, 11, 12, 13, 14, 15)
         dt_timestamp = calendar.timegm(dt.utctimetuple())
 
@@ -210,10 +212,10 @@ class TestDomainReviewsHandler(ApiTestCase):
         page = PageFactory.create(domain=domain, last_review_date=dt)
         page2 = PageFactory.create(domain=domain, last_review_date=dt2)
 
-        ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=20)
-        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
-        ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=30)
-        ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt, number_of_violations=20)
+        ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=13)
+        ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=12)
+        ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=11)
+        ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt, number_of_violations=10)
 
         response = yield self.http_client.fetch(
             self.get_url('/domains/%s/reviews/' % domain.name)
@@ -232,6 +234,52 @@ class TestDomainReviewsHandler(ApiTestCase):
         expect(domain_details['pages'][0]['url']).to_equal(page.url)
         expect(domain_details['pages'][0]['uuid']).to_equal(str(page.uuid))
         expect(domain_details['pages'][0]['completedAt']).to_equal(dt_timestamp)
+
+    @gen_test
+    def test_can_get_domain_reviews_using_elastic_search_provider(self):
+        self.use_elastic_search_provider()
+
+        dt = datetime(2010, 11, 12, 13, 14, 15)
+        dt_timestamp = calendar.timegm(dt.utctimetuple())
+
+        dt2 = datetime(2011, 12, 13, 14, 15, 16)
+        dt2_timestamp = calendar.timegm(dt2.utctimetuple())
+
+        domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
+
+        page = PageFactory.create(domain=domain, last_review_date=dt)
+        page2 = PageFactory.create(domain=domain, last_review_date=dt2)
+
+        review = ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt, number_of_violations=13)
+        self.server.application.search_provider.index_review(review)
+        review = ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=12)
+        self.server.application.search_provider.index_review(review)
+        review = ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=11)
+        self.server.application.search_provider.index_review(review)
+        review = ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=10)
+        self.server.application.search_provider.index_review(review)
+
+        self.server.application.search_provider.refresh()
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/%s/reviews/' % domain.name)
+        )
+
+        expect(response.code).to_equal(200)
+
+        domain_details = loads(response.body)
+
+        expect(domain_details['pages']).to_length(2)
+
+        expect(domain_details['pages'][0]['url']).to_equal(page.url)
+        expect(domain_details['pages'][0]['uuid']).to_equal(str(page.uuid))
+        expect(domain_details['pages'][0]['completedAt']).to_equal(dt_timestamp)
+        expect(domain_details['pages'][0]['violationCount']).to_equal(12)
+
+        expect(domain_details['pages'][1]['url']).to_equal(page2.url)
+        expect(domain_details['pages'][1]['uuid']).to_equal(str(page2.uuid))
+        expect(domain_details['pages'][1]['completedAt']).to_equal(dt2_timestamp)
+        expect(domain_details['pages'][1]['violationCount']).to_equal(10)
 
     @gen_test
     def test_can_get_domain_reviews_for_next_page(self):

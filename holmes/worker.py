@@ -115,6 +115,9 @@ class HolmesWorker(BaseWorker):
         self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
 
         self.connect_sqlalchemy()
+
+        self.search_provider = self.load_search_provider()(self.config, self.db)
+
         self.connect_to_redis()
         self.start_otto()
 
@@ -220,6 +223,7 @@ class HolmesWorker(BaseWorker):
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,
+                search_provider=self.search_provider,
                 async_get=self.async_get,
                 wait=self.otto.wait,
                 wait_timeout=0,  # max time to wait for all requests to finish

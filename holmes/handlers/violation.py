@@ -5,7 +5,7 @@ from tornado import gen
 from functools import partial
 
 from holmes.handlers import BaseHandler
-from holmes.models import Review, Violation
+from holmes.models import Review, Violation, Domain
 
 
 class MostCommonViolationsHandler(BaseHandler):
@@ -36,45 +36,38 @@ class ViolationHandler(BaseHandler):
         domain_filter = self.get_argument('domain_filter', None)
         page_filter = self.get_argument('page_filter', None)
 
+        domain = None
+        if domain_filter is not None:
+            domain = Domain.get_domain_by_name(domain_filter, self.db)
+            if not domain:
+                self.set_status(404, 'Domain %s not found' % domain_filter)
+                self.finish()
+                return
+
         violations = self.application.violation_definitions
         if key_name not in violations:
             self.set_status(404, 'Invalid violation key %s' % key_name)
+            self.finish()
             return
 
         violation_title = violations[key_name]['title']
         key_id = violations[key_name]['key'].id
 
-        reviews = Review.get_by_violation_key_name(
-            self.db,
-            key_id,
+        violation = yield self.application.search_provider.get_by_violation_key_name(
+            key_id=key_id,
             current_page=current_page,
             page_size=page_size,
-            domain_filter=domain_filter,
+            domain=domain,
             page_filter=page_filter,
         )
 
-        if domain_filter or page_filter:
-            reviews_count = None
-        else:
-            reviews_count = Review.count_by_violation_key_name(self.db, key_id)
+        if 'reviewsCount' not in violation:
+            if not domain and not page_filter:
+                violation['reviewsCount'] = Review.count_by_violation_key_name(self.db, key_id)
+            else:
+                violation['reviewsCount'] = None
 
-        reviews_data = []
-        for item in reviews:
-            reviews_data.append({
-                'uuid': item.review_uuid,
-                'domain': item.domain_name,
-                'page': {
-                    'uuid': item.page_uuid,
-                    'url': item.url,
-                    'completedAt': item.completed_date
-                }
-            })
-
-        violation = {
-            'title': violation_title,
-            'reviews': reviews_data,
-            'reviewsCount': reviews_count
-        }
+        violation['title'] = violation_title
 
         self.write_json(violation)
         self.finish()

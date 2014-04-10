@@ -138,6 +138,7 @@ class HolmesApiServer(Server):
         self.application.facters = self._load_facters()
         self.application.validators = self._load_validators()
         self.application.error_handlers = [handler(self.application.config) for handler in self._load_error_handlers()]
+        self.application.search_provider = self._load_search_provider()(self.application.config, self.application.db, io_loop)
 
         self.application.fact_definitions = {}
         self.application.violation_definitions = {}
@@ -201,6 +202,13 @@ class HolmesApiServer(Server):
 
     def _load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
+
+    def _load_search_provider(self):
+        search_provider = load_classes(default=[self.config.SEARCH_PROVIDER])
+        if isinstance(search_provider, list) and len(search_provider) == 1:
+            return search_provider.pop()
+        else:
+            raise Exception('A search provider must be defined!')
 
     def before_end(self, io_loop):
         self.application.db.remove()

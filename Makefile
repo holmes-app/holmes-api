@@ -1,4 +1,4 @@
-test: redis_test drop_test data_test unit integration kill_run
+test: elasticsearch redis_test drop_test data_test elasticsearch_drop_test elasticsearch_setup_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
@@ -55,6 +55,36 @@ data db:
 
 data_test:
 	@cd tests/ && alembic upgrade head
+
+kill_elasticsearch:
+	-@pkill -F elasticsearch.pid
+
+elasticsearch: kill_elasticsearch
+	elasticsearch -d -p elasticsearch.pid
+
+elasticsearch_setup:
+	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --create
+
+elasticsearch_drop:
+	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --delete
+
+elasticsearch_index:
+	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --all-keys
+
+elasticsearch_setup_test:
+	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --create --index holmes-test
+
+elasticsearch_drop_test:
+	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --delete --index holmes-test
+
+search_setup:
+	@holmes-search -vv -c ./holmes/config/local.conf --create
+
+search_drop:
+	@holmes-search -vv -c ./holmes/config/local.conf --delete
+
+search_index:
+	@holmes-search -vv -c ./holmes/config/local.conf --all-keys
 
 migration:
 	@cd holmes/ && alembic revision -m "$(DESC)"

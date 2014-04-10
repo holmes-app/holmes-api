@@ -123,33 +123,21 @@ class DomainReviewsHandler(BaseHandler):
             self.set_status(404, 'Domain %s not found' % domain_name)
             return
 
-        reviews = domain.get_active_reviews(
-            self.db,
-            url_starts_with=term,
+        reviews = yield self.application.search_provider.get_domain_active_reviews(
+            domain=domain,
             current_page=current_page,
-            page_size=page_size
+            page_size=page_size,
+            page_filter=term,
         )
 
-        if term:
-            review_count = None
-        else:
-            review_count = yield self.cache.get_active_review_count(domain)
+        if 'reviewsCount' not in reviews:
+            if not term:
+                reviews['reviewsCount'] = yield self.cache.get_active_review_count(domain)
+            else:
+                reviews['reviewsCount'] = None
 
-        result = {
-            'reviewsCount': review_count,
-            'pages': [],
-        }
-
-        for page in reviews:
-            result['pages'].append({
-                "url": page.url,
-                "uuid": str(page.uuid),
-                "violationCount": page.violations_count,
-                "completedAt": page.last_review_date,
-                "reviewId": str(page.last_review_uuid)
-            })
-
-        self.write_json(result)
+        self.write_json(reviews)
+        self.finish()
 
 
 class DomainGroupedViolationsHandler(BaseHandler):

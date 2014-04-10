@@ -64,7 +64,7 @@ class ReviewDAO(object):
 class Reviewer(object):
     def __init__(
             self, api_url, page_uuid, page_url, page_score,
-            config=None, validators=[], facters=[], async_get=None,
+            config=None, validators=[], facters=[], search_provider=None, async_get=None,
             wait=None, wait_timeout=None, db=None, cache=None, publish=None,
             fact_definitions=None, violation_definitions=None, girl=None):
 
@@ -98,6 +98,8 @@ class Reviewer(object):
 
         self.validators = validators
         self.facters = facters
+
+        self.search_provider = search_provider
 
         self.responses = {}
         self.raw_responses = {}
@@ -290,7 +292,7 @@ class Reviewer(object):
         data = self.review_dao.to_dict()
 
         Review.save_review(
-            self.page_uuid, data, self.db,
+            self.page_uuid, data, self.db, self.search_provider,
             self.fact_definitions, self.violation_definitions,
             self.cache, self.publish, self.config
         )

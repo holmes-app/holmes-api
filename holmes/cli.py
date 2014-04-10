@@ -37,6 +37,13 @@ class BaseCLI(Shepherd):
     def load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
 
+    def load_search_provider(self):
+        search_provider = load_classes(default=[self.config.SEARCH_PROVIDER])
+        if isinstance(search_provider, list) and len(search_provider) == 1:
+            return search_provider.pop()
+        else:
+            raise Exception('A search provider must be defined!')
+
     def get_config_class(self):
         return Config
 

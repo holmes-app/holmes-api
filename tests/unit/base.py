@@ -67,6 +67,9 @@ class ApiTestCase(CowTestCase):
             REDISPORT=57575,
             MATERIAL_GIRL_REDISHOST='localhost',
             MATERIAL_GIRL_REDISPORT=57575,
+            ELASTIC_SEARCH_HOST='localhost',
+            ELASTIC_SEARCH_PORT=9200,
+            ELASTIC_SEARCH_INDEX='holmes-test',
         )
 
     def get_server(self):
@@ -93,6 +96,22 @@ class ApiTestCase(CowTestCase):
         redis = redis.StrictRedis(host=host, port=port, db=0)
 
         return SyncCache(self.db, redis, self.server.application.config)
+
+    def use_no_external_search_provider(self):
+        from holmes.search_providers.noexternal import NoExternalSearchProvider
+        self.server.application.search_provider = NoExternalSearchProvider(
+            self.server.application.config,
+            self.db,
+            self.io_loop
+        )
+
+    def use_elastic_search_provider(self):
+        from holmes.search_providers.elastic import ElasticSearchProvider
+        self.server.application.search_provider = ElasticSearchProvider(
+            self.server.application.config,
+            self.db,
+            self.io_loop
+        )
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
 

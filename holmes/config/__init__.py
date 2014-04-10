@@ -98,6 +98,12 @@ Config.define('BLACKLIST_DOMAIN', [], 'Domain blacklist', 'Domain blacklist')
 
 Config.define('ERROR_HANDLERS', [], 'List of classes to handle errors', 'General')
 
+Config.define('SEARCH_PROVIDER', 'holmes.search_providers.noexternal.NoExternalSearchProvider', 'Class to handle searching', 'Models')
+
+Config.define('ELASTIC_SEARCH_HOST', 'localhost', 'ElasticSearch host', 'ElasticSearchProvider')
+Config.define('ELASTIC_SEARCH_PORT', 9200, 'ElasticSearch port', 'ElasticSearchProvider')
+Config.define('ELASTIC_SEARCH_INDEX', 'holmes', 'ElasticSearch index name', 'ElasticSearchProvider')
+
 # SENTRY ERROR HANDLER
 Config.define('USE_SENTRY', False, 'If set to true errors will be sent to sentry.', 'Sentry')
 Config.define('SENTRY_DSN_URL', '', 'URL to use as sentry DSN.', 'Sentry')

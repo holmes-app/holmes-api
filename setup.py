@@ -62,6 +62,8 @@ Holmes is a service to investigate your website health.
         'rotunicode>=1.0.1,<1.1.0',
         'materialgirl>=0.5.0,<0.6.0',
         'Tornado-Babel>=0.2,<0.3'
+        'pyelasticsearch>=0.6.1,<0.7.0',
+        'tornadoes>=2.0.0,<2.1.0',
     ],
     extras_require={
         'tests': tests_require,
@@ -71,6 +73,7 @@ Holmes is a service to investigate your website health.
             'holmes-api=holmes.server:main',
             'holmes-worker=holmes.worker:main',
             'holmes-material=holmes.material:main',
+            'holmes-search=holmes.search:main',
         ],
     },
 )

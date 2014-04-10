@@ -107,7 +107,7 @@ class Domain(Base):
 
         return result
 
-    def get_active_reviews(self, db, url_starts_with=None, current_page=1, page_size=10):
+    def get_active_reviews(self, db, page_filter=None, current_page=1, page_size=10):
         from holmes.models import Page  # Prevent circular dependency
 
         lower_bound = (current_page - 1) * page_size
@@ -121,8 +121,8 @@ class Domain(Base):
             .filter(Page.last_review_date != None) \
             .filter(Page.domain == self)
 
-        if url_starts_with:
-            items_query = items_query.filter(Page.url.like('%s/%s%%' % (self.url, url_starts_with)))
+        if page_filter:
+            items_query = items_query.filter(Page.url.like('%s/%s%%' % (self.url, page_filter)))
 
         items = items_query.order_by('violations_count desc')[lower_bound:upper_bound]
 
@@ -132,14 +132,14 @@ class Domain(Base):
     def get_domain_by_name(self, domain_name, db):
         return db.query(Domain).filter(Domain.name == domain_name).first()
 
-    def get_active_review_count(self, db, url_starts_with=None):
+    def get_active_review_count(self, db, page_filter=None):
         from holmes.models import Review, Page
 
         query = db.query(func.count(distinct(Review.page_id)))  # See #111
 
-        if url_starts_with:
+        if page_filter:
             query = query.join(Page, Page.id == Review.page_id) \
-                .filter(Page.url.like('%s%%' % url_starts_with))
+                .filter(Page.url.like('%s/%s%%' % (self.url, page_filter)))
 
         query = query.filter(Review.is_active == True, Review.domain_id == self.id)
 
