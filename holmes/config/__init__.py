@@ -144,5 +144,6 @@ Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, 'Limit for the size 
 throttling_message_type = {
     'new-request': 5,
     'new-page': 2,
+    'new-review': 2,
 }
 Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, 'Trottling by message type', 'Event Bus')
