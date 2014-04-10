@@ -324,22 +324,7 @@ class Page(Base):
         page = Page.by_url_hash(url_hash, db)
 
         if page:
-            for i in range(3):
-                try:
-                    db \
-                        .query(Page).filter(Page.id == page.id) \
-                        .update(
-                            {'score': sa.func.least(config.MAX_PAGE_SCORE, Page.score + score)},
-                            synchronize_session=False
-                        )
-                    break
-                except Exception:
-                    err = sys.exc_info()[1]
-                    if 'Deadlock found' in str(err) or 'Lock wait' in str(err):
-                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                    else:
-                        raise
-
+            cache.increment_page_score(page.url)
             return page.uuid
 
         try:
@@ -412,3 +397,17 @@ class Page(Base):
             Limiter.add_or_update_limiter(db, domain_url, connections)
 
         return domain
+
+    @classmethod
+    def update_pages_score(cls, db, cache, config):
+        pages = cache.seized_pages_score()
+
+        for page_id, score in pages:
+            db \
+                .query(Page).filter(Page.id == page_id) \
+                .update(
+                    {'score': sa.func.least(
+                        config.MAX_PAGE_SCORE, Page.score + score)
+                    },
+                    synchronize_session=False
+                )

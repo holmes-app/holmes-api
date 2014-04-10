@@ -108,6 +108,7 @@ class HolmesWorker(BaseWorker):
         self.working_url = None
         self.domain_name = None
         self.last_ping = None
+        self.last_update_pages_score = None
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
@@ -158,6 +159,11 @@ class HolmesWorker(BaseWorker):
         errored = False
         try:
             self.debug('Started doing work...')
+
+            dt = datetime.utcnow() - timedelta(seconds=self.config.UPDATE_PAGES_SCORE_SLEEP_TIME)
+
+            if not self.last_update_pages_score or self.last_update_pages_score < dt:
+                self._update_pages_score()
 
             err = None
             job = self._load_next_job()
@@ -262,6 +268,17 @@ class HolmesWorker(BaseWorker):
         self.working_url = None
         self.domain_name = None
         self._ping_api()
+
+    def _update_pages_score(self):
+        expiration = self.config.UPDATE_PAGES_SCORE_EXPIRATION
+        lock = self.cache.has_update_pages_lock(expiration)
+
+        if lock is not None:
+            self.debug('Updating pages score...')
+            Page.update_pages_score(self.db, self.cache, self.config)
+            self.cache.release_update_pages_lock(lock)
+            self.last_update_pages_score = datetime.utcnow()
+
 
 def main():
     worker = HolmesWorker(sys.argv[1:])

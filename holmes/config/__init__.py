@@ -13,6 +13,9 @@ Config.define('ZOMBIE_WORKER_TIME', 200,
 
 Config.define('WORKERS_LOOK_AHEAD_PAGES', 1000, 'Number of pages that will be retrieved when looking for the next job', 'Worker')
 
+Config.define('UPDATE_PAGES_SCORE_EXPIRATION', 30, 'The expiration for lock to update pages score', 'Worker')
+Config.define('UPDATE_PAGES_SCORE_SLEEP_TIME', HOUR, 'The expiration for lock to update pages score', 'Worker')
+
 Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, 'Number of seconds a connection can take.', 'Worker')
 Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, 'Number of seconds a request can take.', 'Worker')
 

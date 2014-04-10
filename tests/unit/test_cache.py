@@ -483,6 +483,23 @@ class CacheTestCase(ApiTestCase):
         keys = yield Task(self.cache.redis.keys, 'limit-for-%s*' % domain_url)
         expect(keys).to_length(0)
 
+    @gen_test
+    def test_increment_page_score(self):
+        self.cache.redis.delete('pages-score')
+
+        total = yield Task(self.cache.redis.zcard, 'page-scores')
+        expect(int(total)).to_equal(0)
+
+        yield self.cache.increment_page_score('page-1')
+
+        score = yield Task(self.cache.redis.zscore, 'page-scores', 'page-1')
+        expect(int(score)).to_equal(1)
+
+        yield self.cache.increment_page_score('page-1')
+
+        score = yield Task(self.cache.redis.zscore, 'page-scores', 'page-1')
+        expect(int(score)).to_equal(2)
+
 
 class SyncCacheTestCase(ApiTestCase):
     def setUp(self):
@@ -1034,3 +1051,64 @@ class SyncCacheTestCase(ApiTestCase):
         self.sync_cache.increment_requests_count(10)
         page_count = self.sync_cache.redis.get(key)
         expect(page_count).to_equal('19')
+
+    def test_increment_page_score(self):
+        self.sync_cache.redis.delete('page-scores')
+
+        total = self.sync_cache.redis.zcard('page-scores')
+        expect(total).to_equal(0)
+
+        self.sync_cache.increment_page_score('page-1')
+
+        score = self.sync_cache.redis.zscore('page-scores', 'page-1')
+        expect(score).to_equal(1)
+
+        self.sync_cache.increment_page_score('page-1')
+
+        score = self.sync_cache.redis.zscore('page-scores', 'page-1')
+        expect(score).to_equal(2)
+
+    def test_seized_pages_score(self):
+        self.sync_cache.redis.delete('page-scores')
+
+        for i in range(3):
+            self.sync_cache.increment_page_score('page-%d' % i)
+
+        total = self.sync_cache.redis.zcard('page-scores')
+        expect(total).to_equal(3)
+
+        values = self.sync_cache.seized_pages_score()
+        expect(values).to_length(3)
+
+        total = self.sync_cache.redis.zcard('page-scores')
+        expect(total).to_equal(0)
+
+    def test_lock_update_pages_score(self):
+        self.sync_cache.redis.delete('update-pages-score-lock')
+
+        lock = self.sync_cache.lock_update_pages_score(5)
+
+        expect(lock.acquire()).to_be_true()
+
+    def test_has_update_pages_lock(self):
+        self.sync_cache.redis.delete('update-pages-score-lock')
+
+        lock = self.sync_cache.lock_update_pages_score(20)
+        expect(lock).not_to_be_null()
+
+        has_update_pages_lock = self.sync_cache.has_update_pages_lock(20)
+        expect(has_update_pages_lock).not_to_be_null()
+
+        has_update_pages_lock = self.sync_cache.has_update_pages_lock(20)
+        expect(has_update_pages_lock).to_be_null()
+
+    def test_release_update_pages_lock(self):
+        self.sync_cache.redis.delete('update-pages-score-lock')
+
+        has_update_pages_lock = self.sync_cache.has_update_pages_lock(5)
+        expect(has_update_pages_lock).not_to_be_null()
+
+        self.sync_cache.release_update_pages_lock(has_update_pages_lock)
+
+        lock = self.sync_cache.has_update_pages_lock(5)
+        expect(lock).not_to_be_null()

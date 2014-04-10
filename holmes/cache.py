@@ -362,6 +362,10 @@ class Cache(object):
     def remove_domain_limiters_key(self, callback):
         self.redis.delete('domain-limiters', callback=callback)
 
+    @return_future
+    def increment_page_score(self, page_id, increment=1, callback=None):
+        self.redis.zincrby('page-scores', increment, page_id, callback=callback)
+
 
 class SyncCache(object):
     def __init__(self, db, redis, config):
@@ -588,3 +592,24 @@ class SyncCache(object):
 
     def get_limit_usage(self, url):
         return self.redis.zcard('limit-for-%s' % url)
+
+    def increment_page_score(self, page_id, increment=1):
+        self.redis.zincrby('page-scores', page_id, increment)
+
+    def seized_pages_score(self):
+        pages = self.redis.zrange('page-scores', 0, -1, withscores=True)
+        self.redis.zremrangebyrank('page-scores', 0, -1)
+        return pages
+
+    def lock_update_pages_score(self, expiration):
+        return self.redis.lock('update-pages-score-lock', expiration)
+
+    def has_update_pages_lock(self, expiration):
+        lock = self.lock_update_pages_score(expiration)
+        has_acquired = lock.acquire(blocking=False)
+        if not has_acquired:
+            return None
+        return lock
+
+    def release_update_pages_lock(self, lock):
+        return lock.release()
