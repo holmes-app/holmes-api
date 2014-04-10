@@ -39,3 +39,6 @@ cover
 .DS_Store
 report.html
 holmes/docs/_build
+
+#vim
+.ropeproject
