@@ -237,8 +237,6 @@ class Page(Base):
         if page is None:
             return None
 
-
-
         return {
             'page': str(page.uuid),
             'url': page.url,
