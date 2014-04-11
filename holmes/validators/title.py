@@ -47,12 +47,12 @@ class TitleValidator(Validator):
                 },
                 points=50
             )
-        elif len(title) > self.reviewer.config.MAX_TITLE_SIZE:
+        elif len(title) > self.config.MAX_TITLE_SIZE:
             self.add_violation(
                 key='page.title.size',
                 value={
                     'page_url': self.reviewer.page_url,
-                    'max_size': self.reviewer.config.MAX_TITLE_SIZE
+                    'max_size': self.config.MAX_TITLE_SIZE
                 },
                 points=10
             )
