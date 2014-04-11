@@ -35,12 +35,12 @@ class LinkFacter(Facter):
             'total.number.invalid_links': {
                 'title': 'Total invalid links',
                 'description': lambda value: "This page has %d invalid links." % (value or 0),
-                'category': 'Semantic',
+                'category': 'Semantics',
             },
             'page.invalid_links': {
                 'title': 'Invalid Links',
                 'description': lambda value: list(value),
-                'category': 'Semantic',
+                'category': 'Semantics',
             }
         }
 
