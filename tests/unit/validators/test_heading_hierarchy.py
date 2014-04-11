@@ -64,3 +64,30 @@ class TestHeadingHierarchyValidator(ValidatorTestCase):
             },
             points=40
         )
+
+    def test_can_get_violation_definitions(self):
+        reviewer = Mock()
+        validator = HeadingHierarchyValidator(reviewer)
+        definitions = validator.get_violation_definitions()
+
+        expect(definitions).to_length(1)
+        expect('page.heading_hierarchy.size' in definitions).to_be_true()
+        definitions_value = definitions['page.heading_hierarchy.size']
+        expect('title' in definitions_value).to_be_true()
+        expect('description' in definitions_value).to_be_true()
+        expect('category' in definitions_value).to_be_true()
+
+        value = {
+            'hh_list': [
+                ('h1', 'Loren ipsum dolor sit amet'),
+            ],
+            'max_size': 150
+        }
+        violation_description = validator.get_violation_description(value)
+        expect(violation_description).to_equal(
+            'Heading hierarchy values bigger than 150 characters aren`t good '
+            'for Search Engines. This elements were found:'
+            '<ul class="violation-hh-list"><li>'
+            '<span class="hh-type">h1</span>: '
+            'Loren ipsum dolor sit amet</li></ul>'
+        )
