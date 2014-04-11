@@ -352,7 +352,7 @@ class Page(Base):
         except Exception:
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):
-                logging.error('Duplicate entry! (Details: %s)' % str(err))
+                logging.debug('Duplicate entry! (Details: %s)' % str(err))
             else:
                 raise
 
