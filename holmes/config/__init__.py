@@ -57,12 +57,15 @@ Config.define('MAX_JS_REQUESTS_PER_PAGE', 17,
 Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 272,
               'Maximum size of scripts per page after gzip', 'JS Request Validator')
 
-Config.define('MAX_HEADING_HIEARARCHY_SIZE', 150,
-              'Heading Hierarchy tags longer than 150 characters may be truncated in the results',
-              'Heading Hierarchy Validator')
 Config.define('MAX_TITLE_SIZE', 70,
               'Title tags longer than 70 characters may be truncated in the results',
               'Title Validator')
+Config.define('MAX_HEADING_HIEARARCHY_SIZE', 150,
+              'Heading Hierarchy tags longer than 150 characters may be truncated in the results',
+              'Heading Hierarchy Validator')
+Config.define('MAX_IMAGE_ALT_SIZE', 70,
+              'Image alt attributes longer than 70 characters may be truncated in the results',
+              'Image Alt Attribute Validator')
 
 Config.define('ORIGIN', '*', 'Access Control Allow Origin header value', 'Web')
 
