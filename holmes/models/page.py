@@ -145,7 +145,7 @@ class Page(Base):
                 Page.last_review_date == None,
                 Page.last_review_date <= expired_time
             )) \
-            .order_by(Page.score.desc())
+            .order_by(Page.last_review_date.asc())
 
         return pages_query[lower_bound:upper_bound]
 
@@ -197,7 +197,7 @@ class Page(Base):
                     Page.last_review_date == None,
                     Page.last_review_date <= expired_time
                 )) \
-                .order_by(Page.score.desc())[:look_ahead_pages]
+                .order_by(Page.last_review_date.asc())[:look_ahead_pages]
             if pages:
                 all_domains_pages_in_need_of_review[domain_id] = pages
 

@@ -106,7 +106,7 @@ class TestPage(ApiTestCase):
             )
 
             expect(next_job).not_to_be_null()
-            expect(next_job['page']).to_equal(str(pages[19 - i].uuid))
+            expect(next_job['page']).to_equal(str(pages[i].uuid))
 
     def test_get_next_job_does_not_get_from_inactive_domains(self):
         domain = DomainFactory.create(is_active=False)
@@ -134,8 +134,8 @@ class TestPage(ApiTestCase):
         pages_a = []
         pages_b = []
         for i in range(10):
-            pages_a.append(PageFactory.create(domain=domain_a, url="%s/%d.html" % (domain_a.url, i), score=i * 10))
-            pages_b.append(PageFactory.create(domain=domain_b, url="%s/%d.html" % (domain_b.url, i), score=i))
+            pages_a.append(PageFactory.create(domain=domain_a, url="%s/%d.html" % (domain_a.url, i)))
+            pages_b.append(PageFactory.create(domain=domain_b, url="%s/%d.html" % (domain_b.url, i)))
 
         # first one should not be limited
         next_job = Page.get_next_job(
@@ -148,7 +148,7 @@ class TestPage(ApiTestCase):
         )
 
         expect(next_job).not_to_be_null()
-        expect(next_job['page']).to_equal(str(pages_a[-1].uuid))
+        expect(next_job['page']).to_equal(str(pages_a[0].uuid))
         self.db.flush()
 
         # second one should be limited (2 / 10 = 0.2, rounded up = 1 job at a time)
@@ -161,7 +161,7 @@ class TestPage(ApiTestCase):
         )
 
         expect(next_job).not_to_be_null()
-        expect(next_job['page']).to_equal(str(pages_b[-1].uuid))
+        expect(next_job['page']).to_equal(str(pages_b[0].uuid))
 
     def test_get_next_job_list(self):
         page = PageFactory.create()
