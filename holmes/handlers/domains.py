@@ -48,26 +48,19 @@ class DomainDetailsHandler(BaseHandler):
             self.set_status(404, 'Domain %s not found' % domain_name)
             return
 
-        page_count = yield self.cache.get_page_count(domain)
-        review_count = yield self.cache.get_active_review_count(domain)
-        violation_count = yield self.cache.get_violation_count(domain)
+        result = self.girl.get('domains_details')
+        data = next((l for l in result if l['name'] == domain_name), None)
 
-        bad_request_count = yield self.cache.get_bad_request_count(domain)
-        good_request_count = yield self.cache.get_good_request_count(domain)
-        total_request_count = good_request_count + bad_request_count
-        if total_request_count > 0:
-            error_percentage = round(float(bad_request_count) / total_request_count * 100, 2)
-        else:
-            error_percentage = 0
+        if not data:
+            self.set_status(404, 'Domain %s not found' % domain_name)
+            return
 
-        response_time_avg = yield self.cache.get_response_time_avg(domain)
-
-        status_code_info = Request.get_status_code_info(domain_name, self.db)
-
-        if page_count > 0:
-            review_percentage = round(float(review_count) / page_count * 100, 2)
-        else:
-            review_percentage = 0
+        page_count = data.get('pageCount', 0)
+        review_count = data.get('reviewCount', 0)
+        violation_count = data.get('violationCount', 0)
+        error_percentage = data.get('errorPercentage', 0)
+        response_time_avg = data.get('averageResponseTime', 0)
+        review_percentage = data.get('reviewPercentage', 0)
 
         domain_json = {
             "id": domain.id,
@@ -78,7 +71,6 @@ class DomainDetailsHandler(BaseHandler):
             "violationCount": violation_count,
             "reviewPercentage": review_percentage,
             "is_active": domain.is_active,
-            "statusCodeInfo": status_code_info,
             "errorPercentage": error_percentage,
             "averageResponseTime": response_time_avg,
         }

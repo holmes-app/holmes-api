@@ -134,7 +134,6 @@ class TestDomainDetailsHandler(ApiTestCase):
         expect(domain_details['reviewCount']).to_equal(2)
         expect(domain_details['violationCount']).to_equal(50)
         expect(domain_details['reviewPercentage']).to_equal(100.00)
-        expect(domain_details['statusCodeInfo']).to_equal([])
         expect(domain_details['errorPercentage']).to_equal(0)
         expect(domain_details['averageResponseTime']).to_equal(0)
         expect(domain_details['is_active']).to_be_true()
