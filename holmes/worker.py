@@ -268,6 +268,7 @@ class HolmesWorker(BaseWorker):
         self.working_url = None
         self.domain_name = None
         self._ping_api()
+        self.cache.release_next_job(lock)
 
     def _update_pages_score(self):
         expiration = self.config.UPDATE_PAGES_SCORE_EXPIRATION
