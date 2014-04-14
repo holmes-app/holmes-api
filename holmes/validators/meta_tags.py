@@ -11,13 +11,16 @@ class MetaTagsValidator(Validator):
         return {
             'absent.metatags': {
                 'title': 'Meta tags not present',
-                'description': lambda value: "No meta tags found on this page. This is damaging for Search Engines.",
+                'description': lambda value: (
+                    "No meta tags found on this page. This is damaging for "
+                    "Search Engines."
+                ),
                 'category': 'HTTP'
             }
         }
 
     def validate(self):
-        meta_tags = self.get_meta_tags()
+        meta_tags = self.review.data.get('meta.tags', None)
 
         if not meta_tags:
             self.add_violation(
@@ -26,5 +29,3 @@ class MetaTagsValidator(Validator):
                 points=100
             )
 
-    def get_meta_tags(self):
-        return self.review.data.get('meta.tags', None)
