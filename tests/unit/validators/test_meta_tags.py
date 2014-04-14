@@ -14,9 +14,8 @@ from tests.fixtures import PageFactory
 
 class TestMetaTagsValidator(ValidatorTestCase):
 
-    def test_get_meta_tags(self):
+    def test_can_validate_pages_with_metatags(self):
         page = PageFactory.create()
-
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
@@ -25,57 +24,28 @@ class TestMetaTagsValidator(ValidatorTestCase):
             config=Config(),
             validators=[]
         )
-
-        content = self.get_file('globo.html')
-
-        result = {
-            'url': page.url,
-            'status': 200,
-            'content': content,
-            'html': lxml.html.fromstring(content)
-        }
-        reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
-
         validator = MetaTagsValidator(reviewer)
         validator.add_violation = Mock()
-
+        validator.review.data['meta.tags'] = [
+            {'content': 'utf-8', 'property': None, 'key': 'charset'},
+            {'content': 'text/html;charset=UTF-8', 'property': 'http-equiv', 'key': 'Content-Type'},
+        ]
         validator.validate()
-
-        validator.add_violation.assert_called_once_with(
-            key='absent.metatags',
-            value='No metatags.',
-            points=100
-        )
+        expect(validator.add_violation.called).to_be_false()
 
     def test_can_validate_page_without_meta_tags(self):
-        config = Config()
-
         page = PageFactory.create()
-
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
+            config=Config(),
             validators=[]
         )
-
-        content = '<html></html>'
-
-        result = {
-            'url': page.url,
-            'status': 200,
-            'content': content,
-            'html': lxml.html.fromstring(content)
-        }
-        reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
-
         validator = MetaTagsValidator(reviewer)
-        validator.add_fact = Mock()
         validator.add_violation = Mock()
+        validator.review.data['meta.tags'] = []
         validator.validate()
 
         validator.add_violation.assert_called_once_with(
