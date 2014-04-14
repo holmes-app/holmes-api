@@ -47,3 +47,38 @@ class HeadingHierarchyValidator(Validator):
                 },
                 points=20 * len(violations)
             )
+
+
+class H1HeadingValidator(Validator):
+
+    @classmethod
+    def get_violation_description(cls, value=None):
+        return (
+            'Your page does not contain any H1 headings. H1 headings help '
+            'indicate the important topics of your page to search engines. '
+            'While less important than good meta-titles and descriptions, '
+            'H1 headings may still help define the topic of your page to '
+            'search engines.'
+        )
+
+    @classmethod
+    def get_violation_definitions(cls):
+        return {
+            'page.heading_hierarchy.h1_not_found': {
+                'title': 'H1 Headings not found',
+                'description': cls.get_violation_description,
+                'category': 'SEO'
+            }
+        }
+
+    def validate(self):
+        hh_list = self.review.data.get('page.heading_hierarchy', [])
+        for key, desc in hh_list:
+            if key == 'h1':
+                return
+
+        self.add_violation(
+            key='page.heading_hierarchy.h1_not_found',
+            value=None,
+            points=30
+        )
