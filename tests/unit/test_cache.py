@@ -5,7 +5,6 @@ from gzip import GzipFile
 from cStringIO import StringIO
 
 import msgpack
-from ujson import dumps
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.gen import Task
