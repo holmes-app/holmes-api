@@ -44,7 +44,6 @@ Config.define('MAX_KB_SINGLE_IMAGE', 26,
               'Maximum size of a single image', 'Image Request Validator')
 Config.define('MAX_IMG_KB_PER_PAGE', 1028,
               'Maximum size of images per page', 'Image Request Validator')
-
 # Reference data retrieved from HTTP Archive in 06-jan-2014
 Config.define('MAX_CSS_REQUESTS_PER_PAGE', 8,
               'Maximum number of external stylesheets per page', 'CSS Request Validator')
@@ -60,6 +59,9 @@ Config.define('MAX_JS_KB_PER_PAGE_AFTER_GZIP', 272,
 Config.define('MAX_TITLE_SIZE', 70,
               'Title tags longer than 70 characters may be truncated in the results',
               'Title Validator')
+Config.define('METATAG_DESCRIPTION_MAX_SIZE', 300,
+              'Description Meta tags longer than 300 characters may be truncated in the results',
+              'Metatag validator')
 Config.define('MAX_HEADING_HIEARARCHY_SIZE', 150,
               'Heading Hierarchy tags longer than 150 characters may be truncated in the results',
               'Heading Hierarchy Validator')

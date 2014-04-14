@@ -16,6 +16,15 @@ class MetaTagsValidator(Validator):
                     "Search Engines."
                 ),
                 'category': 'HTTP'
+            },
+            'page.metatags.description_too_big': {
+                'title': 'Maximum size of description meta tag',
+                'description': lambda value: (
+                    "The meta description tag is longer than %s characters. "
+                    "It is best to keep meta descriptions shorter for better "
+                    "indexing on Search engines."
+                ) % value['max_size'],
+                'category': 'SEO'
             }
         }
 
@@ -29,3 +38,12 @@ class MetaTagsValidator(Validator):
                 points=100
             )
 
+        max_size = self.config.METATAG_DESCRIPTION_MAX_SIZE
+        for mt in meta_tags:
+            if mt['key'] == 'description' and len(mt['content']) > max_size:
+                self.add_violation(
+                    key='page.metatags.description_too_big',
+                    value={'max_size': max_size},
+                    points=20
+                )
+                break

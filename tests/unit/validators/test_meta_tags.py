@@ -54,10 +54,57 @@ class TestMetaTagsValidator(ValidatorTestCase):
             points=100
         )
 
+    def test_can_validate_page_with_metatag_description_too_long(self):
+        page = PageFactory.create()
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            validators=[]
+        )
+        validator = MetaTagsValidator(reviewer)
+
+        validator.add_violation = Mock()
+        validator.review.data['meta.tags'] = [
+            {'content': 'X' * 301, 'property': 'name', 'key': 'description'},
+        ]
+        validator.validate()
+        validator.add_violation.assert_called_once_with(
+            key='page.metatags.description_too_big',
+            value={'max_size': 300},
+            points=20
+        )
+
+        validator.add_violation = Mock()
+        validator.review.data['meta.tags'] = [
+            {'content': 'X' * 300, 'property': 'name', 'key': 'description'},
+        ]
+        validator.validate()
+        expect(validator.add_violation.called).to_be_false()
+
+
     def test_can_get_violation_definitions(self):
         reviewer = Mock()
         validator = MetaTagsValidator(reviewer)
         definitions = validator.get_violation_definitions()
 
-        expect(definitions).to_length(1)
+        expect(definitions).to_length(2)
         expect('absent.metatags' in definitions).to_be_true()
+        expect('page.metatags.description_too_big' in definitions).to_be_true()
+
+        violation_defs = validator.get_violation_definitions()
+
+        absent_metatags_desc = violation_defs['absent.metatags']['description']
+        expect(absent_metatags_desc(None)).to_equal(
+            "No meta tags found on this page. This is damaging for "
+            "Search Engines."
+        )
+
+        metadesc_too_big_desc = violation_defs['page.metatags.description_too_big']['description']
+        expect(metadesc_too_big_desc({'max_size': 300})).to_equal(
+            "The meta description tag is longer than 300 characters. "
+            "It is best to keep meta descriptions shorter for better "
+            "indexing on Search engines."
+        )
