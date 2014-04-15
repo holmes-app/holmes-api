@@ -55,11 +55,12 @@ class Domain(Base):
         return domains
 
     def get_violation_data(self, db):
-        from holmes.models import Review, Violation
+        from holmes.models import Violation
 
         result = db.query(sa.func.count(Violation.id).label('count')) \
-            .join(Review, Violation.review_id == Review.id) \
-            .filter(Review.domain_id == self.id, Review.is_active == True) \
+            .filter(
+                Violation.domain_id == self.id,
+                Violation.review_is_active == True) \
             .one()
 
         return (

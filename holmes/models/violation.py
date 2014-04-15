@@ -49,6 +49,7 @@ class Violation(Base):
                 Key.name.label('key_name')
             ) \
             .filter(Violation.key_id == Key.id) \
+            .filter(Violation.review_is_active == True) \
             .order_by(Violation.id.desc()) \
             .limit(sample_limit) \
             .subquery()
@@ -107,6 +108,7 @@ class Violation(Base):
                 sa.func.count(Key.category_id).label('violation_count')
             ) \
             .filter(Key.id == Violation.key_id) \
+            .filter(Violation.review_is_active == True) \
             .group_by(Violation.domain_id) \
             .group_by(Key.category_id) \
             .order_by('violation_count DESC') \
@@ -135,6 +137,7 @@ class Violation(Base):
             ) \
             .filter(Key.name == key_name) \
             .filter(Key.id == Violation.key_id) \
+            .filter(Violation.review_is_active == True) \
             .group_by(Violation.value) \
             .order_by('count DESC') \
             .all()
@@ -151,6 +154,7 @@ class Violation(Base):
             ) \
             .filter(Key.id == Violation.key_id) \
             .filter(Violation.domain_id == domain.id) \
+            .filter(Violation.review_is_active == True) \
             .filter(Key.category_id == key_category_id) \
             .group_by(Key.id) \
             .order_by('violation_count DESC') \
