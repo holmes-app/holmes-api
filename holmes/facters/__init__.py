@@ -58,8 +58,5 @@ class Facter(Baser):
     def add_violation(self, key, value):
         self.reviewer.add_violation(key, value)
 
-    def get(self, url):
-        return self.reviewer._get(url)
-
     def async_get(self, url, handler, method='GET', **kw):
         self.reviewer._async_get(url, handler, method, **kw)
