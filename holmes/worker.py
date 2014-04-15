@@ -190,6 +190,7 @@ class HolmesWorker(BaseWorker):
             err = str(sys.exc_info()[1])
             self.error("Fail to complete work: %s" % err)
             self.db.rollback()
+            raise
 
     def _start_reviewer(self, job):
         if job:
