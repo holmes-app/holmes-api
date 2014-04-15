@@ -14,7 +14,8 @@ class LastModifiedFacter(Facter):
         return {
             'page.last_modified': {
                 'title': 'Last-Modified',
-                'description': lambda value: value
+                'description': lambda value: value,
+                'category': 'HTTP'
             }
         }
 
