@@ -177,6 +177,7 @@ class HolmesWorker(BaseWorker):
                     err = str(sys.exc_info()[1])
                     self.error("Fail to review %s: %s" % (job['url'], err))
                     self.db.rollback()
+                    raise
 
                 lock = job.get('lock', None)
                 self._complete_job(lock, error=err)
