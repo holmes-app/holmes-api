@@ -13,8 +13,7 @@ from octopus.limiter.redis.per_domain import Limiter
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
-from holmes.models import Page, Domain
-from holmes.models import Limiter as LimiterModel
+from holmes.models import Page
 from holmes.cli import BaseCLI
 
 
