@@ -156,7 +156,6 @@ class HolmesWorker(BaseWorker):
         )
 
     def do_work(self):
-        errored = False
         try:
             self.debug('Started doing work...')
 
@@ -168,30 +167,34 @@ class HolmesWorker(BaseWorker):
             err = None
             job = self._load_next_job()
 
-            if job and self._start_job(job['url']):
-                try:
-                    self.info('Starting new job for %s...' % job['url'])
-                    self._start_reviewer(job=job)
-                except InvalidReviewError:
-                    errored = True
-                    err = str(sys.exc_info()[1])
-                    self.error("Fail to review %s: %s" % (job['url'], err))
-                    self.db.rollback()
-                    raise
+            if job is None:
+                self.info('No jobs could be found! Returning...')
+                return
 
+            if not self._start_job(job['url']):
+                self.info('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
                 lock = job.get('lock', None)
-                self._complete_job(lock, error=err)
+                self._release_lock(lock)
+                return
 
-            elif job:
-                self.debug('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
+            try:
+                self.info('Starting new job for %s...' % job['url'])
+                self._start_reviewer(job=job)
+            except InvalidReviewError:
+                err = str(sys.exc_info()[1])
+                self.error("Fail to review %s: %s" % (job['url'], err))
+                raise
 
-            if not errored:
-                self.db.commit()
+            lock = job.get('lock', None)
+            self._complete_job(lock)
+
         except Exception:
             err = str(sys.exc_info()[1])
             self.error("Fail to complete work: %s" % err)
             self.db.rollback()
             raise
+        else:
+            self.db.commit()
 
     def _start_reviewer(self, job):
         if job:
@@ -266,11 +269,15 @@ class HolmesWorker(BaseWorker):
         active_domains = Domain.get_active_domains(self.db)
         return LimiterModel.has_limit_to_work(self.db, self.cache, active_domains, url, avg_links_per_page)
 
-    def _complete_job(self, lock, error=None):
+    def _complete_job(self, lock):
         self.working_url = None
         self.domain_name = None
         self._ping_api()
-        self.cache.release_next_job(lock)
+        self._release_lock(lock)
+
+    def _release_lock(self, lock):
+        if lock is not None:
+            self.cache.release_next_job(lock)
 
     def _update_pages_score(self):
         expiration = self.config.UPDATE_PAGES_SCORE_EXPIRATION
