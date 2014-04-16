@@ -249,21 +249,12 @@ class Review(Base):
                 page.domain
             )
 
-        for i in range(3):
-            try:
-                page.expires = review_data['expires']
-                page.last_modified = review_data['lastModified']
-                page.last_review_uuid = review.uuid
-                page.last_review = review
-                page.last_review_date = review.completed_date
-                page.violations_count = len(review_data['violations'])
-                break
-            except Exception:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err):
-                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                else:
-                    raise
+        page.expires = review_data['expires']
+        page.last_modified = review_data['lastModified']
+        page.last_review_uuid = review.uuid
+        page.last_review = review
+        page.last_review_date = review.completed_date
+        page.violations_count = len(review_data['violations'])
 
         review.is_complete = True
 
@@ -286,21 +277,12 @@ class Review(Base):
                 increment=new_violations_count - old_violations_count
             )
 
-            for i in range(3):
-                try:
-                    for violation in last_review.violations:
-                        violation.review_is_active = False
-                    last_review.is_active = False
+            for violation in last_review.violations:
+                violation.review_is_active = False
 
-                    Review.delete_old_reviews(db, config, page)
+            last_review.is_active = False
 
-                    break
-                except Exception:
-                    err = sys.exc_info()[1]
-                    if 'Deadlock found' in str(err):
-                        logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                    else:
-                        raise
+            Review.delete_old_reviews(db, config, page)
 
         publish(dumps({
             'type': 'new-review',
