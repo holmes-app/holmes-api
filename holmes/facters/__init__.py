@@ -46,6 +46,9 @@ class Baser(object):
     def add_fact(self, key, value):
         self.reviewer.add_fact(key, value)
 
+    def async_get(self, url, handler, method='GET', **kw):
+        self.reviewer._async_get(url, handler, method, **kw)
+
 
 class Facter(Baser):
 
@@ -57,6 +60,3 @@ class Facter(Baser):
 
     def add_violation(self, key, value):
         self.reviewer.add_violation(key, value)
-
-    def async_get(self, url, handler, method='GET', **kw):
-        self.reviewer._async_get(url, handler, method, **kw)
