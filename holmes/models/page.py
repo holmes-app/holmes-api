@@ -6,6 +6,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 import hashlib
 import logging
+from random import shuffle
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
@@ -172,7 +173,7 @@ class Page(Base):
 
     @classmethod
     def get_next_job(cls, db, look_ahead_pages, expiration, cache, lock_expiration, avg_links_per_page=10):
-        from holmes.models import Domain, Limiter  # Avoid circular dependency
+        from holmes.models import Domain  # Avoid circular dependency
 
         page = None
         lock = None
@@ -181,8 +182,9 @@ class Page(Base):
 
         active_domains = Domain.get_active_domains(db)
         active_domains_ids = [item.id for item in active_domains]
+        shuffle(active_domains_ids)
 
-        all_domains_pages_in_need_of_review = {}
+        all_domains_pages_in_need_of_review = []
 
         for domain_id in active_domains_ids:
             pages = db \
@@ -198,41 +200,31 @@ class Page(Base):
                     Page.last_review_date <= expired_time
                 )) \
                 .order_by(Page.last_review_date.asc())[:look_ahead_pages]
-            if pages:
-                all_domains_pages_in_need_of_review[domain_id] = pages
 
-        pages_in_need_of_review = []
+            if pages:
+                all_domains_pages_in_need_of_review.append(pages)
+
         current_domain = 0
-        while all_domains_pages_in_need_of_review:
-            domains = all_domains_pages_in_need_of_review.keys()
-            if current_domain >= len(domains):
+        while page is None and len(all_domains_pages_in_need_of_review) > 0:
+            if current_domain >= len(all_domains_pages_in_need_of_review):
                 current_domain = 0
 
-            domain_id = domains[current_domain]
+            item = all_domains_pages_in_need_of_review[current_domain].pop(0)
 
-            item = all_domains_pages_in_need_of_review[domain_id].pop(0)
-            pages_in_need_of_review.append(item)
-
-            if not all_domains_pages_in_need_of_review[domain_id]:
-                del all_domains_pages_in_need_of_review[domain_id]
-
-            current_domain += 1
-
-        if not pages_in_need_of_review:
-            return None
-
-        for i in range(len(pages_in_need_of_review)):
-            if not Limiter.has_limit_to_work(db, cache, active_domains, pages_in_need_of_review[i].url, avg_links_per_page):
-                continue
+            # if there are not any more pages in this domain remove it from dictionary
+            if not all_domains_pages_in_need_of_review[current_domain]:
+                del all_domains_pages_in_need_of_review[current_domain]
 
             lock = cache.has_next_job_lock(
-                pages_in_need_of_review[i].url,
+                item.url,
                 lock_expiration
             )
 
             if lock is not None:
-                page = pages_in_need_of_review[i]
+                page = item
                 break
+
+            current_domain += 1
 
         if page is None:
             return None

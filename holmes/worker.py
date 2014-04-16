@@ -169,6 +169,7 @@ class HolmesWorker(BaseWorker):
 
             if job is None:
                 self.info('No jobs could be found! Returning...')
+                self._ping_api()
                 return
 
             if not self._start_job(job['url']):
@@ -253,8 +254,6 @@ class HolmesWorker(BaseWorker):
 
     def _start_job(self, url):
         self.update_otto_limiter()
-        if not self._verify_workers_limits(url):
-            return False
 
         self.working_url = url
 
@@ -264,10 +263,6 @@ class HolmesWorker(BaseWorker):
         self._ping_api()
 
         return True
-
-    def _verify_workers_limits(self, url, avg_links_per_page=10):
-        active_domains = Domain.get_active_domains(self.db)
-        return LimiterModel.has_limit_to_work(self.db, self.cache, active_domains, url, avg_links_per_page)
 
     def _complete_job(self, lock):
         self.working_url = None

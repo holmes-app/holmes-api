@@ -38,6 +38,9 @@ flush_redis_test:
 
 drop:
 	@-cd holmes/ && alembic downgrade base
+	@$(MAKE) drop_now
+
+drop_now:
 	@mysql -u root -e "DROP DATABASE IF EXISTS holmes; CREATE DATABASE IF NOT EXISTS holmes"
 	@echo "DB RECREATED"
 
@@ -46,7 +49,7 @@ drop_test:
 	@mysql -u root -e "DROP DATABASE IF EXISTS test_holmes; CREATE DATABASE IF NOT EXISTS test_holmes"
 	@echo "DB RECREATED"
 
-data:
+data db:
 	@cd holmes/ && alembic upgrade head
 
 data_test:
