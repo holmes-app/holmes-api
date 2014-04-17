@@ -282,7 +282,7 @@ class Review(Base):
 
             last_review.is_active = False
 
-            Review.delete_old_reviews(db, config, page)
+        Review.delete_old_reviews(db, config, page)
 
         publish(dumps({
             'type': 'new-review',
