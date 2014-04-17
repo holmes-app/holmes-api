@@ -170,8 +170,11 @@ class Reviewer(object):
     def content_loaded(self, url, response):
         if response.status_code > 399 or response.text is None:
             if response.text:
-                text = response.text.decode('rotunicode')
                 headers = None
+                if response.status_code == 404:
+                    text = None
+                else:
+                    text = response.text.decode('rotunicode')
             else:
                 text = 'Empty response.text'
                 headers = response.headers
