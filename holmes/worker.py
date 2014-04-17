@@ -9,6 +9,7 @@ from ujson import dumps
 from colorama import Fore, Style
 from octopus import TornadoOctopus
 from octopus.limiter.redis.per_domain import Limiter
+from retools.lock import Lock, LockTimeout
 
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
@@ -172,7 +173,7 @@ class HolmesWorker(BaseWorker):
                 self._ping_api()
                 return
 
-            if not self._start_job(job['url']):
+            if not self._start_job(job):
                 self.info('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
                 lock = job.get('lock', None)
                 self._release_lock(lock)
@@ -247,15 +248,23 @@ class HolmesWorker(BaseWorker):
     def _load_next_job(self):
         return self.cache.get_next_job(self.config.REVIEW_EXPIRATION_IN_SECONDS, self.config.WORKERS_LOOK_AHEAD_PAGES)
 
-    def _start_job(self, url):
-        self.working_url = url
+    def _start_job(self, job):
+        try:
+            lock = Lock(job['url'], redis=self.redis, timeout=1)
+            lock.acquire()
 
-        if self.working_url:
-            self.domain_name, _ = get_domain_from_url(self.working_url)
+            self.working_url = job['url']
 
-        self._ping_api()
+            if self.working_url:
+                self.domain_name, _ = get_domain_from_url(self.working_url)
 
-        return True
+            self._ping_api()
+            job['lock'] = lock
+
+            return True
+        except LockTimeout:
+            job['lock'] = None
+            return False
 
     def _complete_job(self, lock):
         self.working_url = None
@@ -265,7 +274,7 @@ class HolmesWorker(BaseWorker):
 
     def _release_lock(self, lock):
         if lock is not None:
-            self.cache.release_next_job(lock)
+            lock.release()
 
     def _update_pages_score(self):
         expiration = self.config.UPDATE_PAGES_SCORE_EXPIRATION
