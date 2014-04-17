@@ -244,4 +244,4 @@ class Domain(Base):
 
     @classmethod
     def get_active_domains(cls, db):
-        return db.query(Domain).filter(Domain.is_active).all()
+        return db.query(Domain).filter(Domain.is_active == True).all()
