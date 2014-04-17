@@ -3,6 +3,7 @@
 
 import hashlib
 import math
+from collections import defaultdict
 
 import sqlalchemy as sa
 
@@ -95,6 +96,20 @@ class Limiter(Base):
         return limiters
 
     @classmethod
+    def get_limiters_per_domains(cls, db, active_domains):
+        from holmes.models import Limiter  # Avoid circular dependency
+
+        all_limiters = Limiter.get_all(db)
+
+        limiters = defaultdict(list)
+        for limiter in all_limiters:
+            for domain in active_domains:
+                if limiter.matches(domain.url):
+                    limiters[domain.id].append(limiter)
+
+        return limiters
+
+    @classmethod
     def _get_limiter_for_url(cls, limiters, url):
         for limiter in limiters:
             if limiter.matches(url):
@@ -118,3 +133,16 @@ class Limiter(Base):
                 return False
 
         return True
+
+
+    @classmethod
+    def get_limit_capacity(cls, db, active_domains):
+        limiters = Limiter.get_limiters_per_domains(db, active_domains)
+
+        usage = defaultdict(int)
+
+        for domain_id, domain_limiters in limiters.items():
+            for limiter in domain_limiters:
+                usage[domain_id] += limiter.value
+
+        return usage
