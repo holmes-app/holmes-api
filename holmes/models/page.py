@@ -6,7 +6,6 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 import hashlib
 import logging
-from random import shuffle
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
