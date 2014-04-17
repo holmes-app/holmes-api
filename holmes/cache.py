@@ -5,7 +5,6 @@ from gzip import GzipFile
 from cStringIO import StringIO
 from datetime import datetime, timedelta
 import logging
-import math
 
 import msgpack
 from tornado.concurrent import return_future
