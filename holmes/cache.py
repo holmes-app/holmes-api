@@ -677,7 +677,7 @@ class SyncCache(object):
                     logging.debug('Available Limit Buckets: %s' % limiter_buckets)
                     for index, (limit, available) in enumerate(limiter_buckets):
                         if limit.matches(item.url):
-                            if available == 0:
+                            if available <= 0:
                                 has_limit = False
                                 break
                             limiter_buckets[index] = (limit, available - 1)
