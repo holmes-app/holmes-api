@@ -632,7 +632,7 @@ class SyncCache(object):
                     math.ceil(float(capacity[domain_id]) / avg_links_per_page) or \
                     look_ahead_pages
 
-            #all_domains_pages_in_need_of_review = []
+            all_domains_pages_in_need_of_review = []
 
             for domain_id in active_domains_ids:
                 pages_to_get = get_percentage(domain_id)
@@ -652,31 +652,27 @@ class SyncCache(object):
                     .order_by(Page.last_review_date.asc())[:pages_to_get]
 
                 if pages:
-                    for page in pages:
-                        self.redis.sadd('next-job-bucket', dumps({
-                            'page': str(page.uuid),
-                            'url': page.url
-                        }))
+                    all_domains_pages_in_need_of_review.append(pages)
 
-            #item_count = int(self.redis.scard('next-job-bucket'))
-            #current_domain = 0
-            #while item_count < look_ahead_pages and len(all_domains_pages_in_need_of_review) > 0:
-                #if current_domain >= len(all_domains_pages_in_need_of_review):
-                    #current_domain = 0
+            item_count = int(self.redis.scard('next-job-bucket'))
+            current_domain = 0
+            while item_count < look_ahead_pages and len(all_domains_pages_in_need_of_review) > 0:
+                if current_domain >= len(all_domains_pages_in_need_of_review):
+                    current_domain = 0
 
-                #item = all_domains_pages_in_need_of_review[current_domain].pop(0)
+                item = all_domains_pages_in_need_of_review[current_domain].pop(0)
 
-                ## if there are not any more pages in this domain remove it from dictionary
-                #if not all_domains_pages_in_need_of_review[current_domain]:
-                    #del all_domains_pages_in_need_of_review[current_domain]
+                # if there are not any more pages in this domain remove it from dictionary
+                if not all_domains_pages_in_need_of_review[current_domain]:
+                    del all_domains_pages_in_need_of_review[current_domain]
 
-                #self.redis.sadd('next-job-bucket', dumps({
-                    #'page': str(item.uuid),
-                    #'url': item.url
-                #}))
+                self.redis.sadd('next-job-bucket', dumps({
+                    'page': str(item.uuid),
+                    'url': item.url
+                }))
 
-                #current_domain += 1
-                #item_count += 1
+                current_domain += 1
+                item_count += 1
 
     def get_next_job(self, expiration, look_ahead_pages=1000):
         logging.info('Getting next job from the bucket...')
