@@ -156,6 +156,8 @@ class HolmesWorker(BaseWorker):
         )
 
     def do_work(self):
+        has_errored = False
+
         try:
             self.debug('Started doing work...')
 
@@ -191,12 +193,14 @@ class HolmesWorker(BaseWorker):
             self._complete_job(lock)
 
         except Exception:
+            has_errored = True
             err = str(sys.exc_info()[1])
             self.error("Fail to complete work: %s" % err)
             self.db.rollback()
             raise
-        else:
-            self.db.commit()
+        finally:
+            if not has_errored:
+                self.db.commit()
 
     def _start_reviewer(self, job):
         if job:

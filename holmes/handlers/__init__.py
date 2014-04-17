@@ -12,6 +12,7 @@ from holmes import __version__
 class BaseHandler(RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
+        self._session = None
 
     def log_exception(self, typ, value, tb):
         for handler in self.application.error_handlers:
@@ -26,14 +27,18 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).log_exception(typ, value, tb)
 
     def on_finish(self):
-        if self.application.config.COMMIT_ON_REQUEST_END:
-            if self.get_status() > 399:
-                logging.debug('ROLLING BACK TRANSACTION')
-                self.db.rollback()
-            else:
-                logging.debug('COMMITTING TRANSACTION')
-                self.db.commit()
-                self.application.event_bus.flush()
+        try:
+            if self.application.config.COMMIT_ON_REQUEST_END:
+                if self.get_status() > 399:
+                    logging.debug('ROLLING BACK TRANSACTION')
+                    self.db.rollback()
+                else:
+                    logging.debug('COMMITTING TRANSACTION')
+                    self.db.flush()
+                    self.db.commit()
+                    self.application.event_bus.flush()
+        finally:
+            self.db.close()
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
@@ -56,7 +61,11 @@ class BaseHandler(RequestHandler):
 
     @property
     def db(self):
-        return self.application.db
+        #return self.application.db
+        if self._session is None:
+            self._session = self.application.get_sqlalchemy_session()
+
+        return self._session
 
     @property
     def girl(self):

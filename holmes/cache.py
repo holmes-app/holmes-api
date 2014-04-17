@@ -623,7 +623,8 @@ class SyncCache(object):
         all_limiters = reversed(sorted(Limiter.get_limiters_for_domains(self.db, active_domains), key=lambda item: item.url))
 
         for limiter in all_limiters:
-            available.append((limiter, float(limiter.value)))
+            capacity = float(limiter.value - self.get_limit_usage(limiter.url))
+            available.append((limiter, capacity))
 
         return available
 
@@ -634,6 +635,10 @@ class SyncCache(object):
                 expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
                 active_domains = Domain.get_active_domains(self.db)
+
+                if not active_domains:
+                    return
+
                 active_domains_ids = [item.id for item in active_domains]
 
                 limiter_buckets = self.get_limiter_buckets(active_domains, avg_links_per_page)

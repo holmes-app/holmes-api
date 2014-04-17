@@ -41,7 +41,10 @@ class BaseCLI(Shepherd):
         return Config
 
     def connect_sqlalchemy(self):
-        autoflush = self.config.get('SQLALCHEMY_AUTO_FLUSH', False)
+        if getattr(self, 'db', None) is not None:
+            self.db.close()
+
+        autoflush = self.config.get('SQLALCHEMY_AUTO_FLUSH')
         connstr = self.config.SQLALCHEMY_CONNECTION_STRING
         engine = create_engine(
             connstr,
