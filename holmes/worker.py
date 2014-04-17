@@ -247,13 +247,6 @@ class HolmesWorker(BaseWorker):
     def _load_next_job(self):
         return self.cache.get_next_job(self.config.REVIEW_EXPIRATION_IN_SECONDS, self.config.WORKERS_LOOK_AHEAD_PAGES)
 
-        #return Page.get_next_job(
-            #self.db,
-            #self.config.WORKERS_LOOK_AHEAD_PAGES,
-            #self.config.REVIEW_EXPIRATION_IN_SECONDS,
-            #self.cache,
-            #self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
-
     def _start_job(self, url):
         self.working_url = url
 
