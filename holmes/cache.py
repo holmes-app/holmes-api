@@ -3,11 +3,15 @@
 
 from gzip import GzipFile
 from cStringIO import StringIO
+from datetime import datetime, timedelta
+import logging
 
 import msgpack
 from tornado.concurrent import return_future
 from ujson import loads, dumps
 from octopus.model import Response
+from sqlalchemy import or_
+from retools.lock import Lock
 
 from holmes.models import Domain, Page, Limiter, Violation, Request
 
@@ -613,3 +617,67 @@ class SyncCache(object):
 
     def release_update_pages_lock(self, lock):
         return lock.release()
+
+    def fill_job_bucket(self, expiration, look_ahead_pages=1000):
+        with Lock('next-job-fill-bucket-lock', redis=self.redis):
+            expired_time = datetime.utcnow() - timedelta(seconds=expiration)
+
+            active_domains = Domain.get_active_domains(self.db)
+            active_domains_ids = [item.id for item in active_domains]
+
+            all_domains_pages_in_need_of_review = []
+
+            for domain_id in active_domains_ids:
+                pages = self.db \
+                    .query(
+                        Page.uuid,
+                        Page.url,
+                        Page.score,
+                        Page.last_review_date
+                    ) \
+                    .filter(Page.domain_id == domain_id) \
+                    .filter(or_(
+                        Page.last_review_date == None,
+                        Page.last_review_date <= expired_time
+                    )) \
+                    .order_by(Page.last_review_date.asc())[:look_ahead_pages]
+
+                if pages:
+                    all_domains_pages_in_need_of_review.append(pages)
+
+            item_count = int(self.redis.scard('next-job-bucket'))
+            current_domain = 0
+            while item_count < look_ahead_pages and len(all_domains_pages_in_need_of_review) > 0:
+                if current_domain >= len(all_domains_pages_in_need_of_review):
+                    current_domain = 0
+
+                item = all_domains_pages_in_need_of_review[current_domain].pop(0)
+
+                # if there are not any more pages in this domain remove it from dictionary
+                if not all_domains_pages_in_need_of_review[current_domain]:
+                    del all_domains_pages_in_need_of_review[current_domain]
+
+                self.redis.sadd('next-job-bucket', dumps({
+                    'page': str(item.uuid),
+                    'url': item.url
+                }))
+
+                current_domain += 1
+                item_count += 1
+
+    def get_next_job(self, expiration, look_ahead_pages=1000):
+        logging.info('Getting next job from the bucket...')
+        item = self.redis.spop('next-job-bucket')
+
+        job_bucket_count = self.redis.scard('next-job-bucket')
+        if job_bucket_count < look_ahead_pages * 0.1:
+            logging.info('Bucket near empty (%d items). Must refill...' % job_bucket_count)
+            self.fill_job_bucket(expiration, look_ahead_pages)
+
+        if item is None:
+            return None
+
+        item = loads(item)
+        logging.debug('Next job found: %s' % item['url'])
+
+        return item

@@ -164,6 +164,7 @@ class HolmesWorker(BaseWorker):
                 self._update_pages_score()
 
             err = None
+            self.update_otto_limiter()
             job = self._load_next_job()
 
             if job is None:
@@ -208,7 +209,7 @@ class HolmesWorker(BaseWorker):
                 api_url=self.config.HOLMES_API_URL,
                 page_uuid=job['page'],
                 page_url=job['url'],
-                page_score=job['score'],
+                page_score=0,
                 config=self.config,
                 validators=self.validators,
                 facters=self.facters,
@@ -244,16 +245,16 @@ class HolmesWorker(BaseWorker):
             self._ping_api()
 
     def _load_next_job(self):
-        return Page.get_next_job(
-            self.db,
-            self.config.WORKERS_LOOK_AHEAD_PAGES,
-            self.config.REVIEW_EXPIRATION_IN_SECONDS,
-            self.cache,
-            self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
+        return self.cache.get_next_job(self.config.REVIEW_EXPIRATION_IN_SECONDS, self.config.WORKERS_LOOK_AHEAD_PAGES)
+
+        #return Page.get_next_job(
+            #self.db,
+            #self.config.WORKERS_LOOK_AHEAD_PAGES,
+            #self.config.REVIEW_EXPIRATION_IN_SECONDS,
+            #self.cache,
+            #self.config.NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS)
 
     def _start_job(self, url):
-        self.update_otto_limiter()
-
         self.working_url = url
 
         if self.working_url:
