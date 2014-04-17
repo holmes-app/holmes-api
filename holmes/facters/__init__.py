@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urlparse
-from holmes.utils import is_valid, url_ends_with_slash
+from holmes.utils import is_valid
 
 
 class Baser(object):
@@ -37,7 +37,7 @@ class Baser(object):
         if parse:
             if not self.is_absolute(url):
                 url = self.rebase(url)
-            return url_ends_with_slash(url)
+            return url
         return None
 
     def to_gzip(self, content):

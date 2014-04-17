@@ -14,7 +14,7 @@ from ujson import dumps
 from tornado.concurrent import return_future
 
 from holmes.models import Base
-from holmes.utils import get_domain_from_url, url_ends_with_slash
+from holmes.utils import get_domain_from_url
 
 
 class Page(Base):
@@ -244,7 +244,6 @@ class Page(Base):
 
     @classmethod
     def insert_or_update_page(cls, url, score, domain, db, publish_method, cache, config):
-        url = url_ends_with_slash(url)
         url = url.encode('utf-8')
         url_hash = hashlib.sha512(url).hexdigest()
         page = Page.by_url_hash(url_hash, db)
