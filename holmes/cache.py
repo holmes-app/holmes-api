@@ -619,25 +619,29 @@ class SyncCache(object):
     def release_update_pages_lock(self, lock):
         return lock.release()
 
+    def get_limiter_buckets(self, active_domains, avg_links_per_page=10.0):
+        available = []
+        all_limiters = reversed(sorted(Limiter.get_limiters_for_domains(self.db, active_domains), key=lambda item: item.url))
+
+        for limiter in all_limiters:
+            available.append((limiter, float(limiter.value)))
+
+        return available
+
     def fill_job_bucket(self, expiration, look_ahead_pages=1000, avg_links_per_page=10.0):
         try:
             with Lock('next-job-fill-bucket-lock', redis=self.redis):
+                logging.info('Refilling job bucket. Lock acquired...')
                 expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
                 active_domains = Domain.get_active_domains(self.db)
                 active_domains_ids = [item.id for item in active_domains]
 
-                capacity = Limiter.get_limit_capacity(self.db, active_domains)
-                get_percentage = lambda domain_id: \
-                        capacity.get(domain_id, None) and \
-                        math.ceil(float(capacity[domain_id]) / avg_links_per_page) or \
-                        look_ahead_pages
+                limiter_buckets = self.get_limiter_buckets(active_domains, avg_links_per_page)
 
                 all_domains_pages_in_need_of_review = []
 
                 for domain_id in active_domains_ids:
-                    pages_to_get = get_percentage(domain_id)
-
                     pages = self.db \
                         .query(
                             Page.uuid,
@@ -650,10 +654,12 @@ class SyncCache(object):
                             Page.last_review_date == None,
                             Page.last_review_date <= expired_time
                         )) \
-                        .order_by(Page.last_review_date.asc())[:pages_to_get]
+                        .order_by(Page.last_review_date.asc())[:look_ahead_pages]
 
                     if pages:
                         all_domains_pages_in_need_of_review.append(pages)
+
+                logging.debug('Total of %d pages found to add to redis.' % (sum([len(item) for item in all_domains_pages_in_need_of_review])))
 
                 item_count = int(self.redis.scard('next-job-bucket'))
                 current_domain = 0
@@ -663,17 +669,31 @@ class SyncCache(object):
 
                     item = all_domains_pages_in_need_of_review[current_domain].pop(0)
 
+                    has_limit = True
+                    logging.debug('Available Limit Buckets: %s' % limiter_buckets)
+                    for index, (limit, available) in enumerate(limiter_buckets):
+                        if limit.matches(item.url):
+                            if available == 0:
+                                has_limit = False
+                                break
+                            limiter_buckets[index] = (limit, available - 1)
+
+                    if has_limit:
+                        self.redis.sadd('next-job-bucket', dumps({
+                            'page': str(item.uuid),
+                            'url': item.url
+                        }))
+
+                        item_count += 1
+
                     # if there are not any more pages in this domain remove it from dictionary
                     if not all_domains_pages_in_need_of_review[current_domain]:
                         del all_domains_pages_in_need_of_review[current_domain]
 
-                    self.redis.sadd('next-job-bucket', dumps({
-                        'page': str(item.uuid),
-                        'url': item.url
-                    }))
-
                     current_domain += 1
-                    item_count += 1
+
+                logging.debug('ADDED A TOTAL of %d ITEMS TO REDIS...' % item_count)
+
         except LockTimeout:
             logging.info("Can't acquire lock. Moving on...")
 
