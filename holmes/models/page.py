@@ -310,6 +310,7 @@ class Page(Base):
             url_hash = hashlib.sha512(domain_url).hexdigest()
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             db.add(domain)
+            db.flush()
 
             publish_method(dumps({
                 'type': 'new-domain',
