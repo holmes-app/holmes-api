@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import hashlib
 from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
