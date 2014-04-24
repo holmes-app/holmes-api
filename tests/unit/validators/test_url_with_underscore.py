@@ -63,7 +63,7 @@ class TestUrlWithUnderscoreValidator(ValidatorTestCase):
 
         expect('invalid.url_word_separator' in definitions).to_be_true()
 
-        expect(validator.get_url_with_underscore_message('')).to_equal(
+        expect(validator.get_url_with_underscore_message()).to_equal(
             'Google treats a hyphen as a word separator, but does '
             'not treat an underscore that way. Google treats and '
             'underscore as a word joiner — so red_sneakers is the '

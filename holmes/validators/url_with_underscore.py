@@ -8,7 +8,7 @@ from holmes.validators.base import Validator
 class UrlWithUnderscoreValidator(Validator):
 
     @classmethod
-    def get_url_with_underscore_message(cls, value):
+    def get_url_with_underscore_message(cls, value=None):
         return ('Google treats a hyphen as a word separator, but does '
                 'not treat an underscore that way. Google treats and '
                 'underscore as a word joiner — so red_sneakers is the '
