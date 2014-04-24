@@ -25,7 +25,7 @@ class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
 class DomainFactory(BaseFactory):
     FACTORY_FOR = Domain
 
-    name = factory.Sequence(lambda n: 'domain-{0}'.format(n))
+    name = factory.Sequence(lambda n: 'domain-{0}.com'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
     is_active = True
 

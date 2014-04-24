@@ -40,7 +40,7 @@ class TestReviewHandler(ApiTestCase):
         page = PageFactory.create()
         review = ReviewFactory.create(page=page)
 
-        url = self.get_url('/page/%s/review/invalid' % page.uuid)
+        url = self.get_url('/page/%s/review/%s' % (page.uuid, self.ZERO_UUID))
         response = yield self.http_client.fetch(url, method='GET')
 
         expect(response.code).to_equal(200)
