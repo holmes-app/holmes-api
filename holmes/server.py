@@ -78,41 +78,41 @@ class HolmesApiServer(Server):
             self.debug = self.force_debug
 
     def get_handlers(self):
-        uuid_regex = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-        domain_regex = '[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\.[a-z]{2,6}'
-        key_name_regex = '[_a-z0-9\.]+'
-        numbers_regex = '[0-9]+'
+        uuid_regex = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        domain_regex = r'[a-z0-9]+(?:[\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}'
+        key_name_regex = r'[_a-z0-9\.]+'
+        numbers_regex = r'[0-9]+'
 
         handlers = [
-            (r'/most-common-violations/?', MostCommonViolationsHandler),
-            (r'/last-reviews/?', LastReviewsHandler),
-            (r'/reviews-in-last-hour/?', ReviewsInLastHourHandler),
-            (r'/page/(%s)/review/(%s)/?' % (uuid_regex, uuid_regex), ReviewHandler),
-            (r'/page/(%s)/reviews/?' % uuid_regex, PageReviewsHandler),
-            (r'/page/(%s)/violations-per-day/?' % uuid_regex, PageViolationsPerDayHandler),
-            (r'/page/(%s)/?' % uuid_regex, PageHandler),
-            (r'/search/?', SearchHandler),
-            (r'/page/?', PageHandler),
-            (r'/domains/?', DomainsHandler),
-            (r'/domains-details/?', DomainsFullDataHandler),
-            (r'/domains/(%s)/?' % domain_regex, DomainDetailsHandler),
-            (r'/domains/(%s)/violations-per-day/?' % domain_regex, DomainViolationsPerDayHandler),
-            (r'/domains/(%s)/violations/?' % domain_regex, DomainGroupedViolationsHandler),
-            (r'/domains/(%s)/violations/(%s)/?' % (domain_regex, numbers_regex), DomainTopCategoryViolationsHandler),
-            (r'/domains/(%s)/reviews/?' % domain_regex, DomainReviewsHandler),
-            (r'/domains/(%s)/change-status/?' % domain_regex, DomainsChangeStatusHandler),
-            (r'/domains/(%s)/requests/(%s)/?' % (domain_regex, numbers_regex), RequestDomainHandler),
-            (r'/events/?', EventBusHandler),
-            (r'/violations/?', ViolationsHandler),
-            (r'/violation/(%s)/?' % key_name_regex, ViolationHandler),
-            (r'/violation/(%s)/domains/?' % key_name_regex, ViolationDomainsHandler),
-            (r'/tax/?', TaxHandler),
-            (r'/limiters/?', LimiterHandler),
-            (r'/limiters/(%s)/?' % numbers_regex, LimiterHandler),
-            (r'/next-jobs/?', NextJobHandler),
-            (r'/last-requests/?', LastRequestsHandler),
-            (r'/requests-in-last-day/?', RequestsInLastDayHandler),
-            (r'/version/?', VersionHandler),
+            ('/most-common-violations/?', MostCommonViolationsHandler),
+            ('/last-reviews/?', LastReviewsHandler),
+            ('/reviews-in-last-hour/?', ReviewsInLastHourHandler),
+            ('/page/(%s)/review/(%s)/?' % (uuid_regex, uuid_regex), ReviewHandler),
+            ('/page/(%s)/reviews/?' % uuid_regex, PageReviewsHandler),
+            ('/page/(%s)/violations-per-day/?' % uuid_regex, PageViolationsPerDayHandler),
+            ('/page/(%s)/?' % uuid_regex, PageHandler),
+            ('/search/?', SearchHandler),
+            ('/page/?', PageHandler),
+            ('/domains/?', DomainsHandler),
+            ('/domains-details/?', DomainsFullDataHandler),
+            ('/domains/(%s)/?' % domain_regex, DomainDetailsHandler),
+            ('/domains/(%s)/violations-per-day/?' % domain_regex, DomainViolationsPerDayHandler),
+            ('/domains/(%s)/violations/?' % domain_regex, DomainGroupedViolationsHandler),
+            ('/domains/(%s)/violations/(%s)/?' % (domain_regex, numbers_regex), DomainTopCategoryViolationsHandler),
+            ('/domains/(%s)/reviews/?' % domain_regex, DomainReviewsHandler),
+            ('/domains/(%s)/change-status/?' % domain_regex, DomainsChangeStatusHandler),
+            ('/domains/(%s)/requests/(%s)/?' % (domain_regex, numbers_regex), RequestDomainHandler),
+            ('/events/?', EventBusHandler),
+            ('/violations/?', ViolationsHandler),
+            ('/violation/(%s)/?' % key_name_regex, ViolationHandler),
+            ('/violation/(%s)/domains/?' % key_name_regex, ViolationDomainsHandler),
+            ('/tax/?', TaxHandler),
+            ('/limiters/?', LimiterHandler),
+            ('/limiters/(%s)/?' % numbers_regex, LimiterHandler),
+            ('/next-jobs/?', NextJobHandler),
+            ('/last-requests/?', LastRequestsHandler),
+            ('/requests-in-last-day/?', RequestsInLastDayHandler),
+            ('/version/?', VersionHandler),
         ]
 
         return tuple(handlers)
