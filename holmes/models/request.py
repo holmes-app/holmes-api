@@ -107,10 +107,17 @@ class Request(Base):
             .all()
 
     @classmethod
-    def delete_old_requests(self, db, config):
+    def delete_old_requests(self, db, config, limit=1000):
         dt = date.today() - timedelta(days=config.DAYS_TO_KEEP_REQUESTS)
+
+        older_requests = db \
+            .query(Request) \
+            .filter(Request.completed_date <= dt) \
+            .limit(limit) \
+
+        older_requests_ids = [item.id for item in older_requests]
 
         return db \
             .query(Request) \
-            .filter(Request.completed_date <= dt) \
-            .delete()
+            .filter(Request.id.in_(older_requests_ids)) \
+            .delete(synchronize_session=False)
