@@ -122,6 +122,7 @@ materials_expiration_in_seconds = {
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
     'old_requests': (lambda config: config.get('DAYS_TO_KEEP_REQUESTS') * DAY - 1),
+    'requests_in_last_day_count': HOUR + 13,
 }
 Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
 
@@ -132,6 +133,7 @@ materials_grace_period_in_seconds = {
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
     'most_common_violations': 2 * materials_expiration_in_seconds['most_common_violations'],
     'old_requests': (lambda config: 2 * materials_expiration_in_seconds['old_requests'](config)),
+    'requests_in_last_day_count': 2 * materials_expiration_in_seconds['requests_in_last_day_count'],
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 

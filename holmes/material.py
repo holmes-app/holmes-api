@@ -3,6 +3,7 @@
 
 import sys
 import inspect
+import datetime
 from uuid import uuid4
 from functools import partial
 from collections import defaultdict
@@ -62,6 +63,14 @@ def configure_materials(girl, db, config):
         get_func_or_value(config.MATERIALS_GRACE_PERIOD_IN_SECONDS['old_requests'], config)
     )
 
+    girl.add_material(
+        'requests_in_last_day',
+        partial(MaterialConveyor.get_requests_in_last_day, db),
+        config.MATERIALS_EXPIRATION_IN_SECONDS['requests_in_last_day_count'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['requests_in_last_day_count']
+    )
+
+
 def get_func_or_value(value, config):
     if inspect.ismethod(value) or inspect.isfunction(value):
         return value(config)
@@ -79,6 +88,11 @@ class MaterialConveyor(object):
                 ungrouped[domain] += count
         blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
+
+    @classmethod
+    def get_requests_in_last_day(cls, db):
+        from_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        return Request.get_requests_count_by_status_in_period_of_days(db, from_date=from_date)
 
 
 class MaterialWorker(BaseCLI):

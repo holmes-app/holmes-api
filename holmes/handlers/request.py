@@ -85,15 +85,14 @@ class LastRequestsHandler(BaseHandler):
 class RequestsInLastDayHandler(BaseHandler):
     @coroutine
     def get(self):
-        from_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        requests = Request.get_requests_count_by_status_in_period_of_days(self.db, from_date=from_date)
+        requests = self.girl.get('requests_in_last_day')
 
         result = []
-        for request in requests:
+        for status_code, count in requests:
             result.append({
-                'statusCode': request.status_code,
-                'statusCodeTitle': get_status_code_title(request.status_code),  # FIXME: is it code or title??
-                'count': request.count,
+                'statusCode': status_code,
+                'statusCodeTitle': get_status_code_title(status_code),  # FIXME: is it code or title??
+                'count': count,
             })
 
         self.write_json(result)
