@@ -27,18 +27,15 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).log_exception(typ, value, tb)
 
     def on_finish(self):
-        try:
-            if self.application.config.COMMIT_ON_REQUEST_END:
-                if self.get_status() > 399:
-                    logging.debug('ROLLING BACK TRANSACTION')
-                    self.db.rollback()
-                else:
-                    logging.debug('COMMITTING TRANSACTION')
-                    self.db.flush()
-                    self.db.commit()
-                    self.application.event_bus.flush()
-        finally:
-            self.db.close()
+        if self.application.config.COMMIT_ON_REQUEST_END:
+            if self.get_status() > 399:
+                logging.debug('ROLLING BACK TRANSACTION')
+                self.db.rollback()
+            else:
+                logging.debug('COMMITTING TRANSACTION')
+                self.db.flush()
+                self.db.commit()
+                self.application.event_bus.flush()
 
     def options(self):
         self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
@@ -61,11 +58,7 @@ class BaseHandler(RequestHandler):
 
     @property
     def db(self):
-        #return self.application.db
-        if self._session is None:
-            self._session = self.application.get_sqlalchemy_session()
-
-        return self._session
+        return self.application.db
 
     @property
     def girl(self):
