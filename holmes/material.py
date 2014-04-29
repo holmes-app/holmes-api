@@ -59,8 +59,8 @@ def configure_materials(girl, db, config):
     girl.add_material(
         'old_requests',
         partial(Request.delete_old_requests, db, config),
-        get_func_or_value(config.MATERIALS_EXPIRATION_IN_SECONDS['old_requests'], config),
-        get_func_or_value(config.MATERIALS_GRACE_PERIOD_IN_SECONDS['old_requests'], config)
+        config.MATERIALS_EXPIRATION_IN_SECONDS['old_requests'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['old_requests']
     )
 
     girl.add_material(
@@ -69,13 +69,6 @@ def configure_materials(girl, db, config):
         config.MATERIALS_EXPIRATION_IN_SECONDS['requests_in_last_day_count'],
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['requests_in_last_day_count']
     )
-
-
-def get_func_or_value(value, config):
-    if inspect.ismethod(value) or inspect.isfunction(value):
-        return value(config)
-
-    return value
 
 
 class MaterialConveyor(object):
