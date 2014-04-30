@@ -9,21 +9,8 @@ Waffle
 
 https://waffle.io/holmes-app/holmes-api
 
-Requirements
+
+Contributing
 ------------
 
-* MySQL
-* Python
-* python-pip
-* Redis
-
-How to install
---------------
-
-The holmes-api software has a Makefile to help with common tasks. To install, just type:
-
-    make setup
-
-To install data/migrations:
-
-    make data
+See [CONTRIBUTING.md](/CONTRIBUTING.md) if you want to contribute to holmes-api, the document also have installation instruction for development enviroments.
