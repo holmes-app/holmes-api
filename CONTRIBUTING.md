@@ -24,3 +24,15 @@ The holmes-api software has a Makefile to help with common tasks. To install, ju
 To install data/migrations:
 
     make drop data
+
+To run:
+
+    make run
+
+To test:
+
+    make test
+
+To test without migrations:
+
+    make redis_test unit
