@@ -212,7 +212,7 @@ class TestReview(ApiTestCase):
         # one Violation of a given Key for every Review -- weither active or not
         # See holmes/models/review.py:188
         for i in range(3):
-            key = Key.get_or_create(self.db, 'violation.%d' % i + 1)
+            key = Key.get_or_create(self.db, 'violation.0')
             review.add_violation(key, 'value', 100, review.domain)
 
         key_id = review.violations[0].key_id
