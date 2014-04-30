@@ -23,4 +23,4 @@ The holmes-api software has a Makefile to help with common tasks. To install, ju
 
 To install data/migrations:
 
-    make data
+    make drop data
