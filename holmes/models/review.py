@@ -176,6 +176,9 @@ class Review(Base):
                     )
                 )
 
+        # FIXME: Maybe group by review? Considering there should be only one
+        # Violation of a given Key for every Review -- weither active or not
+        # See test/unit/models/test_review.py:185
         return query.scalar()
 
     @classmethod
@@ -214,6 +217,9 @@ class Review(Base):
                 )
             )
 
+        # FIXME: Maybe group by review? Considering there should be only one
+        # Violation of a given Key for every Review -- weither active or not
+        # See test/unit/models/test_review.py:211
         return query.order_by(Review.completed_date.desc())[lower_bound:upper_bound]
 
     @classmethod

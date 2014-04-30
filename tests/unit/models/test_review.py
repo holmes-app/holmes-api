@@ -182,6 +182,9 @@ class TestReview(ApiTestCase):
         count = Review.count_by_violation_key_name(self.db, key_id)
         expect(count).to_equal(1)
 
+        # The following is conceptually wrong, considering there should be only
+        # one Violation of a given Key for every Review -- weither active or not
+        # See holmes/models/review.py:149
         for i in range(3):
             key = Key.get_or_create(self.db, 'violation.0')
             review.add_violation(key, 'value', 100, review.domain)
@@ -189,6 +192,32 @@ class TestReview(ApiTestCase):
         key_id = review.violations[0].key_id
         count = Review.count_by_violation_key_name(self.db, key_id)
         expect(count).to_equal(4)
+
+    def test_get_by_violation_key_name(self):
+        self.db.query(Review).delete()
+        self.db.query(Violation).delete()
+
+        review = ReviewFactory.create(is_active=True)
+        for i in range(3):
+            key = Key.get_or_create(self.db, 'violation.%d' % i)
+            review.add_violation(key, 'value', 100, review.domain)
+
+        self.db.flush()
+
+        key_id = review.violations[0].key_id
+        reviews = Review.get_by_violation_key_name(self.db, key_id)
+        expect(reviews).to_length(1)
+
+        # The following is conceptually wrong, considering there should be only
+        # one Violation of a given Key for every Review -- weither active or not
+        # See holmes/models/review.py:188
+        for i in range(3):
+            key = Key.get_or_create(self.db, 'violation.%d' % i + 1)
+            review.add_violation(key, 'value', 100, review.domain)
+
+        key_id = review.violations[0].key_id
+        reviews = Review.get_by_violation_key_name(self.db, key_id)
+        expect(reviews).to_length(4)
 
     def test_remove_old_reviews(self):
         self.db.query(Violation).delete()
