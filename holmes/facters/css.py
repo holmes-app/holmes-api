@@ -20,6 +20,7 @@ class CSSFacter(Facter):
                 'title': 'Total CSS requests',
                 'description': lambda value: '%d' % value,
                 'category': 'HTTP',
+                'unit': 'number'
             },
             'total.size.css': {
                 'title': 'Total CSS size',

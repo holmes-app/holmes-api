@@ -29,13 +29,15 @@ class LinkFacter(Facter):
             },
             'total.number.links': {
                 'title': 'Link count',
-                'description': lambda value: "This page has %d outbound links." % (value or 0),
+                'description': lambda value: value,
                 'category': 'HTTP',
+                'unit': 'number'
             },
             'total.number.invalid_links': {
                 'title': 'Total invalid links',
-                'description': lambda value: "This page has %d invalid links." % (value or 0),
+                'description': lambda value: value,
                 'category': 'Semantics',
+                'unit': 'number'
             },
             'page.invalid_links': {
                 'title': 'Invalid Links',

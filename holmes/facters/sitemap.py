@@ -19,10 +19,12 @@ class SitemapFacter(Facter):
             'total.sitemap.indexes': {
                 'title': 'Total SiteMap indexes',
                 'category': 'SEO',
+                'unit': 'number'
             },
             'total.sitemap.urls': {
                 'title': 'Total SiteMap urls',
                 'category': 'SEO',
+                'unit': 'number'
             },
             'total.size.sitemap': {
                 'title': 'Total SiteMap size',

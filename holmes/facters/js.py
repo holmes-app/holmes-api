@@ -18,8 +18,9 @@ class JSFacter(Facter):
             },
             'total.requests.js': {
                 'title': 'Total JS requests',
-                'description': lambda value: '%d' % value,
+                'description': lambda value: value,
                 'category': 'HTTP',
+                'unit': 'number'
             },
             'total.size.js': {
                 'title': 'Total JS size',

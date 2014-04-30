@@ -24,8 +24,9 @@ class ImageFacter(Facter):
             },
             'total.requests.img': {
                 'title': 'Total images requests',
-                'description': lambda value: '%d' % value,
+                'description': lambda value: value,
                 'category': 'HTTP',
+                'unit': 'number'
             }
         }
 
