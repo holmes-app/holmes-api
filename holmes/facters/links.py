@@ -42,7 +42,7 @@ class LinkFacter(Facter):
             'page.invalid_links': {
                 'title': 'Invalid Links',
                 'description': lambda value: list(value),
-                'unit': 'links',
+                'unit': 'invalid-links',
                 'category': 'Semantics',
             }
         }
