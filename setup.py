@@ -16,6 +16,7 @@ tests_require = [
     'factory_boy',
     'sqltap',
     'sphinx',
+    'honcho',
 ]
 
 setup(

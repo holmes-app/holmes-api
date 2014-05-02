@@ -87,3 +87,6 @@ sqltap:
 
 publish:
 	@python setup.py sdist upload
+
+hon:
+	@honcho start
