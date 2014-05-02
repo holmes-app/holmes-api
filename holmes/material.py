@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import inspect
 import datetime
 from uuid import uuid4
 from functools import partial
