@@ -12,7 +12,7 @@ from holmes.config import Config
 from holmes.models import Review, Violation, Key, Page, Fact
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
-    ReviewFactory, PageFactory, KeyFactory
+    ReviewFactory, PageFactory, KeyFactory, DomainFactory
 )
 
 
@@ -119,6 +119,37 @@ class TestReview(ApiTestCase):
 
         expect(last_reviews[0].id).to_equal(review.id)
         expect(last_reviews[1].id).to_equal(review2.id)
+
+    def test_can_get_last_reviews_with_domain_filter(self):
+        dt1 = datetime(2010, 10, 10, 10, 10, 10)
+        dt2 = datetime(2010, 10, 11, 10, 10, 10)
+        dt3 = datetime(2010, 10, 12, 10, 10, 10)
+
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        page1 = PageFactory.create(domain=domain1)
+        page2 = PageFactory.create(domain=domain2)
+
+        domain1_review1 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt1)
+        domain1_review2 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt2)
+        domain1_review3 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt3)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt1)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt2)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt3)
+
+        last_reviews = Review.get_last_reviews(self.db, domain_filter=domain1.name)
+        expect(last_reviews).to_length(3)
+        expect(last_reviews[2].id).to_equal(domain1_review1.id)
+        expect(last_reviews[1].id).to_equal(domain1_review2.id)
+        expect(last_reviews[0].id).to_equal(domain1_review3.id)
+        last_reviews = Review.get_last_reviews(self.db)
+        expect(last_reviews).to_length(6)
 
     def test_can_get_violation_points(self):
         review = ReviewFactory.create(number_of_violations=20)

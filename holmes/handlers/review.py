@@ -45,7 +45,9 @@ class ReviewHandler(BaseReviewHandler):
 
 class LastReviewsHandler(BaseReviewHandler):
     def get(self):
-        reviews = Review.get_last_reviews(self.db)
+        reviews = Review.get_last_reviews(
+            self.db, domain_filter=self.get_argument('domain_filter', None)
+        )
 
         reviews_json = []
         for review in reviews:

@@ -82,9 +82,16 @@ class Review(Base):
         return self.failure_message is not None
 
     @classmethod
-    def get_last_reviews(cls, db, limit=12):
-        return db.query(Review).filter(Review.is_active == True) \
-                               .order_by(Review.completed_date.desc())[:limit]
+    def get_last_reviews(cls, db, domain_filter=None, limit=12):
+        query = db.query(Review).filter(Review.is_active == True)
+
+        if domain_filter:
+            from holmes.models.domain import Domain
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain:
+                query = query.filter(Review.domain_id == domain.id)
+
+        return query.order_by(Review.completed_date.desc())[:limit]
 
     @classmethod
     def get_reviews_count_in_period(cls, db, from_date, to_date=None):

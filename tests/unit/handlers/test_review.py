@@ -11,7 +11,7 @@ from tornado.httpclient import HTTPError
 from ujson import loads
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory, KeyFactory
+from tests.fixtures import PageFactory, ReviewFactory, KeyFactory, DomainFactory
 
 
 class TestReviewHandler(ApiTestCase):
@@ -141,6 +141,46 @@ class TestLastReviewsHandler(ApiTestCase):
         }]
 
         expect(loads(response.body)).to_be_like(expected)
+
+    @gen_test
+    def test_can_get_last_reviews_with_domain_filter(self):
+        dt1 = datetime(2010, 10, 10, 10, 10, 10)
+        dt2 = datetime(2010, 10, 11, 10, 10, 10)
+        dt3 = datetime(2010, 10, 12, 10, 10, 10)
+
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        page1 = PageFactory.create(domain=domain1)
+        page2 = PageFactory.create(domain=domain2)
+
+        domain1_review1 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt1)
+        domain1_review2 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt2)
+        domain1_review3 = ReviewFactory.create(
+            is_active=True, is_complete=True, page=page1, completed_date=dt3)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt1)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt2)
+        ReviewFactory.create(
+            is_active=True, is_complete=True, page=page2, completed_date=dt3)
+
+        url = self.get_url('/last-reviews?domain_filter=%s' % domain1.name)
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        expect(len(loads(response.body))).to_be_like(3)
+        expect(all([x['domain'] == domain1.name
+                    for x in loads(response.body)])).to_be_true()
+
+        url = self.get_url('/last-reviews')
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        expect(len(loads(response.body))).to_be_like(6)
 
 
 class TestLastReviewsInLastHourHandler(ApiTestCase):
