@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import datetime
 from tornado.gen import coroutine
 
 from holmes.utils import get_status_code_title
