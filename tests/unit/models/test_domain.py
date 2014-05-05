@@ -297,3 +297,12 @@ class TestDomain(ApiTestCase):
 
         expect(domains).to_length(1)
         expect(domains[0].id).to_equal(domain.id)
+
+    def test_can_get_homepage(self):
+        domain = DomainFactory(is_active=True)
+        page = PageFactory(url=domain.url, domain=domain, last_review_uuid='123')
+
+        homepage = domain.get_homepage(self.db)
+
+        expect(homepage.uuid).to_equal(page.uuid)
+        expect(homepage.last_review_uuid).to_equal('123')

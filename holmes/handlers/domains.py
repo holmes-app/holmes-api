@@ -73,7 +73,15 @@ class DomainDetailsHandler(BaseHandler):
             "is_active": domain.is_active,
             "errorPercentage": error_percentage,
             "averageResponseTime": response_time_avg,
+            "homepageId": None,
+            "homepageReviewId": None,
         }
+
+        homepage = domain.get_homepage(self.db)
+
+        if homepage:
+            domain_json["homepageId"] = str(homepage.uuid)
+            domain_json["homepageReviewId"] = str(homepage.last_review_uuid)
 
         self.write_json(domain_json)
 

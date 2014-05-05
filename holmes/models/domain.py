@@ -33,6 +33,11 @@ class Domain(Base):
         from holmes.models import Page
         return dict(db.query(Page.domain_id, sa.func.count(Page.id)).group_by(Page.domain_id).all())
 
+    def get_homepage(self, db):
+        from holmes.models import Page
+
+        return db.query(Page).filter(Page.url == self.url).first()
+
     def get_page_count(self, db):
         from holmes.models import Page
         return db.query(func.count(Page.id)).filter(Page.domain_id == self.id).scalar()

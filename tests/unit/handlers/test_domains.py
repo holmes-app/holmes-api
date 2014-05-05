@@ -115,7 +115,7 @@ class TestDomainDetailsHandler(ApiTestCase):
     def test_can_get_domain_details(self):
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
-        page = PageFactory.create(domain=domain)
+        page = PageFactory.create(domain=domain, url=domain.url)
         page2 = PageFactory.create(domain=domain)
 
         ReviewFactory.create(page=page, is_active=True, is_complete=True, number_of_violations=20)
@@ -137,6 +137,8 @@ class TestDomainDetailsHandler(ApiTestCase):
         expect(domain_details['errorPercentage']).to_equal(0)
         expect(domain_details['averageResponseTime']).to_equal(0)
         expect(domain_details['is_active']).to_be_true()
+        expect(domain_details['homepageId']).to_equal(str(page.uuid))
+        expect(domain_details['homepageReviewId']).to_equal(str(page.last_review_uuid))
 
     @gen_test
     def test_domain_not_found(self):
