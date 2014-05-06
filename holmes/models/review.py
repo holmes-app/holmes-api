@@ -273,23 +273,7 @@ class Review(Base):
 
         if not last_review:
             cache.increment_active_review_count(page.domain)
-
-            cache.increment_violations_count(
-                page.domain,
-                increment=page.violations_count
-            )
-
-            cache.increment_next_jobs_count(-1)
-
         else:
-            old_violations_count = len(last_review.violations)
-            new_violations_count = len(review.violations)
-
-            cache.increment_violations_count(
-                page.domain,
-                increment=new_violations_count - old_violations_count
-            )
-
             for violation in last_review.violations:
                 violation.review_is_active = False
 

@@ -32,31 +32,6 @@ class CacheTestCase(ApiTestCase):
         expect(self.server.application.cache.db).not_to_be_null()
 
     @gen_test
-    def test_can_get_page_count_per_domain(self):
-        self.db.query(Domain).delete()
-
-        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
-        g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
-
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-            PageFactory.create(domain=g1)
-
-        PageFactory.create(domain=g1)
-
-        page_count = yield self.cache.get_page_count('globo.com')
-        expect(page_count).to_equal(2)
-
-        page_count = yield self.cache.get_page_count('g1.globo.com')
-        expect(page_count).to_equal(3)
-
-        # should get from cache
-        self.cache.db = None
-
-        page_count = yield self.cache.get_page_count('g1.globo.com')
-        expect(page_count).to_equal(3)
-
-    @gen_test
     def test_increment_active_review_count(self):
         key = 'g.com-active-review-count'
         self.cache.redis.delete(key)
@@ -88,113 +63,6 @@ class CacheTestCase(ApiTestCase):
         expect(page_count).to_equal(2)
 
     @gen_test
-    def test_increment_violations_count(self):
-        key = 'g.com-violation-count'
-        self.cache.redis.delete(key)
-
-        gcom = DomainFactory.create(url='http://g.com', name='g.com')
-        page = PageFactory.create(domain=gcom)
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            domain=gcom,
-            page=page,
-            number_of_violations=10
-        )
-
-        violation_count = yield self.cache.get_violation_count(gcom.name)
-        expect(violation_count).to_equal(10)
-
-        yield self.cache.increment_violations_count(gcom.name)
-        violation_count = yield self.cache.get_violation_count(gcom.name)
-        expect(violation_count).to_equal(11)
-
-    @gen_test
-    def test_can_increment_page_count(self):
-        self.db.query(Domain).delete()
-
-        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
-
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        page_count = yield self.cache.get_page_count('globo.com')
-        expect(page_count).to_equal(2)
-
-        page_count = yield self.cache.increment_page_count('globo.com', 10)
-        expect(page_count).to_equal(12)
-
-    @gen_test
-    def test_can_increment_page_count_without_domain(self):
-        self.db.query(Domain).delete()
-
-        key = 'page-page-count'
-        self.cache.redis.delete(key)
-
-        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
-        g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
-
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        for i in range(3):
-            PageFactory.create(domain=g1)
-
-        page_count = yield self.cache.get_page_count()
-        expect(page_count).to_equal(5)
-
-        page_count = yield self.cache.increment_page_count()
-        expect(page_count).to_equal(6)
-
-    @gen_test
-    def test_can_increment_next_jobs_count(self):
-        self.db.query(Page).delete()
-        self.db.query(Domain).delete()
-        self.cache.redis.delete('next-jobs')
-
-        globocom = DomainFactory.create(
-            url="http://globo.com",
-            name="globo.com",
-            is_active=True
-        )
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        yield self.cache.increment_next_jobs_count(4)
-        page_count = yield self.cache.get_next_jobs_count()
-        expect(page_count).to_equal(6)
-
-        # should get from cache
-        self.cache.db = None
-
-        page_count = yield self.cache.increment_next_jobs_count(10)
-        expect(page_count).to_equal(16)
-
-    @gen_test
-    def test_can_decrement_next_jobs_count(self):
-        self.db.query(Page).delete()
-        self.db.query(Domain).delete()
-        self.cache.redis.delete('next-jobs')
-
-        globocom = DomainFactory.create(
-            url="http://globo.com",
-            name="globo.com",
-            is_active=True
-        )
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        yield self.cache.increment_next_jobs_count(-2)
-        page_count = yield self.cache.get_next_jobs_count()
-        expect(page_count).to_equal(0)
-
-        # should get from cache
-        self.cache.db = None
-
-        page_count = yield self.cache.increment_next_jobs_count(10)
-        expect(page_count).to_equal(10)
-
-    @gen_test
     def test_can_increment_requests_count(self):
         self.db.query(Request).delete()
         self.cache.redis.delete('requests-count')
@@ -211,24 +79,6 @@ class CacheTestCase(ApiTestCase):
 
         request_count = yield self.cache.increment_requests_count(5)
         expect(request_count).to_equal(9)
-
-    @gen_test
-    def test_can_get_violation_count_for_domain(self):
-        self.db.query(Domain).delete()
-
-        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
-
-        page = PageFactory.create(domain=globocom)
-        ReviewFactory.create(is_active=True, is_complete=True, domain=globocom, page=page, number_of_violations=10)
-
-        violation_count = yield self.cache.get_violation_count('globo.com')
-        expect(violation_count).to_equal(10)
-
-        # should get from cache
-        self.cache.db = None
-
-        violation_count = yield self.cache.get_violation_count('globo.com')
-        expect(violation_count).to_equal(10)
 
     @gen_test
     def test_can_get_active_review_count_for_domain(self):
@@ -251,140 +101,6 @@ class CacheTestCase(ApiTestCase):
 
         count = yield self.cache.get_active_review_count('globo.com')
         expect(count).to_equal(2)
-
-    @gen_test
-    def test_can_get_good_request_count_for_domain(self):
-        self.db.query(Request).delete()
-        self.db.query(Domain).delete()
-        DomainFactory.create(url='http://globo.com', name='globo.com')
-
-        key = 'globo.com-good-request-count'
-        self.cache.redis.delete(key)
-
-        RequestFactory.create(status_code=200, domain_name='globo.com')
-        RequestFactory.create(status_code=304, domain_name='globo.com')
-        RequestFactory.create(status_code=400, domain_name='globo.com')
-        RequestFactory.create(status_code=403, domain_name='globo.com')
-        RequestFactory.create(status_code=404, domain_name='globo.com')
-
-        good = yield self.cache.get_good_request_count('globo.com')
-        expect(good).to_equal(2)
-
-        self.cache.db = None
-
-        good = yield self.cache.get_good_request_count('globo.com')
-        expect(good).to_equal(2)
-
-    @gen_test
-    def test_can_get_bad_request_count_for_domain(self):
-        self.db.query(Request).delete()
-        self.db.query(Domain).delete()
-        DomainFactory.create(url='http://globo.com', name='globo.com')
-
-        key = 'globo.com-bad-request-count'
-        self.cache.redis.delete(key)
-
-        RequestFactory.create(status_code=200, domain_name='globo.com')
-        RequestFactory.create(status_code=304, domain_name='globo.com')
-        RequestFactory.create(status_code=400, domain_name='globo.com')
-        RequestFactory.create(status_code=403, domain_name='globo.com')
-        RequestFactory.create(status_code=404, domain_name='globo.com')
-
-        bad = yield self.cache.get_bad_request_count('globo.com')
-        expect(bad).to_equal(3)
-
-        self.cache.db = None
-
-        bad = yield self.cache.get_bad_request_count('globo.com')
-        expect(bad).to_equal(3)
-
-    @gen_test
-    def test_can_get_response_time_avg_for_domain(self):
-        self.db.query(Request).delete()
-        self.db.query(Domain).delete()
-        DomainFactory.create(url='http://globo.com', name='globo.com')
-
-        key = 'globo.com-response-time-avg'
-        self.cache.redis.delete(key)
-
-        RequestFactory.create(status_code=200, domain_name='globo.com', response_time=0.25)
-        RequestFactory.create(status_code=304, domain_name='globo.com', response_time=0.35)
-        RequestFactory.create(status_code=400, domain_name='globo.com', response_time=0.25)
-        RequestFactory.create(status_code=403, domain_name='globo.com', response_time=0.35)
-        RequestFactory.create(status_code=404, domain_name='globo.com', response_time=0.25)
-
-        avg = yield self.cache.get_response_time_avg('globo.com')
-        expect(avg).to_be_like(0.3)
-
-        self.cache.db = None
-
-        avg = yield self.cache.get_response_time_avg('globo.com')
-        expect(avg).to_be_like(0.3)
-
-    @gen_test
-    def test_can_get_most_common_violations(self):
-        self.db.query(Request).delete()
-        self.db.query(Domain).delete()
-        DomainFactory.create(url='http://globo.com', name='globo.com')
-
-        cache_key = 'most-common-violations'
-        self.cache.redis.delete(cache_key)
-
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            number_of_violations=9
-        )
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            number_of_violations=5
-        )
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            number_of_violations=3
-        )
-
-        violation_definitions = {}
-        for k in xrange(9):
-            violation_definitions['violation.%d' % k] = {
-                'title': 'violation.%d.title' % k,
-                'category': 'violation.%d.category' % k
-            }
-
-        violations = yield self.cache.get_most_common_violations(violation_definitions, 14)
-        expect(violations).to_length(9)
-
-        self.cache.db = None
-
-        violations_from_cache = yield self.cache.get_most_common_violations(violation_definitions, 14)
-        expect(violations_from_cache).to_length(9)
-        expect(violations_from_cache).to_be_like(violations)
-
-    @gen_test
-    def test_can_get_next_jobs_count(self):
-        self.db.query(Domain).delete()
-
-        key = 'next-jobs'
-        self.cache.redis.delete(key)
-
-        globocom = DomainFactory.create(url="http://globo.com", name="globo.com")
-        g1 = DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
-
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        for i in range(3):
-            PageFactory.create(domain=g1)
-
-        page_count = yield self.cache.get_next_jobs_count()
-        expect(page_count).to_equal(5)
-
-        self.cache.db = None
-
-        page_count = yield self.cache.get_next_jobs_count()
-        expect(page_count).to_equal(5)
 
     @gen_test
     def test_can_get_requests_count(self):
@@ -577,28 +293,6 @@ class SyncCacheTestCase(ApiTestCase):
         empty_domain_name = self.sync_cache.get_domain_name('')
         expect(empty_domain_name).to_equal('page')
 
-    def test_increment_violations_count(self):
-        key = 'g.com-violation-count'
-        self.sync_cache.redis.delete(key)
-
-        gcom = DomainFactory.create(url='http://g.com', name='g.com')
-        page = PageFactory.create(domain=gcom)
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            domain=gcom,
-            page=page,
-            number_of_violations=10
-        )
-
-        self.sync_cache.increment_violations_count(gcom.name)
-        violation_count = self.sync_cache.redis.get(key)
-        expect(violation_count).to_equal('10')
-
-        self.sync_cache.increment_violations_count(gcom.name)
-        violation_count = self.sync_cache.redis.get(key)
-        expect(violation_count).to_equal('11')
-
     def test_increment_active_review_count(self):
         key = 'g.com-active-review-count'
         self.sync_cache.redis.delete(key)
@@ -630,41 +324,6 @@ class SyncCacheTestCase(ApiTestCase):
         active_review_count = self.sync_cache.redis.get(key)
         expect(active_review_count).to_equal('2')
 
-    def test_increment_page_count(self):
-        key = 'g.com-page-count'
-        self.sync_cache.redis.delete(key)
-
-        gcom = DomainFactory.create(url="http://g.com", name="g.com")
-        PageFactory.create(domain=gcom)
-
-        self.sync_cache.increment_page_count(gcom.name)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('1')
-
-        self.sync_cache.increment_page_count(gcom.name)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('2')
-
-    def test_increment_page_count_without_domain(self):
-        key = 'page-page-count'
-        self.sync_cache.redis.delete(key)
-
-        gcom = DomainFactory.create(url="http://g.com", name="g.com")
-        g1 = DomainFactory.create(url="http://g1.com", name="g1.com")
-
-        for i in range(2):
-            PageFactory.create(domain=gcom)
-
-        PageFactory.create(domain=g1)
-
-        self.sync_cache.increment_page_count()
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('3')
-
-        self.sync_cache.increment_page_count()
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('4')
-
     def test_increment_count(self):
         key = 'g.com-my-key'
         self.sync_cache.redis.delete(key)
@@ -687,69 +346,6 @@ class SyncCacheTestCase(ApiTestCase):
         )
         page_count = self.sync_cache.redis.get(key)
         expect(page_count).to_equal('2')
-
-    def test_get_page_count(self):
-        self.sync_cache.redis.delete('g.com-page-count')
-
-        gcom = DomainFactory.create(url="http://g.com", name="g.com")
-
-        for i in range(2):
-            PageFactory.create(domain=gcom)
-
-        page_count = self.sync_cache.get_page_count(gcom.name)
-        expect(page_count).to_equal(2)
-
-        # should get from cache
-        self.sync_cache.db = None
-
-        page_count = self.sync_cache.get_page_count(gcom.name)
-        expect(page_count).to_equal(2)
-
-    def test_get_page_count_without_domain(self):
-        self.sync_cache.redis.delete('page-page-count')
-
-        gcom = DomainFactory.create(url="http://g.com", name="g.com")
-        g1 = DomainFactory.create(url="http://g1.com", name="g1.com")
-
-        for i in range(2):
-            PageFactory.create(domain=gcom)
-
-        for i in range(3):
-            PageFactory.create(domain=g1)
-
-
-        page_count = self.sync_cache.get_page_count()
-        expect(page_count).to_equal(5)
-
-        # should get from cache
-        self.sync_cache.db = None
-
-        page_count = self.sync_cache.get_page_count()
-        expect(page_count).to_equal(5)
-
-    def test_get_violation_count(self):
-        self.sync_cache.redis.delete('g.com-violation-count')
-
-        gcom = DomainFactory.create(url="http://g.com", name="g.com")
-
-        page = PageFactory.create(domain=gcom)
-        ReviewFactory.create(
-            is_active=True,
-            is_complete=True,
-            domain=gcom,
-            page=page,
-            number_of_violations=10
-        )
-
-        violation_count = self.sync_cache.get_violation_count(gcom.name)
-        expect(violation_count).to_equal(10)
-
-        # should get from cache
-        self.sync_cache.db = None
-
-        violation_count = self.sync_cache.get_violation_count(gcom.name)
-        expect(violation_count).to_equal(10)
-
 
     def test_get_active_review_count(self):
         self.sync_cache.redis.delete('g.com-active-review-count')
@@ -978,58 +574,6 @@ class SyncCacheTestCase(ApiTestCase):
 
         lock = self.sync_cache.has_next_job_lock(test_url, 5)
         expect(lock).not_to_be_null()
-
-    def test_can_increment_next_jobs_count(self):
-        self.db.query(Page).delete()
-        self.db.query(Domain).delete()
-
-        key = 'next-jobs'
-        self.sync_cache.redis.delete(key)
-
-        globocom = DomainFactory.create(
-            url="http://globo.com",
-            name="globo.com",
-            is_active=True
-        )
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        self.sync_cache.increment_next_jobs_count(4)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('6')
-
-        # should get from cache
-        self.sync_cache.db = None
-
-        self.sync_cache.increment_next_jobs_count(10)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('16')
-
-    def test_can_decrement_next_jobs_count(self):
-        self.db.query(Page).delete()
-        self.db.query(Domain).delete()
-
-        key = 'next-jobs'
-        self.sync_cache.redis.delete(key)
-
-        globocom = DomainFactory.create(
-            url="http://globo.com",
-            name="globo.com",
-            is_active=True
-        )
-        for i in range(2):
-            PageFactory.create(domain=globocom)
-
-        self.sync_cache.increment_next_jobs_count(-2)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('0')
-
-        # should get from cache
-        self.sync_cache.db = None
-
-        self.sync_cache.increment_next_jobs_count(10)
-        page_count = self.sync_cache.redis.get(key)
-        expect(page_count).to_equal('10')
 
     def test_can_increment_requests_count(self):
         self.db.query(Request).delete()

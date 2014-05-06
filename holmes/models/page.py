@@ -270,10 +270,6 @@ class Page(Base):
                 query_params
             )
 
-            cache.increment_page_count(domain)
-            cache.increment_page_count()
-            cache.increment_next_jobs_count()
-
         except Exception:
             err = sys.exc_info()[1]
             if 'Duplicate entry' in str(err):

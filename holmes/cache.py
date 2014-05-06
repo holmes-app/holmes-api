@@ -34,31 +34,11 @@ class Cache(object):
         self.redis.exists(key, callback)
 
     @return_future
-    def increment_violations_count(self, domain_name, increment=1, callback=None):
-        self.increment_count(
-            'violation-count',
-            domain_name,
-            lambda domain: domain.get_violation_data(self.db),
-            increment,
-            callback
-        )
-
-    @return_future
     def increment_active_review_count(self, domain_name, increment=1, callback=None):
         self.increment_count(
             'active-review-count',
             domain_name,
             lambda domain: domain.get_active_review_count(self.db),
-            increment,
-            callback
-        )
-
-    @return_future
-    def increment_page_count(self, domain_name=None, increment=1, callback=None):
-        self.increment_count(
-            'page-count',
-            domain_name,
-            lambda domain: domain.get_page_count(self.db),
             increment,
             callback
         )
@@ -73,10 +53,6 @@ class Cache(object):
             if domain and not isinstance(domain, Domain):
                 domain = Domain.get_domain_by_name(domain_name, self.db)
 
-            #if not domain:
-                #callback(None)
-                #return
-
             if has_key:
                 self.redis.incrby(key, increment, callback=callback)
             else:
@@ -88,15 +64,6 @@ class Cache(object):
                 self.redis.set(key, value, callback=callback)
 
         return handle
-
-    @return_future
-    def increment_next_jobs_count(self, increment=1, callback=None):
-        self.increment_data(
-            'next-jobs',
-            lambda: Page.get_next_jobs_count(self.db, self.config),
-            increment,
-            callback
-        )
 
     @return_future
     def increment_requests_count(self, increment=1, callback=None):
@@ -121,26 +88,6 @@ class Cache(object):
         return handle
 
     @return_future
-    def get_page_count(self, domain_name=None, callback=None):
-        self.get_count(
-            'page-count',
-            domain_name,
-            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_page_count(self.db),
-            callback=callback
-        )
-
-    @return_future
-    def get_violation_count(self, domain_name, callback=None):
-        self.get_count(
-            'violation-count',
-            domain_name,
-            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_violation_data(self.db),
-            callback=callback
-        )
-
-    @return_future
     def get_active_review_count(self, domain_name, callback=None):
         self.get_count(
             'active-review-count',
@@ -151,59 +98,11 @@ class Cache(object):
         )
 
     @return_future
-    def get_good_request_count(self, domain_name, callback=None):
-        self.get_count(
-            'good-request-count',
-            domain_name,
-            int(self.config.GOOD_REQUEST_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_good_request_count(self.db),
-            callback=callback
-        )
-
-    @return_future
-    def get_bad_request_count(self, domain_name, callback=None):
-        self.get_count(
-            'bad-request-count',
-            domain_name,
-            int(self.config.BAD_REQUEST_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_bad_request_count(self.db),
-            callback=callback
-        )
-
-    @return_future
-    def get_response_time_avg(self, domain_name, callback=None):
-        self.get_avg(
-            'response-time-avg',
-            domain_name,
-            int(self.config.RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_response_time_avg(self.db),
-            callback=callback
-        )
-
-    @return_future
     def get_top_in_category_for_domain(self, domain, key_category_id, limit, callback=None):
         self.get_data(
             '%s-top-violations-cat-%s' % (domain.name, key_category_id),
             int(self.config.TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS),
             lambda: Violation.get_top_in_category_for_domain(self.db, domain, key_category_id, limit),
-            callback=callback
-        )
-
-    @return_future
-    def get_most_common_violations(self, violation_definitions, sample_limit, callback=None):
-        self.get_data(
-            'most-common-violations',
-            int(self.config.MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION),
-            lambda: Violation.get_most_common_violations(self.db, violation_definitions, sample_limit),
-            callback=callback
-        )
-
-    @return_future
-    def get_next_jobs_count(self, callback=None):
-        self.get_data(
-            'next-jobs',
-            int(self.config.NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS),
-            lambda: Page.get_next_jobs_count(self.db, self.config),
             callback=callback
         )
 
@@ -253,37 +152,6 @@ class Cache(object):
     def handle_set_count(self, count, callback):
         def handle(*args, **kw):
             callback(count)
-
-        return handle
-
-    def get_avg(self, key, domain_name, expiration, get_avg_method, callback=None):
-        cache_key = '%s-%s' % (self.get_domain_name(domain_name), key)
-        self.redis.get(cache_key, callback=self.handle_get_avg(key, domain_name, expiration, get_avg_method, callback))
-
-    def handle_get_avg(self, key, domain_name, expiration, get_avg_method, callback):
-        def handle(avg):
-            if avg is not None:
-                callback(float(avg))
-                return
-
-            domain = self.get_domain(domain_name)
-
-            avg = get_avg_method(domain)
-
-            cache_key = '%s-%s' % (self.get_domain_name(domain), key)
-
-            self.redis.setex(
-                key=cache_key,
-                value=float(avg),
-                seconds=expiration,
-                callback=self.handle_set_avg(avg, callback)
-            )
-
-        return handle
-
-    def handle_set_avg(self, avg, callback):
-        def handle(*args, **kw):
-            callback(avg)
 
         return handle
 
@@ -386,27 +254,11 @@ class SyncCache(object):
 
         return domain_name or 'page'
 
-    def increment_violations_count(self, domain_name, increment=1):
-        self.increment_count(
-            'violation-count',
-            domain_name,
-            lambda domain: domain.get_violation_data(self.db),
-            increment
-        )
-
     def increment_active_review_count(self, domain_name, increment=1):
         self.increment_count(
             'active-review-count',
             domain_name,
             lambda domain: domain.get_active_review_count(self.db),
-            increment,
-        )
-
-    def increment_page_count(self, domain_name=None, increment=1):
-        self.increment_count(
-            'page-count',
-            domain_name,
-            lambda domain: domain.get_page_count(self.db),
             increment,
         )
 
@@ -429,13 +281,6 @@ class SyncCache(object):
 
             self.redis.set(key, value)
 
-    def increment_next_jobs_count(self, increment=1):
-        self.increment_data(
-            'next-jobs',
-            lambda: Page.get_next_jobs_count(self.db, self.config),
-            increment
-        )
-
     def increment_requests_count(self, increment=1):
         self.increment_data(
             'requests-count',
@@ -451,22 +296,6 @@ class SyncCache(object):
         else:
             value = get_default_method() + increment
             self.redis.set(key, value)
-
-    def get_page_count(self, domain_name=None):
-        return self.get_count(
-            'page-count',
-            domain_name,
-            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_page_count(self.db),
-        )
-
-    def get_violation_count(self, domain_name):
-        return self.get_count(
-            'violation-count',
-            domain_name,
-            int(self.config.PAGE_COUNT_EXPIRATION_IN_SECONDS),
-            lambda domain: domain.get_violation_data(self.db),
-        )
 
     def get_active_review_count(self, domain_name):
         return self.get_count(
