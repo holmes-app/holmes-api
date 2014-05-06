@@ -1,9 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import logging
-
 from uuid import uuid4
 from datetime import datetime
 
@@ -94,16 +91,23 @@ class Review(Base):
         return query.order_by(Review.completed_date.desc())[:limit]
 
     @classmethod
-    def get_reviews_count_in_period(cls, db, from_date, to_date=None):
+    def get_reviews_count_in_period(cls, db, from_date, domain_filter=None,
+                                    to_date=None):
         if to_date is None:
             to_date = datetime.utcnow()
 
         reviews = db \
             .query(Review.completed_date) \
             .filter(Review.is_active == True) \
-            .filter(Review.completed_date.between(from_date, to_date)) \
-            .order_by(Review.completed_date.asc()) \
-            .all()
+            .filter(Review.completed_date.between(from_date, to_date))
+
+        if domain_filter:
+            from holmes.models.domain import Domain
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain:
+                reviews = reviews.filter(Review.domain_id == domain.id)
+
+        reviews = reviews.order_by(Review.completed_date.asc()).all()
 
         count = len(reviews)
 

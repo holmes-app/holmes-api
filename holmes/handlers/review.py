@@ -66,7 +66,8 @@ class ReviewsInLastHourHandler(BaseReviewHandler):
         from_date = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
         count, first_date = Review.get_reviews_count_in_period(
             self.db,
-            from_date=from_date
+            from_date=from_date,
+            domain_filter=self.get_argument('domain_filter', None)
         )
 
         if first_date:
