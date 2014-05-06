@@ -22,7 +22,7 @@ class TestLastRequestsHandler(ApiTestCase):
         self.db.query(Request).delete()
         self.cache.redis.delete('requests-count')
 
-        dt1 = datetime(2013, 11, 12, 13, 25, 27)
+        dt1 = datetime(2013, 11, 12)
         dt1_timestamp = calendar.timegm(dt1.utctimetuple())
 
         request = RequestFactory.create(completed_date=dt1)
