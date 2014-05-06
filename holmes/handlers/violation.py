@@ -37,6 +37,10 @@ class ViolationHandler(BaseHandler):
         page_filter = self.get_argument('page_filter', None)
 
         violations = self.application.violation_definitions
+        if key_name not in violations:
+            self.set_status(404, 'Invalid violation key %s' % key_name)
+            return
+
         violation_title = violations[key_name]['title']
         key_id = violations[key_name]['key'].id
 
@@ -88,6 +92,11 @@ class ViolationDomainsHandler(BaseHandler):
     @gen.coroutine
     def get(self, key_name):
         violations = self.application.violation_definitions
+
+        if key_name not in violations:
+            self.set_status(404, 'Invalid violation key %s' % key_name)
+            return
+
         violation_title = violations[key_name]['title']
         key_id = violations[key_name]['key'].id
 
