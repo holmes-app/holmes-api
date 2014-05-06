@@ -14,7 +14,8 @@ class RobotsFacter(Facter):
             'robots.url': {
                 'title': 'Robots file URL',
                 'description': lambda value: value,
-                'category': 'SEO'
+                'category': 'SEO',
+                'unit': 'link',
             }
         }
 
