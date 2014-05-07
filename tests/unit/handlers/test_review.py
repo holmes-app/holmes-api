@@ -153,11 +153,11 @@ class TestLastReviewsHandler(ApiTestCase):
         page1 = PageFactory.create(domain=domain1)
         page2 = PageFactory.create(domain=domain2)
 
-        domain1_review1 = ReviewFactory.create(
+        ReviewFactory.create(
             is_active=True, is_complete=True, page=page1, completed_date=dt1)
-        domain1_review2 = ReviewFactory.create(
+        ReviewFactory.create(
             is_active=True, is_complete=True, page=page1, completed_date=dt2)
-        domain1_review3 = ReviewFactory.create(
+        ReviewFactory.create(
             is_active=True, is_complete=True, page=page1, completed_date=dt3)
         ReviewFactory.create(
             is_active=True, is_complete=True, page=page2, completed_date=dt1)
@@ -220,3 +220,43 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
         result = loads(response.body)
         expect(result['count']).to_equal(3)
         expect(round(result['ellapsed'], 0)).to_be_like(59 * 60)
+
+    @gen_test
+    def test_can_get_last_reviews_count_in_last_hour_filter_by_domain(self):
+        dt = datetime.utcnow()
+
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        page1 = PageFactory.create(domain=domain1)
+        page2 = PageFactory.create(domain=domain2)
+
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=dt - timedelta(minutes=1),
+            page=page1
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=dt - timedelta(minutes=59),
+            page=page1
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=dt - timedelta(minutes=1),
+            page=page2
+        )
+        ReviewFactory.create(
+            is_active=True,
+            completed_date=dt - timedelta(minutes=59),
+            page=page2
+        )
+        self.db.flush()
+
+        url = self.get_url(
+            '/reviews-in-last-hour?domain_filter=%s' % domain1.name)
+        response = yield self.http_client.fetch(url, method='GET')
+
+        expect(response.code).to_equal(200)
+
+        result = loads(response.body)
+        expect(result['count']).to_equal(2)
