@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
-import math
-from collections import defaultdict
 
 import sqlalchemy as sa
 
@@ -80,69 +78,3 @@ class Limiter(Base):
         db.add(limiter)
 
         return limiter.url
-
-    @classmethod
-    def get_limiters_for_domains(cls, db, active_domains):
-        from holmes.models import Limiter  # Avoid circular dependency
-
-        all_limiters = Limiter.get_all(db)
-
-        limiters = []
-        for limiter in all_limiters:
-            for domain in active_domains:
-                if limiter.matches(domain.url):
-                    limiters.append(limiter)
-
-        return limiters
-
-    @classmethod
-    def get_limiters_per_domains(cls, db, active_domains):
-        from holmes.models import Limiter  # Avoid circular dependency
-
-        all_limiters = Limiter.get_all(db)
-
-        limiters = defaultdict(list)
-        for limiter in all_limiters:
-            for domain in active_domains:
-                if limiter.matches(domain.url):
-                    limiters[domain.id].append(limiter)
-
-        return limiters
-
-    @classmethod
-    def _get_limiter_for_url(cls, limiters, url):
-        for limiter in limiters:
-            if limiter.matches(url):
-                return limiter
-
-        return None
-
-    @classmethod
-    def has_limit_to_work(cls, db, cache, active_domains, url, avg_links_per_page=10):
-        if avg_links_per_page < 1:
-            avg_links_per_page = 1
-
-        limiters = Limiter.get_limiters_for_domains(db, active_domains)
-
-        limiter = Limiter._get_limiter_for_url(limiters, url)
-
-        if limiter:
-            worker_count = cache.get_limit_usage(limiter.url)
-
-            if worker_count >= math.ceil(float(limiter.value) / float(avg_links_per_page)):
-                return False
-
-        return True
-
-
-    @classmethod
-    def get_limit_capacity(cls, db, active_domains):
-        limiters = Limiter.get_limiters_per_domains(db, active_domains)
-
-        usage = defaultdict(int)
-
-        for domain_id, domain_limiters in limiters.items():
-            for limiter in domain_limiters:
-                usage[domain_id] += limiter.value
-
-        return usage
