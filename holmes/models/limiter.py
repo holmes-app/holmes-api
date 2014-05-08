@@ -6,7 +6,7 @@ import hashlib
 import sqlalchemy as sa
 
 from holmes.models import Base
-
+from holmes.models.domain import Domain
 
 class Limiter(Base):
     __tablename__ = "limiters"
@@ -29,11 +29,17 @@ class Limiter(Base):
         return str(self)
 
     @classmethod
-    def get_all(cls, db):
-        return db \
-            .query(Limiter) \
-            .order_by(sa.func.char_length(Limiter.url)) \
-            .all()
+    def get_all(cls, db, domain_filter=None):
+        query = db.query(Limiter)
+
+        if domain_filter:
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain:
+                query = query.filter(Limiter.url.startswith(domain.url))
+
+        return query \
+               .order_by(sa.func.char_length(Limiter.url)) \
+               .all()
 
     @classmethod
     def by_url(cls, url, db):

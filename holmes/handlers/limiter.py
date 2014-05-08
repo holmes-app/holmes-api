@@ -15,7 +15,10 @@ class LimiterHandler(BaseHandler):
 
     @coroutine
     def get(self):
-        limiters = Limiter.get_all(self.db)
+
+        limiters = Limiter.get_all(
+            self.db, domain_filter=self.get_argument('domain_filter', None)
+        )
 
         result = []
 

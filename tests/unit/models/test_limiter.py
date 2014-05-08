@@ -6,7 +6,7 @@ from preggy import expect
 
 from holmes.models import Limiter
 from tests.unit.base import ApiTestCase
-from tests.fixtures import LimiterFactory
+from tests.fixtures import LimiterFactory, DomainFactory
 
 
 class TestLimiter(ApiTestCase):
@@ -85,6 +85,12 @@ class TestLimiter(ApiTestCase):
         expect(limiters).not_to_be_null()
         expect(limiters).to_length(3)
         expect(limiters).to_include(limiter)
+
+        DomainFactory.create(name='test.com', url='http://test.com')
+        limiters = Limiter.get_all(self.db, domain_filter='test.com')
+
+        expect(limiters).not_to_be_null()
+        expect(limiters).to_length(1)
 
     def test_can_add_or_update_limiter(self):
         self.db.query(Limiter).delete()
