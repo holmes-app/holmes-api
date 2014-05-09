@@ -104,8 +104,6 @@ Config.define('SENTRY_DSN_URL', '', 'URL to use as sentry DSN.', 'Sentry')
 Config.define('PAGE_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain page count', 'Cache')
 Config.define('VIOLATION_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
 Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain violation count', 'Cache')
-Config.define('GOOD_REQUEST_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain good requests', 'Cache')
-Config.define('BAD_REQUEST_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain bad requests', 'Cache')
 Config.define('RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for each domain average response time', 'Cache')
 Config.define('VIOLATIONS_BY_CATEGORY_EXPIRATION_IN_SECONDS', 6 * 60, 'Expiration for the cache key for each domain violation count by category', 'Cache')
 Config.define('TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS', 6 * 60, 'Expiration for the cache key for each domain top violation in a category', 'Cache')
@@ -113,7 +111,6 @@ Config.define('TOP_CATEGORY_VIOLATIONS_LIMIT', 10, 'Limit for the size of the li
 Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, 'Expiration for the url lock for each url', 'Cache')
 Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, 'Expiration for the url lock for next jobs', 'Cache')
 Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for next jobs count', 'Cache')
-Config.define('REQUESTS_COUNT_EXPIRATION_IN_SECONDS', HOUR, 'Expiration for the cache key for requests count', 'Cache')
 
 materials_expiration_in_seconds = {
     'domains_details': 0.5 * MINUTE + 1,

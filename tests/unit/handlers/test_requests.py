@@ -20,7 +20,6 @@ class TestLastRequestsHandler(ApiTestCase):
     @gen_test
     def test_get_last_requests(self):
         self.db.query(Request).delete()
-        self.cache.redis.delete('requests-count')
 
         dt1 = datetime(2013, 11, 12)
         dt1_timestamp = calendar.timegm(dt1.utctimetuple())
@@ -32,7 +31,6 @@ class TestLastRequestsHandler(ApiTestCase):
         expect(response.code).to_equal(200)
 
         expect(loads(response.body)).to_be_like({
-            u'requestsCount': 1,
             u'requests': [{
                 u'url': request.url,
                 u'status_code': request.status_code,

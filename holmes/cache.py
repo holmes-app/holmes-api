@@ -13,7 +13,7 @@ from octopus.model import Response
 from sqlalchemy import or_
 from retools.lock import Lock, LockTimeout
 
-from holmes.models import Domain, Page, Limiter, Violation, Request
+from holmes.models import Domain, Page, Limiter, Violation
 
 
 class Cache(object):
@@ -65,18 +65,6 @@ class Cache(object):
 
         return handle
 
-    @return_future
-    def increment_requests_count(self, increment=1, callback=None):
-        self.increment_data(
-            'requests-count',
-            lambda: Request.get_requests_count(self.db),
-            increment,
-            callback
-        )
-
-    def increment_data(self, key, get_default_method, increment=1, callback=None):
-        self.has_key(key, self.data_handle_has_key(key, get_default_method, increment, callback))
-
     def data_handle_has_key(self, key, get_default_method, increment, callback):
         def handle(has_key):
             if has_key:
@@ -103,15 +91,6 @@ class Cache(object):
             '%s-top-violations-cat-%s' % (domain.name, key_category_id),
             int(self.config.TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS),
             lambda: Violation.get_top_in_category_for_domain(self.db, domain, key_category_id, limit),
-            callback=callback
-        )
-
-    @return_future
-    def get_requests_count(self, callback=None):
-        self.get_data(
-            'requests-count',
-            int(self.config.REQUESTS_COUNT_EXPIRATION_IN_SECONDS),
-            lambda: Request.get_requests_count(self.db),
             callback=callback
         )
 
@@ -279,22 +258,6 @@ class SyncCache(object):
             else:
                 value = get_default_method(domain) + increment - 1
 
-            self.redis.set(key, value)
-
-    def increment_requests_count(self, increment=1):
-        self.increment_data(
-            'requests-count',
-            lambda: Request.get_requests_count(self.db),
-            increment
-        )
-
-    def increment_data(self, key, get_default_method, increment=1):
-        has_key = self.has_key(key)
-
-        if has_key:
-            self.redis.incrby(key, increment)
-        else:
-            value = get_default_method() + increment
             self.redis.set(key, value)
 
     def get_active_review_count(self, domain_name):

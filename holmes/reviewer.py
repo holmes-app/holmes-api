@@ -151,8 +151,6 @@ class Reviewer(object):
 
         self.db.add(req)
 
-        self.cache.increment_requests_count()
-
         url = url.encode('utf-8')
 
         self.publish(dumps({

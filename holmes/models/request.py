@@ -82,10 +82,6 @@ class Request(Base):
             .scalar()
 
     @classmethod
-    def get_requests_count(cls, db):
-        return int(db.query(sa.func.count(Request.id)).scalar())
-
-    @classmethod
     def get_last_requests(self, db, current_page=1, page_size=10):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size

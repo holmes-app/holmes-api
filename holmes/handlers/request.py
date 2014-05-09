@@ -71,9 +71,7 @@ class LastRequestsHandler(BaseHandler):
             page_size=page_size
         )
 
-        requests_count = yield self.cache.get_requests_count()
-
-        result = {'requestsCount': requests_count, 'requests': []}
+        result = {'requests': []}
 
         for request in requests:
             result['requests'].append(request.to_dict())
