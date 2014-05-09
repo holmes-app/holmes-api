@@ -82,13 +82,20 @@ class Request(Base):
             .scalar()
 
     @classmethod
-    def get_last_requests(self, db, current_page=1, page_size=10):
+    def get_last_requests(self, db, current_page=1, page_size=10,
+                          domain_filter=None):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
-        return db \
-            .query(Request) \
-            .order_by('id desc')[lower_bound:upper_bound]
+        query = db.query(Request)
+
+        if domain_filter:
+            from holmes.models.domain import Domain
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain:
+                query = query.filter(Request.domain_name == domain.name)
+
+        return query.order_by('id desc')[lower_bound:upper_bound]
 
     @classmethod
     def get_requests_count_by_status_in_period_of_days(self, db, from_date, to_date=None):

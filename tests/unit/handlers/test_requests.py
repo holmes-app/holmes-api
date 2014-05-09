@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from preggy import expect
 from ujson import loads
 from tests.unit.base import ApiTestCase
-from tests.fixtures import RequestFactory
+from tests.fixtures import RequestFactory, DomainFactory
 from tornado.testing import gen_test
 
 from holmes.models import Request
@@ -24,7 +24,10 @@ class TestLastRequestsHandler(ApiTestCase):
         dt1 = datetime(2013, 11, 12)
         dt1_timestamp = calendar.timegm(dt1.utctimetuple())
 
-        request = RequestFactory.create(completed_date=dt1)
+        domain1 = DomainFactory.create()
+        domain2 = DomainFactory.create()
+        request = RequestFactory.create(domain_name=domain1.name,
+                                        completed_date=dt1)
 
         response = yield self.http_client.fetch(self.get_url('/last-requests/'))
 
@@ -41,6 +44,19 @@ class TestLastRequestsHandler(ApiTestCase):
                 u'response_time': request.response_time
             }]
         })
+
+        request = RequestFactory.create(domain_name=domain2.name,
+                                        completed_date=dt1)
+
+        response = yield self.http_client.fetch(self.get_url('/last-requests/'))
+        expect(response.code).to_equal(200)
+        expect(len(loads(response.body)['requests'])).to_be_like(2)
+
+        response = yield self.http_client.fetch(self.get_url('/last-requests/?domain_filter=%s' % domain2.name))
+        expect(response.code).to_equal(200)
+        response_body = loads(response.body)
+        expect(len(response_body['requests'])).to_be_like(1)
+        expect(response_body['requests'][0]['domain_name']).to_be_like(domain2.name)
 
 
 class TestRequestsInLastDayHandler(ApiTestCase):

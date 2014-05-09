@@ -62,21 +62,16 @@ class RequestDomainHandler(BaseHandler):
 class LastRequestsHandler(BaseHandler):
     @coroutine
     def get(self):
-        current_page = int(self.get_argument('current_page', 1))
-        page_size = int(self.get_argument('page_size', 10))
-
         requests = Request.get_last_requests(
             self.db,
-            current_page=current_page,
-            page_size=page_size
+            current_page=int(self.get_argument('current_page', 1)),
+            page_size=int(self.get_argument('page_size', 10)),
+            domain_filter=self.get_argument('domain_filter', None)
         )
 
-        result = {'requests': []}
-
-        for request in requests:
-            result['requests'].append(request.to_dict())
-
-        self.write_json(result)
+        self.write_json(
+            {'requests': [request.to_dict() for request in requests]}
+        )
 
 
 class RequestsInLastDayHandler(BaseHandler):
