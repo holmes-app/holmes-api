@@ -126,9 +126,6 @@ class NextJobHandler(BaseHandler):
             page_size=page_size
         )
 
-        review_count = self.girl.get('next_jobs_count')
-
-        result = {'reviewCount': review_count}
         pages = []
         for item in get_next_job_list:
             pages.append({
@@ -136,6 +133,4 @@ class NextJobHandler(BaseHandler):
                 'url': item.url,
             })
 
-        result['pages'] = pages
-
-        self.write_json(result)
+        self.write_json({'pages': pages})

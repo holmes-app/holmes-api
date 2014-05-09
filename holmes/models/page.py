@@ -150,27 +150,6 @@ class Page(Base):
         return pages_query[lower_bound:upper_bound]
 
     @classmethod
-    def get_next_jobs_count(cls, db, config):
-        from holmes.models import Domain
-
-        expiration = config.REVIEW_EXPIRATION_IN_SECONDS
-        expired_time = datetime.utcnow() - timedelta(seconds=expiration)
-
-        active_domains = Domain.get_active_domains(db)
-        active_domains_ids = [item.id for item in active_domains]
-
-        return db \
-                .query(
-                    sa.func.count(Page.id)
-                ) \
-                .filter(Page.domain_id.in_(active_domains_ids)) \
-                .filter(or_(
-                    Page.last_review_date == None,
-                    Page.last_review_date <= expired_time
-                )) \
-                .scalar()
-
-    @classmethod
     @return_future
     def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, callback):
         domain_name, domain_url = get_domain_from_url(url)

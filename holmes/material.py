@@ -24,13 +24,6 @@ def configure_materials(girl, db, config):
     )
 
     girl.add_material(
-        'next_jobs_count',
-        partial(Page.get_next_jobs_count, db, config),
-        config.MATERIALS_EXPIRATION_IN_SECONDS['next_jobs_count'],
-        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['next_jobs_count']
-    )
-
-    girl.add_material(
         'violation_count_by_category_for_domains',
         partial(Violation.get_group_by_category_id_for_all_domains, db),
         config.MATERIALS_EXPIRATION_IN_SECONDS['violation_count_by_category_for_domains'],

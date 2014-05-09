@@ -242,7 +242,6 @@ class TestNextJobHandler(ApiTestCase):
         returned_page = loads(response.body)
 
         expect(response.code).to_equal(200)
-        expect(returned_page['reviewCount']).to_equal(2)
         expect(returned_page['pages']).to_length(2)
         expect(returned_page['pages']).to_include({
             'url': page.url,

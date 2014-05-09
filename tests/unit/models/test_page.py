@@ -7,9 +7,9 @@ from datetime import datetime
 from preggy import expect
 
 from holmes.config import Config
-from holmes.models import Domain, Page
+from holmes.models import Page
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory, DomainFactory, LimiterFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestPage(ApiTestCase):
@@ -99,22 +99,6 @@ class TestPage(ApiTestCase):
             'url': page.url,
             'uuid': str(page.uuid)
         })
-
-    def test_can_get_next_jobs_count(self):
-        config = Config()
-        config.REVIEW_EXPIRATION_IN_SECONDS = 100
-
-        for x in range(3):
-            PageFactory.create()
-
-        next_job_list = Page.get_next_jobs_count(self.db, config)
-        expect(next_job_list).to_equal(3)
-
-        for x in range(2):
-            PageFactory.create()
-
-        next_job_list = Page.get_next_jobs_count(self.db, config)
-        expect(next_job_list).to_equal(5)
 
     def test_update_pages_score(self):
         config = Config()
