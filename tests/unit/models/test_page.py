@@ -9,7 +9,7 @@ from preggy import expect
 from holmes.config import Config
 from holmes.models import Page
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory
+from tests.fixtures import PageFactory, ReviewFactory, DomainFactory
 
 
 class TestPage(ApiTestCase):
@@ -87,7 +87,8 @@ class TestPage(ApiTestCase):
         expect(invalid_page).to_be_null()
 
     def test_get_next_job_list(self):
-        page = PageFactory.create()
+        domain1 = DomainFactory.create(name='testabc.com')
+        page = PageFactory.create(domain=domain1)
         PageFactory.create()
 
         next_job_list = Page.get_next_job_list(self.db, expiration=100)
@@ -99,6 +100,21 @@ class TestPage(ApiTestCase):
             'url': page.url,
             'uuid': str(page.uuid)
         })
+
+        next_job_list = Page.get_next_job_list(self.db, expiration=100,
+                                               domain_filter=domain1.name)
+
+        expect(next_job_list).to_length(1)
+        pages = [{'url': x.url, 'uuid': str(x.uuid)} for x in next_job_list]
+        expect(pages[0]).to_equal({
+            'url': page.url,
+            'uuid': str(page.uuid)
+        })
+
+        next_job_list = Page.get_next_job_list(self.db, expiration=100,
+                                               domain_filter='notExistingDomain.com')
+
+        expect(next_job_list).to_length(0)
 
     def test_update_pages_score(self):
         config = Config()

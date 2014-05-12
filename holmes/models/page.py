@@ -122,7 +122,8 @@ class Page(Base):
                     raise
 
     @classmethod
-    def get_next_job_list(cls, db, expiration, current_page=1, page_size=200):
+    def get_next_job_list(cls, db, expiration, current_page=1, page_size=200,
+                          domain_filter=None):
         from holmes.models import Domain
 
         lower_bound = (current_page - 1) * page_size
@@ -130,8 +131,15 @@ class Page(Base):
 
         expired_time = datetime.utcnow() - timedelta(seconds=expiration)
 
-        active_domains = Domain.get_active_domains(db)
-        active_domains_ids = [item.id for item in active_domains]
+        if domain_filter:
+            domain = Domain.get_domain_by_name(domain_filter, db)
+            if domain and domain.is_active:
+                active_domains_ids = [domain.id]
+            else:
+                return []
+        else:
+            active_domains = Domain.get_active_domains(db)
+            active_domains_ids = [item.id for item in active_domains]
 
         pages_query = db \
             .query(

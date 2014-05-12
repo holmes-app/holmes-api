@@ -234,6 +234,7 @@ class TestNextJobHandler(ApiTestCase):
         self.db.query(Page).delete()
         self.cache.redis.delete('next-jobs')
 
+        domain = DomainFactory.create(name='test123.com')
         page = PageFactory.create()
         PageFactory.create()
 
@@ -247,3 +248,38 @@ class TestNextJobHandler(ApiTestCase):
             'url': page.url,
             'uuid': str(page.uuid)
         })
+
+    @gen_test
+    def test_can_get_pages_with_domain_filter(self):
+        self.db.query(Page).delete()
+        self.cache.redis.delete('next-jobs')
+
+        domain = DomainFactory.create(name='test123.com')
+        page = PageFactory.create(domain=domain)
+        PageFactory.create()
+
+        response = yield self.http_client.fetch(self.get_url('/next-jobs?domain_filter=test123.com'))
+
+        returned_page = loads(response.body)
+
+        expect(response.code).to_equal(200)
+        expect(returned_page['pages']).to_length(1)
+        expect(returned_page['pages'][0]).to_equal({
+            'url': page.url,
+            'uuid': str(page.uuid)
+        })
+
+    @gen_test
+    def test_can_get_pages_with_inexistent_domain_filter(self):
+        self.db.query(Page).delete()
+        self.cache.redis.delete('next-jobs')
+
+        domain = DomainFactory.create(name='test123.com')
+        page = PageFactory.create(domain=domain)
+
+        response = yield self.http_client.fetch(self.get_url('/next-jobs?domain_filter=otherdomain.com'))
+
+        returned_page = loads(response.body)
+
+        expect(response.code).to_equal(200)
+        expect(returned_page['pages']).to_length(0)

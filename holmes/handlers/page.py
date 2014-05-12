@@ -116,14 +116,12 @@ class PageViolationsPerDayHandler(BaseHandler):
 class NextJobHandler(BaseHandler):
     @gen.coroutine
     def get(self):
-        current_page = int(self.get_argument('current_page', 1))
-        page_size = int(self.get_argument('page_size', 10))
-
         get_next_job_list = Page.get_next_job_list(
             self.db,
             self.application.config.REVIEW_EXPIRATION_IN_SECONDS,
-            current_page=current_page,
-            page_size=page_size
+            current_page=int(self.get_argument('current_page', 1)),
+            page_size=int(self.get_argument('page_size', 10)),
+            domain_filter=self.get_argument('domain_filter', None)
         )
 
         pages = []
