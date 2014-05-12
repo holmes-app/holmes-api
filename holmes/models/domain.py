@@ -3,7 +3,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
-from sqlalchemy import func
+from sqlalchemy import func, distinct
 
 from holmes.models import Base
 
@@ -135,7 +135,7 @@ class Domain(Base):
     def get_active_review_count(self, db, url_starts_with=None):
         from holmes.models import Review, Page
 
-        query = db.query(func.count(Review.id))
+        query = db.query(func.count(distinct(Review.page_id)))  # See #111
 
         if url_starts_with:
             query = query.join(Page, Page.id == Review.page_id) \
