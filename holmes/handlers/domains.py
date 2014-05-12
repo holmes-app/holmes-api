@@ -79,10 +79,11 @@ class DomainDetailsHandler(BaseHandler):
 
         homepage = domain.get_homepage(self.db)
 
-        if homepage.uuid:
-            domain_json["homepageId"] = str(homepage.uuid)
-        if homepage.last_review_uuid:
-            domain_json["homepageReviewId"] = str(homepage.last_review_uuid)
+        if homepage:
+            if homepage.uuid:
+                domain_json["homepageId"] = str(homepage.uuid)
+            if homepage.last_review_uuid:
+                domain_json["homepageReviewId"] = str(homepage.last_review_uuid)
 
         self.write_json(domain_json)
 
