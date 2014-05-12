@@ -4,7 +4,7 @@
 import hashlib
 from preggy import expect
 
-from holmes.models import Limiter
+from holmes.models import Limiter, Domain
 from tests.unit.base import ApiTestCase
 from tests.fixtures import LimiterFactory, DomainFactory
 
@@ -119,3 +119,24 @@ class TestLimiter(ApiTestCase):
 
         expect(limiter.matches('http://test.com/1.html')).to_be_true()
         expect(limiter.matches('http://test2.com/1.html')).to_be_false()
+
+
+    def test_get_limiters_for_domains(self):
+        self.db.query(Limiter).delete()
+        self.db.query(Domain).delete()
+
+        for i in range(2):
+            DomainFactory.create()
+
+        value = 2
+        url = 'http://globo.com/'
+        Limiter.add_or_update_limiter(self.db, url, value)
+
+        DomainFactory.create(url=url, name='globo.com')
+
+        active_domains = self.db.query(Domain).all()
+
+        domains = Limiter.get_limiters_for_domains(self.db, active_domains)
+
+        expect(domains).to_length(1)
+        expect(str(domains[0])).to_equal(url)
