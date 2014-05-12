@@ -57,6 +57,9 @@ class Limiter(Base):
     def delete(cls, id_, db):
         return db.query(Limiter).filter(Limiter.id == id_).delete()
 
+    def matches(self, url):
+        return url.startswith(self.url)
+
     @classmethod
     def add_or_update_limiter(cls, db, url, value):
         if not url:

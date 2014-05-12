@@ -113,3 +113,9 @@ class TestLimiter(ApiTestCase):
         limiter = Limiter.by_url(url, self.db)
 
         expect(limiter.value).to_equal(3)
+
+    def test_limiter_matches_url(self):
+        limiter = LimiterFactory.create(url='http://test.com/')
+
+        expect(limiter.matches('http://test.com/1.html')).to_be_true()
+        expect(limiter.matches('http://test2.com/1.html')).to_be_false()
