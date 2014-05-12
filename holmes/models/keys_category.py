@@ -3,6 +3,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.exc import NoResultFound
 
 from holmes.models import Base
 
@@ -27,13 +28,31 @@ class KeysCategory(Base):
         }
 
     @classmethod
+    def get_by_name(cls, db, category_name):
+        try:
+            result = db \
+                .query(KeysCategory) \
+                .filter(KeysCategory.name == category_name) \
+                .one()
+        except NoResultFound:
+            result = None
+
+        return result
+
+    @classmethod
     def get_or_create(cls, db, category_name):
-        category = db \
-            .query(KeysCategory) \
-            .filter(KeysCategory.name == category_name) \
-            .scalar()
+        category = cls.get_by_name(db, category_name)
 
-        if not category:
-            category = KeysCategory(name=category_name)
+        if category is not None:
+            return category
 
-        return category
+        query_params = {'name': category_name}
+
+        db.execute(
+            'INSERT INTO `keys_category` (name) ' \
+            'VALUES (:name) ON DUPLICATE KEY ' \
+            'UPDATE name = :name',
+            query_params
+        )
+
+        return cls.get_by_name(db, category_name)

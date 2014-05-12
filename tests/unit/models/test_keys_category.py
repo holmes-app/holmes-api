@@ -42,3 +42,11 @@ class TestKeysCategory(ApiTestCase):
         # Get
         cat2 = KeysCategory.get_or_create(self.db, 'SEO')
         expect(cat1.id).to_equal(cat2.id)
+
+    def test_get_by_name(self):
+        category = KeysCategoryFactory.create(name='HOLMES')
+
+        loaded_category = KeysCategory.get_by_name(self.db, 'HOLMES')
+
+        expect(category).to_equal(loaded_category)
+        expect(loaded_category.name).to_equal('HOLMES')

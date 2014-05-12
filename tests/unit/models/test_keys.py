@@ -41,3 +41,11 @@ class TestKey(ApiTestCase):
 
         expect(str(loaded_category.name)).to_be_like('%s' % category.name)
         expect(loaded_category.name).to_equal(category.name)
+
+    def test_get_by_name(self):
+        key = KeyFactory.create(name='some.random.key')
+
+        loadded_key = Key.get_by_name(self.db, 'some.random.key')
+
+        expect(key).to_equal(loadded_key)
+        expect(loadded_key.name).to_equal('some.random.key')
