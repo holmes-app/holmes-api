@@ -84,3 +84,17 @@ class Limiter(Base):
         db.add(limiter)
 
         return limiter.url
+
+    @classmethod
+    def get_limiters_for_domains(cls, db, active_domains):
+        from holmes.models import Limiter  # Avoid circular dependency
+
+        all_limiters = Limiter.get_all(db)
+
+        limiters = []
+        for limiter in all_limiters:
+            for domain in active_domains:
+                if limiter.matches(domain.url):
+                    limiters.append(limiter)
+
+        return limiters
