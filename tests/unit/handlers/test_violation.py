@@ -116,7 +116,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(2)
-        expect(violations['reviewsCount']).to_equal(2)
+        expect(violations['reviewsCount']).to_be_null()
 
         response = yield self.http_client.fetch(
             self.get_url('/violation/key.1?domain_filter=gc.com')
@@ -126,7 +126,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(2)
-        expect(violations['reviewsCount']).to_equal(8)
+        expect(violations['reviewsCount']).to_be_null()
 
         response = yield self.http_client.fetch(
             self.get_url('/violation/key.1?domain_filter=foobar')
@@ -136,7 +136,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(4)
-        expect(violations['reviewsCount']).to_equal(4)
+        expect(violations['reviewsCount']).to_be_null()
 
         response = yield self.http_client.fetch(
             self.get_url('/violation/key.1?domain_filter=gc.com&page_filter=1')
@@ -146,7 +146,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(1)
-        expect(violations['reviewsCount']).to_equal(1)
+        expect(violations['reviewsCount']).to_be_null()
 
     @gen_test
     def test_can_get_blacklist_domains(self):

@@ -122,7 +122,7 @@ class Domain(Base):
             .filter(Page.domain == self)
 
         if url_starts_with:
-            items_query = items_query.filter(Page.url.like('%s%%' % url_starts_with))
+            items_query = items_query.filter(Page.url.like('%s/%s%%' % (self.url, url_starts_with)))
 
         items = items_query.order_by('violations_count desc')[lower_bound:upper_bound]
 

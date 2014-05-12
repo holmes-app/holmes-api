@@ -131,12 +131,12 @@ class DomainReviewsHandler(BaseHandler):
         )
 
         if term:
-            review_count = len(reviews)
+            review_count = None
         else:
             review_count = yield self.cache.get_active_review_count(domain)
 
         result = {
-            'reviewCount': review_count,
+            'reviewsCount': review_count,
             'pages': [],
         }
 

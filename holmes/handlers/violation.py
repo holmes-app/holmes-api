@@ -53,12 +53,10 @@ class ViolationHandler(BaseHandler):
             page_filter=page_filter,
         )
 
-        reviews_count = Review.count_by_violation_key_name(
-            self.db,
-            key_id,
-            domain_filter=domain_filter,
-            page_filter=page_filter
-        )
+        if domain_filter or page_filter:
+            reviews_count = None
+        else:
+            reviews_count = Review.count_by_violation_key_name(self.db, key_id)
 
         reviews_data = []
         for item in reviews:
