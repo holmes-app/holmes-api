@@ -23,8 +23,8 @@ class DomainCanonicalizationValidator(Validator):
             'This Canonical url "{}" is redirecting to "{}" with a different '
             'than 301 status code: {}. This may cause search engines to be '
             'unsure to where the URL is being redirected.'.format(
-                value.effective_url, value.headers['Location'],
-                value.status_code
+                value['effective_url'], value['headers']['Location'],
+                value['status_code']
             )
         )
 

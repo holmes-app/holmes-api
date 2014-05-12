@@ -212,9 +212,11 @@ class TestDomainCanonicalizationValidator(ValidatorTestCase):
             'to which URL is the correct one to index.'
         )
 
-        value = Mock(
-            headers={'Location': 'http://www.globo.com/'},
-            status_code=302, effective_url='http://globo.com/')
+        value = {
+            'headers': {'Location': 'http://www.globo.com/'},
+            'status_code': 302,
+            'effective_url': 'http://globo.com/'
+        }
         expect(validator.get_no_301_description(value)).to_equal(
             'This Canonical url "http://globo.com/" is redirecting to '
             '"http://www.globo.com/" with a different than 301 status code: 302. '
