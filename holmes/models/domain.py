@@ -36,8 +36,7 @@ class Domain(Base):
     def get_homepage(self, db):
         from holmes.models import Page
 
-        return db.query(Page).filter(Page.url.startswith(self.url)). \
-                              order_by(Page.url).first()
+        return db.query(Page).filter(Page.url == self.url).first()
 
     def get_page_count(self, db):
         from holmes.models import Page
