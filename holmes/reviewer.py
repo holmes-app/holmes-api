@@ -191,13 +191,17 @@ class Reviewer(object):
         last_modified = None
 
         if 'Last-Modified' in response.headers:
-            last_modified = datetime(*eut.parsedate(response.headers['Last-Modified'])[:6])
+            date = eut.parsedate(response.headers['Last-Modified'])[:6]
+            if date is not None:
+                last_modified = datetime(*date)
 
         self.review_dao.last_modified = last_modified
 
         expires = None
         if 'Expires' in response.headers:
-            expires = datetime(*eut.parsedate(response.headers['Expires'])[:6])
+            date = eut.parsedate(response.headers['Expires'])[:6]
+            if date is not None:
+                expires = datetime(*date)
 
         self.review_dao.expires = expires
 
