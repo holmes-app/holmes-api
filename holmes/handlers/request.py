@@ -83,7 +83,7 @@ class RequestsInLastDayHandler(BaseHandler):
         for status_code, count in requests:
             result.append({
                 'statusCode': status_code,
-                'statusCodeTitle': get_status_code_title(status_code),  # FIXME: is it code or title??
+                'statusCodeTitle': get_status_code_title(status_code),
                 'count': count,
             })
 
