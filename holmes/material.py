@@ -9,7 +9,6 @@ from collections import defaultdict
 
 from holmes.cli import BaseCLI
 from holmes.models.domain import Domain
-from holmes.models.page import Page
 from holmes.models.violation import Violation
 from holmes.models.request import Request
 from holmes.utils import get_domain_from_url
