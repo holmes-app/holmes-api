@@ -66,10 +66,11 @@ class Reviewer(object):
             self, api_url, page_uuid, page_url, page_score,
             config=None, validators=[], facters=[], async_get=None,
             wait=None, wait_timeout=None, db=None, cache=None, publish=None,
-            fact_definitions=None, violation_definitions=None):
+            fact_definitions=None, violation_definitions=None, girl=None):
 
         self.db = db
         self.cache = cache
+        self.girl = girl
         self.publish = publish
 
         self.api_url = api_url
@@ -261,6 +262,7 @@ class Reviewer(object):
                 self.async_get_func,
                 self.publish,
                 self.config,
+                self.girl,
                 self.handle_page_added
             )
 

@@ -98,13 +98,18 @@ class Request(Base):
         return query.order_by('id desc')[lower_bound:upper_bound]
 
     @classmethod
-    def get_requests_count_by_status_in_period_of_days(self, db, from_date, to_date=None):
+    def get_requests_count_by_status_in_period_of_days(self, db, from_date, to_date=None, domain_filter=None):
         if to_date is None:
             to_date = datetime.utcnow()
 
-        return db \
+        query = db \
             .query(Request.status_code, sa.func.count(Request.id).label('count')) \
-            .filter(Request.completed_date.between(from_date.date(), to_date.date())) \
+            .filter(Request.completed_date.between(from_date.date(), to_date.date()))
+
+        if domain_filter:
+            query = query.filter(Request.domain_name == domain_filter)
+
+        return query \
             .group_by(Request.status_code) \
             .order_by('count DESC') \
             .all()

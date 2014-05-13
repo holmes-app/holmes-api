@@ -77,7 +77,16 @@ class LastRequestsHandler(BaseHandler):
 class RequestsInLastDayHandler(BaseHandler):
     @coroutine
     def get(self):
-        requests = self.girl.get('requests_in_last_day')
+        domain_filter=self.get_argument('domain_filter', None)
+        if not domain_filter:
+            requests = self.girl.get('requests_in_last_day')
+        else:
+            try:
+                requests = self.girl.get(
+                    'requests_in_last_day_for_{}'.format(domain_filter)
+                )
+            except ValueError:
+                requests = []
 
         result = []
         for status_code, count in requests:

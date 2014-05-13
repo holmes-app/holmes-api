@@ -6,6 +6,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta
 import hashlib
 import logging
+from functools import partial
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
@@ -159,7 +160,7 @@ class Page(Base):
 
     @classmethod
     @return_future
-    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, callback):
+    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, girl, callback):
         domain_name, domain_url = get_domain_from_url(url)
         if not url or not domain_name:
             callback((False, url, {
@@ -174,7 +175,7 @@ class Page(Base):
 
         fetch_method(
             url,
-            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, callback)),
+            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, girl, callback)),
             proxy_host=config.HTTP_PROXY_HOST,
             proxy_port=config.HTTP_PROXY_PORT
         )
@@ -203,7 +204,7 @@ class Page(Base):
         return handle
 
     @classmethod
-    def handle_add_page(cls, db, cache, url, score, publish_method, config, callback):
+    def handle_add_page(cls, db, cache, url, score, publish_method, config, girl, callback):
         def handle(code, body, effective_url):
             if code > 399:
                 callback((False, url, {
@@ -222,7 +223,7 @@ class Page(Base):
                 }))
                 return
 
-            domain = cls.add_domain(url, db, publish_method, config)
+            domain = cls.add_domain(url, db, publish_method, config, girl)
             page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache, config)
 
             callback((True, url, page_uuid))
@@ -271,8 +272,9 @@ class Page(Base):
 
         return page_uuid
 
+    # FIXME: move this method to Domain class?
     @classmethod
-    def add_domain(cls, url, db, publish_method, config):
+    def add_domain(cls, url, db, publish_method, config, girl):
         from holmes.models import Domain
 
         domain_name, domain_url = get_domain_from_url(url)
@@ -293,6 +295,14 @@ class Page(Base):
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             db.add(domain)
             db.flush()
+
+            from holmes.material import MaterialConveyor
+            girl.add_material(
+                'requests_in_last_day_for_{}'.format(domain.name),
+                partial(MaterialConveyor.get_requests_in_last_day, db, domain.name),
+                config.MATERIALS_EXPIRATION_IN_SECONDS['requests_in_last_day_count'],
+                config.MATERIALS_GRACE_PERIOD_IN_SECONDS['requests_in_last_day_count']
+            )
 
             publish_method(dumps({
                 'type': 'new-domain',
