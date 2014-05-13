@@ -40,8 +40,7 @@ class PageHandler(BaseHandler):
             score,
             self.application.http_client.fetch,
             self.application.event_bus.publish,
-            self.application.config,
-            self.application.girl
+            self.application.config
         )
 
         created, url, result = result

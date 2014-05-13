@@ -209,8 +209,6 @@ class HolmesWorker(BaseWorker):
                 self.info('Max URL levels! Details: %s' % job['url'])
                 return
 
-            self.configure_material_girl()
-
             self.debug('Starting Review for [%s]' % job['url'])
             reviewer = Reviewer(
                 api_url=self.config.HOLMES_API_URL,
@@ -226,7 +224,6 @@ class HolmesWorker(BaseWorker):
                 db=self.db,
                 cache=self.cache,
                 publish=self.publish,
-                girl=self.girl,
                 fact_definitions=self.fact_definitions,
                 violation_definitions=self.violation_definitions
             )

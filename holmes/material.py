@@ -61,14 +61,6 @@ def configure_materials(girl, db, config):
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['requests_in_last_day_count']
     )
 
-    for domain in db.query(Domain.name).all():
-        girl.add_material(
-            'requests_in_last_day_for_{}'.format(domain.name),
-            partial(MaterialConveyor.get_requests_in_last_day, db, domain.name),
-            config.MATERIALS_EXPIRATION_IN_SECONDS['requests_in_last_day_count'],
-            config.MATERIALS_GRACE_PERIOD_IN_SECONDS['requests_in_last_day_count']
-        )
-
 
 class MaterialConveyor(object):
     @classmethod
@@ -82,11 +74,9 @@ class MaterialConveyor(object):
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
 
     @classmethod
-    def get_requests_in_last_day(cls, db, domain_filter=None):
+    def get_requests_in_last_day(cls, db):
         from_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        return Request.get_requests_count_by_status_in_period_of_days(
-            db, from_date=from_date, domain_filter=domain_filter
-        )
+        return Request.get_requests_count_by_status_in_period_of_days(db, from_date=from_date)
 
 
 class MaterialWorker(BaseCLI):
