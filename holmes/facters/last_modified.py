@@ -34,8 +34,10 @@ class LastModifiedFacter(Facter):
 
         headers = self.reviewer.current.headers
 
-        if 'Last-Modified' in headers:
-            lt = headers['Last-Modified']
-            last_modified = datetime(*eut.parsedate(lt)[:6])
+        modified = headers.get('Last-Modified', None)
+        if modified:
+            lt = eut.parsedate(modified)
+            if lt is not None:
+                last_modified = datetime(*lt[:6])
 
         return last_modified
