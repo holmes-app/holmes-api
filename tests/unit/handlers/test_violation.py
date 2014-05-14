@@ -67,12 +67,12 @@ class TestViolationHandler(ApiTestCase):
     def test_can_get_violation_by_key_name(self):
         domains = [DomainFactory.create(
             name='g%s.com' % chr(i),
-            url='http://g%s.com/' % chr(i)
+            url='http://g%s.com' % chr(i)
         ) for i in xrange(ord('a'), ord('d'))]
 
         pages = [PageFactory.create(
             domain=domains[i % 3],
-            url='%s%d' % (domains[i % 3].url, i % 2)
+            url='%s/%d' % (domains[i % 3].url, i % 2)
         ) for i in xrange(6)]
 
         for i, page in enumerate(pages):
@@ -115,7 +115,7 @@ class TestViolationHandler(ApiTestCase):
         expect(response.code).to_equal(200)
         expect(violations).to_length(3)
         expect(violations['title']).to_equal('title.1')
-        expect(violations['reviews']).to_length(2)
+        expect(violations['reviews']).to_length(4)
         expect(violations['reviewsCount']).to_be_null()
 
         response = yield self.http_client.fetch(

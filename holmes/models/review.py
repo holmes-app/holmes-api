@@ -132,34 +132,6 @@ class Review(Base):
         return len(self.violations)
 
     @classmethod
-    def _filter_violation_key_name(cls, db, query, key_id, domain_filter=None, page_filter=None):
-        from holmes.models.domain import Domain  # to avoid circular dependency
-        from holmes.models.page import Page  # to avoid circular dependency
-        from holmes.models.violation import Violation  # to avoid circular dependency
-
-        query = query \
-            .filter(Page.id == Review.page_id) \
-            .filter(Violation.review_id == Review.id) \
-            .filter(Review.is_active == 1) \
-            .filter(Violation.key_id == key_id)
-
-        page_filter_prefix = '%'
-        if domain_filter:
-            domain = Domain.get_domain_by_name(domain_filter, db)
-            if domain:
-                query = query.filter(Review.domain_id == domain.id)
-                page_filter_prefix = domain.url
-
-        if page_filter:
-            query = query.filter(
-                Page.url.like(
-                    '{0}{1}%'.format(page_filter_prefix, page_filter)
-                )
-            )
-
-        return query
-
-    @classmethod
     def count_by_violation_key_name(cls, db, key_id, domain_filter=None, page_filter=None):
         from holmes.models.review import Review  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency
@@ -169,27 +141,25 @@ class Review(Base):
             .filter(Violation.review_is_active == 1) \
             .filter(Violation.key_id == key_id)
 
-        page_filter_prefix = '%'
         if domain_filter:
             from holmes.models.domain import Domain  # to avoid circular dependency
             domain = Domain.get_domain_by_name(domain_filter, db)
             if domain:
-                query = query.filter(Review.domain_id == domain.id)
-                page_filter_prefix = domain.url
+                query = query.filter(Violation.domain_id == domain.id)
 
-        if page_filter:
-            from holmes.models.page import Page  # to avoid circular dependency
-            query = query.filter(Review.id == Violation.review_id) \
-                .filter(Page.id == Review.page_id) \
-                .filter(
-                    Page.url.like(
-                        '{0}{1}%'.format(page_filter_prefix, page_filter)
-                    )
-                )
+                if page_filter:
+                    from holmes.models.page import Page  # to avoid circular dependency
+                    query = query.filter(Review.id == Violation.review_id) \
+                        .filter(Page.id == Review.page_id) \
+                        .filter(
+                            Page.url.like(
+                                '{0}/{1}%'.format(domain.url, page_filter)
+                            )
+                        )
 
         # FIXME: Maybe group by review? Considering there should be only one
         # Violation of a given Key for every Review -- weither active or not
-        # See test/unit/models/test_review.py:185
+        # See test/unit/models/test_review.py:216 (also see #111)
         return query.scalar()
 
     @classmethod
@@ -213,24 +183,22 @@ class Review(Base):
             .filter(Review.is_active == 1) \
             .filter(Page.id == Review.page_id) \
 
-        page_filter_prefix = '%'
         if domain_filter:
             from holmes.models.domain import Domain  # to avoid circular dependency
             domain = Domain.get_domain_by_name(domain_filter, db)
             if domain:
                 query = query.filter(Review.domain_id == domain.id)
-                page_filter_prefix = domain.url
 
-        if page_filter:
-            query = query.filter(
-                Page.url.like(
-                    '{0}{1}%'.format(page_filter_prefix, page_filter)
-                )
-            )
+                if page_filter:
+                    query = query.filter(
+                        Page.url.like(
+                            '{0}/{1}%'.format(domain.url, page_filter)
+                        )
+                    )
 
         # FIXME: Maybe group by review? Considering there should be only one
         # Violation of a given Key for every Review -- weither active or not
-        # See test/unit/models/test_review.py:211
+        # See test/unit/models/test_review.py:242 (also see #111)
         return query.order_by(Review.completed_date.desc())[lower_bound:upper_bound]
 
     @classmethod

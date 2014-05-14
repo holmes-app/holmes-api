@@ -215,7 +215,7 @@ class TestReview(ApiTestCase):
 
         # The following is conceptually wrong, considering there should be only
         # one Violation of a given Key for every Review -- weither active or not
-        # See holmes/models/review.py:149
+        # See holmes/models/review.py:160 (also see #111)
         for i in range(3):
             key = Key.get_or_create(self.db, 'violation.0')
             review.add_violation(key, 'value', 100, review.domain)
@@ -241,7 +241,7 @@ class TestReview(ApiTestCase):
 
         # The following is conceptually wrong, considering there should be only
         # one Violation of a given Key for every Review -- weither active or not
-        # See holmes/models/review.py:188
+        # See holmes/models/review.py:199 (also see #111)
         for i in range(3):
             key = Key.get_or_create(self.db, 'violation.0')
             review.add_violation(key, 'value', 100, review.domain)
