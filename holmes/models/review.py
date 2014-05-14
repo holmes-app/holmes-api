@@ -192,7 +192,7 @@ class Review(Base):
                 if page_filter:
                     query = query.filter(
                         Page.url.like(
-                            '{0}/{1}%'.format(domain.url, page_filter)
+                            u'{0}/{1}%'.format(domain.url, page_filter)
                         )
                     )
 
