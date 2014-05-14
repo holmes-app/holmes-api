@@ -161,3 +161,34 @@ class TestRequest(ApiTestCase):
 
         requests = self.db.query(Request).all()
         expect(requests).to_length(1)
+
+    def test_can_get_all_status_code(self):
+        self.db.query(Request).delete()
+
+        for i in range(4):
+            RequestFactory.create(
+                url='http://m.com/page-%d' % i,
+                domain_name='m.com',
+                status_code=200 + (100*i),
+                completed_date=date.today() - timedelta(days=i)
+            )
+
+        status_code = Request.get_all_status_code(self.db)
+
+        expect(status_code).to_length(4)
+
+        expect(status_code).to_be_like([
+            {
+                'statusCodeTitle': 'OK',
+                'statusCode': 200
+            }, {
+                'statusCodeTitle': 'Multiple Choices',
+                'statusCode': 300
+            }, {
+                'statusCodeTitle': 'Bad Request',
+                'statusCode': 400
+            }, {
+                'statusCodeTitle': 'Internal Server Error',
+                'statusCode': 500
+            }
+        ])

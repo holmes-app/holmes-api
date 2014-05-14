@@ -66,7 +66,8 @@ class LastRequestsHandler(BaseHandler):
             self.db,
             current_page=int(self.get_argument('current_page', 1)),
             page_size=int(self.get_argument('page_size', 10)),
-            domain_filter=self.get_argument('domain_filter', None)
+            domain_filter=self.get_argument('domain_filter', None),
+            status_code_filter=self.get_argument('status_code_filter', None)
         )
 
         self.write_json(
@@ -93,3 +94,10 @@ class RequestsInLastDayHandler(BaseHandler):
                 })
 
         self.write_json(result)
+
+class LastRequestsStatusCodeHandler(BaseHandler):
+    @coroutine
+    def get(self):
+        status_code = Request.get_all_status_code(self.db)
+
+        self.write_json(status_code)

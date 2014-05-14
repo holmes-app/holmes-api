@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 import sqlalchemy as sa
-from sqlalchemy import func
+from sqlalchemy import func, distinct
 from datetime import date, datetime, timedelta
 
 from holmes.utils import get_status_code_title
@@ -84,7 +84,7 @@ class Request(Base):
 
     @classmethod
     def get_last_requests(self, db, current_page=1, page_size=10,
-                          domain_filter=None):
+                          domain_filter=None, status_code_filter=None):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
@@ -95,6 +95,9 @@ class Request(Base):
             domain = Domain.get_domain_by_name(domain_filter, db)
             if domain:
                 query = query.filter(Request.domain_name == domain.name)
+
+        if status_code_filter is not None and int(status_code_filter):
+            query = query.filter(Request.status_code == status_code_filter)
 
         return query.order_by('id desc')[lower_bound:upper_bound]
 
@@ -142,3 +145,19 @@ class Request(Base):
             .query(Request) \
             .filter(Request.id.in_(older_requests_ids)) \
             .delete(synchronize_session=False)
+
+    @classmethod
+    def get_all_status_code(self, db):
+        status_code_list = db \
+            .query(distinct(Request.status_code).label('status_code')) \
+            .all()
+
+        result = []
+
+        for value in status_code_list:
+            result.append({
+                'statusCode': value.status_code,
+                'statusCodeTitle': get_status_code_title(value.status_code)
+          })
+
+        return result

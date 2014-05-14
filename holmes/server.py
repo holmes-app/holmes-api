@@ -33,7 +33,8 @@ from holmes.handlers.settings import (
     TaxHandler
 )
 from holmes.handlers.request import (
-    RequestDomainHandler, LastRequestsHandler, RequestsInLastDayHandler
+    RequestDomainHandler, LastRequestsHandler, RequestsInLastDayHandler,
+    LastRequestsStatusCodeHandler
 )
 from holmes.handlers.limiter import LimiterHandler
 
@@ -111,6 +112,7 @@ class HolmesApiServer(Server):
             ('/limiters/(%s)/?' % numbers_regex, LimiterHandler),
             ('/next-jobs/?', NextJobHandler),
             ('/last-requests/?', LastRequestsHandler),
+            ('/last-requests/status-code/?', LastRequestsStatusCodeHandler),
             ('/requests-in-last-day/?', RequestsInLastDayHandler),
             ('/version/?', VersionHandler),
         ]

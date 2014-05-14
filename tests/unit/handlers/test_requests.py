@@ -58,6 +58,26 @@ class TestLastRequestsHandler(ApiTestCase):
         expect(len(response_body['requests'])).to_be_like(1)
         expect(response_body['requests'][0]['domain_name']).to_be_like(domain2.name)
 
+    @gen_test
+    def test_get_last_requests_filter_by_staus_code(self):
+        for i in range(3):
+            RequestFactory.create(
+                status_code=200,
+                domain_name='globo.com'
+            )
+            RequestFactory.create(
+                status_code=404,
+                domain_name='g1.globo.com'
+            )
+
+        response = yield self.http_client.fetch(self.get_url('/last-requests/?status_code_filter=200'))
+
+        expect(response.code).to_equal(200)
+
+        response_body = loads(response.body)
+        expect(response_body['requests']).to_length(3)
+        expect(response_body['requests'][0]['domain_name']).to_be_like('globo.com')
+
 
 class TestRequestsInLastDayHandler(ApiTestCase):
     @gen_test
@@ -119,3 +139,37 @@ class TestRequestsInLastDayHandler(ApiTestCase):
         response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/?domain_filter=domain3.com'))
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([])
+
+
+class TestLastRequestsStatusCodeHandler(ApiTestCase):
+    @gen_test
+    def test_can_get_all_status_code(self):
+        for i in range(3):
+            for j in range(4):
+                RequestFactory.create(
+                    url='http://m.com/page-%d' % j,
+                    domain_name='m.com',
+                    status_code=200 + (100*j),
+                )
+
+        self.db.flush()
+
+        response = yield self.http_client.fetch(self.get_url('/last-requests/status-code/'))
+
+        expect(response.code).to_equal(200)
+
+        expect(loads(response.body)).to_be_like([
+            {
+                u'statusCodeTitle': u'OK',
+                u'statusCode': 200
+            }, {
+                u'statusCodeTitle': u'Multiple Choices',
+                u'statusCode': 300
+            }, {
+                u'statusCodeTitle': u'Bad Request',
+                u'statusCode': 400
+            }, {
+                u'statusCodeTitle': u'Internal Server Error',
+                u'statusCode': 500
+            }
+        ])
