@@ -78,13 +78,18 @@ class RequestsInLastDayHandler(BaseHandler):
     @coroutine
     def get(self):
         requests = self.girl.get('requests_in_last_day')
+        domain_filter = self.get_argument('domain_filter', None)
+
+        if not domain_filter:
+            domain_filter = '_all'
 
         result = []
-        for status_code, count in requests:
-            result.append({
-                'statusCode': status_code,
-                'statusCodeTitle': get_status_code_title(status_code),
-                'count': count,
-            })
+        if domain_filter in requests:
+            for status_code, count in requests[domain_filter]:
+                result.append({
+                    'statusCode': status_code,
+                    'statusCodeTitle': get_status_code_title(status_code),
+                    'count': count,
+                })
 
         self.write_json(result)

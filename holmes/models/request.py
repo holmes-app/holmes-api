@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 import sqlalchemy as sa
 from sqlalchemy import func
 from datetime import date, datetime, timedelta
@@ -98,16 +99,33 @@ class Request(Base):
         return query.order_by('id desc')[lower_bound:upper_bound]
 
     @classmethod
-    def get_requests_count_by_status_in_period_of_days(self, db, from_date, to_date=None):
+    def get_requests_count_by_status_in_period_of_days(self, db, from_date,
+                                                       to_date=None):
         if to_date is None:
             to_date = datetime.utcnow()
 
-        return db \
-            .query(Request.status_code, sa.func.count(Request.id).label('count')) \
-            .filter(Request.completed_date.between(from_date.date(), to_date.date())) \
-            .group_by(Request.status_code) \
-            .order_by('count DESC') \
-            .all()
+        per_domains = {'_all': defaultdict(int)}
+
+        from holmes.models.domain import Domain
+        for domain in db.query(Domain).all():
+            requests = db \
+                .query(Request.status_code,
+                       sa.func.count(Request.id).label('count')) \
+                .filter(Request.completed_date.between(from_date.date(),
+                                                       to_date.date())) \
+                .filter(Request.domain_name == domain.name) \
+                .group_by(Request.status_code) \
+                .order_by('count DESC') \
+                .all()
+            per_domains[domain.name] = requests
+
+            # calculating all domains by counting each domain
+            for req in requests:
+                per_domains['_all'][req[0]] += req[1]
+
+        per_domains['_all'] = per_domains['_all'].items()
+
+        return per_domains
 
     @classmethod
     def delete_old_requests(self, db, config, limit=1000):

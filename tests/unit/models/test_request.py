@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from preggy import expect
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import RequestFactory
+from tests.fixtures import RequestFactory, DomainFactory
 
 from holmes.models import Request
 from holmes.config import Config
@@ -101,6 +101,47 @@ class TestRequest(ApiTestCase):
             self.db
         )
         expect(invalid_code).to_equal([])
+
+    def test_can_get_requests_count_by_status_in_period_of_days(self):
+        utcnow = datetime.utcnow()
+
+        DomainFactory.create(name='globo.com')
+        DomainFactory.create(name='globoesporte.com')
+        DomainFactory.create(name='domain3.com')
+
+        for i in range(3):
+            RequestFactory.create(
+                status_code=200,
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globo.com'
+            )
+            RequestFactory.create(
+                status_code=404,
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globo.com'
+            )
+            RequestFactory.create(
+                status_code=404,
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globoesporte.com'
+            )
+            RequestFactory.create(
+                status_code=599,
+                completed_date=utcnow.date() - timedelta(days=i),
+            )
+
+        self.db.flush()
+
+        one_day_ago = utcnow - timedelta(days=1)
+        counts = Request.get_requests_count_by_status_in_period_of_days(
+            self.db, one_day_ago
+        )
+        expect(counts).to_equal(
+            {'_all': [(200L, 2L), (404L, 4L)],
+             u'globo.com': [(200L, 2L), (404L, 2L)],
+             u'domain3.com': [],
+             u'globoesporte.com': [(404L, 2L)]}
+        )
 
     def test_can_remove_old_requests(self):
         self.db.query(Request).delete()

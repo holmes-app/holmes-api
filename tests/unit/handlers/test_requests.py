@@ -62,40 +62,60 @@ class TestLastRequestsHandler(ApiTestCase):
 class TestRequestsInLastDayHandler(ApiTestCase):
     @gen_test
     def test_get_requests_in_last_day(self):
-        utcnow = datetime.utcnow().date()
+        utcnow = datetime.utcnow()
+
+        DomainFactory.create(name='globo.com')
+        DomainFactory.create(name='globoesporte.com')
+        DomainFactory.create(name='domain3.com')
 
         for i in range(3):
             RequestFactory.create(
                 status_code=200,
-                completed_date=utcnow - timedelta(days=1)
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globo.com'
             )
             RequestFactory.create(
                 status_code=404,
-                completed_date=utcnow - timedelta(days=i)
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globo.com'
+            )
+            RequestFactory.create(
+                status_code=404,
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='globoesporte.com'
             )
             RequestFactory.create(
                 status_code=599,
-                completed_date=utcnow - timedelta(days=i + 1)
+                completed_date=utcnow.date() - timedelta(days=i),
+                domain_name='g1.globo.com'
             )
 
         self.db.flush()
 
         response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/'))
-
         expect(response.code).to_equal(200)
-
         expect(loads(response.body)).to_be_like([
-            {
-                'statusCode': 200,
-                'statusCodeTitle': 'OK',
-                'count': 3
-            }, {
-                'statusCode': 404,
-                'statusCodeTitle': 'Not Found',
-                'count': 2
-            }, {
-                'statusCode': 599,
-                'statusCodeTitle': 'Tornado Timeout',
-                'count': 1
-            }
+            {u'count': 2, u'statusCodeTitle': u'OK', u'statusCode': 200},
+            {u'count': 4, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
         ])
+
+        response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/?domain_filter=globo.com'))
+        expect(response.code).to_equal(200)
+        expect(loads(response.body)).to_be_like([
+            {u'count': 2, u'statusCodeTitle': u'OK', u'statusCode': 200},
+            {u'count': 2, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
+        ])
+
+        response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/?domain_filter=globoesporte.com'))
+        expect(response.code).to_equal(200)
+        expect(loads(response.body)).to_be_like([
+            {u'count': 2, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
+        ])
+
+        response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/?domain_filter=g1.globo.com'))
+        expect(response.code).to_equal(200)
+        expect(loads(response.body)).to_be_like([])
+
+        response = yield self.http_client.fetch(self.get_url('/requests-in-last-day/?domain_filter=domain3.com'))
+        expect(response.code).to_equal(200)
+        expect(loads(response.body)).to_be_like([])
