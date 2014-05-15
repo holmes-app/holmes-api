@@ -12,7 +12,7 @@ class DomainCanonicalizationValidator(Validator):
         return (
             'This page have the canonical url`s "{}" and "{}" with '
             'different endpoints. This both url`s should point '
-            'to the same location.'
+            'to the same location. '
             'Not fixing this may cause search engines to be unsure as '
             'to which URL is the correct one to index.'
         ).format(value['no_www_url'], value['www_url'])
