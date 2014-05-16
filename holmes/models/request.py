@@ -96,7 +96,7 @@ class Request(Base):
             if domain:
                 query = query.filter(Request.domain_name == domain.name)
 
-        if status_code_filter is not None and int(status_code_filter):
+        if status_code_filter and int(status_code_filter):
             query = query.filter(Request.status_code == status_code_filter)
 
         return query.order_by('id desc')[lower_bound:upper_bound]
