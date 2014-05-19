@@ -141,6 +141,9 @@ class Request(Base):
 
         older_requests_ids = [item.id for item in older_requests]
 
+        if not older_requests_ids:
+            return None
+
         return db \
             .query(Request) \
             .filter(Request.id.in_(older_requests_ids)) \
