@@ -102,23 +102,20 @@ class Request(Base):
         return query.order_by('id desc')[lower_bound:upper_bound]
 
     @classmethod
-    def get_requests_count_by_status_in_period_of_days(self, db, from_date,
-                                                       to_date=None):
-        if to_date is None:
-            to_date = datetime.utcnow()
-
+    def get_requests_count_by_status(self, db, limit=1000):
         per_domains = {'_all': defaultdict(int)}
 
         from holmes.models.domain import Domain
         for domain in db.query(Domain).all():
             requests = db \
-                .query(Request.status_code,
-                       sa.func.count(Request.id).label('count')) \
-                .filter(Request.completed_date.between(from_date.date(),
-                                                       to_date.date())) \
+                .query(
+                    Request.status_code,
+                    sa.func.count(Request.id).label('count')
+                ) \
                 .filter(Request.domain_name == domain.name) \
                 .group_by(Request.status_code) \
                 .order_by('count DESC') \
+                .limit(limit) \
                 .all()
             per_domains[domain.name] = requests
 

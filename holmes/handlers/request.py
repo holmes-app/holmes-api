@@ -75,10 +75,10 @@ class LastRequestsHandler(BaseHandler):
         )
 
 
-class RequestsInLastDayHandler(BaseHandler):
+class FailedResponsesHandler(BaseHandler):
     @coroutine
     def get(self):
-        requests = self.girl.get('requests_in_last_day')
+        requests = self.girl.get('failed_responses_count')
         domain_filter = self.get_argument('domain_filter', None)
 
         if not domain_filter:

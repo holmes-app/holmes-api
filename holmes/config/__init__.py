@@ -33,6 +33,7 @@ Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, 'Number of seconds th
 Config.define('NUMBER_OF_REVIEWS_TO_KEEP', 4, 'Maximum number of reviews to keep', 'Review')
 
 Config.define('DAYS_TO_KEEP_REQUESTS', 12, 'Number of days to keep requests', 'Requests')
+Config.define('MAX_REQUESTS_FOR_FAILED_RESPONSES', 1000, 'Number of requests for falied responses', 'Requests')
 
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               'Number of urls to enqueue before submitting to the /pages route', 'Validators')
@@ -117,7 +118,7 @@ materials_expiration_in_seconds = {
     'violation_count_by_category_for_domains': 3 * MINUTE + 11,
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
-    'requests_in_last_day_count': HOUR + 13,
+    'failed_responses_count': HOUR + 13,
 }
 Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
 
@@ -126,7 +127,7 @@ materials_grace_period_in_seconds = {
     'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
     'most_common_violations': 2 * materials_expiration_in_seconds['most_common_violations'],
-    'requests_in_last_day_count': 2 * materials_expiration_in_seconds['requests_in_last_day_count'],
+    'failed_responses_count': 2 * materials_expiration_in_seconds['failed_responses_count'],
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')
 

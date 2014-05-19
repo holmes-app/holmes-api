@@ -102,7 +102,7 @@ class TestRequest(ApiTestCase):
         )
         expect(invalid_code).to_equal([])
 
-    def test_can_get_requests_count_by_status_in_period_of_days(self):
+    def test_can_get_requests_count_by_status(self):
         utcnow = datetime.utcnow()
 
         DomainFactory.create(name='globo.com')
@@ -132,16 +132,13 @@ class TestRequest(ApiTestCase):
 
         self.db.flush()
 
-        one_day_ago = utcnow - timedelta(days=1)
-        counts = Request.get_requests_count_by_status_in_period_of_days(
-            self.db, one_day_ago
-        )
-        expect(counts).to_equal(
-            {'_all': [(200L, 2L), (404L, 4L)],
-             u'globo.com': [(200L, 2L), (404L, 2L)],
+        counts = Request.get_requests_count_by_status(self.db)
+        expect(counts).to_equal({
+            '_all': [(200, 3), (404, 6)],
+             u'globo.com': [(200, 3), (404, 3)],
              u'domain3.com': [],
-             u'globoesporte.com': [(404L, 2L)]}
-        )
+             u'globoesporte.com': [(404, 3)]
+        })
 
     def test_can_remove_old_requests(self):
         self.db.query(Request).delete()
