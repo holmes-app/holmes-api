@@ -204,10 +204,10 @@ class TestDomainCanonicalizationValidator(ValidatorTestCase):
             'no_www_url': 'http://globo.com/',
             'www_url': 'http://www.globo.com/'
         })).to_equal(
-            'This page have the canonical url`s "http://globo.com/"'
-            ' and "http://www.globo.com/" with '
+            'This page have the canonical url`s "http://globo.com/" '
+            'and "http://www.globo.com/" with '
             'different endpoints. This both url`s should point '
-            'to the same location.'
+            'to the same location. '
             'Not fixing this may cause search engines to be unsure as '
             'to which URL is the correct one to index.'
         )
