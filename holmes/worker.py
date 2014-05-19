@@ -14,7 +14,7 @@ from retools.lock import Lock, LockTimeout
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
-from holmes.models import Page
+from holmes.models import Page, Request
 from holmes.cli import BaseCLI
 
 
@@ -275,6 +275,7 @@ class HolmesWorker(BaseWorker):
         self.domain_name = None
         self._ping_api()
         self._release_lock(lock)
+        Request.delete_old_requests(self.db, self.config)
 
     def _release_lock(self, lock):
         if lock is not None:

@@ -117,7 +117,6 @@ materials_expiration_in_seconds = {
     'violation_count_by_category_for_domains': 3 * MINUTE + 11,
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
-    'old_requests': 13 * MINUTE - 7,
     'requests_in_last_day_count': HOUR + 13,
 }
 Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds, 'Expire times for materials', 'material')
@@ -127,7 +126,6 @@ materials_grace_period_in_seconds = {
     'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
     'most_common_violations': 2 * materials_expiration_in_seconds['most_common_violations'],
-    'old_requests': 2 * materials_expiration_in_seconds['old_requests'],
     'requests_in_last_day_count': 2 * materials_expiration_in_seconds['requests_in_last_day_count'],
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, 'Grace period times for materials', 'material')

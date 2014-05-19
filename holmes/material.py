@@ -48,13 +48,6 @@ def configure_materials(girl, db, config):
     )
 
     girl.add_material(
-        'old_requests',
-        partial(Request.delete_old_requests, db, config),
-        config.MATERIALS_EXPIRATION_IN_SECONDS['old_requests'],
-        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['old_requests']
-    )
-
-    girl.add_material(
         'requests_in_last_day',
         partial(MaterialConveyor.get_requests_in_last_day, db),
         config.MATERIALS_EXPIRATION_IN_SECONDS['requests_in_last_day_count'],
