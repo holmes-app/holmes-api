@@ -211,7 +211,8 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
         for key_name, count in top_violations:
             violations.append({
                 'title': violation_defs[key_name]['title'],
-                'count': count
+                'count': count,
+                'key': key_name,
             })
 
         result = {
