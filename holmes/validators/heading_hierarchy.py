@@ -9,7 +9,7 @@ class HeadingHierarchyValidator(Validator):
     @classmethod
     def get_violation_description(cls, value):
         return (
-            'Heading hierarchy values bigger than %s characters aren`t good '
+            'Heading hierarchy values bigger than %s characters aren\'t good '
             'for Search Engines. This elements were found:'
             '<ul class="violation-hh-list">%s</ul>' % (
                 value['max_size'],
@@ -26,7 +26,12 @@ class HeadingHierarchyValidator(Validator):
             'page.heading_hierarchy.size': {
                 'title': 'Maximum size of a heading hierarchy',
                 'description': cls.get_violation_description,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Heading hierarchy tags with values too big aren\'t good '
+                    'for search engines. The definition of this maximum size '
+                    'can be configurable on Holmes.'
+                )
             }
         }
 
@@ -67,7 +72,13 @@ class H1HeadingValidator(Validator):
             'page.heading_hierarchy.h1_not_found': {
                 'title': 'H1 Headings not found',
                 'description': cls.get_violation_description,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'H1 headings help indicate the important topics of your '
+                    'page to search engines. While less important than good '
+                    'meta-titles and descriptions, H1 headings may still '
+                    'help define the topic of your page to search engines.'
+                )
             }
         }
 

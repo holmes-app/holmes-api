@@ -24,12 +24,24 @@ class CSSRequestsValidator(Validator):
             'total.requests.css': {
                 'title': 'Too many CSS requests',
                 'description': cls.get_requests_css_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'Pages with too many CSS requests aren\'t good to '
+                    'performance. Overflowing this limit of requests can '
+                    'impose a tax in the browser due to handshakes. This '
+                    'limit of requests per page is configurable.'
+                ),
             },
             'total.size.css': {
                 'title': 'CSS size in kb is too big',
                 'description': cls.get_total_size_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'Pages with too big CSS files aren\'t good to performance. '
+                    'Having this limit of file sizes overflow adds up to more '
+                    'download time slowing down the page rendering to the user. '
+                    'This limit of requests per page is configurable.'
+                ),
             },
         }
 

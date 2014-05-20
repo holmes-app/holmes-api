@@ -23,7 +23,8 @@ class UrlWithUnderscoreValidator(Validator):
             'invalid.url_word_separator': {
                 'title': 'URLs should use hyphens to separate words',
                 'description': cls.get_url_with_underscore_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.get_url_with_underscore_message()
             }
         }
 

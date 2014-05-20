@@ -23,7 +23,12 @@ class LinkWithRelNofollowValidator(Validator):
             'invalid.links.nofollow': {
                 'title': 'Links with rel="nofollow"',
                 'description': cls.get_links_nofollow_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Validates links with rel="nofollow", this whos links to '
+                    'the same domain as the page make it harder for search '
+                    'engines to crawl the website.'
+                )
             }
         }
 

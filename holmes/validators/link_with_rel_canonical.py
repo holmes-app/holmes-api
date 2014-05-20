@@ -23,7 +23,14 @@ class LinkWithRelCanonicalValidator(Validator):
             'absent.meta.canonical': {
                 'title': 'Link with rel="canonical" not found',
                 'description': cls.get_absent_meta_canonical_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Validates the absent of link with rel="canonical" on '
+                    'the head of a page. This indicates the preferred URL '
+                    'to use to access the green dress post, so that the '
+                    'search results will be more likely to show users '
+                    'that URL structure.'
+                )
             }
         }
 

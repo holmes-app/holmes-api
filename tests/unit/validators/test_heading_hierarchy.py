@@ -90,7 +90,7 @@ class TestHeadingHierarchyValidator(ValidatorTestCase):
         }
         violation_description = validator.get_violation_description(value)
         expect(violation_description).to_equal(
-            'Heading hierarchy values bigger than 150 characters aren`t good '
+            'Heading hierarchy values bigger than 150 characters aren\'t good '
             'for Search Engines. This elements were found:'
             '<ul class="violation-hh-list"><li>'
             '<span class="hh-type">h1</span>: '

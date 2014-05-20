@@ -32,14 +32,30 @@ class DomainCanonicalizationValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.canonicalization.different_endpoints': {
-                'title': 'Canonical URL`s have different endpoints',
+                'title': 'Canonical URLs have different endpoints',
                 'description': cls.get_different_endpoints_description,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Canonical URLs is a couple of URLs with and without '
+                    'the \'www\' prefix. For example: site.com and www.site.com '
+                    'are canonical URLs. This violation is about a root page with '
+                    'your canonical URLs pointing to different endpoints. This '
+                    'behavior is down ranked in Search Engines indexing.'
+                )
             },
             'page.canonicalization.no_301_redirect': {
-                'title': 'Canonical URL`s have a non 301 redirect',
+                'title': 'Canonical URLs have a non 301 redirect',
                 'description': cls.get_no_301_description,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Canonical URLs is a couple of URLs with and without '
+                    'the \'www\' prefix. For example: site.com and www.site.com '
+                    'are canonical URLs. Canonical URLs should point to the '
+                    'same points. This violation is about a redirection of one '
+                    'of this URLs maked by a non 301 redirection. Redirections '
+                    'different than a 301 type may cause search engines to be '
+                    'unsure to where the URL is being redirected.'
+                )
             }
         }
 

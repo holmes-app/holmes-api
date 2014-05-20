@@ -25,17 +25,35 @@ class GoogleAnalyticsValidator(Validator):
             'google_analytics.not_found': {
                 'title': 'Google Analytics not found',
                 'description': cls.get_analytics_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Google Analytics script is important to measure '
+                    'various kinds of statistics of the page. It\'s a SEO '
+                    'violation an ausence of this script.'
+                )
             },
             'google_analytics.account.not_found': {
                 'title': 'Google Analytics account not found',
                 'description': cls.get_account_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Google Analytics script is important to measure '
+                    'various kinds of statistics of the page. The '
+                    'configuration of the script needs an account '
+                    'to log in. Not founding this information may '
+                    'cause errors to log the statistics in the Google API.'
+                )
             },
             'google_analytics.domain.not_found': {
                 'title': 'Google Analytics domain not found',
                 'description': cls.get_domain_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Google Analytics script is important to measure '
+                    'various kinds of statistics of the page. The '
+                    'configuration of the script needs a domain '
+                    'information to work well.'
+                )
             }
         }
 

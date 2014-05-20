@@ -39,12 +39,23 @@ class ImageAltValidator(Validator):
             'invalid.images.alt': {
                 'title': 'Image(s) without alt attribute',
                 'description': cls.get_without_alt_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Images without alt attribute are not good for '
+                    'search engines. They are searchable by the content '
+                    'of this attribute, so if it\'s empty, it cause bad '
+                    'indexing optimization.'
+                )
             },
             'invalid.images.alt_too_big': {
                 'title': 'Image(s) with alt attribute too big',
                 'description': cls.get_alt_too_big_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Images with alt text too long are not good to SEO. '
+                    'This maximum value are configurable '
+                    'by Holmes configuration.'
+                )
             }
         }
 

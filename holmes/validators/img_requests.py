@@ -53,22 +53,43 @@ class ImageRequestsValidator(Validator):
             'broken.img': {
                 'title': 'Image not found',
                 'description': cls.get_broken_images_message,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Image tags without a valid image resource. '
+                    'The pointed resource can be a Client or a '
+                    'Server Error, they can be loaded too slow or, '
+                    'in most cases, means a not founded image.'
+                )
             },
             'single.size.img': {
                 'title': 'Single image size in kb is too big',
                 'description': cls.get_single_image_size_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'Images with a too big size is very bad to site '
+                    'performance. This limits are configurable in '
+                    'Holmes configuration.'
+                )
             },
             'total.requests.img': {
                 'title': 'Too many image requests',
                 'description': cls.get_requests_images_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'A site with too many images requests per page can '
+                    'deacrease the page load speed and performance. This '
+                    'limits are configurable in Holmes configuration.'
+                )
             },
             'total.size.img': {
                 'title': 'Total image size in kb is too big',
                 'description': cls.get_total_size_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'A site with a too big total image size per page can '
+                    'decrease the page load speed and performance. This '
+                    'limits are configurable in Holmes configuration.'
+                )
             }
         }
 

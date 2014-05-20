@@ -47,12 +47,24 @@ class LinkCrawlerValidator(Validator):
             'link.broken': {
                 'title': 'Broken link(s) found',
                 'description': cls.get_broken_link_message,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates hyperlinks with a invalid resource. '
+                    'The pointed resource can be a Client or a '
+                    'Server Error, they can be timeout load or, '
+                    'in most cases, means a not founded page.'
+                )
             },
             'link.moved.temporarily': {
                 'title': 'Moved Temporarily',
                 'description': cls.get_redirect_message,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates links that uses a 302 or 307 redirect. '
+                    'In this cases, it passes 0% of link juice (ranking '
+                    'power) and, in most cases, should not be used. Use of '
+                    '301 is recommended.'
+                )
             }
         }
 

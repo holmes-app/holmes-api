@@ -21,7 +21,18 @@ class AnchorWithoutAnyTextValidator(Validator):
             'empty.anchors': {
                 'title': 'Empty anchor(s) found',
                 'description': cls.get_empty_anchors_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'By using empty anchor text won\'t prevent search '
+                    'engines from indexing your pages but you will lose a '
+                    'good opportunity to add relevance to your pages. '
+                    'Google uses anchor text in order to qualify the '
+                    'resources you create a reference to. '
+                    'In consequences if a page got links with "example" '
+                    'as anchor text pointing to itself, this page '
+                    'relevance on "example" request will increase. '
+                    'So better do not let empty anchor text and choose '
+                    'wisely the words (or keywords) you use in it.')
             }
         }
 

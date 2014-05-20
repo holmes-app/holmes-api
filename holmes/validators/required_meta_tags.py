@@ -12,7 +12,11 @@ class RequiredMetaTagsValidator(Validator):
             'absent.meta.tags': {
                 'title': 'Required Meta Tags were not found',
                 'description': lambda value: "Meta tags for %s were not found." % (', '.join(value)),
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates the absent of user defined MetaTags. '
+                    'This values are configurable by Holmes Configuration.'
+                )
             }
         }
 

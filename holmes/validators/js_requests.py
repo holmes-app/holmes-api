@@ -23,14 +23,24 @@ class JSRequestsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'total.requests.js': {
-                'title': 'Too many javascript requests',
+                'title': 'Too many JavaScript requests',
                 'description': cls.get_requests_js_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'A site with too many JavaScript requests per page can '
+                    'deacrease the page load speed and performance. This '
+                    'limits are configurable in Holmes configuration.'
+                )
             },
             'total.size.js': {
-                'title': 'Javascript size in kb is too big',
+                'title': 'JavaScript size in kb is too big',
                 'description': cls.get_total_size_message,
-                'category': 'Performance'
+                'category': 'Performance',
+                'generic_description': (
+                    'A site with a too big total JavaScript size per page can '
+                    'decrease the page load speed and performance. This '
+                    'limits are configurable in Holmes configuration.'
+                )
             }
         }
 

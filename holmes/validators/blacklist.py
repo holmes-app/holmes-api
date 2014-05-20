@@ -23,7 +23,12 @@ class BlackListValidator(Validator):
             'blacklist.domains': {
                 'title': 'Domain Blacklist',
                 'description': cls.get_blacklist_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Detected domain blacklisted hyperlinks. '
+                    'Links with this violation are those that have anchors '
+                    'to websites added in Holmes\'s Black List configuration.'
+                )
             }
         }
 

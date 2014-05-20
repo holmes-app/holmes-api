@@ -16,7 +16,12 @@ class OpenGraphValidator(Validator):
             'absent.metatags.open_graph': {
                 'title': 'Open Graph tags not found',
                 'description': cls.get_open_graph_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': (
+                    'Validates the absent of Open Graph metatags. '
+                    'They allow the Facebook Crawler to generate '
+                    'previews when your content is shared on Facebook.'
+                )
             },
         }
 

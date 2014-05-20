@@ -84,6 +84,7 @@ class TestViolationHandler(ApiTestCase):
             'key.%s' % i: {
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
+                'generic_description': 'description.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
             } for i in xrange(6)
         }
@@ -172,6 +173,7 @@ class TestViolationHandler(ApiTestCase):
             'blacklist.domains': {
                 'title': 'title',
                 'category': 'category',
+                'generic_description': '',
                 'key': key
             }
         }
@@ -210,6 +212,7 @@ class TestViolationDomainsHandler(ApiTestCase):
             'random.fact.%s' % i: {
                 'title': 'SEO',
                 'category': 'SEO',
+                'generic_description': 'Desc',
                 'key': keys[i]
             } for i in xrange(3)
         }
@@ -226,10 +229,12 @@ class TestViolationDomainsHandler(ApiTestCase):
                 {'name': 'g1.com', 'count': 1}
             ],
             'total': 3,
-            'title': 'SEO'
+            'title': 'SEO',
+            'category': 'SEO',
+            'description': 'Desc'
         }
 
         expect(response.code).to_equal(200)
-        expect(violation).to_length(3)
+        expect(violation).to_length(5)
         expect(violation['domains']).to_length(2)
         expect(violation).to_be_like(expected_violation)

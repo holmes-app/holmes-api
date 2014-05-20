@@ -12,17 +12,26 @@ class TitleValidator(Validator):
             'page.title.not_found': {
                 'title': 'Page title not found',
                 'description': lambda value: "Title was not found on '%s'." % value,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates the presence of the page\'s title. '
+                    'The <title> tag is required in all HTML documents '
+                    'and it defines the title of the document.'
+                )
             },
             'page.title.multiple': {
                 'title': 'Too many titles',
                 'description': lambda value: "Page '%s' has %d title tags." % (value['page_url'], value['title_count']),
-                'category': 'Semantics'
+                'category': 'Semantics',
+                'generic_description': (
+                    'Validates the presence of more than one page\'s title tag.'
+                )
             },
             'page.title.size': {
                 'title': 'Maximum size of a page title',
                 'description': lambda value: 'Title is too long on "%s". The max size is %d characters.' % (value['page_url'], value['max_size']),
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': 'Validates the size of the page\'s title.'
             }
         }
 

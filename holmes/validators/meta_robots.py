@@ -19,12 +19,14 @@ class MetaRobotsValidator(Validator):
             'presence.meta.robots.noindex': {
                 'title': 'Meta Robots with value of noindex',
                 'description': lambda value: cls.META_ROBOTS_NO_INDEX,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.META_ROBOTS_NO_INDEX
             },
             'presence.meta.robots.nofollow': {
                 'title': 'Meta Robots with value of nofollow',
                 'description': lambda value: cls.META_ROBOTS_NO_FOLLOW,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.META_ROBOTS_NO_FOLLOW
             }
         }
 

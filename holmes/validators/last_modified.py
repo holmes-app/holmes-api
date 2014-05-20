@@ -12,7 +12,15 @@ class LastModifiedValidator(Validator):
             'page.last_modified.not_found': {
                 'title': 'Last-Modified not found',
                 'description': lambda value: 'Last-Modified was not found on %s.' % value,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'The Last-Modified Header information allows Web Crawlers '
+                    '(like Holmes) and search engines to know if the page is '
+                    'modified since the last content retrival. If Last-Modified '
+                    'wasn\'t present, all requests made by this engines on the '
+                    'page will proccess all the content and can be '
+                    'performatically bad to the server.'
+                )
             }
         }
 

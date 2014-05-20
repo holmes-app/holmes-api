@@ -17,12 +17,22 @@ class LinkWithRedirectValidator(Validator):
             'link.redirect.302': {
                 'title': 'Link with 302 redirect',
                 'description': cls.get_link_with_redirect_message,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates temporary redirections (302). '
+                    'They should not be used in the most cases, instead '
+                    'is best to use a 301 permanent redirect.'
+                )
             },
             'link.redirect.307': {
                 'title': 'Link with 307 redirect',
                 'description': cls.get_link_with_redirect_message,
-                'category': 'HTTP'
+                'category': 'HTTP',
+                'generic_description': (
+                    'Validates temporary redirections (307). '
+                    'They should not be used in the most cases, instead '
+                    'is best to use a 301 permanent redirect.'
+                )
             },
         }
 

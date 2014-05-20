@@ -31,17 +31,20 @@ class SchemaOrgItemTypeValidator(Validator):
             'absent.schema.itemscope': {
                 'title': 'itemscope attribute missing in body',
                 'description': cls.get_itemscope_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.get_itemtype_message()
             },
             'absent.schema.itemtype': {
                 'title': 'itemtype attribute missing in body',
                 'description': cls.get_itemtype_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.get_itemtype_message()
             },
             'invalid.schema.itemtype': {
                 'title': 'itemtype attribute is invalid',
                 'description': cls.get_invalid_itemtype_message,
-                'category': 'SEO'
+                'category': 'SEO',
+                'generic_description': cls.get_invalid_itemtype_message()
             }
         }
 

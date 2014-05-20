@@ -11,7 +11,12 @@ class BodyValidator(Validator):
             'page.body.not_found': {
                 'title': 'Page body not found',
                 'description': lambda value: 'Body was not found on %s.' % value,
-                'category': 'Semantics'
+                'category': 'Semantics',
+                'generic_description': (
+                    'The <body> tag defines the documents body\'s, it\'s contains '
+                    'all the content of an HTML document. The ausence of a this tag '
+                    'represents a no content and sematically invalid webpage.'
+                ),
             }
         }
 
