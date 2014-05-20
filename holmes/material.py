@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import datetime
 from uuid import uuid4
 from functools import partial
 from collections import defaultdict
