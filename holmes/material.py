@@ -86,13 +86,7 @@ class MaterialWorker(BaseCLI):
 
     def do_work(self):
         self.info('Running material girl...')
-        self.db.begin(subtransactions=True)
-        try:
-            self.girl.run()
-            self.db.commit()
-        except:
-            self.db.rollback()
-            raise
+        self.girl.run()
 
 
 def main():
