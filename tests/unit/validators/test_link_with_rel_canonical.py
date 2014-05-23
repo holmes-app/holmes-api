@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 import lxml.html
 from mock import Mock, call
 from preggy import expect
@@ -55,9 +56,6 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             ))
 
     def test_force_canonical(self):
-        config = Config()
-        config.FORCE_CANONICAL = True
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -65,9 +63,14 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'absent.meta.canonical': {'default_value': True},
+        }
 
         content = '<html><head></head></html>'
 
@@ -171,9 +174,30 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         expect(validator.add_violation.called).to_be_false()
 
     def test_validate_page_with_invalid_url(self):
-        config = Config()
-
         page = PageFactory.create(url='http://[globo.com/1?item=test')
+
+        try:
+            Reviewer(
+                api_url='http://localhost:2368',
+                page_uuid=page.uuid,
+                page_url=page.url,
+                page_score=0.0,
+                config=Config(),
+                validators=[]
+            )
+        except ValueError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.message).to_equal('Invalid IPv6 URL')
+            return
+        else:
+            assert False, 'Should not have got this far'
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.FORCE_CANONICAL = False
+
+        page = PageFactory.create()
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
@@ -184,21 +208,15 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
             validators=[]
         )
 
-        content = '<html><head></head></html>'
-
-        result = {
-            'url': page.url,
-            'status': 200,
-            'content': content,
-            'html': lxml.html.fromstring(content)
-        }
-        reviewer.responses[page.url] = result
-        reviewer.get_response = Mock(return_value=result)
-
         validator = LinkWithRelCanonicalValidator(reviewer)
-        validator.add_violation = Mock()
-        validator.review.data = {'page.head': [{}]}
 
-        validator.validate()
+        violations_values = validator.get_default_violations_values(config)
 
-        expect(validator.add_violation.called).to_be_false()
+        expect(violations_values).to_include('absent.meta.canonical')
+
+        expect(violations_values['absent.meta.canonical']).to_length(2)
+
+        expect(violations_values['absent.meta.canonical']).to_be_like({
+            'value': config.FORCE_CANONICAL,
+            'description': config.get_description('FORCE_CANONICAL')
+        })

@@ -21,7 +21,8 @@ class JSRequestsValidator(Validator):
                     'A site with too many JavaScript requests per page can '
                     'deacrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
             },
             'total.size.js': {
                 'title': _('JavaScript size in kb is too big'),
@@ -34,18 +35,35 @@ class JSRequestsValidator(Validator):
                     'A site with a too big total JavaScript size per page can '
                     'decrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'total.size.js': {
+                'value': config.MAX_JS_KB_PER_PAGE_AFTER_GZIP,
+                'description': config.get_description('MAX_JS_KB_PER_PAGE_AFTER_GZIP')
+            },
+            'total.requests.js': {
+                'value': config.MAX_JS_REQUESTS_PER_PAGE,
+                'description': config.get_description('MAX_JS_REQUESTS_PER_PAGE')
             }
         }
 
     def validate(self):
+        max_size_js = self.get_violation_pref('total.size.js')
+
+        max_requests_js = self.get_violation_pref('total.requests.js')
+
         total_js_files = self.get_total_requests_js()
         total_size_gzip = self.get_total_size_js_gzipped()
 
-        max_requests = self.reviewer.config.MAX_JS_REQUESTS_PER_PAGE
-        over_limit = total_js_files - max_requests
+        over_limit = total_js_files - max_requests_js
 
-        if total_js_files > max_requests:
+        if total_js_files > max_requests_js:
             self.add_violation(
                 key='total.requests.js',
                 value={
@@ -54,13 +72,11 @@ class JSRequestsValidator(Validator):
                 points=5 * over_limit
             )
 
-        max_kb_gzip = self.reviewer.config.MAX_JS_KB_PER_PAGE_AFTER_GZIP
-
-        if total_size_gzip > max_kb_gzip:
+        if total_size_gzip > max_size_js:
             self.add_violation(
                 key='total.size.js',
                 value=total_size_gzip,
-                points=int(total_size_gzip - max_kb_gzip)
+                points=int(total_size_gzip - max_size_js)
             )
 
     def get_js_requests(self):

@@ -12,7 +12,9 @@ from colorama import Fore, Style
 from holmes.worker import HolmesWorker
 from holmes.config import Config
 from tests.unit.base import ApiTestCase
-
+from tests.fixtures import (
+    DomainsViolationsPrefsFactory, DomainFactory, KeyFactory
+)
 
 class MockResponse(object):
     def __init__(self, status_code=200, text=''):
@@ -80,3 +82,41 @@ class WorkerTestCase(ApiTestCase):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])
 
         expect(worker.get_config_class()).to_equal(Config)
+
+    def test_load_all_domains_violations_prefs(self):
+        worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf'), '--concurrency=10'])
+
+        worker.initialize()
+
+        # Same instance of DB, for sqlalchemy runs on Vegas
+        bkp_db = worker.db
+        worker.db = self.db
+        worker.cache.db = self.db
+
+        domain = DomainFactory.create(name='globo.com')
+
+        worker.cache.redis.delete('violations-prefs-%s' % domain.name)
+
+        prefs = worker.cache.redis.get('violations-prefs-%s' % domain.name)
+        expect(prefs).to_be_null()
+
+        for i in range(3):
+            DomainsViolationsPrefsFactory.create(
+                domain=domain,
+                key=KeyFactory.create(name='some.random.%d' % i),
+                value='v%d' % i
+            )
+
+        worker.load_all_domains_violations_prefs()
+
+        prefs = worker.cache.get_domain_violations_prefs('globo.com')
+
+        expect(prefs).to_equal([
+            {'value': u'v0', 'key': u'some.random.0'},
+            {'value': u'v1', 'key': u'some.random.1'},
+            {'value': u'v2', 'key': u'some.random.2'}
+        ])
+
+        # Back to the wonderland
+        worker.db = bkp_db
+        worker.cache.db = bkp_db

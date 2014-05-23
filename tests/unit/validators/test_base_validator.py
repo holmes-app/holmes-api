@@ -14,6 +14,10 @@ from tests.unit.base import ApiTestCase
 
 
 class TestBaseValidator(ApiTestCase, unittest.TestCase):
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
+
     def test_can_validate(self):
         expect(Validator(None).validate()).to_be_true()
 
@@ -225,3 +229,35 @@ class TestBaseValidator(ApiTestCase, unittest.TestCase):
         url = validator.normalize_url('/metal.html')
 
         expect(url).to_equal('http://globoi.com/metal.html')
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+
+        validator = Validator(None)
+
+        values = validator.get_default_violations_values(config)
+
+        expect(values).to_equal({})
+
+    def test_can_get_violation_pref(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
+        )
+
+        reviewer.violation_definitions = {
+            'page.title.size': {'default_value': 70},
+        }
+
+        validator = Validator(reviewer)
+
+        page_title_size = validator.get_violation_pref('page.title.size')
+
+        expect(page_title_size).to_equal(70)

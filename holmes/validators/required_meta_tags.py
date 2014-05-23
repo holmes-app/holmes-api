@@ -18,12 +18,22 @@ class RequiredMetaTagsValidator(Validator):
                 'generic_description': _(
                     'Validates the absent of user defined MetaTags. '
                     'This values are configurable by Holmes Configuration.'
-                )
+                ),
+                'unit': 'list'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'absent.meta.tags': {
+                'value': config.REQUIRED_META_TAGS,
+                'description': config.get_description('REQUIRED_META_TAGS')
             }
         }
 
     def validate(self):
-        required_tags = self.reviewer.config.REQUIRED_META_TAGS
+        required_tags = self.get_violation_pref('absent.meta.tags')
 
         absent_metatags = []
 

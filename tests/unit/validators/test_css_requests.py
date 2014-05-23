@@ -15,10 +15,6 @@ from tests.fixtures import PageFactory
 class TestCSSRequestsValidator(ValidatorTestCase):
 
     def test_can_validate_css_requests_on_globo_html(self):
-        config = Config()
-        config.MAX_CSS_REQUESTS_PER_PAGE = 1
-        config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP = 0.0
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -26,9 +22,15 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.requests.css': {'default_value': 1},
+            'total.size.css': {'default_value': 0.0},
+        }
 
         content = self.get_file('globo.html')
 
@@ -56,6 +58,7 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             'total.requests.css': 7,
             'total.size.css.gzipped': 0.05
         }
+
         validator.validate()
 
         expect(validator.add_violation.call_args_list).to_include(
@@ -73,8 +76,6 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             ))
 
     def test_can_validate_css_requests_zero_requests(self):
-        config = Config()
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -82,9 +83,15 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.requests.css': {'default_value': 1},
+            'total.size.css': {'default_value': 0.0},
+        }
 
         content = "<html></html>"
 
@@ -106,8 +113,6 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.called).to_be_false()
 
     def test_can_validate_css_requests_empty_html(self):
-        config = Config()
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -115,9 +120,15 @@ class TestCSSRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.requests.css': {'default_value': 1},
+            'total.size.css': {'default_value': 0.0},
+        }
 
         result = {
             'url': page.url,
@@ -173,3 +184,41 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         css_requests = validator.get_css_requests()
 
         expect(css_requests).to_equal([css1, css2])
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP = 70
+        config.MAX_CSS_REQUESTS_PER_PAGE = 5
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = CSSRequestsValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('total.size.css')
+
+        expect(violations_values['total.size.css']).to_length(2)
+
+        expect(violations_values['total.size.css']).to_be_like({
+            'value': config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP,
+            'description': config.get_description('MAX_CSS_KB_PER_PAGE_AFTER_GZIP')
+        })
+
+        expect(violations_values).to_include('total.requests.css')
+
+        expect(violations_values['total.requests.css']).to_length(2)
+
+        expect(violations_values['total.requests.css']).to_be_like({
+            'value': config.MAX_CSS_REQUESTS_PER_PAGE,
+            'description': config.get_description('MAX_CSS_REQUESTS_PER_PAGE')
+        })

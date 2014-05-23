@@ -39,11 +39,14 @@ from holmes.handlers.request import (
     LastRequestsStatusCodeHandler
 )
 from holmes.handlers.limiter import LimiterHandler
+from holmes.handlers.domains_violations_prefs import (
+    DomainsViolationsPrefsHandler
+)
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
 from holmes.utils import load_classes, load_languages, locale_path
-from holmes.models import Key
+from holmes.models import Key, DomainsViolationsPrefs
 from holmes.cache import Cache
 from holmes import __version__
 from holmes.handlers import BaseHandler
@@ -99,6 +102,7 @@ class HolmesApiServer(Server):
             ('/domains-details/?', DomainsFullDataHandler),
             ('/domains/(%s)/?' % domain_regex, DomainDetailsHandler),
             ('/domains/(%s)/violations-per-day/?' % domain_regex, DomainViolationsPerDayHandler),
+            ('/domains/(%s)/violations-prefs/?' % domain_regex, DomainsViolationsPrefsHandler),
             ('/domains/(%s)/violations/?' % domain_regex, DomainGroupedViolationsHandler),
             ('/domains/(%s)/violations/(%s)/?' % (domain_regex, numbers_regex), DomainTopCategoryViolationsHandler),
             ('/domains/(%s)/reviews/?' % domain_regex, DomainReviewsHandler),
@@ -152,6 +156,8 @@ class HolmesApiServer(Server):
         self.application.fact_definitions = {}
         self.application.violation_definitions = {}
 
+        self.application.default_violations_values = {}
+
         for facter in self.application.facters:
             self.application.fact_definitions.update(facter.get_fact_definitions())
 
@@ -160,7 +166,15 @@ class HolmesApiServer(Server):
         for validator in self.application.validators:
             self.application.violation_definitions.update(validator.get_violation_definitions())
 
-        Key.insert_keys(self.application.db, self.application.violation_definitions)
+            self.application.default_violations_values.update(
+                validator.get_default_violations_values(self.application.config)
+            )
+
+        Key.insert_keys(
+            self.application.db,
+            self.application.violation_definitions,
+            self.application.default_violations_values
+        )
 
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
@@ -171,6 +185,13 @@ class HolmesApiServer(Server):
         self.configure_material_girl()
 
         self.configure_i18n()
+
+        DomainsViolationsPrefs.insert_default_violations_values_for_all_domains(
+            self.application.db,
+            self.application.default_violations_values,
+            self.application.violation_definitions,
+            self.application.cache
+        )
 
     def configure_material_girl(self):
         from holmes.material import configure_materials

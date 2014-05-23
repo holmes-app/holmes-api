@@ -14,7 +14,7 @@ from holmes.server import HolmesApiServer
 from tests.fixtures import (
     DomainFactory, PageFactory, ReviewFactory, FactFactory,
     ViolationFactory, KeyFactory, KeysCategoryFactory,
-    RequestFactory, UserFactory, LimiterFactory
+    RequestFactory, UserFactory, LimiterFactory, DomainsViolationsPrefsFactory
 )
 
 
@@ -50,6 +50,7 @@ class ApiTestCase(CowTestCase):
         RequestFactory.FACTORY_SESSION = self.db
         UserFactory.FACTORY_SESSION = self.db
         LimiterFactory.FACTORY_SESSION = self.db
+        DomainsViolationsPrefsFactory.FACTORY_SESSION = self.db
 
     def tearDown(self):
         self.db.rollback()
@@ -122,6 +123,9 @@ class ValidatorTestCase(ApiTestCase):
         with open(join(FILES_ROOT_PATH.rstrip('/'), name.lstrip('/')), 'r') as local_file:
             return local_file.read()
 
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
 
 class FacterTestCase(ValidatorTestCase):
     pass

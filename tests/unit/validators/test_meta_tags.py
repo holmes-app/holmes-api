@@ -61,8 +61,14 @@ class TestMetaTagsValidator(ValidatorTestCase):
             page_url=page.url,
             page_score=0.0,
             config=Config(),
-            validators=[]
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'page.metatags.description_too_big': {'default_value': 300},
+        }
+
         validator = MetaTagsValidator(reviewer)
 
         validator.add_violation = Mock()
@@ -91,3 +97,31 @@ class TestMetaTagsValidator(ValidatorTestCase):
         expect(definitions).to_length(2)
         expect('absent.metatags' in definitions).to_be_true()
         expect('page.metatags.description_too_big' in definitions).to_be_true()
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.METATAG_DESCRIPTION_MAX_SIZE = 300
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = MetaTagsValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('page.metatags.description_too_big')
+
+        expect(violations_values['page.metatags.description_too_big']).to_length(2)
+
+        expect(violations_values['page.metatags.description_too_big']).to_be_like({
+            'value': config.METATAG_DESCRIPTION_MAX_SIZE,
+            'description': config.get_description('METATAG_DESCRIPTION_MAX_SIZE')
+        })

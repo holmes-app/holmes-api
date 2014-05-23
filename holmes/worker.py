@@ -15,7 +15,7 @@ from retools.lock import Lock, LockTimeout
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
-from holmes.models import Page, Request, Key
+from holmes.models import Page, Request, Key, DomainsViolationsPrefs
 from holmes.cli import BaseCLI
 
 
@@ -123,6 +123,8 @@ class HolmesWorker(BaseWorker):
         self.fact_definitions = {}
         self.violation_definitions = {}
 
+        self.default_violations_values = {}
+
         for facter in self.facters:
             self.fact_definitions.update(facter.get_fact_definitions())
 
@@ -131,9 +133,30 @@ class HolmesWorker(BaseWorker):
         for validator in self.validators:
             self.violation_definitions.update(validator.get_violation_definitions())
 
-        Key.insert_keys(self.db, self.violation_definitions)
+            self.default_violations_values.update(
+                validator.get_default_violations_values(self.config)
+            )
+
+        Key.insert_keys(
+            self.db, self.violation_definitions, self.default_violations_values
+        )
 
         self.configure_material_girl()
+
+        DomainsViolationsPrefs.insert_default_violations_values_for_all_domains(
+            self.db,
+            self.default_violations_values,
+            self.violation_definitions,
+            self.cache
+        )
+
+        self.load_all_domains_violations_prefs()
+
+    def load_all_domains_violations_prefs(self):
+        from holmes.models import Domain
+
+        for domain in Domain.get_all_domains(self.db):
+            self.cache.get_domain_violations_prefs(domain.name)
 
     def config_parser(self, parser):
         parser.add_argument(

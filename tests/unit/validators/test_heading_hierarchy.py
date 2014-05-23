@@ -18,17 +18,20 @@ class TestHeadingHierarchyValidator(ValidatorTestCase):
 
     def test_can_validate_heading_hierarchy(self):
         page = PageFactory.create()
-        config = Config()
-        config.MAX_HEADING_HIEARARCHY_SIZE = 150
 
         reviewer = Reviewer(
             api_url='http://localhost:2368',
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'page.heading_hierarchy.size': {'default_value': 150},
+        }
 
         content = self.get_file('globo.html')
 
@@ -97,6 +100,34 @@ class TestHeadingHierarchyValidator(ValidatorTestCase):
             '<span class="hh-type">h1</span>: '
             'Loren ipsum dolor sit amet</li></ul>'
         )
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.MAX_HEADING_HIEARARCHY_SIZE = 150
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = HeadingHierarchyValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('page.heading_hierarchy.size')
+
+        expect(violations_values['page.heading_hierarchy.size']).to_length(2)
+
+        expect(violations_values['page.heading_hierarchy.size']).to_equal({
+            'value': config.MAX_HEADING_HIEARARCHY_SIZE,
+            'description': config.get_description('MAX_HEADING_HIEARARCHY_SIZE')
+        })
 
 
 class TestH1HeadingValidator(ValidatorTestCase):

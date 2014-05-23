@@ -79,6 +79,8 @@ class Reviewer(object):
         self.page_url = page_url
         self.page_score = page_score
 
+        self.domain_name, self.domain_url = get_domain_from_url(self.page_url)
+
         self.ping_method = None
 
         self.review_dao = ReviewDAO(self.page_uuid, self.page_url)
@@ -112,6 +114,28 @@ class Reviewer(object):
         self.fact_definitions = fact_definitions
         self.violation_definitions = violation_definitions
 
+    def get_domains_violations_prefs_by_key(self, key_name):
+        if key_name is None:
+            return None
+
+        if self.violation_definitions is None:
+            return None
+
+        default_value = None
+
+        key = self.violation_definitions.get(key_name, None)
+        if key is not None:
+            default_value = key.get('default_value')
+
+        domains_prefs = self.cache.get_domain_violations_prefs(self.domain_name)
+
+        if domains_prefs:
+            item = next((item for item in domains_prefs if item['key'] == key_name), None)
+            if item:
+                return item['value']
+
+        return default_value
+
     def ping(self):
         if self.ping_method is not None:
             self.ping_method()
@@ -138,12 +162,11 @@ class Reviewer(object):
         effective_url = response.effective_url
         status_code = response.status_code
 
-        domain_name, domain_url = get_domain_from_url(url)
-        if domain_name not in Domain.get_domain_names(self.db):
+        if self.domain_name not in Domain.get_domain_names(self.db):
             return
 
         req = Request(
-            domain_name=domain_name,
+            domain_name=self.domain_name,
             url=url,
             effective_url=effective_url,
             status_code=int(status_code),
@@ -268,6 +291,7 @@ class Reviewer(object):
                 self.publish,
                 self.config,
                 self.girl,
+                self.violation_definitions,
                 self.handle_page_added
             )
 

@@ -22,6 +22,7 @@ class CSSRequestsValidator(Validator):
                     'impose a tax in the browser due to handshakes. This '
                     'limit of requests per page is configurable.'
                 ),
+                'unit': 'number'
             },
             'total.size.css': {
                 'title': _('CSS size in kb is too big'),
@@ -36,17 +37,34 @@ class CSSRequestsValidator(Validator):
                     'download time slowing down the page rendering to the user. '
                     'This limit of requests per page is configurable.'
                 ),
+                'unit': 'number'
             },
         }
 
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'total.requests.css': {
+                'value': config.MAX_CSS_REQUESTS_PER_PAGE,
+                'description': config.get_description('MAX_CSS_REQUESTS_PER_PAGE')
+            },
+            'total.size.css': {
+                'value': config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP,
+                'description': config.get_description('MAX_CSS_KB_PER_PAGE_AFTER_GZIP')
+            }
+        }
+
     def validate(self):
+        max_requests_css = self.get_violation_pref('total.requests.css')
+
+        max_size_css_gzipped = self.get_violation_pref('total.size.css')
+
         total_css_files = self.get_total_requests_css()
         total_size_gzip = self.get_total_size_css_gzipped()
 
-        max_requests = self.reviewer.config.MAX_CSS_REQUESTS_PER_PAGE
-        over_limit = total_css_files - max_requests
+        over_limit = total_css_files - max_requests_css
 
-        if total_css_files > self.reviewer.config.MAX_CSS_REQUESTS_PER_PAGE:
+        if total_css_files > max_requests_css:
             self.add_violation(
                 key='total.requests.css',
                 value={
@@ -56,13 +74,11 @@ class CSSRequestsValidator(Validator):
                 points=5 * over_limit
             )
 
-        max_kb_gzip = self.reviewer.config.MAX_CSS_KB_PER_PAGE_AFTER_GZIP
-
-        if total_size_gzip > max_kb_gzip:
+        if total_size_gzip > max_size_css_gzipped:
             self.add_violation(
                 key='total.size.css',
                 value=total_size_gzip,
-                points=int(total_size_gzip - max_kb_gzip)
+                points=int(total_size_gzip - max_size_css_gzipped)
             )
 
     def get_css_requests(self):

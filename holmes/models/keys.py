@@ -22,6 +22,7 @@ class Key(Base):
 
     facts = relationship("Fact", cascade="all,delete", backref="key")
     violations = relationship("Violation", cascade="all,delete", backref="key")
+    domains_violations_prefs = relationship("DomainsViolationsPrefs", cascade="all,delete", backref="key")
 
     def __str__(self):
         return '%s' % (self.name)
@@ -70,7 +71,7 @@ class Key(Base):
         return cls.get_by_name(db, key_name)
 
     @classmethod
-    def insert_keys(cls, db, keys):
+    def insert_keys(cls, db, keys, default_values=[]):
         from holmes.models import KeysCategory
 
         for name in keys.keys():
@@ -89,3 +90,9 @@ class Key(Base):
             db.add(key)
             db.flush()
             db.commit()
+
+        for key in default_values:
+            keys[key]['default_value'] = default_values[key].get('value', None)
+
+            keys[key]['default_value_description'] = \
+                default_values[key].get('description', None)

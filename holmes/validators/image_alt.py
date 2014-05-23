@@ -59,11 +59,23 @@ class ImageAltValidator(Validator):
                     'Images with alt text too long are not good to SEO. '
                     'This maximum value are configurable '
                     'by Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'invalid.images.alt_too_big': {
+                'value': config.MAX_IMAGE_ALT_SIZE,
+                'description': config.get_description('MAX_IMAGE_ALT_SIZE')
             }
         }
 
     def validate(self):
+        max_alt_size = self.get_violation_pref('invalid.images.alt_too_big')
+
         imgs = self.get_imgs()
 
         result_no_alt = []
@@ -80,7 +92,7 @@ class ImageAltValidator(Validator):
                 name = src.rsplit('/', 1)[-1]
                 if not img_alt:
                     result_no_alt.append((src, name))
-                elif len(img_alt) > self.config.MAX_IMAGE_ALT_SIZE:
+                elif len(img_alt) > max_alt_size:
                     result_alt_too_big.append((src, name, img_alt))
 
         if result_no_alt:
@@ -95,7 +107,7 @@ class ImageAltValidator(Validator):
                 key='invalid.images.alt_too_big',
                 value={
                     'images': result_alt_too_big,
-                    'max_size': self.config.MAX_IMAGE_ALT_SIZE
+                    'max_size': max_alt_size
                 },
                 points=20 * len(result_alt_too_big)
             )

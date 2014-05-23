@@ -50,11 +50,23 @@ class SchemaOrgItemTypeValidator(Validator):
                     'of a webpage, the body tag must feature an '
                     'itemtype attribute with a value of '
                     '"http://schema.org/WebPage" or '
-                    'one of its more specific types.')
+                    'one of its more specific types.'),
+                'unit': 'list'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'invalid.schema.itemtype': {
+                'value': config.SCHEMA_ORG_ITEMTYPE,
+                'description': config.get_description('SCHEMA_ORG_ITEMTYPE')
             }
         }
 
     def validate(self):
+        itemtype_value = self.get_violation_pref('invalid.schema.itemtype')
+
         body = self.get_body()
 
         if not body:
@@ -79,7 +91,6 @@ class SchemaOrgItemTypeValidator(Validator):
                     points=10
                 )
 
-            itemtype_value = self.reviewer.config.SCHEMA_ORG_ITEMTYPE
             if has_itemtype and body.get('itemtype') not in itemtype_value:
                 self.add_violation(
                     key='invalid.schema.itemtype',

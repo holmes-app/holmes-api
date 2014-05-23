@@ -3,6 +3,7 @@
 
 from gzip import GzipFile
 from cStringIO import StringIO
+from ujson import dumps
 
 import msgpack
 from preggy import expect
@@ -13,7 +14,8 @@ from holmes.cache import Cache
 from holmes.models import Domain, Limiter, Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
-    DomainFactory, PageFactory, ReviewFactory, LimiterFactory
+    DomainFactory, PageFactory, ReviewFactory, LimiterFactory,
+    DomainsViolationsPrefsFactory, KeyFactory
 )
 
 
@@ -177,6 +179,25 @@ class CacheTestCase(ApiTestCase):
 
         score = yield Task(self.cache.redis.zscore, 'page-scores', 'page-1')
         expect(int(score)).to_equal(2)
+
+    @gen_test
+    def test_can_delete_domain_violations_prefs(self):
+        domain_url = 'globo.com'
+        key = 'violations-prefs-%s' % domain_url
+
+        self.cache.redis.delete(key)
+        prefs = yield Task(self.cache.redis.get, key)
+        expect(prefs).to_be_null()
+
+        data = dumps([{'key': 'test', 'value': '10'}])
+        yield Task(self.cache.redis.setex, key, 1, data)
+        prefs = yield Task(self.cache.redis.get, key)
+        expect(prefs).to_be_like(data)
+
+        yield self.cache.delete_domain_violations_prefs(domain_url)
+
+        prefs = yield Task(self.cache.redis.get, key)
+        expect(prefs).to_be_null()
 
 
 class SyncCacheTestCase(ApiTestCase):
@@ -598,3 +619,50 @@ class SyncCacheTestCase(ApiTestCase):
 
         lock = self.sync_cache.has_update_pages_lock(5)
         expect(lock).not_to_be_null()
+
+    def test_can_delete_domain_violations_prefs(self):
+        domain_url = 'globo.com'
+        key = 'violations-prefs-%s' % domain_url
+
+        self.sync_cache.redis.delete(key)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
+
+        data = dumps([{'key': 'test', 'value': '10'}])
+        self.sync_cache.redis.setex(key, 10, data)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_like(data)
+
+        self.sync_cache.delete_domain_violations_prefs(domain_url)
+
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
+
+    def test_can_get_domain_violations_prefs(self):
+        domain = DomainFactory.create(name='globo.com')
+
+        self.sync_cache.redis.delete( 'violations-prefs-%s' % domain.name)
+
+        for i in range(3):
+            DomainsViolationsPrefsFactory.create(
+                domain=domain,
+                key=KeyFactory.create(name='some.random.%d' % i),
+                value='v%d' % i
+            )
+
+        prefs = self.sync_cache.get_domain_violations_prefs('globo.com')
+        expect(prefs).to_equal([
+            {'value': u'v0', 'key': u'some.random.0'},
+            {'value': u'v1', 'key': u'some.random.1'},
+            {'value': u'v2', 'key': u'some.random.2'}
+        ])
+
+        # should get from cache
+        self.sync_cache.db = None
+
+        prefs = self.sync_cache.get_domain_violations_prefs('globo.com')
+        expect(prefs).to_equal([
+            {'value': u'v0', 'key': u'some.random.0'},
+            {'value': u'v1', 'key': u'some.random.1'},
+            {'value': u'v2', 'key': u'some.random.2'}
+        ])

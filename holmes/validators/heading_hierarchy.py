@@ -33,23 +33,35 @@ class HeadingHierarchyValidator(Validator):
                     'Heading hierarchy tags with values too big aren\'t good '
                     'for search engines. The definition of this maximum size '
                     'can be configurable on Holmes.'
-                )
+                ),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'page.heading_hierarchy.size': {
+                'value': config.MAX_HEADING_HIEARARCHY_SIZE,
+                'description': config.get_description('MAX_HEADING_HIEARARCHY_SIZE')
             }
         }
 
     def validate(self):
+        max_heading_size = self.get_violation_pref('page.heading_hierarchy.size')
+
         hh_list = self.review.data.get('page.heading_hierarchy', [])
 
         violations = []
         for key, desc in hh_list:
-            if len(desc) > self.config.MAX_HEADING_HIEARARCHY_SIZE:
+            if len(desc) > max_heading_size:
                 violations.append((key, desc))
 
         if violations:
             self.add_violation(
                 key='page.heading_hierarchy.size',
                 value={
-                    'max_size': self.config.MAX_HEADING_HIEARARCHY_SIZE,
+                    'max_size': max_heading_size,
                     'hh_list': violations
                 },
                 points=20 * len(violations)

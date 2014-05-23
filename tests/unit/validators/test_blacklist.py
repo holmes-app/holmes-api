@@ -15,9 +15,6 @@ from holmes.validators.blacklist import BlackListValidator
 class TestBlackListValidator(ValidatorTestCase):
 
     def test_can_validate(self):
-        config = Config()
-        config.BLACKLIST_DOMAIN = ['a.com']
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -25,9 +22,14 @@ class TestBlackListValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'blacklist.domains': {'default_value':  ['a.com']},
+        }
 
         content = '<a href="http://a.com/test1">A</a>' \
                   '<a href="http://b.com/test2">B</a>'
@@ -69,3 +71,31 @@ class TestBlackListValidator(ValidatorTestCase):
         expect(validator.get_blacklist_parsed_value(['http://a.com'])).to_equal(
             '<a href="http://a.com" target="_blank">Link #0</a>'
         )
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.BLACKLIST_DOMAIN = ['a.com']
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = BlackListValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('blacklist.domains')
+
+        expect(violations_values['blacklist.domains']).to_length(2)
+
+        expect(violations_values['blacklist.domains']).to_be_like({
+            'value': config.BLACKLIST_DOMAIN,
+            'description': config.get_description('BLACKLIST_DOMAIN')
+        })

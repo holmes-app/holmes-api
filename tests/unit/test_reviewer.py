@@ -9,10 +9,13 @@ from preggy import expect
 from mock import patch, Mock, call
 
 from holmes.reviewer import Reviewer, ReviewDAO
-from holmes.models import Page
+from holmes.models import Page, Domain, Key, DomainsViolationsPrefs
 from holmes.config import Config
 from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
+from tests.fixtures import (
+    DomainFactory, PageFactory, DomainsViolationsPrefsFactory
+)
 
 
 class TestReviewDAO(ApiTestCase):
@@ -49,9 +52,13 @@ class TestReviewDAO(ApiTestCase):
 
 
 class TestReview(ApiTestCase):
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
+
     def get_reviewer(
             self, api_url=None, page_uuid=None, page_url='http://page.url',
-            page_score=0.0, config=None, validators=[Validator]):
+            page_score=0.0, config=None, validators=[Validator], cache=None):
 
         if api_url is None:
             api_url = self.get_url('/')
@@ -68,7 +75,8 @@ class TestReview(ApiTestCase):
             page_url=page_url,
             page_score=page_score,
             config=config,
-            validators=validators
+            validators=validators,
+            cache=cache
         )
 
     def test_can_create_reviewer(self):
@@ -236,6 +244,7 @@ class TestReview(ApiTestCase):
             None,
             reviewer.config,
             reviewer.girl,
+            reviewer.violation_definitions,
             reviewer.handle_page_added
         ))
 
@@ -255,3 +264,54 @@ class TestReview(ApiTestCase):
 
         reviewer = self.get_reviewer(page_url="http://g1.globo.com/index.html")
         expect(reviewer.is_root()).to_equal(False)
+
+    def test_can_get_domains_violations_prefs_by_key(self):
+        self.db.query(DomainsViolationsPrefs).delete()
+        self.db.query(Page).delete()
+        self.db.query(Domain).delete()
+        self.db.query(Key).delete()
+
+        domain = DomainFactory.create(name='t.com')
+        page = PageFactory.create(domain=domain, url='http://t.com/a.html')
+
+        prefs = DomainsViolationsPrefsFactory.create(
+            domain=domain,
+            key=Key(name='page.title.size'),
+            value='70'
+        )
+
+        reviewer = self.get_reviewer(
+            page_uuid=page.uuid,
+            page_url=page.url,
+            cache=self.sync_cache
+        )
+
+        # Get default value
+
+        reviewer.violation_definitions = None
+
+        self.sync_cache.redis.delete('violations-prefs-%s' % domain.name)
+        prefs = reviewer.get_domains_violations_prefs_by_key(None)
+        expect(prefs).to_be_null()
+
+        prefs = reviewer.get_domains_violations_prefs_by_key('my-key')
+        expect(prefs).to_be_null()
+
+        reviewer.violation_definitions = {
+            'page.title.size': {'default_value': '70'},
+        }
+
+        self.sync_cache.redis.delete('violations-prefs-%s' % domain.name)
+        prefs = reviewer.get_domains_violations_prefs_by_key('my-key')
+        expect(prefs).to_be_null()
+
+        self.sync_cache.redis.delete('violations-prefs-%s' % domain.name)
+        prefs = reviewer.get_domains_violations_prefs_by_key('page.title.size')
+        expect(prefs).to_equal('70')
+
+        # Get configured value
+
+        data = [{'key': 'page.title.size', 'value': '10'}]
+        DomainsViolationsPrefs.update_by_domain(self.db, self.sync_cache, domain, data)
+        prefs = reviewer.get_domains_violations_prefs_by_key('page.title.size')
+        expect(prefs).to_equal('10')

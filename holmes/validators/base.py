@@ -14,6 +14,10 @@ class Validator(Baser):
     def get_violation_definitions(cls):
         raise NotImplementedError
 
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {}
+
     def add_violation(self, key, value, points):
         self.reviewer.add_violation(key, value, points)
 
@@ -22,6 +26,9 @@ class Validator(Baser):
 
     def enqueue(self, url):
         self.reviewer.enqueue(url)
+
+    def get_violation_pref(self, key):
+        return self.reviewer.get_domains_violations_prefs_by_key(key)
 
     def test_url(self, url, response, broken_link_callback=None, moved_link_callback=None):
         status = response.status_code

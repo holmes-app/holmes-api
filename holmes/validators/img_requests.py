@@ -58,7 +58,8 @@ class ImageRequestsValidator(Validator):
                     'Images with a too big size is very bad to site '
                     'performance. This limits are configurable in '
                     'Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
             },
             'total.requests.img': {
                 'title': _('Too many image requests'),
@@ -71,7 +72,8 @@ class ImageRequestsValidator(Validator):
                     'A site with too many images requests per page can '
                     'deacrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
             },
             'total.size.img': {
                 'title': _('Total image size in kb is too big'),
@@ -84,11 +86,35 @@ class ImageRequestsValidator(Validator):
                     'A site with a too big total image size per page can '
                     'decrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
-                )
+                ),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'single.size.img':  {
+                'value': config.MAX_KB_SINGLE_IMAGE,
+                'description': config.get_description('MAX_KB_SINGLE_IMAGE')
+            },
+            'total.requests.img': {
+                'value': config.MAX_IMG_REQUESTS_PER_PAGE,
+                'description': config.get_description('MAX_IMG_REQUESTS_PER_PAGE')
+            },
+            'total.size.img': {
+                'value': config.MAX_IMG_KB_PER_PAGE,
+                'description': config.get_description('MAX_IMG_KB_PER_PAGE')
             }
         }
 
     def validate(self):
+        max_single_size_img = self.get_violation_pref('single.size.img')
+
+        max_total_requests_img = self.get_violation_pref('total.requests.img')
+
+        max_total_size_img = self.get_violation_pref('total.size.img')
+
         img_files = self.get_images()
         total_size = self.get_images_size()
 
@@ -104,7 +130,7 @@ class ImageRequestsValidator(Validator):
             if response.text is not None:
                 size_img = len(response.text) / 1024.0
 
-                if size_img > self.reviewer.config.MAX_KB_SINGLE_IMAGE:
+                if size_img > max_single_size_img:
                     over_max_size.add((url, size_img))
 
         if broken_imgs:
@@ -117,33 +143,33 @@ class ImageRequestsValidator(Validator):
         if over_max_size:
             points = 0
             for url, size_img in over_max_size:
-                size = size_img - self.reviewer.config.MAX_KB_SINGLE_IMAGE
+                size = size_img - max_single_size_img
                 points += size
 
             self.add_violation(
                 key='single.size.img',
                 value={
-                    'limit': self.reviewer.config.MAX_KB_SINGLE_IMAGE,
+                    'limit': max_single_size_img,
                     'over_max_size': over_max_size
                 },
                 points=points
             )
 
-        if len(img_files) > self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE:
+        if len(img_files) > max_total_requests_img:
             self.add_violation(
                 key='total.requests.img',
                 value={
                     'total': len(img_files),
-                    'limit': len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE
+                    'limit': len(img_files) - max_total_requests_img
                 },
-                points=5 * (len(img_files) - self.reviewer.config.MAX_IMG_REQUESTS_PER_PAGE)
+                points=5 * (len(img_files) - max_total_requests_img)
             )
 
-        if total_size > self.reviewer.config.MAX_IMG_KB_PER_PAGE:
+        if total_size > max_total_size_img:
             self.add_violation(
                 key='total.size.img',
                 value=total_size,
-                points=int(total_size - self.reviewer.config.MAX_IMG_KB_PER_PAGE)
+                points=int(total_size - max_total_size_img)
             )
 
     def get_images(self):

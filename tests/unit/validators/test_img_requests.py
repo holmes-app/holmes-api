@@ -15,11 +15,6 @@ from tests.fixtures import PageFactory
 class TestImageRequestsValidator(ValidatorTestCase):
 
     def test_can_validate_image_requests_on_globo_html(self):
-        config = Config()
-        config.MAX_IMG_REQUESTS_PER_PAGE = 50
-        config.MAX_KB_SINGLE_IMAGE = 6
-        config.MAX_IMG_KB_PER_PAGE = 100
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -27,8 +22,9 @@ class TestImageRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
 
         content = self.get_file('globo.html')
@@ -41,6 +37,12 @@ class TestImageRequestsValidator(ValidatorTestCase):
         }
         reviewer.responses[page.url] = result
         reviewer.get_response = Mock(return_value=result)
+
+        reviewer.violation_definitions = {
+            'single.size.img': {'default_value': 6},
+            'total.requests.img': {'default_value': 50},
+            'total.size.img': {'default_value': 100},
+        }
 
         validator = ImageRequestsValidator(reviewer)
         validator.add_violation = Mock()
@@ -74,11 +76,6 @@ class TestImageRequestsValidator(ValidatorTestCase):
             ))
 
     def test_can_validate_image_404(self):
-        config = Config()
-        config.MAX_IMG_REQUESTS_PER_PAGE = 50
-        config.MAX_KB_SINGLE_IMAGE = 6
-        config.MAX_IMG_KB_PER_PAGE = 100
-
         page = PageFactory.create(url="http://globo.com")
 
         reviewer = Reviewer(
@@ -86,9 +83,16 @@ class TestImageRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'single.size.img': {'default_value': 6},
+            'total.requests.img': {'default_value': 50},
+            'total.size.img': {'default_value': 100},
+        }
 
         validator = ImageRequestsValidator(reviewer)
         validator.add_violation = Mock()
@@ -111,11 +115,6 @@ class TestImageRequestsValidator(ValidatorTestCase):
             ))
 
     def test_can_validate_single_image_html(self):
-        config = Config()
-        config.MAX_IMG_REQUESTS_PER_PAGE = 50
-        config.MAX_KB_SINGLE_IMAGE = 6
-        config.MAX_IMG_KB_PER_PAGE = 100
-
         page = PageFactory.create(url="http://globo.com")
 
         reviewer = Reviewer(
@@ -123,9 +122,16 @@ class TestImageRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'single.size.img': {'default_value': 6},
+            'total.requests.img': {'default_value': 50},
+            'total.size.img': {'default_value': 100},
+        }
 
         content = "<html><img src='/some_image.jpg'/></html>"
 
@@ -152,11 +158,6 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.called).to_be_false()
 
     def test_can_validate_html_without_images(self):
-        config = Config()
-        config.MAX_IMG_REQUESTS_PER_PAGE = 50
-        config.MAX_KB_SINGLE_IMAGE = 6
-        config.MAX_IMG_KB_PER_PAGE = 100
-
         page = PageFactory.create(url="http://globo.com")
 
         reviewer = Reviewer(
@@ -164,9 +165,16 @@ class TestImageRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'single.size.img': {'default_value': 6},
+            'total.requests.img': {'default_value': 50},
+            'total.size.img': {'default_value': 100},
+        }
 
         content = "<html></html>"
 
@@ -220,4 +228,48 @@ class TestImageRequestsValidator(ValidatorTestCase):
                 '<a href="http://a.com" target="_blank">a.com</a> (100kb)'
                 ', <a href="http://b.com" target="_blank">b.com</a> (30kb)'
             )
+        })
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.MAX_KB_SINGLE_IMAGE = 70
+        config.MAX_IMG_REQUESTS_PER_PAGE = 10
+        config.MAX_IMG_KB_PER_PAGE = 5
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = ImageRequestsValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('single.size.img')
+        expect(violations_values).to_include('total.size.img')
+        expect(violations_values).to_include('total.requests.img')
+
+        expect(violations_values['single.size.img']).to_length(2)
+        expect(violations_values['total.size.img']).to_length(2)
+        expect(violations_values['total.requests.img']).to_length(2)
+
+        expect(violations_values['single.size.img']).to_be_like({
+            'value': config.MAX_KB_SINGLE_IMAGE,
+            'description': config.get_description('MAX_KB_SINGLE_IMAGE')
+        })
+
+        expect(violations_values['total.size.img']).to_be_like({
+            'value': config.MAX_IMG_KB_PER_PAGE,
+            'description': config.get_description('MAX_IMG_KB_PER_PAGE')
+        })
+
+        expect(violations_values['total.requests.img']).to_be_like({
+            'value': config.MAX_IMG_REQUESTS_PER_PAGE,
+            'description': config.get_description('MAX_IMG_REQUESTS_PER_PAGE')
         })

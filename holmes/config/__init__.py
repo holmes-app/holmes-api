@@ -163,3 +163,5 @@ throttling_message_type = {
 Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, 'Trottling by message type', 'Event Bus')
 
 Config.define('SQLALCHEMY_AUTO_FLUSH', True, 'Defines whether auto-flush should be used in sqlalchemy')
+
+Config.define('DOMAINS_VIOLATIONS_PREFS_EXPIRATION_IN_SECONDS', HOUR, 'Expiration in seconds for domains violations prefs.', 'Cache')

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-06-04 15:26-0300\n"
+"POT-Creation-Date: 2014-06-06 14:18-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -181,7 +181,9 @@ msgstr ""
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
 #: holmes/handlers/domains.py:150 holmes/handlers/domains.py:187
-#: holmes/handlers/domains.py:224 holmes/handlers/request.py:17
+#: holmes/handlers/domains.py:224
+#: holmes/handlers/domains_violations_prefs.py:23
+#: holmes/handlers/domains_violations_prefs.py:63 holmes/handlers/request.py:17
 #: holmes/handlers/violation.py:43
 #, python-format
 msgid "Domain %s not found"
@@ -193,6 +195,11 @@ msgstr ""
 
 #: holmes/handlers/domains.py:201 holmes/handlers/violation.py:20
 msgid "title"
+msgstr ""
+
+#: holmes/handlers/domains_violations_prefs.py:71
+#: holmes/handlers/domains_violations_prefs.py:72
+msgid "Preferences successfully saved!"
 msgstr ""
 
 #: holmes/handlers/limiter.py:61
@@ -207,18 +214,18 @@ msgstr ""
 msgid "Not Found"
 msgstr ""
 
-#: holmes/handlers/page.py:20 holmes/handlers/page.py:80
-#: holmes/handlers/page.py:105 holmes/handlers/review.py:34
+#: holmes/handlers/page.py:20 holmes/handlers/page.py:82
+#: holmes/handlers/page.py:107 holmes/handlers/review.py:34
 #, python-format
 msgid "Page UUID [%s] not found"
 msgstr ""
 
-#: holmes/handlers/page.py:50
+#: holmes/handlers/page.py:52
 #, python-format
 msgid "Invalid url [%s]"
 msgstr ""
 
-#: holmes/handlers/page.py:60
+#: holmes/handlers/page.py:62
 #, python-format
 msgid "Supplied URL is a redirect [%s]"
 msgstr ""
@@ -445,11 +452,11 @@ msgid ""
 "Holmes."
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:64
+#: holmes/validators/heading_hierarchy.py:75
 msgid "H1 Headings not found"
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:65
+#: holmes/validators/heading_hierarchy.py:76
 msgid ""
 "Your page does not contain any H1 headings. H1 headings help indicate the"
 " important topics of your page to search engines. While less important "

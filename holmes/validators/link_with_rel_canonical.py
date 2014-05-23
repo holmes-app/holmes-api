@@ -28,12 +28,24 @@ class LinkWithRelCanonicalValidator(Validator):
                     'to use to access the green dress post, so that the '
                     'search results will be more likely to show users '
                     'that URL structure.'
-                )
+                ),
+                'unit': 'boolean'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'absent.meta.canonical': {
+                'value': config.FORCE_CANONICAL,
+                'description': config.get_description('FORCE_CANONICAL')
             }
         }
 
     def validate(self):
-        if not self.config.FORCE_CANONICAL:
+        force_canonical = self.get_violation_pref('absent.meta.canonical')
+
+        if not force_canonical:
             # Only pages with query string parameters
             if self.page_url:
                 if not is_valid(self.page_url):

@@ -13,7 +13,9 @@ from octopus.model import Response
 from sqlalchemy import or_
 from retools.lock import Lock, LockTimeout
 
-from holmes.models import Domain, Page, Limiter, Violation
+from holmes.models import (
+    Domain, Page, Limiter, Violation, DomainsViolationsPrefs
+)
 
 
 class Cache(object):
@@ -216,6 +218,10 @@ class Cache(object):
     @return_future
     def increment_page_score(self, page_id, increment=1, callback=None):
         self.redis.zincrby('page-scores', increment, page_id, callback=callback)
+
+    @return_future
+    def delete_domain_violations_prefs(self, domain_name, callback=None):
+        self.redis.delete('violations-prefs-%s' % domain_name, callback=callback)
 
 
 class SyncCache(object):
@@ -509,3 +515,25 @@ class SyncCache(object):
         logging.debug('Next job found: %s' % item['url'])
 
         return item
+
+    def get_data(self, key, expiration, get_data_method):
+        data = self.redis.get(key)
+
+        if data is not None:
+            return loads(data)
+
+        data = get_data_method()
+
+        self.redis.setex(key, expiration, dumps(data))
+
+        return data
+
+    def get_domain_violations_prefs(self, domain_name):
+        return self.get_data(
+            'violations-prefs-%s' % (domain_name),
+            int(self.config.DOMAINS_VIOLATIONS_PREFS_EXPIRATION_IN_SECONDS),
+            lambda: DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain_name)
+        )
+
+    def delete_domain_violations_prefs(self, domain_name):
+        self.redis.delete('violations-prefs-%s' % domain_name)

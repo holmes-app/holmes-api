@@ -15,9 +15,6 @@ from tests.fixtures import PageFactory
 class TestImageAltValidator(ValidatorTestCase):
 
     def test_can_validate_image_without_alt_attribute(self):
-        config = Config()
-        config.MAX_IMAGE_ALT_SIZE = 70
-
         page = PageFactory.create(url='http://my-site.com')
 
         reviewer = Reviewer(
@@ -25,9 +22,14 @@ class TestImageAltValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'invalid.images.alt_too_big': {'default_value': 70},
+        }
 
         content = self.get_file('globo.html')
 
@@ -112,3 +114,31 @@ class TestImageAltValidator(ValidatorTestCase):
             '<a href="http://my-site.com/the-src" alt="Abcdef" '
             'target="_blank">the-src</a>.'
         )
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.MAX_IMAGE_ALT_SIZE = 70
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = ImageAltValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('invalid.images.alt_too_big')
+
+        expect(violations_values['invalid.images.alt_too_big']).to_length(2)
+
+        expect(violations_values['invalid.images.alt_too_big']).to_be_like({
+            'value': config.MAX_IMAGE_ALT_SIZE,
+            'description': config.get_description('MAX_IMAGE_ALT_SIZE')
+        })

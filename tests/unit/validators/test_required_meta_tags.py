@@ -26,7 +26,8 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
             page_url=page.url,
             page_score=0.0,
             config=config,
-            validators=[]
+            validators=[],
+            cache=self.sync_cache
         )
 
         content = '<html></html>'
@@ -39,6 +40,10 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
         }
         reviewer.responses[page.url] = result
         reviewer.get_response = Mock(return_value=result)
+
+        reviewer.violation_definitions = {
+            'absent.meta.tags': {'default_value': ['description']},
+        }
 
         validator = RequiredMetaTagsValidator(reviewer)
         validator.add_violation = Mock()
@@ -62,3 +67,31 @@ class TestRequiredMetaTagsValidator(ValidatorTestCase):
 
         expect(definitions).to_length(1)
         expect('absent.meta.tags' in definitions).to_be_true()
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.REQUIRED_META_TAGS = ['description']
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = RequiredMetaTagsValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('absent.meta.tags')
+
+        expect(violations_values['absent.meta.tags']).to_length(2)
+
+        expect(violations_values['absent.meta.tags']).to_be_like({
+            'value': config.REQUIRED_META_TAGS,
+            'description': config.get_description('REQUIRED_META_TAGS')
+        })

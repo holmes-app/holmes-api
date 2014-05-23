@@ -37,11 +37,23 @@ class TitleValidator(Validator):
                     'The max size is %(max_size)d characters.'),
                 'category': _('SEO'),
                 'generic_description': _(
-                    'Validates the size of the page\'s title.')
+                    'Validates the size of the page\'s title.'),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'page.title.size': {
+                'value': config.MAX_TITLE_SIZE,
+                'description': config.get_description('MAX_TITLE_SIZE')
             }
         }
 
     def validate(self):
+        max_title_size = self.get_violation_pref('page.title.size')
+
         title_count = self.review.data.get('page.title_count', 0)
         title = self.review.data.get('page.title', None)
 
@@ -62,12 +74,12 @@ class TitleValidator(Validator):
                 },
                 points=50
             )
-        elif len(title) > self.config.MAX_TITLE_SIZE:
+        elif max_title_size and len(title) > int(max_title_size):
             self.add_violation(
                 key='page.title.size',
                 value={
                     'page_url': self.reviewer.page_url,
-                    'max_size': self.config.MAX_TITLE_SIZE
+                    'max_size': int(max_title_size)
                 },
                 points=10
             )

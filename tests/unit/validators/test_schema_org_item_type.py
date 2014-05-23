@@ -74,8 +74,15 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
             page_url=page.url,
             page_score=0.0,
             config=config,
-            validators=[]
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'invalid.schema.itemtype': {
+                'default_value': ['http://schema.org/AboutPage']
+            }
+        }
 
         content = '<html><body itemtype="http://schema.org/a"></body></html>'
 
@@ -145,3 +152,34 @@ class TestSchemaOrgItemTypeValidator(ValidatorTestCase):
         validator.validate()
 
         expect(validator.add_violation.called).to_be_false()
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.SCHEMA_ORG_ITEMTYPE = [
+            'http://schema.org/WebPage',
+            'http://schema.org/AboutPage',
+        ]
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = SchemaOrgItemTypeValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('invalid.schema.itemtype')
+
+        expect(violations_values['invalid.schema.itemtype']).to_length(2)
+
+        expect(violations_values['invalid.schema.itemtype']).to_equal({
+            'value': config.SCHEMA_ORG_ITEMTYPE,
+            'description': config.get_description('SCHEMA_ORG_ITEMTYPE')
+        })

@@ -8,7 +8,7 @@ import hashlib
 
 from holmes.models import (
     Domain, Page, Review, Violation, Fact, Key, KeysCategory, Request,
-    User, Limiter
+    User, Limiter, DomainsViolationsPrefs
 )
 from uuid import uuid4
 
@@ -181,3 +181,11 @@ class LimiterFactory(BaseFactory):
     def _adjust_kwargs(cls, **kwargs):
         kwargs['url_hash'] = hashlib.sha512(kwargs['url']).hexdigest()
         return kwargs
+
+
+class DomainsViolationsPrefsFactory(BaseFactory):
+    FACTORY_FOR = DomainsViolationsPrefs
+
+    domain = factory.SubFactory(DomainFactory)
+    key = factory.SubFactory(KeyFactory)
+    value = 'whatever'

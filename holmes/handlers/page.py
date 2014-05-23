@@ -41,7 +41,9 @@ class PageHandler(BaseHandler):
             self.application.http_client.fetch,
             self.application.event_bus.publish,
             self.application.config,
-            self.application.girl
+            self.application.girl,
+            self.application.default_violations_values,
+            self.application.violation_definitions
         )
 
         created, url, result = result

@@ -142,7 +142,9 @@ class Page(Base):
 
     @classmethod
     @return_future
-    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, girl, callback):
+    def add_page(cls, db, cache, url, score, fetch_method, publish_method,
+        config, girl, default_violations_values, violation_definitions, callback):
+
         domain_name, domain_url = get_domain_from_url(url)
         if not url or not domain_name:
             callback((False, url, {
@@ -157,7 +159,10 @@ class Page(Base):
 
         fetch_method(
             url,
-            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, girl, callback)),
+            cls.handle_request(cls.handle_add_page(
+                db, cache, url, score, publish_method, config, girl,
+                default_violations_values, violation_definitions, callback
+            )),
             proxy_host=config.HTTP_PROXY_HOST,
             proxy_port=config.HTTP_PROXY_PORT
         )
@@ -186,7 +191,9 @@ class Page(Base):
         return handle
 
     @classmethod
-    def handle_add_page(cls, db, cache, url, score, publish_method, config, girl, callback):
+    def handle_add_page(cls, db, cache, url, score, publish_method, config,
+        girl, default_violations_values, violation_definitions, callback):
+
         def handle(code, body, effective_url):
             if code > 399:
                 callback((False, url, {
@@ -205,8 +212,14 @@ class Page(Base):
                 }))
                 return
 
-            domain = cls.add_domain(url, db, publish_method, config, girl)
-            page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache, config)
+            domain = cls.add_domain(
+                url, db, publish_method, config, girl,
+                default_violations_values, violation_definitions, cache
+            )
+
+            page_uuid = cls.insert_or_update_page(
+                url, score, domain, db, publish_method, cache, config
+            )
 
             callback((True, url, page_uuid))
 
@@ -255,8 +268,10 @@ class Page(Base):
         return page_uuid
 
     @classmethod
-    def add_domain(cls, url, db, publish_method, config, girl):
-        from holmes.models import Domain
+    def add_domain(cls, url, db, publish_method, config, girl,
+        default_violations_values, violation_definitions, cache):
+
+        from holmes.models import Domain, DomainsViolationsPrefs
 
         domain_name, domain_url = get_domain_from_url(url)
 
@@ -284,6 +299,12 @@ class Page(Base):
                 'type': 'new-domain',
                 'domainUrl': str(domain_url)
             }))
+
+            keys = default_violations_values.keys()
+
+            DomainsViolationsPrefs.insert_default_violations_values_for_domain(
+                db, domain, keys, violation_definitions, cache
+            )
 
             from holmes.models import Limiter
             connections = config.DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS

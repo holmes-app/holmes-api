@@ -26,11 +26,23 @@ class BlackListValidator(Validator):
                     'Detected domain blacklisted hyperlinks. '
                     'Links with this violation are those that have anchors '
                     'to websites added in Holmes\'s Black List configuration.'
-                )
+                ),
+                'unit': 'list'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'blacklist.domains': {
+                'value': config.BLACKLIST_DOMAIN,
+                'description': config.get_description('BLACKLIST_DOMAIN')
             }
         }
 
     def validate(self):
+        blacklist_domains = self.get_violation_pref('blacklist.domains')
+
         domains = []
 
         links = self.get_links()
@@ -42,7 +54,7 @@ class BlackListValidator(Validator):
                 continue
 
             link_domain, link_domain_url = get_domain_from_url(href)
-            if link_domain in self.reviewer.config.BLACKLIST_DOMAIN:
+            if link_domain in blacklist_domains:
                 domains.append(href)
 
         if domains:

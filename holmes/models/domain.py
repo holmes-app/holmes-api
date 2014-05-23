@@ -21,6 +21,7 @@ class Domain(Base):
     pages = relationship("Page", backref="domain")
     reviews = relationship("Review", backref="domain")
     violations = relationship("Violation", backref="domain")
+    violations_prefs = relationship("DomainsViolationsPrefs", backref="domain")
 
     def to_dict(self):
         return {
@@ -144,6 +145,10 @@ class Domain(Base):
         query = query.filter(Review.is_active == True, Review.domain_id == self.id)
 
         return query.scalar()
+
+    @classmethod
+    def get_all_domains(cls, db):
+        return db.query(Domain).all()
 
     @classmethod
     def get_domain_names(cls, db):

@@ -15,10 +15,6 @@ from tests.fixtures import PageFactory
 class TestTotalRequestsValidator(ValidatorTestCase):
 
     def test_can_validate_js_requests_on_globo_html(self):
-        config = Config()
-        config.MAX_JS_REQUESTS_PER_PAGE = 1
-        config.MAX_JS_KB_PER_PAGE_AFTER_GZIP = 0.03
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -26,9 +22,15 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.size.js': {'default_value': 0.03},
+            'total.requests.js': {'default_value': 1},
+        }
 
         content = self.get_file('globo.html')
 
@@ -66,8 +68,6 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             ))
 
     def test_can_validate_js_requests_zero_requests(self):
-        config = Config()
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -75,9 +75,15 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.size.js': {'default_value': 0.03},
+            'total.requests.js': {'default_value': 1},
+        }
 
         content = "<html></html>"
 
@@ -99,8 +105,6 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.called).to_be_false()
 
     def test_can_validate_js_requests_empty_html(self):
-        config = Config()
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -108,9 +112,15 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
-            validators=[]
+            config=Config(),
+            validators=[],
+            cache=self.sync_cache
         )
+
+        reviewer.violation_definitions = {
+            'total.size.js': {'default_value': 0.03},
+            'total.requests.js': {'default_value': 1},
+        }
 
         result = {
             'url': page.url,
@@ -130,10 +140,6 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect(validator.add_violation.called).to_be_false()
 
     def test_can_get_violation_definitions(self):
-        config = Config()
-        config.MAX_JS_REQUESTS_PER_PAGE = 1
-        config.MAX_JS_KB_PER_PAGE_AFTER_GZIP = 0.03
-
         page = PageFactory.create()
 
         reviewer = Reviewer(
@@ -141,9 +147,14 @@ class TestTotalRequestsValidator(ValidatorTestCase):
             page_uuid=page.uuid,
             page_url=page.url,
             page_score=0.0,
-            config=config,
+            config=Config(),
             validators=[]
         )
+
+        reviewer.violation_definitions = {
+            'total.size.js': {'default_value': 0.03},
+            'total.requests.js': {'default_value': 1},
+        }
 
         content = self.get_file('globo.html')
 
@@ -185,3 +196,39 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         total_size = validator.get_total_size_js()
 
         expect(total_size).to_equal(100)
+
+    def test_can_get_default_violations_values(self):
+        config = Config()
+        config.MAX_JS_KB_PER_PAGE_AFTER_GZIP = 70
+        config.MAX_JS_REQUESTS_PER_PAGE = 5
+
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=config,
+            validators=[]
+        )
+
+        validator = JSRequestsValidator(reviewer)
+
+        violations_values = validator.get_default_violations_values(config)
+
+        expect(violations_values).to_include('total.size.js')
+        expect(violations_values).to_include('total.requests.js')
+
+        expect(violations_values['total.size.js']).to_length(2)
+        expect(violations_values['total.requests.js']).to_length(2)
+
+        expect(violations_values['total.size.js']).to_be_like({
+            'value': config.MAX_JS_KB_PER_PAGE_AFTER_GZIP,
+            'description': config.get_description('MAX_JS_KB_PER_PAGE_AFTER_GZIP')
+        })
+
+        expect(violations_values['total.requests.js']).to_be_like({
+            'value': config.MAX_JS_REQUESTS_PER_PAGE,
+            'description': config.get_description('MAX_JS_REQUESTS_PER_PAGE')
+        })

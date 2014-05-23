@@ -39,11 +39,23 @@ class MetaTagsValidator(Validator):
                     'to keep meta descriptions shorter for better indexing on '
                     'search engines. This limit is configurable by Holmes '
                     'Configuration.'
-                )
+                ),
+                'unit': 'number'
+            }
+        }
+
+    @classmethod
+    def get_default_violations_values(cls, config):
+        return {
+            'page.metatags.description_too_big': {
+                'value': config.METATAG_DESCRIPTION_MAX_SIZE,
+                'description': config.get_description('METATAG_DESCRIPTION_MAX_SIZE')
             }
         }
 
     def validate(self):
+        max_size = self.get_violation_pref('page.metatags.description_too_big')
+
         meta_tags = self.review.data.get('meta.tags', None)
 
         if not meta_tags:
@@ -53,7 +65,6 @@ class MetaTagsValidator(Validator):
                 points=100
             )
 
-        max_size = self.config.METATAG_DESCRIPTION_MAX_SIZE
         for mt in meta_tags:
             if mt['key'] == 'description' and len(mt['content']) > max_size:
                 self.add_violation(
