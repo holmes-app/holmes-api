@@ -62,6 +62,7 @@ class ViolationHandler(BaseHandler):
         for item in reviews:
             reviews_data.append({
                 'uuid': item.review_uuid,
+                'domain': item.domain_name,
                 'page': {
                     'uuid': item.page_uuid,
                     'url': item.url,
