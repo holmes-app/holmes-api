@@ -45,7 +45,7 @@ class LimiterHandler(BaseHandler):
 
         if access_token is None:
             self.set_status(403)
-            self.write_json({'reason': 'Empty access token'})
+            self.write_json({'reason': 'Empty access token', 'description': self._('Empty access token')})
             return
 
         result = yield User.authenticate(
@@ -57,7 +57,7 @@ class LimiterHandler(BaseHandler):
 
         if result and result.get('user', None) is None:
             self.set_status(401)
-            self.write_json({'reason': 'Unauthorized user'})
+            self.write_json({'reason': 'Unauthorized user', 'description': self._('Unauthorized user')})
             return
 
         post_data = loads(self.request.body)
@@ -67,7 +67,7 @@ class LimiterHandler(BaseHandler):
 
         if not url and not value:
             self.set_status(400)
-            self.write_json({'reason': 'Not url or value'})
+            self.write_json({'reason': 'Not url or value', 'description': self._('Not url or value')})
             return
 
         result = Limiter.add_or_update_limiter(self.db, url, value)
@@ -80,14 +80,14 @@ class LimiterHandler(BaseHandler):
     def delete(self, limiter_id=None):
         if not limiter_id:
             self.set_status(400)
-            self.write_json({'reason': 'Invalid data'})
+            self.write_json({'reason': 'Invalid data', 'description': self._('Invalid data')})
             return
 
         access_token = self.request.headers.get('X-AUTH-HOLMES', None)
 
         if access_token is None:
             self.set_status(403)
-            self.write_json({'reason': 'Empty access token'})
+            self.write_json({'reason': 'Empty access token', 'description': self._('Empty access token')})
             return
 
         result = yield User.authenticate(
@@ -99,14 +99,14 @@ class LimiterHandler(BaseHandler):
 
         if result and result.get('user', None) is None:
             self.set_status(401)
-            self.write_json({'reason': 'Unauthorized user'})
+            self.write_json({'reason': 'Unauthorized user', 'description': self._('Unauthorized user')})
             return
 
         limiter = Limiter.by_id(limiter_id, self.db)
 
         if not limiter or not limiter.id:
             self.set_status(404)
-            self.write_json({'reason': 'Not Found'})
+            self.write_json({'reason': 'Not Found', 'description': self._('Not Found')})
             return
 
         Limiter.delete(limiter.id, self.db)

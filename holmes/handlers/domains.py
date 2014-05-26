@@ -94,7 +94,7 @@ class DomainViolationsPerDayHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         violations_per_day = domain.get_violations_per_day(self.db)
@@ -120,7 +120,7 @@ class DomainReviewsHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         reviews = yield self.application.search_provider.get_domain_active_reviews(
@@ -147,7 +147,7 @@ class DomainGroupedViolationsHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         violation_defs = self.application.violation_definitions
@@ -184,7 +184,7 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         violation_defs = self.application.violation_definitions
@@ -221,7 +221,7 @@ class DomainsChangeStatusHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         domain.is_active = not domain.is_active
