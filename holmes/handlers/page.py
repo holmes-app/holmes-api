@@ -17,7 +17,7 @@ class PageHandler(BaseHandler):
         page = Page.by_uuid(uuid, self.db)
 
         if not page:
-            self.set_status(404, 'Page UUID [%s] not found' % uuid)
+            self.set_status(404, self._('Page UUID [%s] not found') % uuid)
             return
 
         page_json = {

@@ -1,8 +1,8 @@
 msgid ""
 msgstr "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-26 17:48-0300\n"
-"PO-Revision-Date: 2014-05-26 16:48-0400\n"
+"POT-Creation-Date: 2014-05-26 18:12-0300\n"
+"PO-Revision-Date: 2014-05-26 17:13-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -13,8 +13,13 @@ msgstr "Project-Id-Version: holmes\n"
 "X-Generator: crowdin.net\n"
 "Language: en_US\n"
 
-#: holmes/handlers/domains.py:48
+#: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #, python-format
 msgid "Domain %s not found"
 msgstr "Domain %s not found"
+
+#: holmes/handlers/page.py:20
+#, python-format
+msgid "Page UUID [%s] not found"
+msgstr ""
 

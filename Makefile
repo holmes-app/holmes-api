@@ -14,6 +14,7 @@ tox:
 	@PATH=$$PATH:~/.pythonbrew/pythons/Python-2.6.*/bin/:~/.pythonbrew/pythons/Python-2.7.*/bin/:~/.pythonbrew/pythons/Python-3.0.*/bin/:~/.pythonbrew/pythons/Python-3.1.*/bin/:~/.pythonbrew/pythons/Python-3.2.3/bin/:~/.pythonbrew/pythons/Python-3.3.0/bin/ tox
 
 setup:
+	@gem install crowdin-cli
 	@pip install -U -e .\[tests\]
 
 kill_redis:
@@ -93,7 +94,7 @@ hon:
 
 extract_translations:
 	@mkdir -p ./holmes/i18n/{locale,sources}
-	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot .
+	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot ./holmes/
 
 upload_translations: extract_translations
 	@crowdin-cli upload sources
