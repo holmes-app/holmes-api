@@ -90,3 +90,14 @@ publish:
 
 hon:
 	@honcho start
+
+extract_translations:
+	@mkdir -p ./holmes/i18n/{locale,sources}
+	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot .
+
+upload_translations: extract_translations
+	@crowdin-cli upload sources
+
+download_translations:
+	@crowdin-cli download
+	@pybabel compile -D api -d ./holmes/i18n/locale

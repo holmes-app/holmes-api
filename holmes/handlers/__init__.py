@@ -5,11 +5,11 @@ import logging
 
 from ujson import dumps
 from tornado.web import RequestHandler
+from tornadobabel.mixin import TornadoBabelMixin
 
 from holmes import __version__
 
-
-class BaseHandler(RequestHandler):
+class BaseHandler(TornadoBabelMixin, RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
         self._session = None

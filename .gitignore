@@ -42,3 +42,5 @@ holmes/docs/_build
 
 #vim
 .ropeproject
+
+crowdin.yaml
