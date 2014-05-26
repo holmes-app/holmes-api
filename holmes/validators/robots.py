@@ -23,8 +23,8 @@ class RobotsValidator(Validator):
         return {
             'robots.not_found': {
                 'title': _('Robots file not found'),
-                'description': lambda value: _("The robots file at '%s' was not found.") % value,
-                'category': 'SEO',
+                'description': lambda value: "The robots file at '%s' was not found." % value,
+                'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of robots file. A robots.txt file tells a search '
                     'engine what content they will index or not.'
@@ -33,7 +33,7 @@ class RobotsValidator(Validator):
             'robots.empty': {
                 'title': _('Robots file was empty'),
                 'description': lambda value: "The robots file at '%s' was empty." % value,
-                'category': 'SEO',
+                'category': _('SEO'),
                 'generic_description': _(
                     'Validates the content of a robots file. If empty, the search engines '
                     'will understand that has no robots file present.'
@@ -42,7 +42,7 @@ class RobotsValidator(Validator):
             'robots.sitemap.not_found': {
                 'title': _('Sitemap in Robots not found'),
                 'description': lambda value: cls.SITEMAP_NOT_FOUND,
-                'category': 'SEO',
+                'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of Sitemap in Robots.txt. '
                     'The Sitemap tells the robot how your website is '
@@ -52,7 +52,7 @@ class RobotsValidator(Validator):
             'robots.disallow.not_found': {
                 'title': _('Disallow in Robots not found'),
                 'description': lambda value: cls.DISALLOW_NOT_FOUND,
-                'category': 'SEO',
+                'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of Disallow in Robots.txt. '
                     'Disallow lists the files and directories to be '
@@ -62,7 +62,7 @@ class RobotsValidator(Validator):
             'robots.disallow.root_path': {
                 'title': _('Disallow: / in Robots'),
                 'description': lambda value: cls.DISALLOW_ROOT_PATH,
-                'category': 'SEO',
+                'category': _('SEO'),
                 'generic_description': _(
                     'Validates if the root path of your site is in '
                     'Disallow directive of Robots.txt. If true, the '

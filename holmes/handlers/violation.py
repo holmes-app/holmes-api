@@ -17,9 +17,9 @@ class MostCommonViolationsHandler(BaseHandler):
         result = []
         for violation in self.application.violation_definitions.values():
             result.append({
-                'name': violation['title'],
+                'name': self._(violation['title']),
                 'key': violation['key'].name,
-                'category': violation['category'],
+                'category': self._(violation['category']),
                 'count': violations.get(violation['key'].name, 0),
             })
 
@@ -40,13 +40,13 @@ class ViolationHandler(BaseHandler):
         if domain_filter is not None:
             domain = Domain.get_domain_by_name(domain_filter, self.db)
             if not domain:
-                self.set_status(404, 'Domain %s not found' % domain_filter)
+                self.set_status(404, self._('Domain %s not found') % domain_filter)
                 self.finish()
                 return
 
         violations = self.application.violation_definitions
         if key_name not in violations:
-            self.set_status(404, 'Invalid violation key %s' % key_name)
+            self.set_status(404, self._('Invalid violation key %s') % key_name)
             self.finish()
             return
 
@@ -86,7 +86,7 @@ class ViolationDomainsHandler(BaseHandler):
         violations = self.application.violation_definitions
 
         if key_name not in violations:
-            self.set_status(404, 'Invalid violation key %s' % key_name)
+            self.set_status(404, self._('Invalid violation key %s') % key_name)
             return
 
         violation_title = violations[key_name]['title']
@@ -97,9 +97,9 @@ class ViolationDomainsHandler(BaseHandler):
         domains = Violation.get_by_key_id_group_by_domain(self.db, key_id)
 
         violation = {
-            'title': violation_title,
-            'description': violation_description,
-            'category': violation_category,
+            'title': self._(violation_title),
+            'description': self._(violation_description),
+            'category': self._(violation_category),
             'domains': [{'name': name, 'count': count} for (name, count) in domains],
             'total': sum(count for (name, count) in domains)
         }
@@ -121,7 +121,7 @@ class ViolationsHandler(BaseHandler):
             json.append({
                 'key_name': key,
                 'title': self._(violation.get('title')),
-                'category': violation.get('category', None)
+                'category': self._(violation.get('category', None))
             })
 
         self.write_json(json)
