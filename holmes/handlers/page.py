@@ -47,7 +47,7 @@ class PageHandler(BaseHandler):
         created, url, result = result
 
         if not created and result['reason'] == 'invalid_url':
-            self.set_status(400, 'Invalid url [%s]' % url)
+            self.set_status(400, self._('Invalid url [%s]') % url)
             self.write_json({
                 'reason': 'invalid_url',
                 'url': url,
@@ -57,7 +57,7 @@ class PageHandler(BaseHandler):
             return
 
         if not created and result['reason'] == 'redirect':
-            self.set_status(400, 'Redirect URL [%s]' % url)
+            self.set_status(400, self._('Redirect URL [%s]') % url)
             self.write_json({
                 'reason': 'redirect',
                 'url': url,
@@ -77,7 +77,7 @@ class PageReviewsHandler(BaseHandler):
         page = Page.by_uuid(uuid, self.db)
 
         if not page:
-            self.set_status(404, 'Page UUID [%s] not found' % uuid)
+            self.set_status(404, self._('Page UUID [%s] not found') % uuid)
             return
 
         reviews = self.db.query(Review) \
@@ -102,7 +102,7 @@ class PageViolationsPerDayHandler(BaseHandler):
         page = Page.by_uuid(uuid, self.db)
 
         if not page:
-            self.set_status(404, 'Page UUID [%s] not found' % uuid)
+            self.set_status(404, self._('Page UUID [%s] not found') % uuid)
             return
 
         violations_per_day = page.get_violations_per_day(self.db)
