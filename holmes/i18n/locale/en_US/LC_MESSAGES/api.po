@@ -1,8 +1,8 @@
 msgid ""
 msgstr "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-26 18:12-0300\n"
-"PO-Revision-Date: 2014-05-26 17:13-0400\n"
+"POT-Creation-Date: 2014-05-26 19:24-0300\n"
+"PO-Revision-Date: 2014-05-26 18:29-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -14,12 +14,38 @@ msgstr "Project-Id-Version: holmes\n"
 "Language: en_US\n"
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
+#: holmes/handlers/request.py:17
 #, python-format
 msgid "Domain %s not found"
 msgstr "Domain %s not found"
 
-#: holmes/handlers/page.py:20
+#: holmes/handlers/page.py:20 holmes/handlers/page.py:80
+#: holmes/handlers/page.py:105 holmes/handlers/review.py:34
 #, python-format
 msgid "Page UUID [%s] not found"
-msgstr ""
+msgstr "Page UUID [%s] not found"
+
+#: holmes/handlers/page.py:50
+#, python-format
+msgid "Invalid url [%s]"
+msgstr "Invalid url [%s]"
+
+#: holmes/handlers/page.py:60
+#, python-format
+msgid "Redirect URL [%s]"
+msgstr "Redirect URL [%s]"
+
+#: holmes/handlers/request.py:21
+#, python-format
+msgid "Status code %s not found"
+msgstr "Status code %s not found"
+
+#: holmes/handlers/request.py:25
+#, python-format
+msgid "Status code %s is not allowed"
+msgstr "Status code %s is not allowed"
+
+#: holmes/validators/robots.py:25
+msgid "Robots file not found"
+msgstr "Robots file not found"
 

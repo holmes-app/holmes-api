@@ -120,7 +120,7 @@ class ViolationsHandler(BaseHandler):
             violation = violations.get(key)
             json.append({
                 'key_name': key,
-                'title': violation.get('title'),
+                'title': self._(violation.get('title')),
                 'category': violation.get('category', None)
             })
 

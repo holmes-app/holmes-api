@@ -57,7 +57,7 @@ class PageHandler(BaseHandler):
             return
 
         if not created and result['reason'] == 'redirect':
-            self.set_status(400, self._('Redirect URL [%s]') % url)
+            self.set_status(400, self._('Supplied URL is a redirect [%s]') % url)
             self.write_json({
                 'reason': 'redirect',
                 'url': url,

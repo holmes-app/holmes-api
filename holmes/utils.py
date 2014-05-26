@@ -18,6 +18,9 @@ EMPTY_DOMAIN_RESULT = ('', '')
 locale_path = abspath(join(dirname(__file__), 'i18n/locale/'))
 languages = {}
 
+def _(message):
+    return message
+
 def load_languages():
     global languages
 
