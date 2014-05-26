@@ -6,6 +6,7 @@ from os.path import abspath, dirname, join
 from preggy import expect
 from mock import patch, Mock, call
 from octopus import TornadoOctopus
+from materialgirl import Materializer
 
 from colorama import Fore, Style
 from holmes.worker import HolmesWorker
@@ -35,6 +36,8 @@ class WorkerTestCase(ApiTestCase):
         expect(worker.validators).to_length(1)
 
         expect(worker.otto).to_be_instance_of(TornadoOctopus)
+
+        expect(worker.girl).to_be_instance_of(Materializer)
 
     def test_config_parser(self):
         worker = HolmesWorker(['-c', join(self.root_path, 'tests/unit/test_worker.conf')])

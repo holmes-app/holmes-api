@@ -10,24 +10,14 @@ from ujson import loads, dumps
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
-from mock import Mock
+from mock import Mock, call
 
-from holmes.models import Domain, Page
+from holmes.models import Page
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory
 
 
 class TestPageHandler(ApiTestCase):
-    # test_can_save, test_can_save_known_domain, test_error_when_invalid_url
-    # and test_when_url_already_exists perform a POST, which issues a commit()
-    # so domains and pages need to be truncated on tear down
-    def tearDown(self):
-        self.db.query(Page).delete()
-        self.db.query(Domain).delete()
-        self.db.flush()
-        self.db.commit()
-        super(TestPageHandler, self).tearDown()
-
     def mock_request(self, status_code, effective_url):
         def handle(*args, **kw):
             response_mock = Mock(status_code=status_code, effective_url=effective_url)
@@ -69,11 +59,9 @@ class TestPageHandler(ApiTestCase):
 
     @gen_test
     def test_can_save(self):
-        def side_effect(*args, **kw):
-            response_mock = Mock(status_code=200, effective_url="http://www.globo.com")
-            kw['callback'](response_mock)
-
         self.mock_request(status_code=200, effective_url="http://www.globo.com")
+
+        self.server.application.girl = Mock()
 
         response = yield self.http_client.fetch(
             self.get_url('/page'),
@@ -90,6 +78,11 @@ class TestPageHandler(ApiTestCase):
 
         expect(page).not_to_be_null()
         expect(str(page_uuid)).to_equal(page.uuid)
+
+        self.server.application.girl.assert_has_calls([
+            call.expire('domains_details'),
+            call.expire('failed_responses_count')
+        ])
 
     def test_can_save_known_domain(self):
         DomainFactory.create(url='http://www.globo.com', name='globo.com')
@@ -234,7 +227,7 @@ class TestNextJobHandler(ApiTestCase):
         self.db.query(Page).delete()
         self.cache.redis.delete('next-jobs')
 
-        domain = DomainFactory.create(name='test123.com')
+        DomainFactory.create(name='test123.com')
         page = PageFactory.create()
         PageFactory.create()
 
@@ -275,7 +268,7 @@ class TestNextJobHandler(ApiTestCase):
         self.cache.redis.delete('next-jobs')
 
         domain = DomainFactory.create(name='test123.com')
-        page = PageFactory.create(domain=domain)
+        PageFactory.create(domain=domain)
 
         response = yield self.http_client.fetch(self.get_url('/next-jobs?domain_filter=otherdomain.com'))
 

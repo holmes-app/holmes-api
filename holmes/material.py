@@ -14,6 +14,8 @@ from holmes.utils import get_domain_from_url
 
 
 def configure_materials(girl, db, config):
+    # The following material is grouped by domain and should be
+    # expired whenever a new domain is added (see page.py:Page.add_domain)
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
@@ -46,9 +48,15 @@ def configure_materials(girl, db, config):
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['most_common_violations']
     )
 
+    # The following material is grouped by domain and should be
+    # expired whenever a new domain is added (see page.py:Page.add_domain)
     girl.add_material(
         'failed_responses_count',
-        partial(MaterialConveyor.failed_responses_count, db, config),
+        partial(
+            Request.get_requests_count_by_status,
+            db,
+            config.get('MAX_REQUESTS_FOR_FAILED_RESPONSES')
+        ),
         config.MATERIALS_EXPIRATION_IN_SECONDS['failed_responses_count'],
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['failed_responses_count']
     )
@@ -65,13 +73,6 @@ class MaterialConveyor(object):
         blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
 
-    @classmethod
-    def failed_responses_count(cls, db, config):
-        return Request.get_requests_count_by_status(
-            db,
-            config.MAX_REQUESTS_FOR_FAILED_RESPONSES
-        )
-
 
 class MaterialWorker(BaseCLI):
     def initialize(self):
@@ -86,7 +87,9 @@ class MaterialWorker(BaseCLI):
 
     def do_work(self):
         self.info('Running material girl...')
+        self.db.begin(subtransactions=True)
         self.girl.run()
+        self.db.close()
 
 
 def main():

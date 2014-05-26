@@ -95,6 +95,7 @@ class FailedResponsesHandler(BaseHandler):
 
         self.write_json(result)
 
+
 class LastRequestsStatusCodeHandler(BaseHandler):
     @coroutine
     def get(self):

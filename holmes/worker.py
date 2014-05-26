@@ -131,6 +131,8 @@ class HolmesWorker(BaseWorker):
 
         self._insert_keys(self.violation_definitions)
 
+        self.configure_material_girl()
+
     def config_parser(self, parser):
         parser.add_argument(
             '--concurrency',
@@ -224,6 +226,7 @@ class HolmesWorker(BaseWorker):
                 db=self.db,
                 cache=self.cache,
                 publish=self.publish,
+                girl=self.girl,
                 fact_definitions=self.fact_definitions,
                 violation_definitions=self.violation_definitions
             )

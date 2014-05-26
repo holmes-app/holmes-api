@@ -98,7 +98,7 @@ class Page(Base):
 
     @classmethod
     def by_url_hash(cls, url_hash, db):
-        return db.query(Page).filter(Page.url_hash==url_hash).first()
+        return db.query(Page).filter(Page.url_hash == url_hash).first()
 
     @classmethod
     def get_page_count(cls, db):
@@ -159,7 +159,7 @@ class Page(Base):
 
     @classmethod
     @return_future
-    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, callback):
+    def add_page(cls, db, cache, url, score, fetch_method, publish_method, config, girl, callback):
         domain_name, domain_url = get_domain_from_url(url)
         if not url or not domain_name:
             callback((False, url, {
@@ -174,7 +174,7 @@ class Page(Base):
 
         fetch_method(
             url,
-            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, callback)),
+            cls.handle_request(cls.handle_add_page(db, cache, url, score, publish_method, config, girl, callback)),
             proxy_host=config.HTTP_PROXY_HOST,
             proxy_port=config.HTTP_PROXY_PORT
         )
@@ -203,7 +203,7 @@ class Page(Base):
         return handle
 
     @classmethod
-    def handle_add_page(cls, db, cache, url, score, publish_method, config, callback):
+    def handle_add_page(cls, db, cache, url, score, publish_method, config, girl, callback):
         def handle(code, body, effective_url):
             if code > 399:
                 callback((False, url, {
@@ -222,7 +222,7 @@ class Page(Base):
                 }))
                 return
 
-            domain = cls.add_domain(url, db, publish_method, config)
+            domain = cls.add_domain(url, db, publish_method, config, girl)
             page_uuid = cls.insert_or_update_page(url, score, domain, db, publish_method, cache, config)
 
             callback((True, url, page_uuid))
@@ -251,8 +251,8 @@ class Page(Base):
             }
 
             db.execute(
-                'INSERT INTO pages (url, url_hash, uuid, domain_id, created_date, score) ' \
-                'VALUES (:url, :url_hash, :uuid, :domain_id, :created_date, :score) ON DUPLICATE KEY ' \
+                'INSERT INTO pages (url, url_hash, uuid, domain_id, created_date, score) '
+                'VALUES (:url, :url_hash, :uuid, :domain_id, :created_date, :score) ON DUPLICATE KEY '
                 'UPDATE score = :score',
                 query_params
             )
@@ -272,7 +272,7 @@ class Page(Base):
         return page_uuid
 
     @classmethod
-    def add_domain(cls, url, db, publish_method, config):
+    def add_domain(cls, url, db, publish_method, config, girl):
         from holmes.models import Domain
 
         domain_name, domain_url = get_domain_from_url(url)
@@ -293,6 +293,9 @@ class Page(Base):
             domain = Domain(url=domain_url, url_hash=url_hash, name=domain_name)
             db.add(domain)
             db.flush()
+
+            girl.expire('domains_details')
+            girl.expire('failed_responses_count')
 
             publish_method(dumps({
                 'type': 'new-domain',

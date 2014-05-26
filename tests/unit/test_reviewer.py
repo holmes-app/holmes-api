@@ -6,9 +6,10 @@ from uuid import uuid4
 
 import requests
 from preggy import expect
-from mock import patch, Mock
+from mock import patch, Mock, call
 
 from holmes.reviewer import Reviewer, ReviewDAO
+from holmes.models import Page
 from holmes.config import Config
 from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
@@ -215,6 +216,30 @@ class TestReview(ApiTestCase):
         response = reviewer.current
         expect(response).not_to_be_null()
         expect(response).to_equal('test')
+
+    @patch.object(Page, 'add_page')
+    def test_enqueue(self, add_page_mock):
+        reviewer = self.get_reviewer()
+        reviewer._wait_timeout = 1
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.async_get_func = Mock()
+        reviewer.girl = Mock()
+
+        reviewer.enqueue([('http://www.ga.com/', 359.0)])
+
+        add_page_mock.assert_has_calls(call(
+            None,
+            None,
+            'http://www.ga.com/',
+            359.0,
+            reviewer.async_get_func,
+            None,
+            reviewer.config,
+            reviewer.girl,
+            reviewer.handle_page_added
+        ))
+
+        reviewer._wait_for_async_requests.assert_called_once_with(1)
 
     def test_enqueue_when_none(self):
         reviewer = self.get_reviewer()
