@@ -31,7 +31,7 @@ class ReviewHandler(BaseReviewHandler):
             return
 
         if not page:
-            self.set_status(404, 'Page with uuid of %s not found!' % page_uuid)
+            self.set_status(404, self._('Page UUID [%s] not found') % page_uuid)
             return
 
         result = review.to_dict(self.application.fact_definitions, self.application.violation_definitions)

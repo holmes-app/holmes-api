@@ -5,14 +5,17 @@ import logging
 
 from ujson import dumps
 from tornado.web import RequestHandler
-from tornadobabel.mixin import TornadoBabelMixin
 
 from holmes import __version__
+import holmes.utils as utils
 
-class BaseHandler(TornadoBabelMixin, RequestHandler):
+class BaseHandler(RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
         self._session = None
+
+        locale = self.get_browser_locale()
+        self._ = utils.install_i18n(locale.code)
 
     def log_exception(self, typ, value, tb):
         for handler in self.application.error_handlers:

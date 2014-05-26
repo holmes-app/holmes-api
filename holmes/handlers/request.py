@@ -14,15 +14,15 @@ class RequestDomainHandler(BaseHandler):
     def get(self, domain_name, status_code):
 
         if not domain_name:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         if not status_code:
-            self.set_status(404, 'Status code %s not found' % status_code)
+            self.set_status(404, self._('Status code %s not found') % status_code)
             return
 
         if status_code == '200':
-            self.set_status(403, 'Status code %s is not allowed' % status_code)
+            self.set_status(403, self._('Status code %s is not allowed') % status_code)
             return
 
         current_page = int(self.get_argument('current_page', 1))

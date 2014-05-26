@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
+from os.path import abspath, join, dirname
 import logging
+import gettext
 
 try:
     from tornado import httputil
@@ -11,6 +14,21 @@ except ImportError:
     logging.warning('Could not import some dependencies. Probably setup.py installing holmes...')
 
 EMPTY_DOMAIN_RESULT = ('', '')
+
+locale_path = abspath(join(dirname(__file__), 'i18n/locale/'))
+languages = {}
+
+def load_languages():
+    global languages
+
+    for language in os.listdir(locale_path):
+        languages[language] = gettext.translation('api', locale_path, languages=[language])
+
+def install_i18n(language="en_US"):
+    global languages
+
+    lang = languages.get(language, 'en_US')
+    return lang.ugettext
 
 
 def get_domain_from_url(url, default_scheme='http'):

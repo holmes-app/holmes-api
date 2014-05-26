@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-26 18:12-0300\n"
+"POT-Creation-Date: 2014-05-26 18:28-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,12 +18,34 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
+#: holmes/handlers/request.py:17
 #, python-format
 msgid "Domain %s not found"
 msgstr ""
 
-#: holmes/handlers/page.py:20
+#: holmes/handlers/page.py:20 holmes/handlers/page.py:80
+#: holmes/handlers/page.py:105 holmes/handlers/review.py:34
 #, python-format
 msgid "Page UUID [%s] not found"
+msgstr ""
+
+#: holmes/handlers/page.py:50
+#, python-format
+msgid "Invalid url [%s]"
+msgstr ""
+
+#: holmes/handlers/page.py:60
+#, python-format
+msgid "Redirect URL [%s]"
+msgstr ""
+
+#: holmes/handlers/request.py:21
+#, python-format
+msgid "Status code %s not found"
+msgstr ""
+
+#: holmes/handlers/request.py:25
+#, python-format
+msgid "Status code %s is not allowed"
 msgstr ""
 

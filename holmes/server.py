@@ -7,6 +7,7 @@ from cow.server import Server
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
 from tornado.httpclient import AsyncHTTPClient
+import tornado.locale
 #from toredis import Client
 import redis
 from materialgirl import Materializer
@@ -40,7 +41,7 @@ from holmes.handlers.limiter import LimiterHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
-from holmes.utils import load_classes
+from holmes.utils import load_classes, load_languages, locale_path
 from holmes.models import Key
 from holmes.models import KeysCategory
 from holmes.cache import Cache
@@ -161,6 +162,8 @@ class HolmesApiServer(Server):
 
         self.configure_material_girl()
 
+        self.configure_i18n()
+
     def configure_material_girl(self):
         from holmes.material import configure_materials
 
@@ -244,6 +247,10 @@ class HolmesApiServer(Server):
             application.event_bus = EventBus(self.application)  # can now connect to redis using pubsub
 
         return handle
+
+    def configure_i18n(self):
+        load_languages()
+        tornado.locale.load_gettext_translations(locale_path, 'api')
 
 if __name__ == '__main__':
     main()
