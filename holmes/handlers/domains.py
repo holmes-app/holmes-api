@@ -45,14 +45,14 @@ class DomainDetailsHandler(BaseHandler):
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         result = self.girl.get('domains_details')
         data = next((l for l in result if l['name'] == domain_name), None)
 
         if not data:
-            self.set_status(404, 'Domain %s not found' % domain_name)
+            self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
         page_count = data.get('pageCount', 0)
