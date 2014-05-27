@@ -173,13 +173,18 @@ class Review(Base):
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
 
-        query = db.query(
-            Page.last_review_uuid.label('review_uuid'),
-            Page.url,
-            Page.uuid.label('page_uuid'),
-            Page.last_review_date.label('completed_date'),
-            Domain.name.label('domain_name')
-        )
+        query = db \
+            .query(
+                Page.last_review_uuid.label('review_uuid'),
+                Page.url,
+                Page.uuid.label('page_uuid'),
+                Page.last_review_date.label('completed_date'),
+                Domain.name.label('domain_name')
+            ) \
+            .filter(
+                Domain.id == Page.domain_id
+            )
+
 
         query = cls._filter_by_violation_key_name(db, query, key_id, domain_filter, page_filter)
 
