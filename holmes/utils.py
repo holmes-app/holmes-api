@@ -30,7 +30,8 @@ def load_languages():
 def install_i18n(language="en_US"):
     global languages
 
-    lang = languages.get(language, 'en_US')
+    english = languages.get("en_US")
+    lang = languages.get(language, english)
     return lang.ugettext
 
 
