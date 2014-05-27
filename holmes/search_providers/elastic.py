@@ -6,6 +6,7 @@ from holmes.search_providers import SearchProvider
 from holmes.models.keys import Key
 from holmes.models.page import Page
 from holmes.models.violation import Violation
+from holmes.utils import get_domain_from_url
 
 from pyelasticsearch import ElasticSearch
 from tornado.concurrent import return_future
@@ -126,13 +127,18 @@ class ElasticSearchProvider(SearchProvider):
                 for hit in hits['hits']:
                     noMilliseconds = hit['_source']['completed_date'].split('.')[0]
                     completedAt = datetime.strptime(noMilliseconds, '%Y-%m-%dT%H:%M:%S')
+
+                    page_url = hit['_source']['page_url']
+                    domain_name, _ = get_domain_from_url(page_url)
+
                     reviews_data.append({
                         'uuid': hit['_source']['uuid'],
                         'page': {
                             'uuid': hit['_source']['page_uuid'],
-                            'url': hit['_source']['page_url'],
+                            'url': page_url,
                             'completedAt': completedAt
-                        }
+                        },
+                        'domain': domain_name
                     })
 
                 reviews_count = hits.get('total', 0)

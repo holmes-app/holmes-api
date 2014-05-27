@@ -168,6 +168,7 @@ class Review(Base):
     @classmethod
     def get_by_violation_key_name(cls, db, key_id, current_page=1, page_size=10, domain_filter=None, page_filter=None):
         from holmes.models.page import Page  # to avoid circular dependency
+        from holmes.models.domain import Domain  # to avoid circular dependency
 
         lower_bound = (current_page - 1) * page_size
         upper_bound = lower_bound + page_size
@@ -176,7 +177,8 @@ class Review(Base):
             Page.last_review_uuid.label('review_uuid'),
             Page.url,
             Page.uuid.label('page_uuid'),
-            Page.last_review_date.label('completed_date')
+            Page.last_review_date.label('completed_date'),
+            Domain.name.label('domain_name')
         )
 
         query = cls._filter_by_violation_key_name(db, query, key_id, domain_filter, page_filter)

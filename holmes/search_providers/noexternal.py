@@ -33,7 +33,8 @@ class NoExternalSearchProvider(SearchProvider):
                     'uuid': item.page_uuid,
                     'url': item.url,
                     'completedAt': item.completed_date
-                }
+                },
+                'domain': item.domain_name,
             })
 
         callback({
