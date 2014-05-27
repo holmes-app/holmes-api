@@ -2,22 +2,24 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class OpenGraphValidator(Validator):
 
     @classmethod
-    def get_open_graph_message(cls, value):
-        return 'Some tags are missing: %s' % (', '.join(value))
+    def get_open_graph_parsed_value(cls, value):
+        return {'tags': ', '.join(value)}
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'absent.metatags.open_graph': {
-                'title': 'Open Graph tags not found',
-                'description': cls.get_open_graph_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Open Graph tags not found'),
+                'description': _('Some tags are missing: %(tags)s'),
+                'value_parser': cls.get_open_graph_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Validates the absent of Open Graph metatags. '
                     'They allow the Facebook Crawler to generate '
                     'previews when your content is shared on Facebook.'

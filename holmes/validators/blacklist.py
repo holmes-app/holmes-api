@@ -3,28 +3,26 @@
 
 from holmes.utils import get_domain_from_url, is_valid
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class BlackListValidator(Validator):
     @classmethod
-    def get_blacklist_message(cls, value):
-        return 'Some links are blacklisted: %s' % (
-            ', '.join(
-                    [
-                        '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
-                        for index, url in enumerate(value)
-                    ]
-                )
-            )
+    def get_blacklist_parsed_value(cls, value):
+        return ', '.join([
+            '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
+            for index, url in enumerate(value)
+        ])
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'blacklist.domains': {
-                'title': 'Domain Blacklist',
-                'description': cls.get_blacklist_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Domain Blacklist'),
+                'description': _('Some links are blacklisted: %s'),
+                'value_parser': cls.get_blacklist_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Detected domain blacklisted hyperlinks. '
                     'Links with this violation are those that have anchors '
                     'to websites added in Holmes\'s Black List configuration.'

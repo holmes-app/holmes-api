@@ -3,39 +3,33 @@
 
 from holmes.utils import is_valid
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class DomainCanonicalizationValidator(Validator):
 
     @classmethod
-    def get_different_endpoints_description(cls, value):
-        return (
-            'This page have the canonical url`s "{}" and "{}" with '
-            'different endpoints. This both url`s should point '
-            'to the same location. '
-            'Not fixing this may cause search engines to be unsure as '
-            'to which URL is the correct one to index.'
-        ).format(value['no_www_url'], value['www_url'])
-
-    @classmethod
-    def get_no_301_description(cls, value):
-        return (
-            'This Canonical url "{}" is redirecting to "{}" with a different '
-            'than 301 status code: {}. This may cause search engines to be '
-            'unsure to where the URL is being redirected.'.format(
-                value['effective_url'], value['headers']['Location'],
-                value['status_code']
-            )
-        )
+    def get_no_301_parsed_value(cls, value):
+        return {
+            'effective_url': value['effective_url'],
+            'location': value['headers']['Location'],
+            'status_code': value['status_code']
+        }
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'page.canonicalization.different_endpoints': {
-                'title': 'Canonical URLs have different endpoints',
-                'description': cls.get_different_endpoints_description,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Canonical URLs have different endpoints'),
+                'description': _(
+                    'This page have the canonical url`s "%(no_www_url)s" and '
+                    '"%(www_url)s" with different endpoints. This both url`s '
+                    'should point to the same location. '
+                    'Not fixing this may cause search engines to be unsure as '
+                    'to which URL is the correct one to index.'
+                ),
+                'category': _('SEO'),
+                'generic_description': _(
                     'Canonical URLs is a couple of URLs with and without '
                     'the \'www\' prefix. For example: site.com and www.site.com '
                     'are canonical URLs. This violation is about a root page with '
@@ -44,10 +38,15 @@ class DomainCanonicalizationValidator(Validator):
                 )
             },
             'page.canonicalization.no_301_redirect': {
-                'title': 'Canonical URLs have a non 301 redirect',
-                'description': cls.get_no_301_description,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Canonical URLs have a non 301 redirect'),
+                'description': _(
+                    'This Canonical url "%(effective_url)s" is redirecting to '
+                    '"%(location)s" with a different than 301 status code: '
+                    '%(status_code)s. This may cause search engines to be '
+                    'unsure to where the URL is being redirected.'),
+                'value_parser': cls.get_no_301_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Canonical URLs is a couple of URLs with and without '
                     'the \'www\' prefix. For example: site.com and www.site.com '
                     'are canonical URLs. Canonical URLs should point to the '

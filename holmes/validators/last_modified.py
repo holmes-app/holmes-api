@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class LastModifiedValidator(Validator):
@@ -10,16 +11,16 @@ class LastModifiedValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.last_modified.not_found': {
-                'title': 'Last-Modified not found',
-                'description': lambda value: 'Last-Modified was not found on %s.' % value,
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Last-Modified not found'),
+                'description': _('Last-Modified was not found on %s.'),
+                'category': _('HTTP'),
+                'generic_description': _(
                     'The Last-Modified Header information allows Web Crawlers '
                     '(like Holmes) and search engines to know if the page is '
-                    'modified since the last content retrival. If Last-Modified '
-                    'wasn\'t present, all requests made by this engines on the '
-                    'page will proccess all the content and can be '
-                    'performatically bad to the server.'
+                    'modified since the last content retrival. If '
+                    'Last-Modified wasn\'t present, all requests made by '
+                    'this engines on the page will proccess all the content '
+                    'and can be performatically bad to the server.'
                 )
             }
         }

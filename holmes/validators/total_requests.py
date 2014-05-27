@@ -3,6 +3,7 @@
 
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class TotalRequestsValidator(Validator):
@@ -14,7 +15,7 @@ class TotalRequestsValidator(Validator):
         self.add_fact(
             key='total.requests',
             value=len(css_files) + len(js_files) + len(img_files),
-            title='Total requests'
+            title=_('Total requests')
         )
 
     def get_css_requests(self):

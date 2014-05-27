@@ -2,24 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class ImageAltValidator(Validator):
     @classmethod
-    def get_without_alt_message(cls, value):
+    def get_without_alt_parsed_value(cls, value):
         result = []
         for src, name in value:
             data = '<a href="%s" target="_blank">%s</a>' % (src, name)
             result.append(data)
 
-        return (
-            'Images without alt text are not good for '
-            'Search Engines. Images without alt were '
-            'found for: %s.' % (', '.join(result))
-        )
+        return {'images': ', '.join(result)}
 
     @classmethod
-    def get_alt_too_big_message(cls, value):
+    def get_alt_too_big_parsed_value(cls, value):
         result = []
         for src, name, alt in value['images']:
             data = u'<a href="{}" alt="{}" target="_blank">{}</a>'.format(
@@ -27,20 +24,23 @@ class ImageAltValidator(Validator):
             )
             result.append(data)
 
-        return (
-            'Images with alt text bigger than %d chars are not good for '
-            'Search Engines. Images with a too big alt were '
-            'found for: %s.' % (value['max_size'], ', '.join(result))
-        )
+        return {
+            'max_size': value['max_size'],
+            'images': ', '.join(result)
+        }
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'invalid.images.alt': {
-                'title': 'Image(s) without alt attribute',
-                'description': cls.get_without_alt_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Image(s) without alt attribute'),
+                'description': _(
+                    'Images without alt text are not good for '
+                    'Search Engines. Images without alt were '
+                    'found for: %(images)s.'),
+                'value_parser': cls.get_without_alt_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Images without alt attribute are not good for '
                     'search engines. They are searchable by the content '
                     'of this attribute, so if it\'s empty, it cause bad '
@@ -48,10 +48,14 @@ class ImageAltValidator(Validator):
                 )
             },
             'invalid.images.alt_too_big': {
-                'title': 'Image(s) with alt attribute too big',
-                'description': cls.get_alt_too_big_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Image(s) with alt attribute too big'),
+                'description': _(
+                    'Images with alt text bigger than %(max_size)d chars are '
+                    'not good for search engines. Images with a too big alt '
+                    'were found for: %(images)s.'),
+                'value_parser': cls.get_alt_too_big_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Images with alt text too long are not good to SEO. '
                     'This maximum value are configurable '
                     'by Holmes configuration.'

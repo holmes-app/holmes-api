@@ -3,26 +3,28 @@
 
 from holmes.validators.base import Validator
 from holmes.facters.links import REMOVE_HASH
+from holmes.utils import _
 
 
 class AnchorWithoutAnyTextValidator(Validator):
     @classmethod
-    def get_empty_anchors_message(cls, value):
-        return 'Empty anchors are not good for Search Engines. ' \
-               'Empty anchors were found for links to: %s.' % (
-                   ', '.join([
-                       '<a href="%s" target="_blank">#%s</a>' % (href, index)
-                       for index, href in enumerate(value)
-                   ]))
+    def get_empty_anchors_parsed_value(cls, value):
+        return ', '.join([
+            '<a href="%s" target="_blank">#%s</a>' % (href, index)
+            for index, href in enumerate(value)
+        ])
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'empty.anchors': {
-                'title': 'Empty anchor(s) found',
-                'description': cls.get_empty_anchors_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Empty anchor(s) found'),
+                'description': _(
+                    'Empty anchors are not good for Search Engines. '
+                    'Empty anchors were found for links to: %s.'),
+                'value_parser': cls.get_empty_anchors_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'By using empty anchor text won\'t prevent search '
                     'engines from indexing your pages but you will lose a '
                     'good opportunity to add relevance to your pages. '

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class RequiredMetaTagsValidator(Validator):
@@ -10,10 +11,11 @@ class RequiredMetaTagsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'absent.meta.tags': {
-                'title': 'Required Meta Tags were not found',
-                'description': lambda value: "Meta tags for %s were not found." % (', '.join(value)),
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Required Meta Tags were not found'),
+                'description': _("Meta tags for %s were not found."),
+                'value_parser': lambda value: ', '.join(value),
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Validates the absent of user defined MetaTags. '
                     'This values are configurable by Holmes Configuration.'
                 )

@@ -1,8 +1,8 @@
 msgid ""
 msgstr "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-26 19:24-0300\n"
-"PO-Revision-Date: 2014-05-26 18:29-0400\n"
+"POT-Creation-Date: 2014-05-27 14:06-0300\n"
+"PO-Revision-Date: 2014-05-27 13:26-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: Arabic\n"
 "MIME-Version: 1.0\n"
@@ -14,9 +14,32 @@ msgstr "Project-Id-Version: holmes\n"
 "Language: ar_SA\n"
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
-#: holmes/handlers/request.py:17
+#: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
+#: holmes/handlers/domains.py:150 holmes/handlers/domains.py:187
+#: holmes/handlers/domains.py:224 holmes/handlers/request.py:17
+#: holmes/handlers/violation.py:43
 #, python-format
 msgid "Domain %s not found"
+msgstr ""
+
+#: holmes/handlers/limiter.py:48 holmes/handlers/limiter.py:90
+msgid "Empty access token"
+msgstr ""
+
+#: holmes/handlers/limiter.py:60 holmes/handlers/limiter.py:102
+msgid "Unauthorized user"
+msgstr ""
+
+#: holmes/handlers/limiter.py:70
+msgid "Not url or value"
+msgstr ""
+
+#: holmes/handlers/limiter.py:83
+msgid "Invalid data"
+msgstr ""
+
+#: holmes/handlers/limiter.py:109
+msgid "Not Found"
 msgstr ""
 
 #: holmes/handlers/page.py:20 holmes/handlers/page.py:80
@@ -32,7 +55,7 @@ msgstr ""
 
 #: holmes/handlers/page.py:60
 #, python-format
-msgid "Redirect URL [%s]"
+msgid "Supplied URL is a redirect [%s]"
 msgstr ""
 
 #: holmes/handlers/request.py:21
@@ -45,7 +68,84 @@ msgstr ""
 msgid "Status code %s is not allowed"
 msgstr ""
 
+#: holmes/handlers/violation.py:20
+msgid "title"
+msgstr ""
+
+#: holmes/handlers/violation.py:22
+msgid "category"
+msgstr ""
+
+#: holmes/handlers/violation.py:49 holmes/handlers/violation.py:89
+#, python-format
+msgid "Invalid violation key %s"
+msgstr ""
+
+#: holmes/validators/robots.py:11
+msgid "You must specify the location of the Sitemap using a robots.txt file"
+msgstr ""
+
+#: holmes/validators/robots.py:14
+msgid "Disallow directive indicates that robots should not access the specific directory, subdirectory or file. "
+msgstr ""
+
+#: holmes/validators/robots.py:18
+msgid "Crawlers may not index anything, because the root path (/) is disallowed."
+msgstr ""
+
 #: holmes/validators/robots.py:25
 msgid "Robots file not found"
+msgstr ""
+
+#: holmes/validators/robots.py:26
+#, python-format
+msgid "The robots file at '%s' was not found."
+msgstr ""
+
+#: holmes/validators/robots.py:27 holmes/validators/robots.py:36
+#: holmes/validators/robots.py:45 holmes/validators/robots.py:55
+#: holmes/validators/robots.py:65
+msgid "SEO"
+msgstr ""
+
+#: holmes/validators/robots.py:28
+msgid "Validates the presence of robots file. A robots.txt file tells a search engine what content they will index or not."
+msgstr ""
+
+#: holmes/validators/robots.py:34
+msgid "Robots file was empty"
+msgstr ""
+
+#: holmes/validators/robots.py:35
+#, python-format
+msgid "The robots file at '%s' was empty."
+msgstr ""
+
+#: holmes/validators/robots.py:37
+msgid "Validates the content of a robots file. If empty, the search engines will understand that has no robots file present."
+msgstr ""
+
+#: holmes/validators/robots.py:43
+msgid "Sitemap in Robots not found"
+msgstr ""
+
+#: holmes/validators/robots.py:46
+msgid "Validates the presence of Sitemap in Robots.txt. The Sitemap tells the robot how your website is organized and witch way can be indexed."
+msgstr ""
+
+#: holmes/validators/robots.py:53
+msgid "Disallow in Robots not found"
+msgstr ""
+
+#: holmes/validators/robots.py:56
+msgid "Validates the presence of Disallow in Robots.txt. Disallow lists the files and directories to be excluded from indexing"
+msgstr ""
+
+#: holmes/validators/robots.py:63
+msgid "Disallow: / in Robots"
+msgstr ""
+
+#: holmes/validators/robots.py:66
+msgid "Validates if the root path of your site is in Disallow directive of Robots.txt. If true, the root of your site will not be indexed on search engines."
 msgstr ""
 

@@ -1,42 +1,32 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class GoogleAnalyticsValidator(Validator):
 
     @classmethod
-    def get_analytics_message(cls, value=None):
-        return 'This page should include a Google Analytics.'
-
-    @classmethod
-    def get_account_message(cls, value=None):
-        return 'This page should include a Google Analytics account.'
-
-    @classmethod
-    def get_domain_message(cls, value=None):
-        return 'This page should include a Google Analytics domain.'
-
-    @classmethod
     def get_violation_definitions(cls):
         return {
             'google_analytics.not_found': {
-                'title': 'Google Analytics not found',
-                'description': cls.get_analytics_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Google Analytics not found'),
+                'description': _(
+                    'This page should include a Google Analytics.'),
+                'category': _('SEO'),
+                'generic_description': _(
                     'Google Analytics script is important to measure '
                     'various kinds of statistics of the page. It\'s a SEO '
                     'violation an ausence of this script.'
                 )
             },
             'google_analytics.account.not_found': {
-                'title': 'Google Analytics account not found',
-                'description': cls.get_account_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Google Analytics account not found'),
+                'description': _(
+                    'This page should include a Google Analytics account.'),
+                'category': _('SEO'),
+                'generic_description': _(
                     'Google Analytics script is important to measure '
                     'various kinds of statistics of the page. The '
                     'configuration of the script needs an account '
@@ -45,10 +35,11 @@ class GoogleAnalyticsValidator(Validator):
                 )
             },
             'google_analytics.domain.not_found': {
-                'title': 'Google Analytics domain not found',
-                'description': cls.get_domain_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Google Analytics domain not found'),
+                'description': _(
+                    'This page should include a Google Analytics domain.'),
+                'category': _('SEO'),
+                'generic_description': _(
                     'Google Analytics script is important to measure '
                     'various kinds of statistics of the page. The '
                     'configuration of the script needs a domain '

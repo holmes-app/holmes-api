@@ -2,30 +2,31 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class MetaRobotsValidator(Validator):
-    META_ROBOTS_NO_INDEX = 'A meta tag with the robots="noindex" ' \
-                           'attribute tells the search engines that ' \
-                           'they should not index this page.'
+    META_ROBOTS_NO_INDEX = _('A meta tag with the robots="noindex" '
+                             'attribute tells the search engines that '
+                             'they should not index this page.')
 
-    META_ROBOTS_NO_FOLLOW = 'A meta tag with the robots="nofollow" ' \
-                            'attribute tells the search engines that they ' \
-                            'should not follow any links in this page.'
+    META_ROBOTS_NO_FOLLOW = _('A meta tag with the robots="nofollow" '
+                              'attribute tells the search engines that they '
+                              'should not follow any links in this page.')
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'presence.meta.robots.noindex': {
-                'title': 'Meta Robots with value of noindex',
-                'description': lambda value: cls.META_ROBOTS_NO_INDEX,
-                'category': 'SEO',
+                'title': _('Meta Robots with value of noindex'),
+                'description': cls.META_ROBOTS_NO_INDEX,
+                'category': _('SEO'),
                 'generic_description': cls.META_ROBOTS_NO_INDEX
             },
             'presence.meta.robots.nofollow': {
-                'title': 'Meta Robots with value of nofollow',
-                'description': lambda value: cls.META_ROBOTS_NO_FOLLOW,
-                'category': 'SEO',
+                'title': _('Meta Robots with value of nofollow'),
+                'description': cls.META_ROBOTS_NO_FOLLOW,
+                'category': _('SEO'),
                 'generic_description': cls.META_ROBOTS_NO_FOLLOW
             }
         }

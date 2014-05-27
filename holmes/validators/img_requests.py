@@ -2,59 +2,44 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class ImageRequestsValidator(Validator):
 
     @classmethod
-    def get_broken_images_message(cls, value):
-        return 'The image(s) in "%s" could not be found or took ' \
-               'more than 10 seconds to load.' % (
-                   ', '.join(
-                   [
-                       '<a href="%s" target="_blank">Link #%s</a>' % (url,
-                                                                      index)
-                       for index, url in enumerate(value)
-                   ]))
+    def get_broken_images_parsed_values(cls, value):
+        return {'images': ', '.join([
+            '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
+            for index, url in enumerate(value)
+        ])}
 
     @classmethod
-    def get_requests_images_message(cls, value):
-        return 'This page has %d image requests (%d over limit). ' \
-               'Having too many requests impose a tax in the browser ' \
-               'due to handshakes.' % (value['total'], value['limit'])
-
-    @classmethod
-    def get_total_size_message(cls, value):
-        return 'There`s %.2fkb of images in this page and that ' \
-               'adds up to more download time slowing down the page ' \
-               'rendering to the user.' % value
-
-    @classmethod
-    def get_single_image_size_message(cls, value):
+    def get_single_image_size_parsed_value(cls, value):
         if 'over_max_size' in value:
             data = []
             for url, size_img in value['over_max_size']:
-                size = size_img - value['limit']
                 name = url.rsplit('/', 1)[-1]
-                if size > 0:
-                    desc = ' (%dkb above limit)' % (size)
-                else:
-                    desc = ''
+                desc = ' (%dkb)' % (size_img)
                 data.append(
                     '<a href="%s" target="_blank">%s</a>%s' % (url, name, desc)
                 )
 
-            return 'Some images are above the expected limit (%dkb): %s' % (
-                value['limit'], ', '.join(data))
+            return {
+                'limit': value['limit'], 'images': ', '.join(data)
+            }
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'broken.img': {
-                'title': 'Image not found',
-                'description': cls.get_broken_images_message,
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Image not found'),
+                'description': _(
+                    'The image(s) in "%(images)s" could not be found or '
+                    'took more than 10 seconds to load.'),
+                'value_parser': cls.get_broken_images_parsed_values,
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Image tags without a valid image resource. '
                     'The pointed resource can be a Client or a '
                     'Server Error, they can be loaded too slow or, '
@@ -62,30 +47,40 @@ class ImageRequestsValidator(Validator):
                 )
             },
             'single.size.img': {
-                'title': 'Single image size in kb is too big',
-                'description': cls.get_single_image_size_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('Single image size in kb is too big'),
+                'description': _(
+                    'Some images are above the expected limit '
+                    '(%(limit)dkb): %(images)s'
+                ),
+                'value_parser': cls.get_single_image_size_parsed_value,
+                'category': _('Performance'),
+                'generic_description': _(
                     'Images with a too big size is very bad to site '
                     'performance. This limits are configurable in '
                     'Holmes configuration.'
                 )
             },
             'total.requests.img': {
-                'title': 'Too many image requests',
-                'description': cls.get_requests_images_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('Too many image requests'),
+                'description': _(
+                    'This page has %(total)d image requests (%(limit)d over '
+                    'limit). Having too many requests impose a tax in the '
+                    'browser due to handshakes.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'A site with too many images requests per page can '
                     'deacrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
                 )
             },
             'total.size.img': {
-                'title': 'Total image size in kb is too big',
-                'description': cls.get_total_size_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('Total image size in kb is too big'),
+                'description': _(
+                    'There`s %.2fkb of images in this page and that '
+                    'adds up to more download time slowing down the page '
+                    'rendering to the user.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'A site with a too big total image size per page can '
                     'decrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'

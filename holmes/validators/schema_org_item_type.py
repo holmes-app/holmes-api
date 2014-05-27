@@ -2,49 +2,55 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class SchemaOrgItemTypeValidator(Validator):
     @classmethod
-    def get_itemscope_message(cls, value=None):
-        return 'In order to conform to schema.org definition ' \
-               'of a webpage, the body tag must feature an ' \
-               'itemscope attribute.'
-
-    @classmethod
-    def get_itemtype_message(cls, value=None):
-        return 'In order to conform to schema.org definition ' \
-               'of a webpage, the body tag must feature an ' \
-               'itemtype attribute.'
-
-    @classmethod
-    def get_invalid_itemtype_message(cls, value=None):
-        url = 'http://schema.org/WebPage'
-        return 'In order to conform to schema.org definition ' \
-               'of a webpage, the body tag must feature an ' \
-               'itemtype attribute with a value of "%s" or ' \
-               'one of its more specific types.' % url
-
-    @classmethod
     def get_violation_definitions(cls):
         return {
             'absent.schema.itemscope': {
-                'title': 'itemscope attribute missing in body',
-                'description': cls.get_itemscope_message,
-                'category': 'SEO',
-                'generic_description': cls.get_itemtype_message()
+                'title': _('itemscope attribute missing in body'),
+                'description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemscope attribute.'),
+                'category': _('SEO'),
+                # TODO: make a better generic_description, more descritive
+                'generic_description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemscope attribute.')
             },
             'absent.schema.itemtype': {
-                'title': 'itemtype attribute missing in body',
-                'description': cls.get_itemtype_message,
-                'category': 'SEO',
-                'generic_description': cls.get_itemtype_message()
+                'title': _('itemtype attribute missing in body'),
+                'description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemtype attribute.'),
+                'category': _('SEO'),
+                # TODO: make a better generic_description, more descritive
+                'generic_description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemtype attribute.')
             },
             'invalid.schema.itemtype': {
-                'title': 'itemtype attribute is invalid',
-                'description': cls.get_invalid_itemtype_message,
-                'category': 'SEO',
-                'generic_description': cls.get_invalid_itemtype_message()
+                'title': _('itemtype attribute is invalid'),
+                'description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemtype attribute with a value of '
+                    '"http://schema.org/WebPage" or '
+                    'one of its more specific types.'),
+                'category': _('SEO'),
+                # TODO: make a better generic_description, more descritive
+                'generic_description': _(
+                    'In order to conform to schema.org definition '
+                    'of a webpage, the body tag must feature an '
+                    'itemtype attribute with a value of '
+                    '"http://schema.org/WebPage" or '
+                    'one of its more specific types.')
             }
         }
 

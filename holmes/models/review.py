@@ -31,7 +31,7 @@ class Review(Base):
     facts = relationship("Fact", cascade="all,delete")
     violations = relationship("Violation", cascade="all,delete")
 
-    def to_dict(self, fact_definitions, violation_definitions):
+    def to_dict(self, fact_definitions, violation_definitions, _):
         return {
             'page': self.page and self.page.to_dict() or None,
             'domain': self.domain and self.domain.name or None,
@@ -40,7 +40,8 @@ class Review(Base):
             'createdAt': self.created_date,
             'completedAt': self.completed_date,
             'facts': [fact.to_dict(fact_definitions) for fact in self.facts],
-            'violations': [violation.to_dict(violation_definitions) for violation in self.violations]
+            'violations': [violation.to_dict(violation_definitions, _)
+                           for violation in self.violations]
         }
 
     def __str__(self):

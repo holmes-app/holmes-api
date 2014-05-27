@@ -2,30 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class CSSRequestsValidator(Validator):
     @classmethod
-    def get_requests_css_message(cls, value):
-        return 'This page has %d CSS request (%d over limit). ' \
-               'Having too many requests impose a tax in the ' \
-               'browser due to handshakes.' % (value['total_css_files'],
-                                               value['over_limit'])
-
-    @classmethod
-    def get_total_size_message(cls, value):
-        return 'There\'s %.2fkb of CSS in this page and that ' \
-               'adds up to more download time slowing down the ' \
-               'page rendering to the user.' % value
-
-    @classmethod
     def get_violation_definitions(cls):
         return {
             'total.requests.css': {
-                'title': 'Too many CSS requests',
-                'description': cls.get_requests_css_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('Too many CSS requests'),
+                'description': _(
+                    'This page has %(total_css_files)d CSS request '
+                    '(%(over_limit)d over limit). Having too many '
+                    'requests impose a tax in the browser due to handshakes.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'Pages with too many CSS requests aren\'t good to '
                     'performance. Overflowing this limit of requests can '
                     'impose a tax in the browser due to handshakes. This '
@@ -33,10 +24,13 @@ class CSSRequestsValidator(Validator):
                 ),
             },
             'total.size.css': {
-                'title': 'CSS size in kb is too big',
-                'description': cls.get_total_size_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('CSS size in kb is too big'),
+                'description': _(
+                    'There\'s %.2fkb of CSS in this page and that '
+                    'adds up to more download time slowing down the '
+                    'page rendering to the user.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'Pages with too big CSS files aren\'t good to performance. '
                     'Having this limit of file sizes overflow adds up to more '
                     'download time slowing down the page rendering to the user. '

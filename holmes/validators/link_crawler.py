@@ -4,6 +4,7 @@
 import re
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 REMOVE_HASH = re.compile('([#].*)$')
 
@@ -15,40 +16,25 @@ class LinkCrawlerValidator(Validator):
         self.moved_links = set()
 
     @classmethod
-    def get_redirect_message(cls, value):
-        return 'A link from your page to "%s" is using a 302 or 307 redirect. ' \
-            'It passes 0%% of link juice (ranking power) and, in most cases, should not be used. ' \
-            'Use 301 instead.' % (
-                ', '.join(
-                    [
-                        '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
-                        for index, url in enumerate(value)
-                    ]
-                )
-            )
-
-    @classmethod
-    def get_broken_link_message(cls, value):
-        return 'This page contains broken links to %s ' \
-            '(the urls failed to load or timed-out after 10 seconds). ' \
-            'This can lead your site to lose rating with ' \
-            'Search Engines and is misleading to users.' % (
-                ', '.join(
-                    [
-                        '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
-                        for index, url in enumerate(value)
-                    ]
-                )
-            )
+    def get_links_parsed_value(cls, value):
+        return {'links': ', '.join([
+            '<a href="%s" target="_blank">Link #%s</a>' % (url, index)
+            for index, url in enumerate(value)
+        ])}
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'link.broken': {
-                'title': 'Broken link(s) found',
-                'description': cls.get_broken_link_message,
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Broken link(s) found'),
+                'description': _(
+                    'This page contains broken links to %(links)s '
+                    '(the urls failed to load or timed-out after 10 seconds). '
+                    'This can lead your site to lose rating with '
+                    'search engines and is misleading to users.'),
+                'value_parser': cls.get_links_parsed_value,
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Validates hyperlinks with a invalid resource. '
                     'The pointed resource can be a Client or a '
                     'Server Error, they can be timeout load or, '
@@ -56,12 +42,17 @@ class LinkCrawlerValidator(Validator):
                 )
             },
             'link.moved.temporarily': {
-                'title': 'Moved Temporarily',
-                'description': cls.get_redirect_message,
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Moved Temporarily'),
+                'description': _(
+                    'A link from your page to "%(links)s" is using a 302 or '
+                    '307 redirect. It passes 0%% of link juice (ranking '
+                    'power) and, in most cases, should not be used. Use '
+                    '301 instead.'),
+                'value_parser': cls.get_links_parsed_value,
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Validates links that uses a 302 or 307 redirect. '
-                    'In this cases, it passes 0% of link juice (ranking '
+                    'In this cases, it passes 0%% of link juice (ranking '
                     'power) and, in most cases, should not be used. Use of '
                     '301 is recommended.'
                 )

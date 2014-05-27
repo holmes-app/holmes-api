@@ -23,7 +23,7 @@ class RobotsValidator(Validator):
         return {
             'robots.not_found': {
                 'title': _('Robots file not found'),
-                'description': lambda value: "The robots file at '%s' was not found." % value,
+                'description': _("The robots file at '%s' was not found."),
                 'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of robots file. A robots.txt file tells a search '
@@ -32,7 +32,7 @@ class RobotsValidator(Validator):
             },
             'robots.empty': {
                 'title': _('Robots file was empty'),
-                'description': lambda value: "The robots file at '%s' was empty." % value,
+                'description': _("The robots file at '%s' was empty."),
                 'category': _('SEO'),
                 'generic_description': _(
                     'Validates the content of a robots file. If empty, the search engines '
@@ -41,7 +41,7 @@ class RobotsValidator(Validator):
             },
             'robots.sitemap.not_found': {
                 'title': _('Sitemap in Robots not found'),
-                'description': lambda value: cls.SITEMAP_NOT_FOUND,
+                'description': cls.SITEMAP_NOT_FOUND,
                 'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of Sitemap in Robots.txt. '
@@ -51,7 +51,7 @@ class RobotsValidator(Validator):
             },
             'robots.disallow.not_found': {
                 'title': _('Disallow in Robots not found'),
-                'description': lambda value: cls.DISALLOW_NOT_FOUND,
+                'description': cls.DISALLOW_NOT_FOUND,
                 'category': _('SEO'),
                 'generic_description': _(
                     'Validates the presence of Disallow in Robots.txt. '
@@ -61,7 +61,7 @@ class RobotsValidator(Validator):
             },
             'robots.disallow.root_path': {
                 'title': _('Disallow: / in Robots'),
-                'description': lambda value: cls.DISALLOW_ROOT_PATH,
+                'description': cls.DISALLOW_ROOT_PATH,
                 'category': _('SEO'),
                 'generic_description': _(
                     'Validates if the root path of your site is in '

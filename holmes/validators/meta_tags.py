@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class MetaTagsValidator(Validator):
@@ -10,32 +11,32 @@ class MetaTagsValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'absent.metatags': {
-                'title': 'Meta tags not present',
-                'description': lambda value: (
-                    "No meta tags found on this page. This is damaging for "
-                    "Search Engines."
+                'title': _('Meta tags not present'),
+                'description': _(
+                    'No meta tags found on this page. This is damaging for '
+                    'Search Engines.'
                 ),
-                'category': 'HTTP',
-                'generic_description': (
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Validates the presence of metatags. They are important '
                     'to inform metadata about the HTML document. '
                     'The absent of metatags are damaging for search '
-                    'engines. Meta elements are typically used to specify page '
-                    'description, keywords, author of the document, last '
+                    'engines. Meta elements are typically used to specify '
+                    'page description, keywords, author of the document, last '
                     'modified, and other metadata.'
                 )
             },
             'page.metatags.description_too_big': {
-                'title': 'Maximum size of description meta tag',
-                'description': lambda value: (
-                    "The meta description tag is longer than %s characters. "
-                    "It is best to keep meta descriptions shorter for better "
-                    "indexing on Search engines."
-                ) % value['max_size'],
-                'category': 'SEO',
-                'generic_description': (
-                    'Validates the size of a description metatag. It is best to '
-                    'keep meta descriptions shorter for better indexing on '
+                'title': _('Maximum size of description meta tag'),
+                'description': _(
+                    'The meta description tag is longer than %(max_size)s '
+                    'characters. It is best to keep meta descriptions '
+                    'shorter for better indexing on search engines.'
+                ),
+                'category': _('SEO'),
+                'generic_description': _(
+                    'Validates the size of a description metatag. It is best '
+                    'to keep meta descriptions shorter for better indexing on '
                     'search engines. This limit is configurable by Holmes '
                     'Configuration.'
                 )

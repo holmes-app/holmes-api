@@ -2,41 +2,35 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class JSRequestsValidator(Validator):
-    @classmethod
-    def get_requests_js_message(cls, value):
-        return 'This page has %d JavaScript request ' \
-               '(%d over limit). Having too many requests impose ' \
-               'a tax in the browser due to handshakes.' % (
-                   value['total_js_files'],
-                   value['over_limit'])
-
-    @classmethod
-    def get_total_size_message(cls, value):
-        return 'There\'s %.2fkb of JavaScript in this page and ' \
-               'that adds up to more download time slowing down ' \
-               'the page rendering to the user.' % value
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'total.requests.js': {
-                'title': 'Too many JavaScript requests',
-                'description': cls.get_requests_js_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('Too many JavaScript requests'),
+                'description': _(
+                    'This page has %(total_js_files)d JavaScript request '
+                    '(%(over_limit)d over limit). Having too many requests '
+                    'impose a tax in the browser due to handshakes.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'A site with too many JavaScript requests per page can '
                     'deacrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'
                 )
             },
             'total.size.js': {
-                'title': 'JavaScript size in kb is too big',
-                'description': cls.get_total_size_message,
-                'category': 'Performance',
-                'generic_description': (
+                'title': _('JavaScript size in kb is too big'),
+                'description': _(
+                    'There\'s %.2fkb of JavaScript in this page and '
+                    'that adds up to more download time slowing down '
+                    'the page rendering to the user.'),
+                'category': _('Performance'),
+                'generic_description': _(
                     'A site with a too big total JavaScript size per page can '
                     'decrease the page load speed and performance. This '
                     'limits are configurable in Holmes configuration.'

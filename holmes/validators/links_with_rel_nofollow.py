@@ -1,30 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from holmes.utils import get_domain_from_url, is_valid
+from holmes.utils import get_domain_from_url, is_valid, _
 from holmes.validators.base import Validator
 
 
 class LinkWithRelNofollowValidator(Validator):
     @classmethod
-    def get_links_nofollow_message(cls, value):
-        return 'Links with rel="nofollow" to the same ' \
-               'domain as the page make it harder for search ' \
-               'engines to crawl the website. Links with ' \
-               'rel="nofollow" were found for hrefs (%s).' % (
-                   ', '.join([
-                       '<a href="%s" target="_blank">#%s</a>' % (link, index)
-                       for index, link in enumerate(value)
-                    ]))
+    def get_links_nofollow_parsed_value(cls, value):
+        return {'links': ', '.join([
+            '<a href="%s" target="_blank">#%s</a>' % (link, index)
+            for index, link in enumerate(value)
+        ])}
 
     @classmethod
     def get_violation_definitions(cls):
         return {
             'invalid.links.nofollow': {
-                'title': 'Links with rel="nofollow"',
-                'description': cls.get_links_nofollow_message,
-                'category': 'SEO',
-                'generic_description': (
+                'title': _('Links with rel="nofollow"'),
+                'description': _(
+                    'Links with rel="nofollow" to the same '
+                    'domain as the page make it harder for search '
+                    'engines to crawl the website. Links with '
+                    'rel="nofollow" were found for hrefs (%(links)s).'),
+                'value_parser': cls.get_links_nofollow_parsed_value,
+                'category': _('SEO'),
+                'generic_description': _(
                     'Validates links with rel="nofollow", this whos links to '
                     'the same domain as the page make it harder for search '
                     'engines to crawl the website.'

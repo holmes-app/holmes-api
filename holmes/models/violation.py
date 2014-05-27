@@ -29,15 +29,18 @@ class Violation(Base):
     def __repr__(self):
         return str(self)
 
-    def to_dict(self, violation_definitions):
+    def to_dict(self, violation_definitions, _):
         definition = violation_definitions.get(self.key.name, {})
+
+        value = definition.get('value_parser', lambda val: val)(self.value)
+        description = _(definition.get('description', _('undefined')))
 
         return {
             'key': self.key.name,
-            'title': definition.get('title', 'undefined'),
-            'description': definition.get('description', lambda value: value)(self.value),
+            'title': _(definition.get('title', _('undefined'))),
+            'description': (description % value) if value else description,
             'points': self.points,
-            'category': definition.get('category', 'undefined')
+            'category': _(definition.get('category', _('undefined')))
         }
 
     @classmethod
@@ -70,8 +73,8 @@ class Violation(Base):
             definition = violation_definitions.get(key_name, {})
             violations.append({
                 "key": key_name,
-                "title": definition.get('title', 'undefined'),
-                "category": definition.get('category', 'undefined'),
+                "title": _(definition.get('title', _('undefined'))),
+                "category": _(definition.get('category', _('undefined'))),
                 "count": count
             })
 

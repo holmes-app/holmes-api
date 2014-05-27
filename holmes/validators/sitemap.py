@@ -4,6 +4,7 @@
 import re
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 URL_RE = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
@@ -25,45 +26,49 @@ class SitemapValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'sitemap.not_found': {
-                'title': 'SiteMap file not found',
-                'description': lambda value: "The sitemap file was not found at '%s'." % value,
-                'category': 'SEO',
-                'generic_description': (
-                    'Validates the absent of a SiteMap file on the page.'
-                )
+                'title': _('SiteMap file not found'),
+                'description': _("The sitemap file was not found at '%s'."),
+                'category': _('SEO'),
+                'generic_description': _(
+                    'Validates the absent of a SiteMap file on the page.')
             },
             'sitemap.empty': {
-                'title': 'SiteMap file is empty',
-                'description': lambda value: "The sitemap file was found at '%s', but was empty." % value,
-                'category': 'Semantics',
-                'generic_description': 'Validates the emptiness of site\'s SiteMap file.'
+                'title': _('SiteMap file is empty'),
+                'description': _(
+                    "The sitemap file was found at '%s', but was empty."),
+                'category': _('Semantics'),
+                'generic_description': _(
+                    'Validates the emptiness of site\'s SiteMap file.')
             },
             'total.size.sitemap': {
-                'title': 'SiteMap file is too big',
-                'description': lambda value: "The sitemap file was found at '%s', but was too big (%.2fMB)." % (
-                    value['url'], value['size']
-                ),
-                'category': 'Performance',
-                'generic_description': 'Validates the size of site\'s SiteMap file.'
+                'title': _('SiteMap file is too big'),
+                'description': _(
+                    "The sitemap file was found at '%(url)s', but was "
+                    "too big (%(size).2fMB)."),
+                'category': _('Performance'),
+                'generic_description': _(
+                    'Validates the size of site\'s SiteMap file.')
             },
             'total.links.sitemap': {
-                'title': 'SiteMap file contains too many links',
-                'description': lambda value: "The sitemap file was found at '%s', but contained too many links (%d). Maybe splitting it would help?" % (
-                    value['url'], value['links']
-                ),
-                'category': 'SEO',
-                'generic_description': (
-                    'Validates the number of links containing in the site\'s SiteMap file. '
-                    'This limit is configurable on Holmes configuration.'
+                'title': _('SiteMap file contains too many links'),
+                'description': _(
+                    "The sitemap file was found at '%(url)s', but contained "
+                    "too many links (%(links)d). Maybe splitting it would "
+                    "help?"),
+                'category': _('SEO'),
+                'generic_description': _(
+                    'Validates the number of links containing in the site\'s '
+                    'SiteMap file. This limit is configurable on Holmes '
+                    'configuration.'
                 )
             },
             'sitemap.links.not_encoded': {
-                'title': 'SiteMap file contains unencoded links',
-                'description': lambda value: "The sitemap file was found at '%s', but contains unencoded links (%s)." % (
-                    value['url'], value['links']
-                ),
-                'category': 'Semantics',
-                'generic_description': (
+                'title': _('SiteMap file contains unencoded links'),
+                'description': _(
+                    "The sitemap file was found at '%(url)s', but contains "
+                    "unencoded links (%(links)s)."),
+                'category': _('Semantics'),
+                'generic_description': _(
                     'Validates the value of site\'s SiteMap file links.'
                 )
             }

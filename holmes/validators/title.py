@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class TitleValidator(Validator):
@@ -10,28 +11,33 @@ class TitleValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.title.not_found': {
-                'title': 'Page title not found',
-                'description': lambda value: "Title was not found on '%s'." % value,
-                'category': 'HTTP',
-                'generic_description': (
+                'title': _('Page title not found'),
+                'description': _("Title was not found on '%s'."),
+                'category': _('HTTP'),
+                'generic_description': _(
                     'Validates the presence of the page\'s title. '
                     'The <title> tag is required in all HTML documents '
                     'and it defines the title of the document.'
                 )
             },
             'page.title.multiple': {
-                'title': 'Too many titles',
-                'description': lambda value: "Page '%s' has %d title tags." % (value['page_url'], value['title_count']),
-                'category': 'Semantics',
-                'generic_description': (
-                    'Validates the presence of more than one page\'s title tag.'
+                'title': _('Too many titles'),
+                'description': _(
+                    "Page '%(page_url)s' has %(title_count)d title tags."),
+                'category': _('Semantics'),
+                'generic_description': _(
+                    'Validates the presence of more than one page\'s title '
+                    'tag.'
                 )
             },
             'page.title.size': {
-                'title': 'Maximum size of a page title',
-                'description': lambda value: 'Title is too long on "%s". The max size is %d characters.' % (value['page_url'], value['max_size']),
-                'category': 'SEO',
-                'generic_description': 'Validates the size of the page\'s title.'
+                'title': _('Maximum size of a page title'),
+                'description': _(
+                    'Title is too long on "%(page_url)s". '
+                    'The max size is %(max_size)d characters.'),
+                'category': _('SEO'),
+                'generic_description': _(
+                    'Validates the size of the page\'s title.')
             }
         }
 

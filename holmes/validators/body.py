@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.validators.base import Validator
+from holmes.utils import _
 
 
 class BodyValidator(Validator):
@@ -9,10 +10,10 @@ class BodyValidator(Validator):
     def get_violation_definitions(cls):
         return {
             'page.body.not_found': {
-                'title': 'Page body not found',
-                'description': lambda value: 'Body was not found on %s.' % value,
-                'category': 'Semantics',
-                'generic_description': (
+                'title': _('Page body not found'),
+                'description': _('Body was not found on %s.'),
+                'category': _('Semantics'),
+                'generic_description': _(
                     'The <body> tag defines the documents body\'s, it\'s contains '
                     'all the content of an HTML document. The ausence of a this tag '
                     'represents a no content and sematically invalid webpage.'
