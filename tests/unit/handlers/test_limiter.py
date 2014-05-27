@@ -147,7 +147,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
             expect(err.response.body).to_equal(
-                '{"reason":"Not url or value"}'
+                '{"reason":"Not url or value","description":"Not url or value"}'
             )
 
     @gen_test
@@ -159,6 +159,7 @@ class TestLimiterHandler(ApiTestCase):
 
         user_data = dumps({
             'reason': 'Unauthorized user',
+            'description': 'Unauthorized user'
         })
 
         self.mock_request(code=402, body=user_data)
@@ -176,7 +177,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
             expect(err.response.body).to_equal(
-                '{"reason":"Unauthorized user"}'
+                '{"reason":"Unauthorized user","description":"Unauthorized user"}'
             )
         else:
             assert False, 'Should not have got this far'
@@ -261,7 +262,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err.code).to_equal(400)
             expect(err.response.reason).to_equal('Bad Request')
             expect(err.response.body).to_equal(
-                '{"reason":"Invalid data"}'
+                '{"reason":"Invalid data","description":"Invalid data"}'
             )
 
     @gen_test
@@ -294,7 +295,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err.code).to_equal(404)
             expect(err.response.reason).to_equal('Not Found')
             expect(err.response.body).to_equal(
-                '{"reason":"Not Found"}'
+                '{"reason":"Not Found","description":"Not Found"}'
             )
 
     @gen_test
@@ -303,6 +304,7 @@ class TestLimiterHandler(ApiTestCase):
 
         user_data = dumps({
             'reason': 'Unauthorized user',
+            'description': 'Unauthorized user'
         })
 
         self.mock_request(code=402, body=user_data)
@@ -319,7 +321,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
             expect(err.response.body).to_equal(
-                '{"reason":"Unauthorized user"}'
+                '{"reason":"Unauthorized user","description":"Unauthorized user"}'
             )
         else:
             assert False, 'Should not have got this far'
