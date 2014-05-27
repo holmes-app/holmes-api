@@ -122,13 +122,18 @@ publish:
 hon:
 	@honcho start
 
-extract_translations:
+ensure_crowdin_conf:
+	@if [ ! -f ./crowdin.yaml ] ; then echo "\nWARNING:\n\nYou do not have a crowdin.yaml file.\\nThis configuration file is required in order to work with holmes translations.\\nThere's a sample file called crowdin.yaml.sample you can use to create your own version.\n\n" && exit 1; fi
+
+ensure_directories:
 	@mkdir -p ./holmes/i18n/{locale,sources}
+
+extract_translations: ensure_directories
 	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot ./holmes/
 
-upload_translations: extract_translations
+upload_translations: ensure_crowdin_conf ensure_directories extract_translations
 	@crowdin-cli upload sources
 
-download_translations:
+download_translations: ensure_crowdin_conf ensure_directories
 	@crowdin-cli download
 	@pybabel compile -D api -d ./holmes/i18n/locale
