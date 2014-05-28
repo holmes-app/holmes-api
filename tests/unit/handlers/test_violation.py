@@ -117,6 +117,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(4)
         expect(violations['reviewsCount']).to_equal(4)
+        expect(violations['reviews'][3]['domain']).to_equal('gc.com')
+        expect(violations['reviews'][3]['page']['url']).to_equal('http://gc.com/0')
         expect(violations['reviews'][3]['page']['completedAt']).to_equal(dt_timestamp)
 
         response = yield self.http_client.fetch(
@@ -230,6 +232,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['title']).to_equal('title.1')
         expect(violations['reviews']).to_length(5)
         expect(violations['reviewsCount']).to_equal(5)
+        expect(violations['reviews'][3]['domain']).to_equal('gb.com')
+        expect(violations['reviews'][3]['page']['url']).to_equal('http://gb.com/1')
         expect(violations['reviews'][3]['page']['completedAt']).to_equal(dt_timestamp)
 
         response = yield self.http_client.fetch(

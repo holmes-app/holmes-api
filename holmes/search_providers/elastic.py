@@ -6,7 +6,6 @@ from holmes.search_providers import SearchProvider
 from holmes.models.keys import Key
 from holmes.models.page import Page
 from holmes.models.violation import Violation
-from holmes.utils import get_domain_from_url
 
 from pyelasticsearch import ElasticSearch
 from tornado.concurrent import return_future
@@ -101,6 +100,7 @@ class ElasticSearchProvider(SearchProvider):
             'page_url': review.page.url,
             'page_last_review_date': review.page.last_review_date,
             'domain_id': review.domain_id,
+            'domain_name': review.domain.name,
         }
 
     def index_review(self, review):
@@ -127,18 +127,14 @@ class ElasticSearchProvider(SearchProvider):
                 for hit in hits['hits']:
                     noMilliseconds = hit['_source']['completed_date'].split('.')[0]
                     completedAt = datetime.strptime(noMilliseconds, '%Y-%m-%dT%H:%M:%S')
-
-                    page_url = hit['_source']['page_url']
-                    domain_name, domain_url = get_domain_from_url(page_url)
-
                     reviews_data.append({
                         'uuid': hit['_source']['uuid'],
                         'page': {
                             'uuid': hit['_source']['page_uuid'],
-                            'url': page_url,
+                            'url': hit['_source']['page_url'],
                             'completedAt': completedAt
                         },
-                        'domain': domain_name
+                        'domain': hit['_source']['domain_name']
                     })
 
                 reviews_count = hits.get('total', 0)
@@ -279,6 +275,10 @@ class ElasticSearchProvider(SearchProvider):
                     },
                     'domain_id': {
                         'type': 'integer'
+                    },
+                    'domain_name': {
+                        'type': 'string',
+                        'index': 'not_analyzed'
                     }
                 }
             }
@@ -301,11 +301,26 @@ class ElasticSearchProvider(SearchProvider):
         except Exception, e:
             raise e
 
-    def _get_max_page_id_from_index(self):
-        query = {
-            'query': {
+    def _get_max_page_id_from_index(self, must_have_domain_name=False):
+        if must_have_domain_name:
+            inner_query = {
+                'constant_score': {
+                    'filter': {
+                        'not': {
+                            'missing': {
+                                'field': 'domain_name'
+                            }
+                        }
+                    }
+                }
+            }
+        else:
+            inner_query = {
                 'match_all': {}
-            },
+            }
+
+        query = {
+            'query': inner_query,
             'sort': [{
                 'page_id': {
                     'order': 'desc'
@@ -326,7 +341,7 @@ class ElasticSearchProvider(SearchProvider):
             keys = [k.id for k in self.db.query(Key.id).filter(Key.name.in_(keys)).all()]
 
         try:
-            max_page_id = self._get_max_page_id_from_index()
+            max_page_id = self._get_max_page_id_from_index(must_have_domain_name=True)
         except Exception:
             logging.warning('Could not retrieve max page_id, replacing entire index!')
             replace = True
