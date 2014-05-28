@@ -37,7 +37,7 @@ class TitleValidator(Validator):
 
     def validate(self):
         title_count = self.review.data.get('page.title_count', 0)
-        title = self.review.facts.get('page.title', None)
+        title = self.review.data.get('page.title', None)
 
         if not title_count or not title:
             self.add_violation(
