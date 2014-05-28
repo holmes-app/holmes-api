@@ -4,8 +4,9 @@
 from preggy import expect
 
 from holmes.models import Violation, Key
+from holmes.utils import _
 from tests.unit.base import ApiTestCase
-from tests.fixtures import ViolationFactory, KeyFactory, KeysCategoryFactory, DomainFactory
+from tests.fixtures import ViolationFactory, KeyFactory, DomainFactory
 
 
 class TestViolations(ApiTestCase):
@@ -33,7 +34,7 @@ class TestViolations(ApiTestCase):
 
         violations_definitions = {'some.random.fact': {}}
 
-        expect(violation.to_dict(violations_definitions)).to_be_like({
+        expect(violation.to_dict(violations_definitions, _)).to_be_like({
             'key': 'some.random.fact',
             'description': 'value',
             'title': 'undefined',
