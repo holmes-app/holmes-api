@@ -88,10 +88,11 @@ class TestHeadingHierarchyValidator(ValidatorTestCase):
             ],
             'max_size': 150
         }
-        violation_description = validator.get_violation_description(value)
-        expect(violation_description).to_equal(
+        hh_size_def = definitions['page.heading_hierarchy.size']
+        hh_size_desc = hh_size_def['description']
+        expect(hh_size_desc % validator.get_violation_parsed_value(value)).to_equal(
             'Heading hierarchy values bigger than 150 characters aren\'t good '
-            'for Search Engines. This elements were found:'
+            'for Search Engines. This elements were found: '
             '<ul class="violation-hh-list"><li>'
             '<span class="hh-type">h1</span>: '
             'Loren ipsum dolor sit amet</li></ul>'
@@ -162,12 +163,3 @@ class TestH1HeadingValidator(ValidatorTestCase):
         expect('title' in definitions_value).to_be_true()
         expect('description' in definitions_value).to_be_true()
         expect('category' in definitions_value).to_be_true()
-
-        violation_description = validator.get_violation_description()
-        expect(violation_description).to_equal(
-            'Your page does not contain any H1 headings. H1 headings help '
-            'indicate the important topics of your page to search engines. '
-            'While less important than good meta-titles and descriptions, '
-            'H1 headings may still help define the topic of your page to '
-            'search engines.'
-        )

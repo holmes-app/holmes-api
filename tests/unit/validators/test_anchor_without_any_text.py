@@ -10,6 +10,7 @@ from holmes.reviewer import Reviewer
 from holmes.validators.anchor_without_any_text import (
     AnchorWithoutAnyTextValidator
 )
+from holmes.utils import _
 from tests.unit.base import ValidatorTestCase
 from tests.fixtures import PageFactory
 
@@ -66,10 +67,6 @@ class TestAnchorWithoutAnyTextValidator(ValidatorTestCase):
         expect('empty.anchors' in definitions).to_be_true()
 
         links = ['http://globo.com']
-        empty_anchors_message = validator.get_empty_anchors_message(links)
-
-        expect(empty_anchors_message).to_equal(
-            'Empty anchors are not good for Search Engines. '
-            'Empty anchors were found for links to: '
-            '<a href="http://globo.com" target="_blank">#0</a>.'
+        expect(validator.get_empty_anchors_parsed_value(links)).to_equal(
+            '<a href="http://globo.com" target="_blank">#0</a>'
         )

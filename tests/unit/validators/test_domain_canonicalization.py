@@ -200,10 +200,11 @@ class TestDomainCanonicalizationValidator(ValidatorTestCase):
         expect('page.canonicalization.no_301_redirect'
                in definitions).to_be_true()
 
-        expect(validator.get_different_endpoints_description({
+        diff_endpoints_desc = definitions['page.canonicalization.different_endpoints']['description']
+        expect(diff_endpoints_desc % {
             'no_www_url': 'http://globo.com/',
             'www_url': 'http://www.globo.com/'
-        })).to_equal(
+        }).to_equal(
             'This page have the canonical url`s "http://globo.com/" '
             'and "http://www.globo.com/" with '
             'different endpoints. This both url`s should point '
@@ -217,7 +218,10 @@ class TestDomainCanonicalizationValidator(ValidatorTestCase):
             'status_code': 302,
             'effective_url': 'http://globo.com/'
         }
-        expect(validator.get_no_301_description(value)).to_equal(
+        no_301_red = definitions['page.canonicalization.no_301_redirect']
+        no_301_red_desc = no_301_red['description']
+        no_301_red_value_parser = no_301_red['value_parser']
+        expect(no_301_red_desc % no_301_red_value_parser(value)).to_equal(
             'This Canonical url "http://globo.com/" is redirecting to '
             '"http://www.globo.com/" with a different than 301 status code: 302. '
             'This may cause search engines to be unsure to where the URL is '

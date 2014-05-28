@@ -92,22 +92,6 @@ class TestLinkCrawlerValidator(ValidatorTestCase):
         expect('link.broken' in definitions).to_be_true()
         expect('link.moved.temporarily' in definitions).to_be_true()
 
-        redirect_message = validator.get_redirect_message(
-            set(['http://globo.com/'])
-        )
-
-        expect(redirect_message).to_equal(
-            'A link from your page to "<a href="http://globo.com/" '
-            'target="_blank">Link #0</a>" is using a 302 or 307 redirect. '
-            'It passes 0% of link juice (ranking power) and, in most cases, '
-            'should not be used. Use 301 instead.')
-
-        broken_link_message = validator.get_broken_link_message(
-            set(['http://globo.com/'])
-        )
-
-        expect(broken_link_message).to_equal(
-            'This page contains broken links to <a href="http://globo.com/" '
-            'target="_blank">Link #0</a> (the urls failed to load or '
-            'timed-out after 10 seconds). This can lead your site to lose '
-            'rating with Search Engines and is misleading to users.')
+        expect(validator.get_links_parsed_value(set(['http://globo.com/']))).to_equal({
+            'links': '<a href="http://globo.com/" target="_blank">Link #0</a>'
+        })

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import lxml.html
 from mock import Mock
 from preggy import expect
 
@@ -84,7 +83,6 @@ class TestMetaTagsValidator(ValidatorTestCase):
         validator.validate()
         expect(validator.add_violation.called).to_be_false()
 
-
     def test_can_get_violation_definitions(self):
         reviewer = Mock()
         validator = MetaTagsValidator(reviewer)
@@ -93,18 +91,3 @@ class TestMetaTagsValidator(ValidatorTestCase):
         expect(definitions).to_length(2)
         expect('absent.metatags' in definitions).to_be_true()
         expect('page.metatags.description_too_big' in definitions).to_be_true()
-
-        violation_defs = validator.get_violation_definitions()
-
-        absent_metatags_desc = violation_defs['absent.metatags']['description']
-        expect(absent_metatags_desc(None)).to_equal(
-            "No meta tags found on this page. This is damaging for "
-            "Search Engines."
-        )
-
-        metadesc_too_big_desc = violation_defs['page.metatags.description_too_big']['description']
-        expect(metadesc_too_big_desc({'max_size': 300})).to_equal(
-            "The meta description tag is longer than 300 characters. "
-            "It is best to keep meta descriptions shorter for better "
-            "indexing on Search engines."
-        )

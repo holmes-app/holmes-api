@@ -65,17 +65,12 @@ class TestLinkWithRelNofollowValidator(ApiTestCase):
 
         definitions = validator.get_violation_definitions()
 
-        links_nofollow_message = validator.get_links_nofollow_message(
-            ['http://my-site.com/test.html']
-        )
-
         expect(definitions).to_length(1)
         expect('invalid.links.nofollow' in definitions).to_be_true()
 
-        url = 'http://my-site.com/test.html'
-        expect(links_nofollow_message).to_equal(
-            'Links with rel="nofollow" to the same domain as the page make '
-            'it harder for search engines to crawl the website. Links with '
-            'rel="nofollow" were found for hrefs (<a href="%s" '
-            'target="_blank">#0</a>).' % url
+        links_nofollow = validator.get_links_nofollow_parsed_value(
+            ['http://my-site.com/test.html']
         )
+        expect(links_nofollow).to_equal({
+            'links': '<a href="http://my-site.com/test.html" target="_blank">#0</a>'
+        })

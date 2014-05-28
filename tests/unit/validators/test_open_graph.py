@@ -93,8 +93,8 @@ class TestOpenGraphValidator(ValidatorTestCase):
         expect(definitions).to_length(1)
         expect('absent.metatags.open_graph' in definitions).to_be_true()
 
-        og_message = validator.get_open_graph_message(['og:type'])
-        expect(og_message).to_equal('Some tags are missing: og:type')
+        og_message = validator.get_open_graph_parsed_value(['og:type'])
+        expect(og_message).to_equal({'tags': 'og:type'})
 
     def test_can_validate_og_title(self):
         page = PageFactory.create()

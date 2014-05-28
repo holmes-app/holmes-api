@@ -136,17 +136,6 @@ class TestLinkWithRelCanonicalValidator(ValidatorTestCase):
         expect(definitions).to_length(1)
         expect('absent.meta.canonical' in definitions).to_be_true()
 
-        message = validator.get_absent_meta_canonical_message(
-            'http://globo.com'
-        )
-
-        url = 'https://support.google.com/webmasters/answer/139394?hl=en'
-        expect(message).to_equal(
-            'As can be seen in this page <a href="%s">About rel="canonical"'
-            '</a>, it\'s a good practice to include rel="canonical" urls in '
-            'the pages for your website.' % url
-        )
-
     def test_page_without_head_tag(self):
         config = Config()
         config.FORCE_CANONICAL = False

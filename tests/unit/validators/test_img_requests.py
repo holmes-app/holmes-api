@@ -203,36 +203,21 @@ class TestImageRequestsValidator(ValidatorTestCase):
         expect('total.requests.img' in definitions).to_be_true()
         expect('total.size.img' in definitions).to_be_true()
 
-        broken_images_message = validator.get_broken_images_message(
-            set(['http://globo.com/some_image.jpg'])
-        )
-        requests_images_message = validator.get_requests_images_message(
-            {'total': 60, 'limit': 10}
-        )
-        total_size_message = validator.get_total_size_message(60)
+        val = set(['http://globo.com/some_image.jpg'])
+        expect(validator.get_broken_images_parsed_values(val)).to_equal({
+            'images': (
+                '<a href="http://globo.com/some_image.jpg" '
+                'target="_blank">Link #0</a>')
+        })
 
-        single_image_size_message = validator.get_single_image_size_message(
-            {'over_max_size': [('http://a.com', 100), ('http://b.com', 10)],
+        single_image_size_parsed_value = validator.get_single_image_size_parsed_value(
+            {'over_max_size': [('http://a.com', 100), ('http://b.com', 30)],
              'limit': 20}
         )
-
-        expect(broken_images_message).to_equal(
-            'The image(s) in "<a href="http://globo.com/some_image.jpg" '
-            'target="_blank">Link #0</a>" could not be found or took '
-            'more than 10 seconds to load.')
-
-        expect(requests_images_message).to_equal(
-            'This page has 60 image requests (10 over limit). Having too many '
-            'requests impose a tax in the browser due to handshakes.'
-        )
-
-        expect(total_size_message).to_equal(
-            'There`s 60.00kb of images in this page and that adds up to more '
-            'download time slowing down the page rendering to the user.'
-        )
-
-        expect(single_image_size_message).to_equal(
-            'Some images are above the expected limit (20kb): '
-            '<a href="http://a.com" target="_blank">a.com</a> (80kb above '
-            'limit), <a href="http://b.com" target="_blank">b.com</a>'
-        )
+        expect(single_image_size_parsed_value).to_equal({
+            'limit': 20,
+            'images': (
+                '<a href="http://a.com" target="_blank">a.com</a> (100kb)'
+                ', <a href="http://b.com" target="_blank">b.com</a> (30kb)'
+            )
+        })

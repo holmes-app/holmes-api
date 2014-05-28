@@ -164,23 +164,6 @@ class TestTotalRequestsValidator(ValidatorTestCase):
         expect('total.size.js' in definitions).to_be_true()
         expect('total.requests.js' in definitions).to_be_true()
 
-        total_size_message = validator.get_total_size_message(0.03)
-        requests_js_message = validator.get_requests_js_message({
-            'total_js_files': 7,
-            'over_limit': 6
-        })
-
-        expect(total_size_message).to_equal(
-            'There\'s 0.03kb of JavaScript in this page and that adds '
-            'up to more download time slowing down the page rendering '
-            'to the user.'
-        )
-
-        expect(requests_js_message).to_equal(
-            'This page has 7 JavaScript request (6 over limit). Having too '
-            'many requests impose a tax in the browser due to handshakes.'
-        )
-
     def test_get_js_requests(self):
         reviewer = Mock()
         validator = JSRequestsValidator(reviewer)

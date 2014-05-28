@@ -85,12 +85,3 @@ class TestLinkWithRedirectValidator(ApiTestCase):
         expect(definitions).to_length(2)
         expect('link.redirect.302' in definitions).to_be_true()
         expect('link.redirect.307' in definitions).to_be_true()
-
-        link_with_redirect_message = validator.get_link_with_redirect_message(
-            302
-        )
-
-        expect(link_with_redirect_message).to_equal(
-            'Link with redirect, in most cases, should not be used. '
-            'Redirects were found for link: 302.'
-        )

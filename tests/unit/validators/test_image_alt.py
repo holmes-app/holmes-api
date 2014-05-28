@@ -94,8 +94,8 @@ class TestImageAltValidator(ValidatorTestCase):
         expect('invalid.images.alt_too_big' in definitions).to_be_true()
 
         data = [('http://my-site.com/the-src', 'the-src')]
-        without_alt_message = validator.get_without_alt_message(data)
-        expect(without_alt_message).to_equal(
+        without_alt_def = definitions['invalid.images.alt']
+        expect(without_alt_def['description'] % without_alt_def['value_parser'](data)).to_equal(
             'Images without alt text are not good for Search Engines. Images '
             'without alt were found for: <a href="http://my-site.com/the-src" '
             'target="_blank">the-src</a>.'
@@ -105,10 +105,10 @@ class TestImageAltValidator(ValidatorTestCase):
             'max_size': 70,
             'images': [('http://my-site.com/the-src', 'the-src', 'Abcdef')]
         }
-        without_alt_message = validator.get_alt_too_big_message(data)
-        expect(without_alt_message).to_equal(
+        alt_too_big_def = definitions['invalid.images.alt_too_big']
+        expect(alt_too_big_def['description'] % alt_too_big_def['value_parser'](data)).to_equal(
             'Images with alt text bigger than 70 chars are not good for '
-            'Search Engines. Images with a too big alt were found for: '
+            'search engines. Images with a too big alt were found for: '
             '<a href="http://my-site.com/the-src" alt="Abcdef" '
             'target="_blank">the-src</a>.'
         )

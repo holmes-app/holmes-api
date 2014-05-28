@@ -141,17 +141,16 @@ class TestCSSRequestsValidator(ValidatorTestCase):
         validator = CSSRequestsValidator(reviewer)
 
         definitions = validator.get_violation_definitions()
-        total_size_message = validator.get_total_size_message(0.05)
-        requests_css_message = validator.get_requests_css_message({
-            'total_css_files': 7,
-            'over_limit': 6
-        })
-
+        total_size_message = definitions['total.size.css']['description'] % (0.05)
         expect(total_size_message).to_equal(
             'There\'s 0.05kb of CSS in this page and that adds up to more '
             'download time slowing down the page rendering to the user.'
         )
 
+        requests_css_message = definitions['total.requests.css']['description'] % ({
+            'total_css_files': 7,
+            'over_limit': 6
+        })
         expect(requests_css_message).to_equal(
             'This page has 7 CSS request (6 over limit). Having too many '
             'requests impose a tax in the browser due to handshakes.'

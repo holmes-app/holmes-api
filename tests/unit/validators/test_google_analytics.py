@@ -135,20 +135,13 @@ class TestGoogleAnalyticsValidator(ValidatorTestCase):
         expect('google_analytics.account.not_found' in definitions).to_be_true()
         expect('google_analytics.domain.not_found' in definitions).to_be_true()
 
-        analytics_message = validator.get_analytics_message()
+        not_found_def = definitions['google_analytics.not_found']
+        account_not_found_def = definitions['google_analytics.account.not_found']
+        domain_not_found_def = definitions['google_analytics.domain.not_found']
 
-        expect(analytics_message).to_equal(
-            'This page should include a Google Analytics.'
-        )
+        for vd in [not_found_def, account_not_found_def, domain_not_found_def]:
+            expect('title' in vd).to_be_true()
+            expect('description' in vd).to_be_true()
+            expect('category' in vd).to_be_true()
+            expect('generic_description' in vd).to_be_true()
 
-        account_message = validator.get_account_message()
-
-        expect(account_message).to_equal(
-            'This page should include a Google Analytics account.'
-        )
-
-        domain_message = validator.get_domain_message()
-
-        expect(domain_message).to_equal(
-            'This page should include a Google Analytics domain.'
-        )

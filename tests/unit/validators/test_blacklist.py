@@ -66,9 +66,6 @@ class TestBlackListValidator(ValidatorTestCase):
         expect(definitions).to_length(1)
         expect('blacklist.domains' in definitions).to_be_true()
 
-        blacklist_message = validator.get_blacklist_message(['http://a.com'])
-
-        expect(blacklist_message).to_equal(
-            'Some links are blacklisted: <a href="http://a.com" '
-            'target="_blank">Link #0</a>'
+        expect(validator.get_blacklist_parsed_value(['http://a.com'])).to_equal(
+            '<a href="http://a.com" target="_blank">Link #0</a>'
         )
