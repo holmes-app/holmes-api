@@ -53,7 +53,9 @@ class LastReviewsHandler(BaseReviewHandler):
 
         reviews_json = []
         for review in reviews:
-            review_dict = review.to_dict(self.application.fact_definitions, self.application.violation_definitions)
+            review_dict = review.to_dict(self.application.fact_definitions,
+                                         self.application.violation_definitions,
+                                         self._)
             data = {
                 'violationCount': review.violation_count,
             }

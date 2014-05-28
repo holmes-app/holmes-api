@@ -10,6 +10,7 @@ from preggy import expect
 
 from holmes.config import Config
 from holmes.models import Review, Violation, Key, Page, Fact
+from holmes.utils import _
 from tests.unit.base import ApiTestCase
 from tests.fixtures import (
     ReviewFactory, PageFactory, KeyFactory, DomainFactory
@@ -177,7 +178,7 @@ class TestReview(ApiTestCase):
         fact_definitions = {'some.random.key2': {}}
         violation_definitions = {'some.random.key1': {}}
 
-        expect(review.to_dict(fact_definitions, violation_definitions)).to_be_like({
+        expect(review.to_dict(fact_definitions, violation_definitions, _)).to_be_like({
             'domain': review.domain.name,
             'uuid': str(review_id),
             'completedAt': None,
