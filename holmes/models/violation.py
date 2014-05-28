@@ -33,8 +33,7 @@ class Violation(Base):
         definition = violation_definitions.get(self.key.name, {})
 
         value = definition.get('value_parser', lambda val: val)(self.value)
-        description = _(definition.get('description', _('undefined')))
-
+        description = _(definition.get('description', '%s'))
         return {
             'key': self.key.name,
             'title': _(definition.get('title', _('undefined'))),
