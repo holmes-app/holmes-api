@@ -65,21 +65,6 @@ class Violation(Base):
             .order_by('count desc').all()
 
     @classmethod
-    def get_most_common_violations(cls, db, violation_definitions, sample_limit=50000):
-        violations = []
-
-        for key_name, count in cls.get_most_common_violations_names(db, sample_limit):
-            definition = violation_definitions.get(key_name, {})
-            violations.append({
-                "key": key_name,
-                "title": _(definition.get('title', _('undefined'))),
-                "category": _(definition.get('category', _('undefined'))),
-                "count": count
-            })
-
-        return violations
-
-    @classmethod
     def get_by_key_id_group_by_domain(cls, db, key_id):
 
         from holmes.models.violation import Violation  # to avoid circular dependency

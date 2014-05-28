@@ -52,66 +52,6 @@ class TestViolations(ApiTestCase):
 
         expect(violations).to_be_like([('some.random.fact.1', 1), ('some.random.fact.2', 2)])
 
-    def test_can_get_most_common_violations(self):
-        self.db.query(Violation).delete()
-        self.db.query(Key).delete()
-
-        category = KeysCategoryFactory.create(name='SEO')
-        for i in range(3):
-            key = KeyFactory.create(name='some.random.fact.%s' % i, category=category)
-            for j in range(i):
-                ViolationFactory.create(
-                    key=key,
-                    value='value',
-                    points=10 * i + j
-                )
-
-        violation_definitions = {
-            'some.random.fact.1': {
-                'title': 'SEO',
-                'category': 'SEO'
-            },
-            'some.random.fact.2': {
-                'title': 'SEO',
-                'category': 'SEO'
-            }
-        }
-
-        violations = Violation.get_most_common_violations(
-            self.db,
-            violation_definitions
-        )
-
-        expect(violations).to_be_like([
-            {
-                'count': 1,
-                'key': 'some.random.fact.1',
-                'category': 'SEO',
-                'title': 'SEO'
-            },
-            {
-                'count': 2,
-                'key': 'some.random.fact.2',
-                'category': 'SEO',
-                'title': 'SEO'
-            }
-        ])
-
-        violations = Violation.get_most_common_violations(
-            self.db,
-            violation_definitions,
-            sample_limit=2
-        )
-
-        expect(violations).to_be_like([
-            {
-                'count': 2,
-                'key': 'some.random.fact.2',
-                'category': 'SEO',
-                'title': 'SEO'
-            }
-        ])
-
     def test_can_get_by_key_id_group_by_domain(self):
         domains = [DomainFactory.create(name='g%d.com' % i) for i in xrange(2)]
         keys = [KeyFactory.create(name='random.fact.%s' % i) for i in xrange(3)]
