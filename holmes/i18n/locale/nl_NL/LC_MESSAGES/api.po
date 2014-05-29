@@ -1,8 +1,8 @@
 msgid ""
 msgstr "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-27 14:06-0300\n"
-"PO-Revision-Date: 2014-05-27 13:26-0400\n"
+"POT-Creation-Date: 2014-05-29 13:10-0300\n"
+"PO-Revision-Date: 2014-05-29 12:10-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: Dutch\n"
 "MIME-Version: 1.0\n"
@@ -12,6 +12,159 @@ msgstr "Project-Id-Version: holmes\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: crowdin.net\n"
 "Language: nl_NL\n"
+
+#: holmes/facters/css.py:15
+msgid "CSS"
+msgstr ""
+
+#: holmes/facters/css.py:18 holmes/facters/images.py:18 holmes/facters/js.py:18
+msgid "Static"
+msgstr ""
+
+#: holmes/facters/css.py:21
+msgid "Total CSS requests"
+msgstr ""
+
+#: holmes/facters/css.py:23 holmes/facters/images.py:29 holmes/facters/js.py:23
+#: holmes/facters/last_modified.py:19 holmes/facters/links.py:33
+#: holmes/validators/img_requests.py:41 holmes/validators/last_modified.py:16
+#: holmes/validators/link_crawler.py:36 holmes/validators/link_crawler.py:52
+#: holmes/validators/link_with_redirect.py:19
+#: holmes/validators/link_with_redirect.py:32 holmes/validators/meta_tags.py:19
+#: holmes/validators/required_meta_tags.py:17 holmes/validators/title.py:16
+msgid "HTTP"
+msgstr ""
+
+#: holmes/facters/css.py:27
+msgid "Total CSS size"
+msgstr ""
+
+#: holmes/facters/css.py:30 holmes/facters/css.py:36
+#: holmes/facters/google_analytics.py:19 holmes/facters/heading_hierarchy.py:16
+#: holmes/facters/images.py:24 holmes/facters/js.py:30 holmes/facters/js.py:36
+#: holmes/facters/links.py:28 holmes/facters/robots.py:18
+#: holmes/facters/sitemap.py:22 holmes/facters/sitemap.py:27
+#: holmes/facters/sitemap.py:33 holmes/facters/sitemap.py:38
+#: holmes/facters/title.py:16 holmes/validators/anchor_without_any_text.py:26
+#: holmes/validators/blacklist.py:24
+#: holmes/validators/domain_canonicalization.py:31
+#: holmes/validators/domain_canonicalization.py:48
+#: holmes/validators/google_analytics.py:17
+#: holmes/validators/google_analytics.py:28
+#: holmes/validators/google_analytics.py:41
+#: holmes/validators/heading_hierarchy.py:31 holmes/validators/image_alt.py:42
+#: holmes/validators/image_alt.py:57
+#: holmes/validators/link_with_rel_canonical.py:24
+#: holmes/validators/links_with_rel_nofollow.py:27
+#: holmes/validators/meta_robots.py:23 holmes/validators/meta_robots.py:29
+#: holmes/validators/meta_tags.py:36 holmes/validators/open_graph.py:21
+#: holmes/validators/robots.py:27 holmes/validators/robots.py:36
+#: holmes/validators/robots.py:45 holmes/validators/robots.py:55
+#: holmes/validators/robots.py:65 holmes/validators/schema_org_item_type.py:18
+#: holmes/validators/schema_org_item_type.py:31
+#: holmes/validators/schema_org_item_type.py:46 holmes/validators/sitemap.py:31
+#: holmes/validators/sitemap.py:58 holmes/validators/title.py:38
+#: holmes/validators/url_with_underscore.py:26
+msgid "SEO"
+msgstr ""
+
+#: holmes/facters/css.py:33
+msgid "Total CSS size gzipped"
+msgstr ""
+
+#: holmes/facters/google_analytics.py:16
+msgid "Google Analytics"
+msgstr ""
+
+#: holmes/facters/heading_hierarchy.py:13
+msgid "Heading Hierarchy"
+msgstr ""
+
+#: holmes/facters/images.py:15
+msgid "Images"
+msgstr ""
+
+#: holmes/facters/images.py:21
+msgid "Total images size"
+msgstr ""
+
+#: holmes/facters/images.py:27
+msgid "Total images requests"
+msgstr ""
+
+#: holmes/facters/js.py:15
+msgid "JS"
+msgstr ""
+
+#: holmes/facters/js.py:21
+msgid "Total JS requests"
+msgstr ""
+
+#: holmes/facters/js.py:27
+msgid "Total JS size"
+msgstr ""
+
+#: holmes/facters/js.py:33
+msgid "Total JS size gzipped"
+msgstr ""
+
+#: holmes/facters/last_modified.py:17
+msgid "Last-Modified"
+msgstr ""
+
+#: holmes/facters/links.py:25
+msgid "Links to"
+msgstr ""
+
+#: holmes/facters/links.py:31
+msgid "Link count"
+msgstr ""
+
+#: holmes/facters/links.py:37
+msgid "Total invalid links"
+msgstr ""
+
+#: holmes/facters/links.py:39 holmes/facters/links.py:46
+#: holmes/validators/body.py:15 holmes/validators/sitemap.py:39
+#: holmes/validators/sitemap.py:70 holmes/validators/title.py:27
+msgid "Semantics"
+msgstr ""
+
+#: holmes/facters/links.py:43
+msgid "Invalid Links"
+msgstr ""
+
+#: holmes/facters/meta_tags.py:14
+msgid "Meta Tags"
+msgstr ""
+
+#: holmes/facters/meta_tags.py:17
+msgid "Meta"
+msgstr ""
+
+#: holmes/facters/robots.py:16
+msgid "Robots file URL"
+msgstr ""
+
+#: holmes/facters/sitemap.py:21
+msgid "Total SiteMap indexes"
+msgstr ""
+
+#: holmes/facters/sitemap.py:26
+msgid "Total SiteMap urls"
+msgstr ""
+
+#: holmes/facters/sitemap.py:31
+msgid "Total SiteMap size"
+msgstr ""
+
+#: holmes/facters/sitemap.py:36
+msgid "Total SiteMap gzipped size"
+msgstr ""
+
+#: holmes/facters/title.py:14
+msgid "Page Title"
+msgstr ""
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
@@ -81,6 +234,423 @@ msgstr ""
 msgid "Invalid violation key %s"
 msgstr ""
 
+#: holmes/validators/anchor_without_any_text.py:21
+msgid "Empty anchor(s) found"
+msgstr ""
+
+#: holmes/validators/anchor_without_any_text.py:22
+#, python-format
+msgid "Empty anchors are not good for Search Engines. Empty anchors were found for links to: %s."
+msgstr ""
+
+#: holmes/validators/anchor_without_any_text.py:27
+msgid "By using empty anchor text won't prevent search engines from indexing your pages but you will lose a good opportunity to add relevance to your pages. Google uses anchor text in order to qualify the resources you create a reference to. In consequences if a page got links with \"example\" as anchor text pointing to itself, this page relevance on \"example\" request will increase. So better do not let empty anchor text and choose wisely the words (or keywords) you use in it."
+msgstr ""
+
+#: holmes/validators/blacklist.py:21
+msgid "Domain Blacklist"
+msgstr ""
+
+#: holmes/validators/blacklist.py:22
+#, python-format
+msgid "Some links are blacklisted: %s"
+msgstr ""
+
+#: holmes/validators/blacklist.py:25
+msgid "Detected domain blacklisted hyperlinks. Links with this violation are those that have anchors to websites added in Holmes's Black List configuration."
+msgstr ""
+
+#: holmes/validators/body.py:13
+msgid "Page body not found"
+msgstr ""
+
+#: holmes/validators/body.py:14
+#, python-format
+msgid "Body was not found on %s."
+msgstr ""
+
+#: holmes/validators/body.py:16
+msgid "The <body> tag defines the documents body's, it's contains all the content of an HTML document. The ausence of a this tag represents a no content and sematically invalid webpage."
+msgstr ""
+
+#: holmes/validators/css_requests.py:13
+msgid "Too many CSS requests"
+msgstr ""
+
+#: holmes/validators/css_requests.py:14
+#, python-format
+msgid "This page has %(total_css_files)d CSS request (%(over_limit)d over limit). Having too many requests impose a tax in the browser due to handshakes."
+msgstr ""
+
+#: holmes/validators/css_requests.py:18 holmes/validators/css_requests.py:32
+#: holmes/validators/img_requests.py:56 holmes/validators/img_requests.py:69
+#: holmes/validators/img_requests.py:82 holmes/validators/js_requests.py:19
+#: holmes/validators/js_requests.py:32 holmes/validators/sitemap.py:48
+msgid "Performance"
+msgstr ""
+
+#: holmes/validators/css_requests.py:19
+msgid "Pages with too many CSS requests aren't good to performance. Overflowing this limit of requests can impose a tax in the browser due to handshakes. This limit of requests per page is configurable."
+msgstr ""
+
+#: holmes/validators/css_requests.py:27
+msgid "CSS size in kb is too big"
+msgstr ""
+
+#: holmes/validators/css_requests.py:28
+#, python-format
+msgid "There's %.2fkb of CSS in this page and that adds up to more download time slowing down the page rendering to the user."
+msgstr ""
+
+#: holmes/validators/css_requests.py:33
+msgid "Pages with too big CSS files aren't good to performance. Having this limit of file sizes overflow adds up to more download time slowing down the page rendering to the user. This limit of requests per page is configurable."
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:23
+msgid "Canonical URLs have different endpoints"
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:24
+#, python-format
+msgid "This page have the canonical url`s \"%(no_www_url)s\" and \"%(www_url)s\" with different endpoints. This both url`s should point to the same location. Not fixing this may cause search engines to be unsure as to which URL is the correct one to index."
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:32
+msgid "Canonical URLs is a couple of URLs with and without the 'www' prefix. For example: site.com and www.site.com are canonical URLs. This violation is about a root page with your canonical URLs pointing to different endpoints. This behavior is down ranked in Search Engines indexing."
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:41
+msgid "Canonical URLs have a non 301 redirect"
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:42
+#, python-format
+msgid "This Canonical url \"%(effective_url)s\" is redirecting to \"%(location)s\" with a different than 301 status code: %(status_code)s. This may cause search engines to be unsure to where the URL is being redirected."
+msgstr ""
+
+#: holmes/validators/domain_canonicalization.py:49
+msgid "Canonical URLs is a couple of URLs with and without the 'www' prefix. For example: site.com and www.site.com are canonical URLs. Canonical URLs should point to the same points. This violation is about a redirection of one of this URLs maked by a non 301 redirection. Redirections different than a 301 type may cause search engines to be unsure to where the URL is being redirected."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:14
+msgid "Google Analytics not found"
+msgstr ""
+
+#: holmes/validators/google_analytics.py:15
+msgid "This page should include a Google Analytics."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:18
+msgid "Google Analytics script is important to measure various kinds of statistics of the page. It's a SEO violation an ausence of this script."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:25
+msgid "Google Analytics account not found"
+msgstr ""
+
+#: holmes/validators/google_analytics.py:26
+msgid "This page should include a Google Analytics account."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:29
+msgid "Google Analytics script is important to measure various kinds of statistics of the page. The configuration of the script needs an account to log in. Not founding this information may cause errors to log the statistics in the Google API."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:38
+msgid "Google Analytics domain not found"
+msgstr ""
+
+#: holmes/validators/google_analytics.py:39
+msgid "This page should include a Google Analytics domain."
+msgstr ""
+
+#: holmes/validators/google_analytics.py:42
+msgid "Google Analytics script is important to measure various kinds of statistics of the page. The configuration of the script needs a domain information to work well."
+msgstr ""
+
+#: holmes/validators/heading_hierarchy.py:24
+msgid "Maximum size of a heading hierarchy"
+msgstr ""
+
+#: holmes/validators/heading_hierarchy.py:25
+#, python-format
+msgid "Heading hierarchy values bigger than %(max_size)s characters aren't good for Search Engines. This elements were found: <ul class=\"violation-hh-list\">%(hh_list)s</ul>"
+msgstr ""
+
+#: holmes/validators/heading_hierarchy.py:32
+msgid "Heading hierarchy tags with values too big aren't good for search engines. The definition of this maximum size can be configurable on Holmes."
+msgstr ""
+
+#: holmes/validators/heading_hierarchy.py:64
+msgid "H1 Headings not found"
+msgstr ""
+
+#: holmes/validators/heading_hierarchy.py:65
+msgid "Your page does not contain any H1 headings. H1 headings help indicate the important topics of your page to search engines. While less important than good meta-titles and descriptions, H1 headings may still help define the topic of your page to search engines."
+msgstr ""
+
+#: holmes/validators/image_alt.py:36
+msgid "Image(s) without alt attribute"
+msgstr ""
+
+#: holmes/validators/image_alt.py:37
+#, python-format
+msgid "Images without alt text are not good for Search Engines. Images without alt were found for: %(images)s."
+msgstr ""
+
+#: holmes/validators/image_alt.py:43
+msgid "Images without alt attribute are not good for search engines. They are searchable by the content of this attribute, so if it's empty, it cause bad indexing optimization."
+msgstr ""
+
+#: holmes/validators/image_alt.py:51
+msgid "Image(s) with alt attribute too big"
+msgstr ""
+
+#: holmes/validators/image_alt.py:52
+#, python-format
+msgid "Images with alt text bigger than %(max_size)d chars are not good for search engines. Images with a too big alt were found for: %(images)s."
+msgstr ""
+
+#: holmes/validators/image_alt.py:58
+msgid "Images with alt text too long are not good to SEO. This maximum value are configurable by Holmes configuration."
+msgstr ""
+
+#: holmes/validators/img_requests.py:36
+msgid "Image not found"
+msgstr ""
+
+#: holmes/validators/img_requests.py:37
+#, python-format
+msgid "The image(s) in \"%(images)s\" could not be found or took more than 10 seconds to load."
+msgstr ""
+
+#: holmes/validators/img_requests.py:42
+msgid "Image tags without a valid image resource. The pointed resource can be a Client or a Server Error, they can be loaded too slow or, in most cases, means a not founded image."
+msgstr ""
+
+#: holmes/validators/img_requests.py:50
+msgid "Single image size in kb is too big"
+msgstr ""
+
+#: holmes/validators/img_requests.py:51
+#, python-format
+msgid "Some images are above the expected limit (%(limit)dkb): %(images)s"
+msgstr ""
+
+#: holmes/validators/img_requests.py:57
+msgid "Images with a too big size is very bad to site performance. This limits are configurable in Holmes configuration."
+msgstr ""
+
+#: holmes/validators/img_requests.py:64
+msgid "Too many image requests"
+msgstr ""
+
+#: holmes/validators/img_requests.py:65
+#, python-format
+msgid "This page has %(total)d image requests (%(limit)d over limit). Having too many requests impose a tax in the browser due to handshakes."
+msgstr ""
+
+#: holmes/validators/img_requests.py:70
+msgid "A site with too many images requests per page can deacrease the page load speed and performance. This limits are configurable in Holmes configuration."
+msgstr ""
+
+#: holmes/validators/img_requests.py:77
+msgid "Total image size in kb is too big"
+msgstr ""
+
+#: holmes/validators/img_requests.py:78
+#, python-format
+msgid "There`s %.2fkb of images in this page and that adds up to more download time slowing down the page rendering to the user."
+msgstr ""
+
+#: holmes/validators/img_requests.py:83
+msgid "A site with a too big total image size per page can decrease the page load speed and performance. This limits are configurable in Holmes configuration."
+msgstr ""
+
+#: holmes/validators/js_requests.py:14
+msgid "Too many JavaScript requests"
+msgstr ""
+
+#: holmes/validators/js_requests.py:15
+#, python-format
+msgid "This page has %(total_js_files)d JavaScript request (%(over_limit)d over limit). Having too many requests impose a tax in the browser due to handshakes."
+msgstr ""
+
+#: holmes/validators/js_requests.py:20
+msgid "A site with too many JavaScript requests per page can deacrease the page load speed and performance. This limits are configurable in Holmes configuration."
+msgstr ""
+
+#: holmes/validators/js_requests.py:27
+msgid "JavaScript size in kb is too big"
+msgstr ""
+
+#: holmes/validators/js_requests.py:28
+#, python-format
+msgid "There's %.2fkb of JavaScript in this page and that adds up to more download time slowing down the page rendering to the user."
+msgstr ""
+
+#: holmes/validators/js_requests.py:33
+msgid "A site with a too big total JavaScript size per page can decrease the page load speed and performance. This limits are configurable in Holmes configuration."
+msgstr ""
+
+#: holmes/validators/last_modified.py:14
+msgid "Last-Modified not found"
+msgstr ""
+
+#: holmes/validators/last_modified.py:15
+#, python-format
+msgid "Last-Modified was not found on %s."
+msgstr ""
+
+#: holmes/validators/last_modified.py:17
+msgid "The Last-Modified Header information allows Web Crawlers (like Holmes) and search engines to know if the page is modified since the last content retrival. If Last-Modified wasn't present, all requests made by this engines on the page will proccess all the content and can be performatically bad to the server."
+msgstr ""
+
+#: holmes/validators/link_crawler.py:29
+msgid "Broken link(s) found"
+msgstr ""
+
+#: holmes/validators/link_crawler.py:30
+#, python-format
+msgid "This page contains broken links to %(links)s (the urls failed to load or timed-out after 10 seconds). This can lead your site to lose rating with search engines and is misleading to users."
+msgstr ""
+
+#: holmes/validators/link_crawler.py:37
+msgid "Validates hyperlinks with a invalid resource. The pointed resource can be a Client or a Server Error, they can be timeout load or, in most cases, means a not founded page."
+msgstr ""
+
+#: holmes/validators/link_crawler.py:45
+msgid "Moved Temporarily"
+msgstr ""
+
+#: holmes/validators/link_crawler.py:46
+#, python-format
+msgid "A link from your page to \"%(links)s\" is using a 302 or 307 redirect. It passes 0%% of link juice (ranking power) and, in most cases, should not be used. Use 301 instead."
+msgstr ""
+
+#: holmes/validators/link_crawler.py:53
+#, python-format
+msgid "Validates links that uses a 302 or 307 redirect. In this cases, it passes 0%% of link juice (ranking power) and, in most cases, should not be used. Use of 301 is recommended."
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:14
+msgid "Link with 302 redirect"
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:15
+#, python-format
+msgid "Link with 302 redirect, in most cases, should not be used. Redirects were found for link: %s."
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:20
+msgid "Validates temporary redirections (302). They should not be used in the most cases, instead is best to use a 301 permanent redirect."
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:27
+msgid "Link with 307 redirect"
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:28
+#, python-format
+msgid "Link with 307 redirect, in most cases, should not be used. Redirects were found for link: %s."
+msgstr ""
+
+#: holmes/validators/link_with_redirect.py:33
+msgid "Validates temporary redirections (307). They should not be used in the most cases, instead is best to use a 301 permanent redirect."
+msgstr ""
+
+#: holmes/validators/link_with_rel_canonical.py:16
+msgid "Link with rel=\"canonical\" not found"
+msgstr ""
+
+#: holmes/validators/link_with_rel_canonical.py:17
+msgid "As can be seen in this page <a href=\"https://support.google.com/webmasters/answer/139394?hl=en\">About rel=\"canonical\"</a>, it's a good practice to include rel=\"canonical\" urls in the pages for your website."
+msgstr ""
+
+#: holmes/validators/link_with_rel_canonical.py:25
+msgid "Validates the absent of link with rel=\"canonical\" on the head of a page. This indicates the preferred URL to use to access the green dress post, so that the search results will be more likely to show users that URL structure."
+msgstr ""
+
+#: holmes/validators/links_with_rel_nofollow.py:20
+msgid "Links with rel=\"nofollow\""
+msgstr ""
+
+#: holmes/validators/links_with_rel_nofollow.py:21
+#, python-format
+msgid "Links with rel=\"nofollow\" to the same domain as the page make it harder for search engines to crawl the website. Links with rel=\"nofollow\" were found for hrefs (%(links)s)."
+msgstr ""
+
+#: holmes/validators/links_with_rel_nofollow.py:28
+msgid "Validates links with rel=\"nofollow\", this whos links to the same domain as the page make it harder for search engines to crawl the website."
+msgstr ""
+
+#: holmes/validators/meta_robots.py:9
+msgid "A meta tag with the robots=\"noindex\" attribute tells the search engines that they should not index this page."
+msgstr ""
+
+#: holmes/validators/meta_robots.py:13
+msgid "A meta tag with the robots=\"nofollow\" attribute tells the search engines that they should not follow any links in this page."
+msgstr ""
+
+#: holmes/validators/meta_robots.py:21
+msgid "Meta Robots with value of noindex"
+msgstr ""
+
+#: holmes/validators/meta_robots.py:27
+msgid "Meta Robots with value of nofollow"
+msgstr ""
+
+#: holmes/validators/meta_tags.py:14
+msgid "Meta tags not present"
+msgstr ""
+
+#: holmes/validators/meta_tags.py:15
+msgid "No meta tags found on this page. This is damaging for Search Engines."
+msgstr ""
+
+#: holmes/validators/meta_tags.py:20
+msgid "Validates the presence of metatags. They are important to inform metadata about the HTML document. The absent of metatags are damaging for search engines. Meta elements are typically used to specify page description, keywords, author of the document, last modified, and other metadata."
+msgstr ""
+
+#: holmes/validators/meta_tags.py:30
+msgid "Maximum size of description meta tag"
+msgstr ""
+
+#: holmes/validators/meta_tags.py:31
+#, python-format
+msgid "The meta description tag is longer than %(max_size)s characters. It is best to keep meta descriptions shorter for better indexing on search engines."
+msgstr ""
+
+#: holmes/validators/meta_tags.py:37
+msgid "Validates the size of a description metatag. It is best to keep meta descriptions shorter for better indexing on search engines. This limit is configurable by Holmes Configuration."
+msgstr ""
+
+#: holmes/validators/open_graph.py:18
+msgid "Open Graph tags not found"
+msgstr ""
+
+#: holmes/validators/open_graph.py:19
+#, python-format
+msgid "Some tags are missing: %(tags)s"
+msgstr ""
+
+#: holmes/validators/open_graph.py:22
+msgid "Validates the absent of Open Graph metatags. They allow the Facebook Crawler to generate previews when your content is shared on Facebook."
+msgstr ""
+
+#: holmes/validators/required_meta_tags.py:14
+msgid "Required Meta Tags were not found"
+msgstr ""
+
+#: holmes/validators/required_meta_tags.py:15
+#, python-format
+msgid "Meta tags for %s were not found."
+msgstr ""
+
+#: holmes/validators/required_meta_tags.py:18
+msgid "Validates the absent of user defined MetaTags. This values are configurable by Holmes Configuration."
+msgstr ""
+
 #: holmes/validators/robots.py:11
 msgid "You must specify the location of the Sitemap using a robots.txt file"
 msgstr ""
@@ -100,12 +670,6 @@ msgstr ""
 #: holmes/validators/robots.py:26
 #, python-format
 msgid "The robots file at '%s' was not found."
-msgstr ""
-
-#: holmes/validators/robots.py:27 holmes/validators/robots.py:36
-#: holmes/validators/robots.py:45 holmes/validators/robots.py:55
-#: holmes/validators/robots.py:65
-msgid "SEO"
 msgstr ""
 
 #: holmes/validators/robots.py:28
@@ -147,5 +711,148 @@ msgstr ""
 
 #: holmes/validators/robots.py:66
 msgid "Validates if the root path of your site is in Disallow directive of Robots.txt. If true, the root of your site will not be indexed on search engines."
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:13
+msgid "itemscope attribute missing in body"
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:14
+#: holmes/validators/schema_org_item_type.py:20
+msgid "In order to conform to schema.org definition of a webpage, the body tag must feature an itemscope attribute."
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:26
+msgid "itemtype attribute missing in body"
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:27
+#: holmes/validators/schema_org_item_type.py:33
+msgid "In order to conform to schema.org definition of a webpage, the body tag must feature an itemtype attribute."
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:39
+msgid "itemtype attribute is invalid"
+msgstr ""
+
+#: holmes/validators/schema_org_item_type.py:40
+#: holmes/validators/schema_org_item_type.py:48
+msgid "In order to conform to schema.org definition of a webpage, the body tag must feature an itemtype attribute with a value of \"http://schema.org/WebPage\" or one of its more specific types."
+msgstr ""
+
+#: holmes/validators/sitemap.py:29
+msgid "SiteMap file not found"
+msgstr ""
+
+#: holmes/validators/sitemap.py:30
+#, python-format
+msgid "The sitemap file was not found at '%s'."
+msgstr ""
+
+#: holmes/validators/sitemap.py:32
+msgid "Validates the absent of a SiteMap file on the page."
+msgstr ""
+
+#: holmes/validators/sitemap.py:36
+msgid "SiteMap file is empty"
+msgstr ""
+
+#: holmes/validators/sitemap.py:37
+#, python-format
+msgid "The sitemap file was found at '%s', but was empty."
+msgstr ""
+
+#: holmes/validators/sitemap.py:40
+msgid "Validates the emptiness of site's SiteMap file."
+msgstr ""
+
+#: holmes/validators/sitemap.py:44
+msgid "SiteMap file is too big"
+msgstr ""
+
+#: holmes/validators/sitemap.py:45
+#, python-format
+msgid "The sitemap file was found at '%(url)s', but was too big (%(size).2fMB)."
+msgstr ""
+
+#: holmes/validators/sitemap.py:49
+msgid "Validates the size of site's SiteMap file."
+msgstr ""
+
+#: holmes/validators/sitemap.py:53
+msgid "SiteMap file contains too many links"
+msgstr ""
+
+#: holmes/validators/sitemap.py:54
+#, python-format
+msgid "The sitemap file was found at '%(url)s', but contained too many links (%(links)d). Maybe splitting it would help?"
+msgstr ""
+
+#: holmes/validators/sitemap.py:59
+msgid "Validates the number of links containing in the site's SiteMap file. This limit is configurable on Holmes configuration."
+msgstr ""
+
+#: holmes/validators/sitemap.py:66
+msgid "SiteMap file contains unencoded links"
+msgstr ""
+
+#: holmes/validators/sitemap.py:67
+#, python-format
+msgid "The sitemap file was found at '%(url)s', but contains unencoded links (%(links)s)."
+msgstr ""
+
+#: holmes/validators/sitemap.py:71
+msgid "Validates the value of site's SiteMap file links."
+msgstr ""
+
+#: holmes/validators/title.py:14
+msgid "Page title not found"
+msgstr ""
+
+#: holmes/validators/title.py:15
+#, python-format
+msgid "Title was not found on '%s'."
+msgstr ""
+
+#: holmes/validators/title.py:17
+msgid "Validates the presence of the page's title. The <title> tag is required in all HTML documents and it defines the title of the document."
+msgstr ""
+
+#: holmes/validators/title.py:24
+msgid "Too many titles"
+msgstr ""
+
+#: holmes/validators/title.py:25
+#, python-format
+msgid "Page '%(page_url)s' has %(title_count)d title tags."
+msgstr ""
+
+#: holmes/validators/title.py:28
+msgid "Validates the presence of more than one page's title tag."
+msgstr ""
+
+#: holmes/validators/title.py:34
+msgid "Maximum size of a page title"
+msgstr ""
+
+#: holmes/validators/title.py:35
+#, python-format
+msgid "Title is too long on \"%(page_url)s\". The max size is %(max_size)d characters."
+msgstr ""
+
+#: holmes/validators/title.py:39
+msgid "Validates the size of the page's title."
+msgstr ""
+
+#: holmes/validators/total_requests.py:18
+msgid "Total requests"
+msgstr ""
+
+#: holmes/validators/url_with_underscore.py:12
+msgid "Google treats a hyphen as a word separator, but does not treat an underscore that way. Google treats and underscore as a word joiner — so red_sneakers is the same as redsneakers to Google. This has been confirmed directly by Google themselves, including the fact that using dashes over underscores will have a (minor) ranking benefit."
+msgstr ""
+
+#: holmes/validators/url_with_underscore.py:24
+msgid "URLs should use hyphens to separate words"
 msgstr ""
 

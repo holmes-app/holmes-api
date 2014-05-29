@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-27 20:19-0300\n"
+"POT-Creation-Date: 2014-05-29 13:10-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,159 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+
+#: holmes/facters/css.py:15
+msgid "CSS"
+msgstr ""
+
+#: holmes/facters/css.py:18 holmes/facters/images.py:18 holmes/facters/js.py:18
+msgid "Static"
+msgstr ""
+
+#: holmes/facters/css.py:21
+msgid "Total CSS requests"
+msgstr ""
+
+#: holmes/facters/css.py:23 holmes/facters/images.py:29 holmes/facters/js.py:23
+#: holmes/facters/last_modified.py:19 holmes/facters/links.py:33
+#: holmes/validators/img_requests.py:41 holmes/validators/last_modified.py:16
+#: holmes/validators/link_crawler.py:36 holmes/validators/link_crawler.py:52
+#: holmes/validators/link_with_redirect.py:19
+#: holmes/validators/link_with_redirect.py:32 holmes/validators/meta_tags.py:19
+#: holmes/validators/required_meta_tags.py:17 holmes/validators/title.py:16
+msgid "HTTP"
+msgstr ""
+
+#: holmes/facters/css.py:27
+msgid "Total CSS size"
+msgstr ""
+
+#: holmes/facters/css.py:30 holmes/facters/css.py:36
+#: holmes/facters/google_analytics.py:19 holmes/facters/heading_hierarchy.py:16
+#: holmes/facters/images.py:24 holmes/facters/js.py:30 holmes/facters/js.py:36
+#: holmes/facters/links.py:28 holmes/facters/robots.py:18
+#: holmes/facters/sitemap.py:22 holmes/facters/sitemap.py:27
+#: holmes/facters/sitemap.py:33 holmes/facters/sitemap.py:38
+#: holmes/facters/title.py:16 holmes/validators/anchor_without_any_text.py:26
+#: holmes/validators/blacklist.py:24
+#: holmes/validators/domain_canonicalization.py:31
+#: holmes/validators/domain_canonicalization.py:48
+#: holmes/validators/google_analytics.py:17
+#: holmes/validators/google_analytics.py:28
+#: holmes/validators/google_analytics.py:41
+#: holmes/validators/heading_hierarchy.py:31 holmes/validators/image_alt.py:42
+#: holmes/validators/image_alt.py:57
+#: holmes/validators/link_with_rel_canonical.py:24
+#: holmes/validators/links_with_rel_nofollow.py:27
+#: holmes/validators/meta_robots.py:23 holmes/validators/meta_robots.py:29
+#: holmes/validators/meta_tags.py:36 holmes/validators/open_graph.py:21
+#: holmes/validators/robots.py:27 holmes/validators/robots.py:36
+#: holmes/validators/robots.py:45 holmes/validators/robots.py:55
+#: holmes/validators/robots.py:65 holmes/validators/schema_org_item_type.py:18
+#: holmes/validators/schema_org_item_type.py:31
+#: holmes/validators/schema_org_item_type.py:46 holmes/validators/sitemap.py:31
+#: holmes/validators/sitemap.py:58 holmes/validators/title.py:38
+#: holmes/validators/url_with_underscore.py:26
+msgid "SEO"
+msgstr ""
+
+#: holmes/facters/css.py:33
+msgid "Total CSS size gzipped"
+msgstr ""
+
+#: holmes/facters/google_analytics.py:16
+msgid "Google Analytics"
+msgstr ""
+
+#: holmes/facters/heading_hierarchy.py:13
+msgid "Heading Hierarchy"
+msgstr ""
+
+#: holmes/facters/images.py:15
+msgid "Images"
+msgstr ""
+
+#: holmes/facters/images.py:21
+msgid "Total images size"
+msgstr ""
+
+#: holmes/facters/images.py:27
+msgid "Total images requests"
+msgstr ""
+
+#: holmes/facters/js.py:15
+msgid "JS"
+msgstr ""
+
+#: holmes/facters/js.py:21
+msgid "Total JS requests"
+msgstr ""
+
+#: holmes/facters/js.py:27
+msgid "Total JS size"
+msgstr ""
+
+#: holmes/facters/js.py:33
+msgid "Total JS size gzipped"
+msgstr ""
+
+#: holmes/facters/last_modified.py:17
+msgid "Last-Modified"
+msgstr ""
+
+#: holmes/facters/links.py:25
+msgid "Links to"
+msgstr ""
+
+#: holmes/facters/links.py:31
+msgid "Link count"
+msgstr ""
+
+#: holmes/facters/links.py:37
+msgid "Total invalid links"
+msgstr ""
+
+#: holmes/facters/links.py:39 holmes/facters/links.py:46
+#: holmes/validators/body.py:15 holmes/validators/sitemap.py:39
+#: holmes/validators/sitemap.py:70 holmes/validators/title.py:27
+msgid "Semantics"
+msgstr ""
+
+#: holmes/facters/links.py:43
+msgid "Invalid Links"
+msgstr ""
+
+#: holmes/facters/meta_tags.py:14
+msgid "Meta Tags"
+msgstr ""
+
+#: holmes/facters/meta_tags.py:17
+msgid "Meta"
+msgstr ""
+
+#: holmes/facters/robots.py:16
+msgid "Robots file URL"
+msgstr ""
+
+#: holmes/facters/sitemap.py:21
+msgid "Total SiteMap indexes"
+msgstr ""
+
+#: holmes/facters/sitemap.py:26
+msgid "Total SiteMap urls"
+msgstr ""
+
+#: holmes/facters/sitemap.py:31
+msgid "Total SiteMap size"
+msgstr ""
+
+#: holmes/facters/sitemap.py:36
+msgid "Total SiteMap gzipped size"
+msgstr ""
+
+#: holmes/facters/title.py:14
+msgid "Page Title"
+msgstr ""
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
@@ -96,29 +249,6 @@ msgid ""
 "for links to: %s."
 msgstr ""
 
-#: holmes/validators/anchor_without_any_text.py:26
-#: holmes/validators/blacklist.py:24
-#: holmes/validators/domain_canonicalization.py:31
-#: holmes/validators/domain_canonicalization.py:48
-#: holmes/validators/google_analytics.py:17
-#: holmes/validators/google_analytics.py:28
-#: holmes/validators/google_analytics.py:41
-#: holmes/validators/heading_hierarchy.py:31 holmes/validators/image_alt.py:42
-#: holmes/validators/image_alt.py:57
-#: holmes/validators/link_with_rel_canonical.py:24
-#: holmes/validators/links_with_rel_nofollow.py:27
-#: holmes/validators/meta_robots.py:23 holmes/validators/meta_robots.py:29
-#: holmes/validators/meta_tags.py:36 holmes/validators/open_graph.py:21
-#: holmes/validators/robots.py:27 holmes/validators/robots.py:36
-#: holmes/validators/robots.py:45 holmes/validators/robots.py:55
-#: holmes/validators/robots.py:65 holmes/validators/schema_org_item_type.py:18
-#: holmes/validators/schema_org_item_type.py:31
-#: holmes/validators/schema_org_item_type.py:46 holmes/validators/sitemap.py:31
-#: holmes/validators/sitemap.py:58 holmes/validators/title.py:38
-#: holmes/validators/url_with_underscore.py:26
-msgid "SEO"
-msgstr ""
-
 #: holmes/validators/anchor_without_any_text.py:27
 msgid ""
 "By using empty anchor text won't prevent search engines from indexing "
@@ -153,11 +283,6 @@ msgstr ""
 #: holmes/validators/body.py:14
 #, python-format
 msgid "Body was not found on %s."
-msgstr ""
-
-#: holmes/validators/body.py:15 holmes/validators/sitemap.py:39
-#: holmes/validators/sitemap.py:70 holmes/validators/title.py:27
-msgid "Semantics"
 msgstr ""
 
 #: holmes/validators/body.py:16
@@ -376,14 +501,6 @@ msgstr ""
 msgid ""
 "The image(s) in \"%(images)s\" could not be found or took more than 10 "
 "seconds to load."
-msgstr ""
-
-#: holmes/validators/img_requests.py:41 holmes/validators/last_modified.py:16
-#: holmes/validators/link_crawler.py:36 holmes/validators/link_crawler.py:52
-#: holmes/validators/link_with_redirect.py:19
-#: holmes/validators/link_with_redirect.py:32 holmes/validators/meta_tags.py:19
-#: holmes/validators/required_meta_tags.py:17 holmes/validators/title.py:16
-msgid "HTTP"
 msgstr ""
 
 #: holmes/validators/img_requests.py:42
