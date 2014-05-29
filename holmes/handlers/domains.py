@@ -161,7 +161,7 @@ class DomainGroupedViolationsHandler(BaseHandler):
             key_name, key_category_id, count = item['key_name'], item['category_id'], item['violation_count']
             violations.append({
                 'categoryId': key_category_id,
-                'categoryName': violation_defs[key_name]['category'],
+                'categoryName': self._(violation_defs[key_name]['category']),
                 'count': count
             })
             total += count
@@ -198,7 +198,7 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
         violations = []
         for key_name, count in top_violations:
             violations.append({
-                'title': violation_defs[key_name]['title'],
+                'title': self._(violation_defs[key_name]['title']),
                 'count': count,
                 'key': key_name,
             })
