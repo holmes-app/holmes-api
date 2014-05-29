@@ -5,7 +5,7 @@ import re
 import logging
 
 from holmes.facters import Facter
-from holmes.utils import get_domain_from_url, count_url_levels
+from holmes.utils import get_domain_from_url, count_url_levels, _
 
 REMOVE_HASH = re.compile('([#].*)$')
 URL_RE = re.compile(
@@ -22,28 +22,28 @@ class LinkFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.links': {
-                'title': 'Links to',
+                'title': _('Links to'),
                 'description': lambda value: list(value),
                 'unit': 'links',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
             'total.number.links': {
-                'title': 'Link count',
+                'title': _('Link count'),
                 'description': lambda value: value,
-                'category': 'HTTP',
+                'category': _('HTTP'),
                 'unit': 'number'
             },
             'total.number.invalid_links': {
-                'title': 'Total invalid links',
+                'title': _('Total invalid links'),
                 'description': lambda value: value,
-                'category': 'Semantics',
+                'category': _('Semantics'),
                 'unit': 'number'
             },
             'page.invalid_links': {
-                'title': 'Invalid Links',
+                'title': _('Invalid Links'),
                 'description': lambda value: list(value),
                 'unit': 'invalid-links',
-                'category': 'Semantics',
+                'category': _('Semantics'),
             }
         }
 

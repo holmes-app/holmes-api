@@ -4,6 +4,7 @@
 import re
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class GoogleAnalyticsFacter(Facter):
@@ -12,10 +13,10 @@ class GoogleAnalyticsFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.google_analytics': {
-                'title': 'Google Analytics',
+                'title': _('Google Analytics'),
                 'description': lambda value: list(value),
                 'unit': 'google-analytics',
-                'category': 'SEO',
+                'category': _('SEO'),
             }
         }
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class MetaTagsFacter(Facter):
@@ -10,10 +11,10 @@ class MetaTagsFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'meta.tags': {
-                'title': 'Meta Tags',
+                'title': _('Meta Tags'),
                 'description': lambda value: value,
                 'unit': 'values',
-                'category': 'Meta',
+                'category': _('Meta'),
             }
         }
 

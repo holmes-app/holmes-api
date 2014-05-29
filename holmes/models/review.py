@@ -39,7 +39,7 @@ class Review(Base):
             'uuid': str(self.uuid),
             'createdAt': self.created_date,
             'completedAt': self.completed_date,
-            'facts': [fact.to_dict(fact_definitions) for fact in self.facts],
+            'facts': [fact.to_dict(fact_definitions, _) for fact in self.facts],
             'violations': [violation.to_dict(violation_definitions, _)
                            for violation in self.violations]
         }

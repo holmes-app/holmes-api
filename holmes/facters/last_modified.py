@@ -5,6 +5,7 @@ import email.utils as eut
 from datetime import datetime
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class LastModifiedFacter(Facter):
@@ -13,9 +14,9 @@ class LastModifiedFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.last_modified': {
-                'title': 'Last-Modified',
+                'title': _('Last-Modified'),
                 'description': lambda value: value,
-                'category': 'HTTP',
+                'category': _('HTTP'),
                 'unit': 'datetime'
             }
         }

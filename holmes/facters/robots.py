@@ -4,6 +4,7 @@
 import logging
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class RobotsFacter(Facter):
@@ -12,9 +13,9 @@ class RobotsFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'robots.url': {
-                'title': 'Robots file URL',
+                'title': _('Robots file URL'),
                 'description': lambda value: value,
-                'category': 'SEO',
+                'category': _('SEO'),
                 'unit': 'link',
             }
         }

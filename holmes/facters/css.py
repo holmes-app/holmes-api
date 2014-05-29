@@ -4,6 +4,7 @@
 import logging
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class CSSFacter(Facter):
@@ -11,28 +12,28 @@ class CSSFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.css': {
-                'title': 'CSS',
+                'title': _('CSS'),
                 'description': lambda value: list(value),
                 'unit': 'css',
-                'category': 'Static',
+                'category': _('Static'),
             },
             'total.requests.css': {
-                'title': 'Total CSS requests',
+                'title': _('Total CSS requests'),
                 'description': lambda value: '%d' % value,
-                'category': 'HTTP',
+                'category': _('HTTP'),
                 'unit': 'number'
             },
             'total.size.css': {
-                'title': 'Total CSS size',
+                'title': _('Total CSS size'),
                 'description': lambda value: '%d' % value,
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
             'total.size.css.gzipped': {
-                'title': 'Total CSS size gzipped',
+                'title': _('Total CSS size gzipped'),
                 'description': lambda value: '%d' % value,
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             }
         }
 

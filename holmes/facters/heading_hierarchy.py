@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class HeadingHierarchyFacter(Facter):
@@ -9,10 +10,10 @@ class HeadingHierarchyFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.heading_hierarchy': {
-                'title': 'Heading Hierarchy',
+                'title': _('Heading Hierarchy'),
                 'description': lambda value: list(value),
                 'unit': 'heading-hierarchy',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
         }
 

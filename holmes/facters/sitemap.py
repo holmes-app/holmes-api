@@ -6,6 +6,7 @@ import re
 import lxml.etree
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 ROBOTS_SITEMAP = re.compile('Sitemap:\s+(.*)')
@@ -17,24 +18,24 @@ class SitemapFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'total.sitemap.indexes': {
-                'title': 'Total SiteMap indexes',
-                'category': 'SEO',
+                'title': _('Total SiteMap indexes'),
+                'category': _('SEO'),
                 'unit': 'number'
             },
             'total.sitemap.urls': {
-                'title': 'Total SiteMap urls',
-                'category': 'SEO',
+                'title': _('Total SiteMap urls'),
+                'category': _('SEO'),
                 'unit': 'number'
             },
             'total.size.sitemap': {
-                'title': 'Total SiteMap size',
+                'title': _('Total SiteMap size'),
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
             'total.size.sitemap.gzipped': {
-                'title': 'Total SiteMap gzipped size',
+                'title': _('Total SiteMap gzipped size'),
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             }
         }
 

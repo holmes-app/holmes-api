@@ -15,6 +15,7 @@ from holmes.reviewer import Reviewer
 from holmes.models.review import Review
 from holmes.models.page import Page
 from holmes.models.domain import Domain
+from holmes.utils import _
 from holmes.config import Config
 from holmes.worker import HolmesWorker
 from holmes.server import HolmesApiServer
@@ -172,13 +173,13 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
         print 'Facts'
         print '-----'
         for fact in review.facts:
-            print fact.to_dict(reviewer.fact_definitions)
+            print fact.to_dict(reviewer.fact_definitions, _)
 
         print
         print 'Violations'
         print '----------'
         for violation in review.violations:
-            print violation.to_dict(reviewer.violation_definitions)
+            print violation.to_dict(reviewer.violation_definitions, _)
 
         print
         print

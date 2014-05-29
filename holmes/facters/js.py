@@ -4,6 +4,7 @@
 import logging
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class JSFacter(Facter):
@@ -11,28 +12,28 @@ class JSFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.js': {
-                'title': 'JS',
+                'title': _('JS'),
                 'description': lambda value: list(value),
                 'unit': 'js',
-                'category': 'Static',
+                'category': _('Static'),
             },
             'total.requests.js': {
-                'title': 'Total JS requests',
+                'title': _('Total JS requests'),
                 'description': lambda value: value,
-                'category': 'HTTP',
+                'category': _('HTTP'),
                 'unit': 'number'
             },
             'total.size.js': {
-                'title': 'Total JS size',
+                'title': _('Total JS size'),
                 'description': lambda value: '%d' % value,
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
             'total.size.js.gzipped': {
-                'title': 'Total JS size gzipped',
+                'title': _('Total JS size gzipped'),
                 'description': lambda value: '%d' % value,
                 'unit': 'kb',
-                'category': 'SEO'
+                'category': _('SEO')
             }
         }
 

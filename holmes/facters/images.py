@@ -4,6 +4,7 @@
 import logging
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class ImageFacter(Facter):
@@ -11,21 +12,21 @@ class ImageFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.images': {
-                'title': 'Images',
+                'title': _('Images'),
                 'description': lambda value: list(value),
                 'unit': 'images',
-                'category': 'Static',
+                'category': _('Static'),
             },
             'total.size.img': {
-                'title': 'Total images size',
+                'title': _('Total images size'),
                 'description': lambda value: '%d' % value,
                 'unit': 'kb',
-                'category': 'SEO',
+                'category': _('SEO'),
             },
             'total.requests.img': {
-                'title': 'Total images requests',
+                'title': _('Total images requests'),
                 'description': lambda value: value,
-                'category': 'HTTP',
+                'category': _('HTTP'),
                 'unit': 'number'
             }
         }

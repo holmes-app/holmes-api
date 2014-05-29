@@ -5,6 +5,7 @@ from preggy import expect
 #from tornado.testing import gen_test
 
 from holmes.models import Fact, Key
+from holmes.utils import _
 from tests.unit.base import ApiTestCase
 from tests.fixtures import FactFactory
 
@@ -29,7 +30,7 @@ class TestFacts(ApiTestCase):
 
         facts_definitions = {'some.random.fact': {}}
 
-        expect(fact.to_dict(facts_definitions)).to_be_like({
+        expect(fact.to_dict(facts_definitions, _)).to_be_like({
             'key': 'some.random.fact',
             'value': 'whatever',
             'unit': 'value',

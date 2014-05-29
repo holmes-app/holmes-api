@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from holmes.facters import Facter
+from holmes.utils import _
 
 
 class TitleFacter(Facter):
@@ -10,9 +11,9 @@ class TitleFacter(Facter):
     def get_fact_definitions(cls):
         return {
             'page.title': {
-                'title': 'Page Title',
+                'title': _('Page Title'),
                 'description': lambda value: value,
-                'category': 'SEO',
+                'category': _('SEO'),
             }
         }
 
