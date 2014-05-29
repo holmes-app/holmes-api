@@ -259,7 +259,7 @@ class HolmesWorker(BaseWorker):
             self.working_url = job['url']
 
             if self.working_url:
-                self.domain_name, _ = get_domain_from_url(self.working_url)
+                self.domain_name, domain_url = get_domain_from_url(self.working_url)
 
             self._ping_api()
             job['lock'] = lock

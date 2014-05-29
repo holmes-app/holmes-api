@@ -129,7 +129,7 @@ class ElasticSearchProvider(SearchProvider):
                     completedAt = datetime.strptime(noMilliseconds, '%Y-%m-%dT%H:%M:%S')
 
                     page_url = hit['_source']['page_url']
-                    domain_name, _ = get_domain_from_url(page_url)
+                    domain_name, domain_url = get_domain_from_url(page_url)
 
                     reviews_data.append({
                         'uuid': hit['_source']['uuid'],
