@@ -14,7 +14,7 @@ from retools.lock import Lock, LockTimeout
 from holmes import __version__
 from holmes.reviewer import Reviewer, InvalidReviewError
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
-from holmes.models import Page, Request
+from holmes.models import Page, Request, Key
 from holmes.cli import BaseCLI
 
 
@@ -93,14 +93,6 @@ class BaseWorker(BaseCLI):
     def publish(self, data):
         self.redis_pub_sub.publish('events', data)
 
-    def _insert_keys(self, keys):
-        from holmes.models import Key
-
-        for name in keys.keys():
-            key = Key.get_or_create(self.db, name)
-            keys[name]['key'] = key
-            self.db.add(key)
-
 
 class HolmesWorker(BaseWorker):
     def initialize(self):
@@ -127,12 +119,12 @@ class HolmesWorker(BaseWorker):
         for facter in self.facters:
             self.fact_definitions.update(facter.get_fact_definitions())
 
-        self._insert_keys(self.fact_definitions)
+        Key.insert_keys(self.db, self.fact_definitions)
 
         for validator in self.validators:
             self.violation_definitions.update(validator.get_violation_definitions())
 
-        self._insert_keys(self.violation_definitions)
+        Key.insert_keys(self.db, self.violation_definitions)
 
         self.configure_material_girl()
 

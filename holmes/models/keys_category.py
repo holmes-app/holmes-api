@@ -56,3 +56,13 @@ class KeysCategory(Base):
         )
 
         return cls.get_by_name(db, category_name)
+
+    @classmethod
+    def insert_key_category(cls, db, key, name):
+        category = KeysCategory.get_or_create(db, name)
+
+        db.add(category)
+        db.flush()
+        db.commit()
+
+        return category

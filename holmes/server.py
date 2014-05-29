@@ -43,7 +43,6 @@ from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus, NoOpEventBus
 from holmes.utils import load_classes, load_languages, locale_path
 from holmes.models import Key
-from holmes.models import KeysCategory
 from holmes.cache import Cache
 from holmes import __version__
 from holmes.handlers import BaseHandler
@@ -147,12 +146,12 @@ class HolmesApiServer(Server):
         for facter in self.application.facters:
             self.application.fact_definitions.update(facter.get_fact_definitions())
 
-        self._insert_keys(self.application.fact_definitions)
+        Key.insert_keys(self.application.db, self.application.fact_definitions)
 
         for validator in self.application.validators:
             self.application.violation_definitions.update(validator.get_violation_definitions())
 
-        self._insert_keys(self.application.violation_definitions)
+        Key.insert_keys(self.application.db, self.application.violation_definitions)
 
         self.application.event_bus = NoOpEventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
@@ -175,27 +174,6 @@ class HolmesApiServer(Server):
         self.application.girl = Materializer(storage=RedisStorage(redis=self.redis_material))
 
         configure_materials(self.application.girl, self.application.db, self.config)
-
-    def _insert_key_category(self, key, name):
-        category = KeysCategory.get_or_create(self.application.db, name)
-        self.application.db.add(category)
-        self.application.db.flush()
-        self.application.db.commit()
-        return category
-
-    def _insert_keys(self, keys):
-        for name in keys.keys():
-            key = Key.get_or_create(self.application.db, name)
-            keys[name]['key'] = key
-
-            category_name = keys[name].get('category', None)
-            if category_name:
-                category = self._insert_key_category(key, category_name)
-                key.category = category
-
-            self.application.db.add(key)
-            self.application.db.flush()
-            self.application.db.commit()
 
     def _load_validators(self):
         return load_classes(default=self.config.VALIDATORS)

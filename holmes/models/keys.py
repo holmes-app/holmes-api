@@ -68,3 +68,24 @@ class Key(Base):
             )
 
         return cls.get_by_name(db, key_name)
+
+    @classmethod
+    def insert_keys(cls, db, keys):
+        from holmes.models import KeysCategory
+
+        for name in keys.keys():
+            key = Key.get_or_create(db, name)
+            keys[name]['key'] = key
+
+            category_name = keys[name].get('category', None)
+
+            if category_name:
+                category = KeysCategory.insert_key_category(
+                    db, key, category_name
+                )
+
+                key.category = category
+
+            db.add(key)
+            db.flush()
+            db.commit()
