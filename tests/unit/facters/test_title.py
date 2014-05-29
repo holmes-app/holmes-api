@@ -50,8 +50,9 @@ class TestTitleFacter(FacterTestCase):
                   'esportes e entretenimento',
         )
 
-        expect(facter.review.data).to_length(1)
+        expect(facter.review.data).to_length(2)
         expect(facter.review.data).to_include('page.title_count')
+        expect(facter.review.data).to_include('page.title')
         expect(facter.review.data['page.title_count']).to_equal(1)
 
     def test_no_title_tag(self):

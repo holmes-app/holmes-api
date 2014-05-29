@@ -40,10 +40,7 @@ class TestTitleValidator(ValidatorTestCase):
         validator = TitleValidator(reviewer)
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.title_count': 1
-        }
-
-        validator.review.facts = {
+            'page.title_count': 1,
             'page.title': ['the title']
         }
 
@@ -180,10 +177,7 @@ class TestTitleValidator(ValidatorTestCase):
 
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.title_count': 2
-        }
-
-        validator.review.facts = {
+            'page.title_count': 2,
             'page.title': ['first', 'second']
         }
 
@@ -236,10 +230,7 @@ class TestTitleValidator(ValidatorTestCase):
         validator = TitleValidator(reviewer)
         validator.add_violation = Mock()
         validator.review.data = {
-            'page.title_count': 1
-        }
-
-        validator.review.facts = {
+            'page.title_count': 1,
             'page.title': title
         }
 
