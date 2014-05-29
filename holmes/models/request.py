@@ -4,7 +4,7 @@
 from collections import defaultdict
 import sqlalchemy as sa
 from sqlalchemy import func, distinct
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from holmes.utils import get_status_code_title
 from holmes.models import Base
