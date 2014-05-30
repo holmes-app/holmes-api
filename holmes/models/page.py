@@ -105,23 +105,6 @@ class Page(Base):
         return int(db.query(sa.func.count(Page.id)).scalar())
 
     @classmethod
-    def update_scores(cls, individual_score, db):
-        for i in range(3):
-            db.begin(subtransactions=True)
-            try:
-                db.query(Page).update({'score': Page.score + individual_score})
-                db.flush()
-                db.commit()
-                break
-            except Exception:
-                err = sys.exc_info()[1]
-                if 'Deadlock found' in str(err) or 'Lock wait' in str(err):
-                    logging.error('Deadlock happened! Trying again (try number %d)! (Details: %s)' % (i, str(err)))
-                else:
-                    db.rollback()
-                    raise
-
-    @classmethod
     def get_next_job_list(cls, db, expiration, current_page=1, page_size=200,
                           domain_filter=None):
         from holmes.models import Domain
