@@ -6,7 +6,7 @@ from datetime import datetime
 from preggy import expect
 from tornado.testing import gen_test
 
-from holmes.models import Domain, Request, Violation
+from holmes.models import Domain, Request
 from tests.unit.base import ApiTestCase
 from tests.fixtures import DomainFactory, PageFactory, ReviewFactory, RequestFactory
 
