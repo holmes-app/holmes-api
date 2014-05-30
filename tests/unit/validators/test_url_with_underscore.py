@@ -66,7 +66,7 @@ class TestUrlWithUnderscoreValidator(ValidatorTestCase):
         expect(validator.get_url_with_underscore_message()).to_equal(
             'Google treats a hyphen as a word separator, but does '
             'not treat an underscore that way. Google treats and '
-            'underscore as a word joiner — so red_sneakers is the '
+            'underscore as a word joiner, so red_sneakers is the '
             'same as redsneakers to Google. This has been confirmed '
             'directly by Google themselves, including the fact that '
             'using dashes over underscores will have a (minor) '

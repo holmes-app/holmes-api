@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-29 13:10-0300\n"
+"POT-Creation-Date: 2014-05-30 15:29-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -179,6 +179,14 @@ msgstr ""
 msgid "Domain %s not found"
 msgstr ""
 
+#: holmes/handlers/domains.py:164 holmes/handlers/violation.py:22
+msgid "category"
+msgstr ""
+
+#: holmes/handlers/domains.py:201 holmes/handlers/violation.py:20
+msgid "title"
+msgstr ""
+
 #: holmes/handlers/limiter.py:48 holmes/handlers/limiter.py:90
 msgid "Empty access token"
 msgstr ""
@@ -223,14 +231,6 @@ msgstr ""
 #: holmes/handlers/request.py:25
 #, python-format
 msgid "Status code %s is not allowed"
-msgstr ""
-
-#: holmes/handlers/violation.py:20
-msgid "title"
-msgstr ""
-
-#: holmes/handlers/violation.py:22
-msgid "category"
 msgstr ""
 
 #: holmes/handlers/violation.py:49 holmes/handlers/violation.py:89
@@ -1042,7 +1042,7 @@ msgstr ""
 #: holmes/validators/url_with_underscore.py:12
 msgid ""
 "Google treats a hyphen as a word separator, but does not treat an "
-"underscore that way. Google treats and underscore as a word joiner — so "
+"underscore that way. Google treats and underscore as a word joiner, so "
 "red_sneakers is the same as redsneakers to Google. This has been "
 "confirmed directly by Google themselves, including the fact that using "
 "dashes over underscores will have a (minor) ranking benefit."
