@@ -4,6 +4,7 @@
 import logging
 import re
 import lxml.etree
+from cStringIO import StringIO
 
 from holmes.facters import Facter
 from holmes.utils import _
@@ -109,7 +110,8 @@ class SitemapFacter(Facter):
         self.review.facts['total.size.sitemap.gzipped']['value'] += size_gzip
         self.review.data['total.size.sitemap.gzipped'] += size_gzip
 
-        tree = lxml.etree.fromstring(response.text)
+        magical_parser = lxml.etree.XMLParser(encoding='utf-8', recover=True)
+        tree = lxml.etree.parse(StringIO(response.text), magical_parser)
 
         for sitemap in tree.xpath('//sm:sitemap | //sitemap', namespaces=namespaces):
             for loc in sitemap.xpath('sm:loc | loc', namespaces=namespaces):

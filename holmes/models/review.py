@@ -196,6 +196,10 @@ class Review(Base):
         from holmes.models import Page
 
         page = Page.by_uuid(page_uuid, db)
+
+        if page is None:
+            return
+
         last_review = page.last_review
 
         review = Review(
