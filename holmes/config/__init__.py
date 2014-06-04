@@ -100,6 +100,7 @@ Config.define('ERROR_HANDLERS', [], 'List of classes to handle errors', 'General
 
 Config.define('SEARCH_PROVIDER', 'holmes.search_providers.noexternal.NoExternalSearchProvider', 'Class to handle searching', 'Models')
 
+Config.define('ELASTIC_SEARCH_PROTOCOL', 'http', 'ElasticSearch protocol (http|https)', 'ElasticSearchProvider')
 Config.define('ELASTIC_SEARCH_HOST', 'localhost', 'ElasticSearch host', 'ElasticSearchProvider')
 Config.define('ELASTIC_SEARCH_PORT', 9200, 'ElasticSearch port', 'ElasticSearchProvider')
 Config.define('ELASTIC_SEARCH_INDEX', 'holmes', 'ElasticSearch index name', 'ElasticSearchProvider')

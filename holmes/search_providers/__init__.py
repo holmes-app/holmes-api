@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 
 
 class SearchProvider(object):
-    def __init__(self, config, db, io_loop=None):
+    def __init__(self, config, db, authNZ=None, io_loop=None):
         raise NotImplementedError()
 
     def index_review(self, review):
@@ -69,6 +69,13 @@ class SearchProvider(object):
             help='index all reviews with at least one violation of any key (might take long)'
         )
         parser.add_argument(
+            '-b', '--batch-size',
+            type=int,
+            nargs=1,
+            metavar='N',
+            help='batch size (default is 200)'
+        )
+        parser.add_argument(
             '-r', '--replace',
             action='store_true',
             help='replace entire index (default is increment/resume)'
@@ -81,6 +88,10 @@ class SearchProvider(object):
         )
 
         return parser
+
+    @classmethod
+    def new_instance(cls, config):
+        raise NotImplementedError()
 
     @classmethod
     def main(cls):

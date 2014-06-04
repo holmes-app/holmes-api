@@ -4,6 +4,7 @@
 import sys
 from uuid import uuid4
 from datetime import datetime, timedelta
+from authnz import AuthNZ
 
 from ujson import dumps
 from colorama import Fore, Style
@@ -102,13 +103,19 @@ class HolmesWorker(BaseWorker):
         self.last_ping = None
         self.last_update_pages_score = None
 
+        self.authNZ = AuthNZ(self.config)
+
         self.facters = self._load_facters()
         self.validators = self._load_validators()
         self.error_handlers = [handler(self.config) for handler in self.load_error_handlers()]
 
         self.connect_sqlalchemy()
 
-        self.search_provider = self.load_search_provider()(self.config, self.db)
+        self.search_provider = self.load_search_provider()(
+            config=self.config,
+            db=self.db,
+            authNZ=self.authNZ
+        )
 
         self.connect_to_redis()
         self.start_otto()

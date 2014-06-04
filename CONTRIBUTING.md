@@ -69,6 +69,12 @@ To set it as the default search provider:
 SEARCH_PROVIDER = 'holmes.search_providers.elastic.ElasticSearchProvider'
 ```
 
+Or if authentication is required (see [OAuth 2.0] below):
+
+```conf
+SEARCH_PROVIDER = 'holmes.search_providers.elastic.ElasticOverOAuthSearchProvider'
+```
+
 If -- and only if -- ES runs on a host and/or port other than localhost:9200, set one of or both the following variables accordingly:
 
 ```conf
@@ -105,6 +111,17 @@ or
 make elasticsearch_drop_test  # to delete the test index
 make elasticsearch_setup_test  # to create the test index
 make unit  # to run unit tests
+```
+
+OAuth 2.0
+---------
+
+Holmes supports authenticating/authorizing over [OAuth 2.0 Bearer Token](http://tools.ietf.org/html/rfc6750). Up to now, only ElasticOverOAuthSearchProvider uses it. The three config variables involved in authentication/authorization are:
+
+```conf
+OAUTH_TOKEN_ENDPOINT = 'https://oauth-service.com/token-endpoint'
+OAUTH_CLIENT_ID = 'client-id'
+OAUTH_CLIENT_SECRET = 'client-secret'
 ```
 
 **Happy contributing!**

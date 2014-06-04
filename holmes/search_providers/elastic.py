@@ -10,7 +10,7 @@ from holmes.models.violation import Violation
 from pyelasticsearch import ElasticSearch
 from tornado.concurrent import return_future
 from tornadoes import ESConnection
-from ujson import loads
+from ujson import loads, dumps
 from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
@@ -19,16 +19,19 @@ import logging
 
 
 class ElasticSearchProvider(SearchProvider):
-    def __init__(self, config, db=None, io_loop=None):
+    def __init__(self, config, db=None, authNZ=None, io_loop=None):
         self.debug = False
         self.config = config
         if db is not None:
             self.db = db
-        self.syncES = ElasticSearch('http://%(ELASTIC_SEARCH_HOST)s:%(ELASTIC_SEARCH_PORT)s' % config)
+        self.syncES = ElasticSearch(
+            '%(ELASTIC_SEARCH_PROTOCOL)s://%(ELASTIC_SEARCH_HOST)s:%(ELASTIC_SEARCH_PORT)s' % config
+        )
         self.asyncES = ESConnection(
-            config.get('ELASTIC_SEARCH_HOST'),
-            config.get('ELASTIC_SEARCH_PORT'),
-            io_loop=io_loop
+            host=config.get('ELASTIC_SEARCH_HOST'),
+            port=config.get('ELASTIC_SEARCH_PORT'),
+            io_loop=io_loop,
+            protocol=config.get('ELASTIC_SEARCH_PROTOCOL'),
         )
         self.index = config.get('ELASTIC_SEARCH_INDEX')
 
@@ -104,16 +107,36 @@ class ElasticSearchProvider(SearchProvider):
         }
 
     def index_review(self, review):
-        self.syncES.index(index=self.index, doc_type='review', id=review.page_id, doc=self.gen_doc(review))
+        self.syncES.send_request(
+            method='POST',
+            path_components=[self.index, 'review', review.page_id],
+            body=dumps(self.gen_doc(review)),
+            encode_body=False
+        )
 
     def index_reviews(self, reviewd_pages, reviews_count, batch_size):
+        action = {'index': {'_type': 'review'}}
+
         for i in xrange(0, reviews_count, batch_size):
+            body_bits = []
 
-            docs = []
             for page in reviewd_pages[i:i + batch_size]:
-                docs.append(self.gen_doc(page.last_review))
+                doc = self.gen_doc(page.last_review)
 
-            self.syncES.bulk_index(index=self.index, doc_type='review', docs=docs, id_field='page_id')
+                action['index']['_id'] = doc['page_id']
+
+                body_bits.append(dumps(action))
+                body_bits.append(dumps(doc))
+
+            # Yes, that trailing newline IS necessary
+            body = '\n'.join(body_bits) + '\n'
+
+            self.syncES.send_request(
+                method='POST',
+                path_components=[self.index, '_bulk'],
+                body=body,
+                encode_body=False
+            )
 
         logging.info('Done!')
 
@@ -125,8 +148,7 @@ class ElasticSearchProvider(SearchProvider):
 
                 reviews_data = []
                 for hit in hits['hits']:
-                    noMilliseconds = hit['_source']['completed_date'].split('.')[0]
-                    completedAt = datetime.strptime(noMilliseconds, '%Y-%m-%dT%H:%M:%S')
+                    completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
                     reviews_data.append({
                         'uuid': hit['_source']['uuid'],
                         'page': {
@@ -181,9 +203,7 @@ class ElasticSearchProvider(SearchProvider):
 
                 pages = []
                 for hit in hits['hits']:
-                    noMilliseconds = hit['_source']['completed_date'].split('.')[0]
-                    completedAt = datetime.strptime(noMilliseconds, '%Y-%m-%dT%H:%M:%S')
-
+                    completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
                     pages.append({
                         'url': hit['_source']['page_url'],
                         'uuid': hit['_source']['page_uuid'],
@@ -254,7 +274,7 @@ class ElasticSearchProvider(SearchProvider):
                         'index': 'not_analyzed'
                     },
                     'completed_date': {
-                        'type': 'date'
+                        'type': 'integer'
                     },
                     'violation_count': {
                         'type': 'float'
@@ -271,7 +291,7 @@ class ElasticSearchProvider(SearchProvider):
                         'index': 'not_analyzed'
                     },
                     'page_last_review_date': {
-                        'type': 'date'
+                        'type': 'integer'
                     },
                     'domain_id': {
                         'type': 'integer'
@@ -367,6 +387,10 @@ class ElasticSearchProvider(SearchProvider):
         self.index_reviews(reviewd_pages, reviews_count, batch_size)
 
     @classmethod
+    def new_instance(cls, config):
+        return ElasticSearchProvider(config)
+
+    @classmethod
     def main(cls):
         import sys
 
@@ -415,7 +439,7 @@ class ElasticSearchProvider(SearchProvider):
                 index = args.index[0]
                 config['ELASTIC_SEARCH_INDEX'] = index
 
-        from pyelasticsearch.exceptions import IndexAlreadyExistsError, ElasticHttpNotFoundError
+        from pyelasticsearch.exceptions import IndexAlreadyExistsError, ElasticHttpNotFoundError, InvalidJsonResponseError
         from requests.exceptions import ConnectionError
         try:
 
@@ -427,12 +451,15 @@ class ElasticSearchProvider(SearchProvider):
                     logging.error('Need either an index name or a config file to perform such operation!')
                     sys.exit(1)
                 else:
-                    es = ElasticSearchProvider(config)
+                    es = cls.new_instance(config)
                     if args.recreate or args.delete:
                         try:
                             es.delete_index()
                         except ElasticHttpNotFoundError:
                             pass
+                        except InvalidJsonResponseError, e:
+                            logging.error('Invalid response! Reason: %s' % e)
+                            sys.exit(1)
                     if args.create or args.recreate:
                         es.setup_index()
 
@@ -440,13 +467,18 @@ class ElasticSearchProvider(SearchProvider):
                 if config is None:
                     logging.error('Need a config file to perform such operation! Use --conf conf_file')
                 else:
-                    es = ElasticSearchProvider(config) if not es else es
-                    if args.verbose > 2:
-                        es.activate_debug()
-                    if args.keys:
-                        es.index_all_reviews(args.keys, replace=args.replace)
-                    elif args.all_keys:
-                        es.index_all_reviews(replace=args.replace)
+                    batch_size = args.batch_size[0] if args.batch_size else 200
+                    es = cls.new_instance(config) if not es else es
+                    try:
+                        if args.verbose > 2:
+                            es.activate_debug()
+                        if args.keys:
+                            es.index_all_reviews(args.keys, replace=args.replace, batch_size=batch_size)
+                        elif args.all_keys:
+                            es.index_all_reviews(replace=args.replace, batch_size=batch_size)
+                    except InvalidJsonResponseError, e:
+                        logging.error('Invalid response! Reason: %s' % e)
+                        sys.exit(1)
 
         except IndexAlreadyExistsError:
             logging.error('Index %s already exists! Use --recreate (with caution) to recreate' % index)

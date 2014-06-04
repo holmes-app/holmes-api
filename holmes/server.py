@@ -12,6 +12,7 @@ import tornado.locale
 import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
+from authnz import AuthNZ
 
 from holmes.handlers.page import (
     PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
@@ -135,10 +136,18 @@ class HolmesApiServer(Server):
             from sqltap import sqltap
             self.sqltap = sqltap.start()
 
+        self.application.authNZ = AuthNZ(self.application.config)
+
         self.application.facters = self._load_facters()
         self.application.validators = self._load_validators()
         self.application.error_handlers = [handler(self.application.config) for handler in self._load_error_handlers()]
-        self.application.search_provider = self._load_search_provider()(self.application.config, self.application.db, io_loop)
+
+        self.application.search_provider = self._load_search_provider()(
+            config=self.application.config,
+            db=self.application.db,
+            authNZ=self.application.authNZ,
+            io_loop=io_loop
+        )
 
         self.application.fact_definitions = {}
         self.application.violation_definitions = {}
