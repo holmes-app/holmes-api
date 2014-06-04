@@ -9,6 +9,7 @@ from tornado.web import RequestHandler
 from holmes import __version__
 import holmes.utils as utils
 
+
 class BaseHandler(RequestHandler):
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
@@ -67,3 +68,24 @@ class BaseHandler(RequestHandler):
     def girl(self):
         return self.application.girl
 
+    def is_empty_access_token(self, access_token):
+        if access_token is None:
+            self.set_status(403)
+            self.write_json({
+                'reason': 'Empty access token',
+                'description': self._('Empty access token')
+            })
+            return True
+
+        return False
+
+    def is_unauthorized_user(self, data):
+        if data and data.get('user', None) is None:
+            self.set_status(401)
+            self.write_json({
+                'reason': 'Unauthorized user',
+                'description': self._('Unauthorized user')
+            })
+            return True
+
+        return False

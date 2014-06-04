@@ -80,15 +80,14 @@ class TestUser(ApiTestCase):
         config = Config()
         config.GOOGLE_CLIENT_ID = '000'
 
+        app = Mock()
+        app.http_client.fetch = fetch_mock
+        app.db = self.db
+        app.config = config
+
         access_token = '111'
 
-        User.authenticate(
-            access_token,
-            fetch_mock,
-            self.db,
-            config,
-            callback=self.stop
-        )
+        User.authenticate(access_token, app, callback=self.stop)
 
         response = self.wait()
 
@@ -115,15 +114,14 @@ class TestUser(ApiTestCase):
         config = Config()
         config.GOOGLE_CLIENT_ID = '000'
 
+        app = Mock()
+        app.http_client.fetch = fetch_mock
+        app.db = self.db
+        app.config = config
+
         access_token = '111'
 
-        User.authenticate(
-            access_token,
-            fetch_mock,
-            self.db,
-            config,
-            callback=self.stop
-        )
+        User.authenticate(access_token, app, callback=self.stop)
 
         response = self.wait()
 
@@ -154,15 +152,14 @@ class TestUser(ApiTestCase):
         config = Config()
         config.GOOGLE_CLIENT_ID = '000'
 
+        app = Mock()
+        app.http_client.fetch = fetch_mock
+        app.db = self.db
+        app.config = config
+
         access_token = '111'
 
-        User.authenticate(
-            access_token,
-            fetch_mock,
-            self.db,
-            config,
-            callback=self.stop
-        )
+        User.authenticate(access_token, app, callback=self.stop)
 
         response = self.wait()
 
@@ -202,15 +199,14 @@ class TestUser(ApiTestCase):
         config = Config()
         config.GOOGLE_CLIENT_ID = '000'
 
+        app = Mock()
+        app.http_client.fetch = fetch_mock
+        app.db = self.db
+        app.config = config
+
         access_token = '111'
 
-        User.authenticate(
-            access_token,
-            fetch_mock,
-            self.db,
-            config,
-            callback=self.stop
-        )
+        User.authenticate(access_token, app, callback=self.stop)
 
         response = self.wait()
 

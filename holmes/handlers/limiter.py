@@ -43,21 +43,12 @@ class LimiterHandler(BaseHandler):
     def post(self):
         access_token = self.request.headers.get('X-AUTH-HOLMES', None)
 
-        if access_token is None:
-            self.set_status(403)
-            self.write_json({'reason': 'Empty access token', 'description': self._('Empty access token')})
+        if self.is_empty_access_token(access_token):
             return
 
-        result = yield User.authenticate(
-            access_token,
-            self.application.http_client.fetch,
-            self.db,
-            self.application.config
-        )
+        result = yield User.authenticate(access_token, self.application)
 
-        if result and result.get('user', None) is None:
-            self.set_status(401)
-            self.write_json({'reason': 'Unauthorized user', 'description': self._('Unauthorized user')})
+        if self.is_unauthorized_user(result):
             return
 
         post_data = loads(self.request.body)
@@ -85,21 +76,12 @@ class LimiterHandler(BaseHandler):
 
         access_token = self.request.headers.get('X-AUTH-HOLMES', None)
 
-        if access_token is None:
-            self.set_status(403)
-            self.write_json({'reason': 'Empty access token', 'description': self._('Empty access token')})
+        if self.is_empty_access_token(access_token):
             return
 
-        result = yield User.authenticate(
-            access_token,
-            self.application.http_client.fetch,
-            self.db,
-            self.application.config
-        )
+        result = yield User.authenticate(access_token, self.application)
 
-        if result and result.get('user', None) is None:
-            self.set_status(401)
-            self.write_json({'reason': 'Unauthorized user', 'description': self._('Unauthorized user')})
+        if self.is_unauthorized_user(result):
             return
 
         limiter = Limiter.by_id(limiter_id, self.db)

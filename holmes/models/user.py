@@ -44,17 +44,17 @@ class User(Base):
 
     @classmethod
     @return_future
-    def authenticate(cls, access_token, fetch_method, db, config, callback):
+    def authenticate(cls, access_token, app, callback):
         logging.info('Authenticating...')
 
         google_api_url = 'https://www.googleapis.com/oauth2/v1/tokeninfo'
         url = '%s?access_token=%s' % (google_api_url, access_token)
 
-        fetch_method(
+        app.http_client.fetch(
             url,
-            cls.handle_authenticate(cls.handle_authorize(db, config, callback)),
-            proxy_host=config.HTTP_PROXY_HOST,
-            proxy_port=config.HTTP_PROXY_PORT
+            cls.handle_authenticate(cls.handle_authorize(app.db, app.config, callback)),
+            proxy_host=app.config.HTTP_PROXY_HOST,
+            proxy_port=app.config.HTTP_PROXY_PORT
         )
 
     @classmethod

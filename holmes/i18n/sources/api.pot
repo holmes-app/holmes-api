@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-30 15:29-0300\n"
+"POT-Creation-Date: 2014-06-04 15:26-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,8 +47,8 @@ msgstr ""
 #: holmes/facters/google_analytics.py:19 holmes/facters/heading_hierarchy.py:16
 #: holmes/facters/images.py:24 holmes/facters/js.py:30 holmes/facters/js.py:36
 #: holmes/facters/links.py:28 holmes/facters/robots.py:18
-#: holmes/facters/sitemap.py:22 holmes/facters/sitemap.py:27
-#: holmes/facters/sitemap.py:33 holmes/facters/sitemap.py:38
+#: holmes/facters/sitemap.py:23 holmes/facters/sitemap.py:28
+#: holmes/facters/sitemap.py:34 holmes/facters/sitemap.py:39
 #: holmes/facters/title.py:16 holmes/validators/anchor_without_any_text.py:26
 #: holmes/validators/blacklist.py:24
 #: holmes/validators/domain_canonicalization.py:31
@@ -150,24 +150,32 @@ msgstr ""
 msgid "Robots file URL"
 msgstr ""
 
-#: holmes/facters/sitemap.py:21
+#: holmes/facters/sitemap.py:22
 msgid "Total SiteMap indexes"
 msgstr ""
 
-#: holmes/facters/sitemap.py:26
+#: holmes/facters/sitemap.py:27
 msgid "Total SiteMap urls"
 msgstr ""
 
-#: holmes/facters/sitemap.py:31
+#: holmes/facters/sitemap.py:32
 msgid "Total SiteMap size"
 msgstr ""
 
-#: holmes/facters/sitemap.py:36
+#: holmes/facters/sitemap.py:37
 msgid "Total SiteMap gzipped size"
 msgstr ""
 
 #: holmes/facters/title.py:14
 msgid "Page Title"
+msgstr ""
+
+#: holmes/handlers/__init__.py:76
+msgid "Empty access token"
+msgstr ""
+
+#: holmes/handlers/__init__.py:87
+msgid "Unauthorized user"
 msgstr ""
 
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
@@ -187,23 +195,15 @@ msgstr ""
 msgid "title"
 msgstr ""
 
-#: holmes/handlers/limiter.py:48 holmes/handlers/limiter.py:90
-msgid "Empty access token"
-msgstr ""
-
-#: holmes/handlers/limiter.py:60 holmes/handlers/limiter.py:102
-msgid "Unauthorized user"
-msgstr ""
-
-#: holmes/handlers/limiter.py:70
+#: holmes/handlers/limiter.py:61
 msgid "Not url or value"
 msgstr ""
 
-#: holmes/handlers/limiter.py:83
+#: holmes/handlers/limiter.py:74
 msgid "Invalid data"
 msgstr ""
 
-#: holmes/handlers/limiter.py:109
+#: holmes/handlers/limiter.py:91
 msgid "Not Found"
 msgstr ""
 
