@@ -4,6 +4,7 @@
 import sys
 import calendar
 from datetime import datetime, timedelta
+from mock import patch
 
 from preggy import expect
 from tornado.testing import gen_test
@@ -186,8 +187,10 @@ class TestLastReviewsHandler(ApiTestCase):
 class TestLastReviewsInLastHourHandler(ApiTestCase):
 
     @gen_test
-    def test_can_get_last_reviews_count_in_last_hour(self):
-        dt = datetime.utcnow()
+    @patch('datetime.datetime')
+    def test_can_get_last_reviews_count_in_last_hour(self, datetime_mock):
+        dt = datetime(2014, 2, 14, 15, 0, 30)
+        datetime_mock.utcnow.return_value = dt
 
         ReviewFactory.create(
             is_active=True,
@@ -213,7 +216,8 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
         self.db.flush()
 
         url = self.get_url('/reviews-in-last-hour')
-        response = yield self.http_client.fetch(url, method='GET')
+        self.http_client.fetch(url, method='GET', callback=self.stop)
+        response = self.wait()
 
         expect(response.code).to_equal(200)
 
