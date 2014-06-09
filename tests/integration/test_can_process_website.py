@@ -59,6 +59,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             REDISPORT=57575,
             MATERIAL_GIRL_REDISHOST='localhost',
             MATERIAL_GIRL_REDISPORT=57575,
+            SEARCH_PROVIDER="holmes.search_providers.noexternal.NoExternalSearchProvider",
             FACTERS = [
                 'holmes.facters.title.TitleFacter',
                 'holmes.facters.links.LinkFacter',
@@ -129,6 +130,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             config=config,
             validators=self.validators,
             facters=self.facters,
+            search_provider=self.search_provider,
             wait=self.otto.wait,
             wait_timeout=0,  # max time to wait for all requests to finish
             db=self.db,
