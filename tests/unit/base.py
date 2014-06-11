@@ -100,17 +100,17 @@ class ApiTestCase(CowTestCase):
     def use_no_external_search_provider(self):
         from holmes.search_providers.noexternal import NoExternalSearchProvider
         self.server.application.search_provider = NoExternalSearchProvider(
-            self.server.application.config,
-            self.db,
-            self.io_loop
+            config=self.server.application.config,
+            db=self.db,
+            io_loop=self.io_loop
         )
 
     def use_elastic_search_provider(self):
         from holmes.search_providers.elastic import ElasticSearchProvider
         self.server.application.search_provider = ElasticSearchProvider(
-            self.server.application.config,
-            self.db,
-            self.io_loop
+            config=self.server.application.config,
+            db=self.db,
+            io_loop=self.io_loop
         )
 
 FILES_ROOT_PATH = abspath(join(dirname(__file__), 'files'))
