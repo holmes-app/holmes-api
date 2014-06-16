@@ -363,8 +363,8 @@ class ElasticSearchProvider(SearchProvider):
         try:
             max_page_id = self._get_max_page_id_from_index(must_have_domain_name=True)
         except Exception:
-            logging.warning('Could not retrieve max page_id, replacing entire index!')
-            replace = True
+            logging.error('Could not retrieve max page_id! Use with --replace (with caution)')
+            return
 
         def apply_filters(query):
             if keys is not None:
