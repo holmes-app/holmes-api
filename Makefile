@@ -129,7 +129,7 @@ ensure_directories:
 	@mkdir -p ./holmes/i18n/{locale,sources}
 
 extract_translations: ensure_directories
-	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot ./holmes/
+	@pybabel extract -F ./holmes/config/babel.conf -o ./holmes/i18n/sources/api.pot --add-comments=NOTE ./holmes/
 
 upload_translations: ensure_crowdin_conf ensure_directories extract_translations
 	@crowdin-cli upload sources
