@@ -1,8 +1,8 @@
 msgid ""
 msgstr "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-05-29 13:10-0300\n"
-"PO-Revision-Date: 2014-05-29 12:10-0400\n"
+"POT-Creation-Date: 2014-06-18 13:49-0300\n"
+"PO-Revision-Date: 2014-06-18 12:51-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
@@ -12,6 +12,290 @@ msgstr "Project-Id-Version: holmes\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: crowdin.net\n"
 "Language: de_DE\n"
+
+#: holmes/config/__init__.py:12
+msgid "Main loop sleep time"
+msgstr ""
+
+#: holmes/config/__init__.py:14
+msgid "Time to remove a Worker from API List (must be greater than WORKER_SLEEP_TIME + Validation time)"
+msgstr ""
+
+#: holmes/config/__init__.py:16
+msgid "Number of pages that will be retrieved when looking for the next job"
+msgstr ""
+
+#: holmes/config/__init__.py:18 holmes/config/__init__.py:19
+msgid "The expiration for lock to update pages score"
+msgstr ""
+
+#: holmes/config/__init__.py:21
+msgid "Number of seconds a connection can take."
+msgstr ""
+
+#: holmes/config/__init__.py:22
+msgid "Number of seconds a request can take."
+msgstr ""
+
+#: holmes/config/__init__.py:28
+msgid "Log Format to be used when writing log messages"
+msgstr ""
+
+#: holmes/config/__init__.py:30
+msgid "Date Format to be used when writing log messages."
+msgstr ""
+
+#: holmes/config/__init__.py:32
+msgid "List of classes to get facts about a website"
+msgstr ""
+
+#: holmes/config/__init__.py:33
+msgid "List of classes to validate a website"
+msgstr ""
+
+#: holmes/config/__init__.py:34
+msgid "Number of seconds that a review expires in."
+msgstr ""
+
+#: holmes/config/__init__.py:35
+msgid "Maximum number of reviews to keep"
+msgstr ""
+
+#: holmes/config/__init__.py:37
+msgid "Number of days to keep requests"
+msgstr ""
+
+#: holmes/config/__init__.py:38
+msgid "Number of requests for falied responses"
+msgstr ""
+
+#: holmes/config/__init__.py:41
+msgid "Number of urls to enqueue before submitting to the /pages route"
+msgstr ""
+
+#: holmes/config/__init__.py:45
+msgid "Maximum number of images per page"
+msgstr ""
+
+#: holmes/config/__init__.py:47
+msgid "Maximum size of a single image"
+msgstr ""
+
+#: holmes/config/__init__.py:49
+msgid "Maximum size of images per page"
+msgstr ""
+
+#: holmes/config/__init__.py:52
+msgid "Maximum number of external stylesheets per page"
+msgstr ""
+
+#: holmes/config/__init__.py:54
+msgid "Maximum size of stylesheets per page after gzip"
+msgstr ""
+
+#: holmes/config/__init__.py:58
+msgid "Maximum number of external scripts per page"
+msgstr ""
+
+#: holmes/config/__init__.py:60
+msgid "Maximum size of scripts per page after gzip"
+msgstr ""
+
+#: holmes/config/__init__.py:63
+msgid "Title tags longer than 70 characters may be truncated in the results"
+msgstr ""
+
+#: holmes/config/__init__.py:66
+msgid "Description Meta tags longer than 300 characters may be truncated in the results"
+msgstr ""
+
+#: holmes/config/__init__.py:69
+msgid "Heading Hierarchy tags longer than 150 characters may be truncated in the results"
+msgstr ""
+
+#: holmes/config/__init__.py:72
+msgid "Image alt attributes longer than 70 characters may be truncated in the results"
+msgstr ""
+
+#: holmes/config/__init__.py:75
+msgid "Access Control Allow Origin header value"
+msgstr ""
+
+#: holmes/config/__init__.py:77
+msgid "HTTP Proxy Host to use"
+msgstr ""
+
+#: holmes/config/__init__.py:78
+msgid "HTTP Proxy Port to use"
+msgstr ""
+
+#: holmes/config/__init__.py:80
+msgid "HTTP Proxy Host to use to connect to the API"
+msgstr ""
+
+#: holmes/config/__init__.py:81
+msgid "HTTP Proxy Port to use to connect to the API"
+msgstr ""
+
+#: holmes/config/__init__.py:83
+msgid "Commit on request end"
+msgstr ""
+
+#: holmes/config/__init__.py:85 holmes/config/__init__.py:90
+msgid "Redis host"
+msgstr ""
+
+#: holmes/config/__init__.py:86 holmes/config/__init__.py:89
+msgid "Redis port"
+msgstr ""
+
+#: holmes/config/__init__.py:87 holmes/config/__init__.py:91
+msgid "Redis password in case of auth"
+msgstr ""
+
+#: holmes/config/__init__.py:93
+msgid "List of required meta tags"
+msgstr ""
+
+#: holmes/config/__init__.py:95
+msgid "List of Schema.Org ItemType"
+msgstr ""
+
+#: holmes/config/__init__.py:97
+msgid "Force canonical"
+msgstr ""
+
+#: holmes/config/__init__.py:99
+msgid "Domain blacklist"
+msgstr ""
+
+#: holmes/config/__init__.py:101
+msgid "List of classes to handle errors"
+msgstr ""
+
+#: holmes/config/__init__.py:103
+msgid "Class to handle searching"
+msgstr ""
+
+#: holmes/config/__init__.py:105
+msgid "ElasticSearch protocol (http|https)"
+msgstr ""
+
+#: holmes/config/__init__.py:106
+msgid "ElasticSearch host"
+msgstr ""
+
+#: holmes/config/__init__.py:107
+msgid "ElasticSearch port"
+msgstr ""
+
+#: holmes/config/__init__.py:108
+msgid "ElasticSearch index name"
+msgstr ""
+
+#: holmes/config/__init__.py:111
+msgid "If set to true errors will be sent to sentry."
+msgstr ""
+
+#: holmes/config/__init__.py:112
+msgid "URL to use as sentry DSN."
+msgstr ""
+
+#: holmes/config/__init__.py:114
+msgid "Expiration for the cache key for each domain page count"
+msgstr ""
+
+#: holmes/config/__init__.py:115 holmes/config/__init__.py:116
+msgid "Expiration for the cache key for each domain violation count"
+msgstr ""
+
+#: holmes/config/__init__.py:117
+msgid "Expiration for the cache key for each domain average response time"
+msgstr ""
+
+#: holmes/config/__init__.py:118
+msgid "Expiration for the cache key for each domain violation count by category"
+msgstr ""
+
+#: holmes/config/__init__.py:119
+msgid "Expiration for the cache key for each domain top violation in a category"
+msgstr ""
+
+#: holmes/config/__init__.py:120
+msgid "Limit for the size of the list of top vilations of a key category for a domain"
+msgstr ""
+
+#: holmes/config/__init__.py:121
+msgid "Expiration for the url lock for each url"
+msgstr ""
+
+#: holmes/config/__init__.py:122
+msgid "Expiration for the url lock for next jobs"
+msgstr ""
+
+#: holmes/config/__init__.py:123
+msgid "Expiration for the cache key for next jobs count"
+msgstr ""
+
+#: holmes/config/__init__.py:141
+msgid "Grace period times for materials"
+msgstr ""
+
+#: holmes/config/__init__.py:143
+msgid "Page Score for pages that the user includes through the UI"
+msgstr ""
+
+#: holmes/config/__init__.py:144
+msgid "Default tax rate for scoring pages."
+msgstr ""
+
+#: holmes/config/__init__.py:145
+msgid "Maximum score of page"
+msgstr ""
+
+#: holmes/config/__init__.py:147
+msgid "Expiration in seconds for cache storage of responses."
+msgstr ""
+
+#: holmes/config/__init__.py:149
+msgid "Maximum levels of URL"
+msgstr ""
+
+#: holmes/config/__init__.py:151
+msgid "Google client ID"
+msgstr ""
+
+#: holmes/config/__init__.py:153
+msgid "The expiration for locks in the limiter"
+msgstr ""
+
+#: holmes/config/__init__.py:154
+msgid "The expiration for valus in the limiter"
+msgstr ""
+
+#: holmes/config/__init__.py:155
+msgid "Default number of concurrent connections"
+msgstr ""
+
+#: holmes/config/__init__.py:157
+msgid "Expiration for the cache key for the most common violations"
+msgstr ""
+
+#: holmes/config/__init__.py:158
+msgid "Limit for the size of the Vilation sample used in the aggregation"
+msgstr ""
+
+#: holmes/config/__init__.py:165
+msgid "Trottling by message type"
+msgstr ""
+
+#: holmes/config/__init__.py:167
+msgid "Defines whether auto-flush should be used in sqlalchemy"
+msgstr ""
+
+#: holmes/config/__init__.py:169
+msgid "Expiration in seconds for domains violations prefs."
+msgstr ""
 
 #: holmes/facters/css.py:15
 msgid "CSS"
@@ -43,8 +327,8 @@ msgstr ""
 #: holmes/facters/google_analytics.py:19 holmes/facters/heading_hierarchy.py:16
 #: holmes/facters/images.py:24 holmes/facters/js.py:30 holmes/facters/js.py:36
 #: holmes/facters/links.py:28 holmes/facters/robots.py:18
-#: holmes/facters/sitemap.py:22 holmes/facters/sitemap.py:27
-#: holmes/facters/sitemap.py:33 holmes/facters/sitemap.py:38
+#: holmes/facters/sitemap.py:23 holmes/facters/sitemap.py:28
+#: holmes/facters/sitemap.py:34 holmes/facters/sitemap.py:39
 #: holmes/facters/title.py:16 holmes/validators/anchor_without_any_text.py:26
 #: holmes/validators/blacklist.py:24
 #: holmes/validators/domain_canonicalization.py:31
@@ -146,19 +430,19 @@ msgstr ""
 msgid "Robots file URL"
 msgstr ""
 
-#: holmes/facters/sitemap.py:21
+#: holmes/facters/sitemap.py:22
 msgid "Total SiteMap indexes"
 msgstr ""
 
-#: holmes/facters/sitemap.py:26
+#: holmes/facters/sitemap.py:27
 msgid "Total SiteMap urls"
 msgstr ""
 
-#: holmes/facters/sitemap.py:31
+#: holmes/facters/sitemap.py:32
 msgid "Total SiteMap size"
 msgstr ""
 
-#: holmes/facters/sitemap.py:36
+#: holmes/facters/sitemap.py:37
 msgid "Total SiteMap gzipped size"
 msgstr ""
 
@@ -166,47 +450,62 @@ msgstr ""
 msgid "Page Title"
 msgstr ""
 
+#: holmes/handlers/__init__.py:76
+msgid "Empty access token"
+msgstr ""
+
+#: holmes/handlers/__init__.py:87
+msgid "Unauthorized user"
+msgstr ""
+
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
 #: holmes/handlers/domains.py:150 holmes/handlers/domains.py:187
-#: holmes/handlers/domains.py:224 holmes/handlers/request.py:17
+#: holmes/handlers/domains.py:224
+#: holmes/handlers/domains_violations_prefs.py:23
+#: holmes/handlers/domains_violations_prefs.py:66 holmes/handlers/request.py:17
 #: holmes/handlers/violation.py:43
 #, python-format
 msgid "Domain %s not found"
 msgstr ""
 
-#: holmes/handlers/limiter.py:48 holmes/handlers/limiter.py:90
-msgid "Empty access token"
+#: holmes/handlers/domains.py:164 holmes/handlers/violation.py:22
+msgid "category"
 msgstr ""
 
-#: holmes/handlers/limiter.py:60 holmes/handlers/limiter.py:102
-msgid "Unauthorized user"
+#: holmes/handlers/domains.py:201 holmes/handlers/violation.py:20
+msgid "title"
 msgstr ""
 
-#: holmes/handlers/limiter.py:70
+#: holmes/handlers/domains_violations_prefs.py:76
+#: holmes/handlers/domains_violations_prefs.py:77
+msgid "Preferences successfully saved!"
+msgstr ""
+
+#: holmes/handlers/limiter.py:61
 msgid "Not url or value"
 msgstr ""
 
-#: holmes/handlers/limiter.py:83
+#: holmes/handlers/limiter.py:74
 msgid "Invalid data"
 msgstr ""
 
-#: holmes/handlers/limiter.py:109
+#: holmes/handlers/limiter.py:91
 msgid "Not Found"
 msgstr ""
 
-#: holmes/handlers/page.py:20 holmes/handlers/page.py:80
-#: holmes/handlers/page.py:105 holmes/handlers/review.py:34
+#: holmes/handlers/page.py:20 holmes/handlers/page.py:82
+#: holmes/handlers/page.py:107 holmes/handlers/review.py:34
 #, python-format
 msgid "Page UUID [%s] not found"
 msgstr ""
 
-#: holmes/handlers/page.py:50
+#: holmes/handlers/page.py:52
 #, python-format
 msgid "Invalid url [%s]"
 msgstr ""
 
-#: holmes/handlers/page.py:60
+#: holmes/handlers/page.py:62
 #, python-format
 msgid "Supplied URL is a redirect [%s]"
 msgstr ""
@@ -219,14 +518,6 @@ msgstr ""
 #: holmes/handlers/request.py:25
 #, python-format
 msgid "Status code %s is not allowed"
-msgstr ""
-
-#: holmes/handlers/violation.py:20
-msgid "title"
-msgstr ""
-
-#: holmes/handlers/violation.py:22
-msgid "category"
 msgstr ""
 
 #: holmes/handlers/violation.py:49 holmes/handlers/violation.py:89
@@ -282,10 +573,10 @@ msgstr ""
 msgid "This page has %(total_css_files)d CSS request (%(over_limit)d over limit). Having too many requests impose a tax in the browser due to handshakes."
 msgstr ""
 
-#: holmes/validators/css_requests.py:18 holmes/validators/css_requests.py:32
-#: holmes/validators/img_requests.py:56 holmes/validators/img_requests.py:69
-#: holmes/validators/img_requests.py:82 holmes/validators/js_requests.py:19
-#: holmes/validators/js_requests.py:32 holmes/validators/sitemap.py:48
+#: holmes/validators/css_requests.py:18 holmes/validators/css_requests.py:33
+#: holmes/validators/img_requests.py:56 holmes/validators/img_requests.py:70
+#: holmes/validators/img_requests.py:84 holmes/validators/js_requests.py:19
+#: holmes/validators/js_requests.py:33 holmes/validators/sitemap.py:48
 msgid "Performance"
 msgstr ""
 
@@ -293,16 +584,16 @@ msgstr ""
 msgid "Pages with too many CSS requests aren't good to performance. Overflowing this limit of requests can impose a tax in the browser due to handshakes. This limit of requests per page is configurable."
 msgstr ""
 
-#: holmes/validators/css_requests.py:27
+#: holmes/validators/css_requests.py:28
 msgid "CSS size in kb is too big"
 msgstr ""
 
-#: holmes/validators/css_requests.py:28
+#: holmes/validators/css_requests.py:29
 #, python-format
 msgid "There's %.2fkb of CSS in this page and that adds up to more download time slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/css_requests.py:33
+#: holmes/validators/css_requests.py:34
 msgid "Pages with too big CSS files aren't good to performance. Having this limit of file sizes overflow adds up to more download time slowing down the page rendering to the user. This limit of requests per page is configurable."
 msgstr ""
 
@@ -381,11 +672,11 @@ msgstr ""
 msgid "Heading hierarchy tags with values too big aren't good for search engines. The definition of this maximum size can be configurable on Holmes."
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:64
+#: holmes/validators/heading_hierarchy.py:76
 msgid "H1 Headings not found"
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:65
+#: holmes/validators/heading_hierarchy.py:77
 msgid "Your page does not contain any H1 headings. H1 headings help indicate the important topics of your page to search engines. While less important than good meta-titles and descriptions, H1 headings may still help define the topic of your page to search engines."
 msgstr ""
 
@@ -441,29 +732,29 @@ msgstr ""
 msgid "Images with a too big size is very bad to site performance. This limits are configurable in Holmes configuration."
 msgstr ""
 
-#: holmes/validators/img_requests.py:64
+#: holmes/validators/img_requests.py:65
 msgid "Too many image requests"
 msgstr ""
 
-#: holmes/validators/img_requests.py:65
+#: holmes/validators/img_requests.py:66
 #, python-format
 msgid "This page has %(total)d image requests (%(limit)d over limit). Having too many requests impose a tax in the browser due to handshakes."
 msgstr ""
 
-#: holmes/validators/img_requests.py:70
+#: holmes/validators/img_requests.py:71
 msgid "A site with too many images requests per page can deacrease the page load speed and performance. This limits are configurable in Holmes configuration."
 msgstr ""
 
-#: holmes/validators/img_requests.py:77
+#: holmes/validators/img_requests.py:79
 msgid "Total image size in kb is too big"
 msgstr ""
 
-#: holmes/validators/img_requests.py:78
+#: holmes/validators/img_requests.py:80
 #, python-format
 msgid "There`s %.2fkb of images in this page and that adds up to more download time slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/img_requests.py:83
+#: holmes/validators/img_requests.py:85
 msgid "A site with a too big total image size per page can decrease the page load speed and performance. This limits are configurable in Holmes configuration."
 msgstr ""
 
@@ -480,16 +771,16 @@ msgstr ""
 msgid "A site with too many JavaScript requests per page can deacrease the page load speed and performance. This limits are configurable in Holmes configuration."
 msgstr ""
 
-#: holmes/validators/js_requests.py:27
+#: holmes/validators/js_requests.py:28
 msgid "JavaScript size in kb is too big"
 msgstr ""
 
-#: holmes/validators/js_requests.py:28
+#: holmes/validators/js_requests.py:29
 #, python-format
 msgid "There's %.2fkb of JavaScript in this page and that adds up to more download time slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/js_requests.py:33
+#: holmes/validators/js_requests.py:34
 msgid "A site with a too big total JavaScript size per page can decrease the page load speed and performance. This limits are configurable in Holmes configuration."
 msgstr ""
 
@@ -849,7 +1140,7 @@ msgid "Total requests"
 msgstr ""
 
 #: holmes/validators/url_with_underscore.py:12
-msgid "Google treats a hyphen as a word separator, but does not treat an underscore that way. Google treats and underscore as a word joiner — so red_sneakers is the same as redsneakers to Google. This has been confirmed directly by Google themselves, including the fact that using dashes over underscores will have a (minor) ranking benefit."
+msgid "Google treats a hyphen as a word separator, but does not treat an underscore that way. Google treats and underscore as a word joiner, so red_sneakers is the same as redsneakers to Google. This has been confirmed directly by Google themselves, including the fact that using dashes over underscores will have a (minor) ranking benefit."
 msgstr ""
 
 #: holmes/validators/url_with_underscore.py:24

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-06-11 14:29-0300\n"
+"POT-Creation-Date: 2014-06-18 13:57-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -190,120 +190,124 @@ msgid "Class to handle searching"
 msgstr ""
 
 #: holmes/config/__init__.py:105
-msgid "ElasticSearch host"
+msgid "ElasticSearch protocol (http|https)"
 msgstr ""
 
 #: holmes/config/__init__.py:106
-msgid "ElasticSearch port"
+msgid "ElasticSearch host"
 msgstr ""
 
 #: holmes/config/__init__.py:107
+msgid "ElasticSearch port"
+msgstr ""
+
+#: holmes/config/__init__.py:108
 msgid "ElasticSearch index name"
 msgstr ""
 
-#: holmes/config/__init__.py:110
+#: holmes/config/__init__.py:111
 msgid "If set to true errors will be sent to sentry."
 msgstr ""
 
-#: holmes/config/__init__.py:111
+#: holmes/config/__init__.py:112
 msgid "URL to use as sentry DSN."
 msgstr ""
 
-#: holmes/config/__init__.py:113
+#: holmes/config/__init__.py:114
 msgid "Expiration for the cache key for each domain page count"
 msgstr ""
 
-#: holmes/config/__init__.py:114 holmes/config/__init__.py:115
+#: holmes/config/__init__.py:115 holmes/config/__init__.py:116
 msgid "Expiration for the cache key for each domain violation count"
 msgstr ""
 
-#: holmes/config/__init__.py:116
+#: holmes/config/__init__.py:117
 msgid "Expiration for the cache key for each domain average response time"
 msgstr ""
 
-#: holmes/config/__init__.py:117
+#: holmes/config/__init__.py:118
 msgid "Expiration for the cache key for each domain violation count by category"
 msgstr ""
 
-#: holmes/config/__init__.py:118
+#: holmes/config/__init__.py:119
 msgid "Expiration for the cache key for each domain top violation in a category"
 msgstr ""
 
-#: holmes/config/__init__.py:119
+#: holmes/config/__init__.py:120
 msgid ""
 "Limit for the size of the list of top vilations of a key category for a "
 "domain"
 msgstr ""
 
-#: holmes/config/__init__.py:120
+#: holmes/config/__init__.py:121
 msgid "Expiration for the url lock for each url"
 msgstr ""
 
-#: holmes/config/__init__.py:121
+#: holmes/config/__init__.py:122
 msgid "Expiration for the url lock for next jobs"
 msgstr ""
 
-#: holmes/config/__init__.py:122
+#: holmes/config/__init__.py:123
 msgid "Expiration for the cache key for next jobs count"
 msgstr ""
 
-#: holmes/config/__init__.py:140
+#: holmes/config/__init__.py:141
 msgid "Grace period times for materials"
 msgstr ""
 
-#: holmes/config/__init__.py:142
+#: holmes/config/__init__.py:143
 msgid "Page Score for pages that the user includes through the UI"
 msgstr ""
 
-#: holmes/config/__init__.py:143
+#: holmes/config/__init__.py:144
 msgid "Default tax rate for scoring pages."
 msgstr ""
 
-#: holmes/config/__init__.py:144
+#: holmes/config/__init__.py:145
 msgid "Maximum score of page"
 msgstr ""
 
-#: holmes/config/__init__.py:146
+#: holmes/config/__init__.py:147
 msgid "Expiration in seconds for cache storage of responses."
 msgstr ""
 
-#: holmes/config/__init__.py:148
+#: holmes/config/__init__.py:149
 msgid "Maximum levels of URL"
 msgstr ""
 
-#: holmes/config/__init__.py:150
+#: holmes/config/__init__.py:151
 msgid "Google client ID"
 msgstr ""
 
-#: holmes/config/__init__.py:152
+#: holmes/config/__init__.py:153
 msgid "The expiration for locks in the limiter"
 msgstr ""
 
-#: holmes/config/__init__.py:153
+#: holmes/config/__init__.py:154
 msgid "The expiration for valus in the limiter"
 msgstr ""
 
-#: holmes/config/__init__.py:154
+#: holmes/config/__init__.py:155
 msgid "Default number of concurrent connections"
 msgstr ""
 
-#: holmes/config/__init__.py:156
+#: holmes/config/__init__.py:157
 msgid "Expiration for the cache key for the most common violations"
 msgstr ""
 
-#: holmes/config/__init__.py:157
+#: holmes/config/__init__.py:158
 msgid "Limit for the size of the Vilation sample used in the aggregation"
 msgstr ""
 
-#: holmes/config/__init__.py:164
+#: holmes/config/__init__.py:165
 msgid "Trottling by message type"
 msgstr ""
 
-#: holmes/config/__init__.py:166
+#: holmes/config/__init__.py:167
 msgid "Defines whether auto-flush should be used in sqlalchemy"
 msgstr ""
 
-#: holmes/config/__init__.py:168
+#: holmes/config/__init__.py:169
 msgid "Expiration in seconds for domains violations prefs."
 msgstr ""
 
@@ -601,10 +605,10 @@ msgid ""
 "handshakes."
 msgstr ""
 
-#: holmes/validators/css_requests.py:18 holmes/validators/css_requests.py:32
-#: holmes/validators/img_requests.py:56 holmes/validators/img_requests.py:69
-#: holmes/validators/img_requests.py:82 holmes/validators/js_requests.py:19
-#: holmes/validators/js_requests.py:32 holmes/validators/sitemap.py:48
+#: holmes/validators/css_requests.py:18 holmes/validators/css_requests.py:33
+#: holmes/validators/img_requests.py:56 holmes/validators/img_requests.py:70
+#: holmes/validators/img_requests.py:84 holmes/validators/js_requests.py:19
+#: holmes/validators/js_requests.py:33 holmes/validators/sitemap.py:48
 msgid "Performance"
 msgstr ""
 
@@ -615,18 +619,18 @@ msgid ""
 " This limit of requests per page is configurable."
 msgstr ""
 
-#: holmes/validators/css_requests.py:27
+#: holmes/validators/css_requests.py:28
 msgid "CSS size in kb is too big"
 msgstr ""
 
-#: holmes/validators/css_requests.py:28
+#: holmes/validators/css_requests.py:29
 #, python-format
 msgid ""
 "There's %.2fkb of CSS in this page and that adds up to more download time"
 " slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/css_requests.py:33
+#: holmes/validators/css_requests.py:34
 msgid ""
 "Pages with too big CSS files aren't good to performance. Having this "
 "limit of file sizes overflow adds up to more download time slowing down "
@@ -742,11 +746,11 @@ msgid ""
 "Holmes."
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:75
+#: holmes/validators/heading_hierarchy.py:76
 msgid "H1 Headings not found"
 msgstr ""
 
-#: holmes/validators/heading_hierarchy.py:76
+#: holmes/validators/heading_hierarchy.py:77
 msgid ""
 "Your page does not contain any H1 headings. H1 headings help indicate the"
 " important topics of your page to search engines. While less important "
@@ -822,36 +826,36 @@ msgid ""
 "are configurable in Holmes configuration."
 msgstr ""
 
-#: holmes/validators/img_requests.py:64
+#: holmes/validators/img_requests.py:65
 msgid "Too many image requests"
 msgstr ""
 
-#: holmes/validators/img_requests.py:65
+#: holmes/validators/img_requests.py:66
 #, python-format
 msgid ""
 "This page has %(total)d image requests (%(limit)d over limit). Having too"
 " many requests impose a tax in the browser due to handshakes."
 msgstr ""
 
-#: holmes/validators/img_requests.py:70
+#: holmes/validators/img_requests.py:71
 msgid ""
 "A site with too many images requests per page can deacrease the page load"
 " speed and performance. This limits are configurable in Holmes "
 "configuration."
 msgstr ""
 
-#: holmes/validators/img_requests.py:77
+#: holmes/validators/img_requests.py:79
 msgid "Total image size in kb is too big"
 msgstr ""
 
-#: holmes/validators/img_requests.py:78
+#: holmes/validators/img_requests.py:80
 #, python-format
 msgid ""
 "There`s %.2fkb of images in this page and that adds up to more download "
 "time slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/img_requests.py:83
+#: holmes/validators/img_requests.py:85
 msgid ""
 "A site with a too big total image size per page can decrease the page "
 "load speed and performance. This limits are configurable in Holmes "
@@ -877,18 +881,18 @@ msgid ""
 "configuration."
 msgstr ""
 
-#: holmes/validators/js_requests.py:27
+#: holmes/validators/js_requests.py:28
 msgid "JavaScript size in kb is too big"
 msgstr ""
 
-#: holmes/validators/js_requests.py:28
+#: holmes/validators/js_requests.py:29
 #, python-format
 msgid ""
 "There's %.2fkb of JavaScript in this page and that adds up to more "
 "download time slowing down the page rendering to the user."
 msgstr ""
 
-#: holmes/validators/js_requests.py:33
+#: holmes/validators/js_requests.py:34
 msgid ""
 "A site with a too big total JavaScript size per page can decrease the "
 "page load speed and performance. This limits are configurable in Holmes "
