@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
 from gzip import GzipFile
 from cStringIO import StringIO
 from datetime import datetime, timedelta
@@ -12,6 +13,7 @@ from ujson import loads, dumps
 from octopus.model import Response
 from sqlalchemy import or_
 from retools.lock import Lock, LockTimeout
+from redis import WatchError
 
 from holmes.models import (
     Domain, Page, Limiter, Violation, DomainsViolationsPrefs
@@ -222,6 +224,11 @@ class Cache(object):
     @return_future
     def delete_domain_violations_prefs(self, domain_name, callback=None):
         self.redis.delete('violations-prefs-%s' % domain_name, callback=callback)
+
+    @return_future
+    def add_next_job_bucket(self, uuid, url, callback):
+        data = {dumps({'page': str(uuid), 'url': url}): time.clock()}
+        self.redis.zadd('next-job-bucket', data, callback=callback)
 
 
 class SyncCache(object):
@@ -463,7 +470,7 @@ class SyncCache(object):
 
                 logging.debug('Total of %d pages found to add to redis.' % (sum([len(item) for item in all_domains_pages_in_need_of_review])))
 
-                item_count = int(self.redis.scard('next-job-bucket'))
+                item_count = int(self.redis.zcard('next-job-bucket'))
                 current_domain = 0
                 while item_count < look_ahead_pages and len(all_domains_pages_in_need_of_review) > 0:
                     if current_domain >= len(all_domains_pages_in_need_of_review):
@@ -481,11 +488,7 @@ class SyncCache(object):
                             limiter_buckets[index] = (limit, available - 1)
 
                     if has_limit:
-                        self.redis.sadd('next-job-bucket', dumps({
-                            'page': str(item.uuid),
-                            'url': item.url
-                        }))
-
+                        self.add_next_job_bucket(item.uuid, item.url)
                         item_count += 1
 
                     # if there are not any more pages in this domain remove it from dictionary
@@ -499,11 +502,35 @@ class SyncCache(object):
         except LockTimeout:
             logging.info("Can't acquire lock. Moving on...")
 
+    def add_next_job_bucket(self, uuid, url):
+        self.redis.zadd(
+            'next-job-bucket',
+            time.time(),
+            dumps({'page': str(uuid), 'url': url})
+        )
+
+    def get_next_job_bucket(self):
+        pipe = self.redis.pipeline(transaction=False)
+
+        try:
+            pipe.watch('next-job-bucket')
+            item = self.redis.zrange('next-job-bucket', 0, 0)
+            item = item[0]
+            pipe.multi()
+            self.redis.zrem('next-job-bucket', item)
+            pipe.execute()
+        except (WatchError, IndexError):
+            return None
+        finally:
+            pipe.reset()
+
+        return item
+
     def get_next_job(self, expiration, look_ahead_pages=1000):
         logging.info('Getting next job from the bucket...')
-        item = self.redis.spop('next-job-bucket')
+        item = self.get_next_job_bucket()
 
-        job_bucket_count = self.redis.scard('next-job-bucket')
+        job_bucket_count = self.redis.zcard('next-job-bucket')
         if job_bucket_count < look_ahead_pages * 0.1:
             logging.info('Bucket near empty (%d items). Must refill...' % job_bucket_count)
             self.fill_job_bucket(expiration, look_ahead_pages)

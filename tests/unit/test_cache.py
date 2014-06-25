@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
 from gzip import GzipFile
 from cStringIO import StringIO
 from ujson import dumps
@@ -198,6 +199,23 @@ class CacheTestCase(ApiTestCase):
 
         prefs = yield Task(self.cache.redis.get, key)
         expect(prefs).to_be_null()
+
+    @gen_test
+    def test_add_next_job_bucket(self):
+        key = 'next-job-bucket'
+        self.cache.redis.delete(key)
+        prefs = yield Task(self.cache.redis.get, key)
+        expect(prefs).to_be_null()
+
+        for x in range(2):
+            page = PageFactory.create(uuid='%d' %x, url='http://g%d.com' % x)
+            yield Task(self.cache.add_next_job_bucket, page.uuid, page.url)
+
+        data = yield Task(self.cache.redis.zrange, key, 0, 0)
+        expect(data).to_be_like([dumps({"url": "http://g0.com", "page": "0"})])
+
+        data = yield Task(self.cache.redis.zrange, key, 1, 1)
+        expect(data).to_be_like([dumps({"url": "http://g1.com", "page": "1"})])
 
 
 class SyncCacheTestCase(ApiTestCase):
@@ -666,3 +684,52 @@ class SyncCacheTestCase(ApiTestCase):
             {'value': u'v1', 'key': u'some.random.1'},
             {'value': u'v2', 'key': u'some.random.2'}
         ])
+
+    def test_add_next_job_bucket(self):
+        key = 'next-job-bucket'
+
+        self.sync_cache.redis.delete(key)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
+
+        for x in range(2):
+            page = PageFactory.create(uuid='%d' %x, url='http://g%d.com' % x)
+            self.sync_cache.add_next_job_bucket(page.uuid, page.url)
+
+        data = self.sync_cache.redis.zrange(key, 0, 0)
+        expect(data).to_be_like([
+            dumps({"url": "http://g0.com", "page": "0"})
+        ])
+
+        data = self.sync_cache.redis.zrange(key, 1, 1)
+        expect(data).to_be_like([
+            dumps({"url": "http://g1.com", "page": "1"})
+        ])
+
+    def test_get_next_job_bucket(self):
+        key = 'next-job-bucket'
+
+        self.sync_cache.redis.delete(key)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
+
+        for x in range(2):
+            page = PageFactory.create(uuid='%d' %x, url='http://g%d.com' % x)
+            self.sync_cache.redis.zadd(
+                'next-job-bucket',
+                time.time(),
+                dumps({'page': str(page.uuid), 'url': page.url})
+            )
+
+        data = self.sync_cache.get_next_job_bucket()
+        expect(data).to_be_like(
+            dumps({"url": "http://g0.com", "page": "0"})
+        )
+
+        data = self.sync_cache.get_next_job_bucket()
+        expect(data).to_be_like(
+            dumps({"url": "http://g1.com", "page": "1"})
+        )
+
+        data = self.sync_cache.get_next_job_bucket()
+        expect(data).to_be_null()

@@ -67,6 +67,8 @@ class PageHandler(BaseHandler):
             })
             return
 
+        yield self.application.cache.add_next_job_bucket(result, url)
+
         self.write(str(result))
         self.finish()
 
