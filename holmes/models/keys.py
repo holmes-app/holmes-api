@@ -23,6 +23,7 @@ class Key(Base):
     facts = relationship("Fact", cascade="all,delete", backref="key")
     violations = relationship("Violation", cascade="all,delete", backref="key")
     domains_violations_prefs = relationship("DomainsViolationsPrefs", cascade="all,delete", backref="key")
+    users_violations_prefs = relationship("UsersViolationsPrefs", cascade="all,delete", backref="key")
 
     def __str__(self):
         return '%s' % (self.name)

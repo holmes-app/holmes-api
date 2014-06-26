@@ -11,7 +11,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from holmes.models import (
     Domain, Page, Review, Violation, Fact, Key, KeysCategory, Request,
-    User, Limiter, DomainsViolationsPrefs
+    User, Limiter, DomainsViolationsPrefs, UsersViolationsPrefs
 )
 from uuid import uuid4
 
@@ -218,3 +218,12 @@ class DomainsViolationsPrefsFactory(BaseFactory):
     domain = factory.SubFactory(DomainFactory)
     key = factory.SubFactory(KeyFactory)
     value = 'whatever'
+
+
+class UsersViolationsPrefsFactory(BaseFactory):
+    class Meta:
+        model = UsersViolationsPrefs
+
+    user = factory.SubFactory(UserFactory)
+    key = factory.SubFactory(KeyFactory)
+    is_active = True

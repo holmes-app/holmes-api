@@ -36,6 +36,7 @@ from holmes.handlers.limiter import LimiterHandler
 from holmes.handlers.domains_violations_prefs import (
     DomainsViolationsPrefsHandler
 )
+from holmes.handlers.users_violations_prefs import UsersViolationsPrefsHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus
@@ -114,6 +115,7 @@ class HolmesApiServer(Server):
             ('/last-requests/failed-responses/?', FailedResponsesHandler),
             ('/version/?', VersionHandler, dict(is_public=True)),
             ('/authenticate/?', AuthenticateHandler, dict(is_public=True)),
+            ('/users/violations-prefs/?', UsersViolationsPrefsHandler),
         ]
 
         return tuple(handlers)

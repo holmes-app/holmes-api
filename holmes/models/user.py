@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
 from holmes.models import Base
 
@@ -20,6 +21,8 @@ class User(Base):
         default=False
     )
     last_login = sa.Column('last_login', sa.DateTime, nullable=True)
+
+    violations_prefs = relationship('UsersViolationsPrefs', backref='user')
 
     def to_dict(self):
         return {

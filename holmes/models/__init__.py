@@ -64,3 +64,4 @@ from holmes.models.request import Request  # NOQA
 from holmes.models.user import User  # NOQA
 from holmes.models.limiter import Limiter # NOQA
 from holmes.models.domains_violations_prefs import DomainsViolationsPrefs # NOQA
+from holmes.models.users_violations_prefs import UsersViolationsPrefs # NOQA
