@@ -6,28 +6,10 @@ from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
 from tornado.httpclient import AsyncHTTPClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 
 from holmes.config import Config
 from holmes.server import HolmesApiServer
-from tests.fixtures import (
-    DomainFactory, PageFactory, ReviewFactory, FactFactory,
-    ViolationFactory, KeyFactory, KeysCategoryFactory,
-    RequestFactory, UserFactory, LimiterFactory, DomainsViolationsPrefsFactory
-)
-
-
-autoflush = True
-engine = create_engine(
-    "mysql+mysqldb://root@localhost:3306/test_holmes",
-    convert_unicode=True,
-    pool_size=1,
-    max_overflow=0,
-    echo=False
-)
-maker = sessionmaker(bind=engine, autoflush=autoflush)
-db = scoped_session(maker)
+from tests.fixtures import db
 
 
 class ApiTestCase(CowTestCase):
@@ -36,21 +18,6 @@ class ApiTestCase(CowTestCase):
     def drop_collection(self, document):
         document.objects.delete(callback=self.stop)
         self.wait()
-
-    def setUp(self):
-        super(ApiTestCase, self).setUp()
-
-        DomainFactory.FACTORY_SESSION = self.db
-        PageFactory.FACTORY_SESSION = self.db
-        ReviewFactory.FACTORY_SESSION = self.db
-        FactFactory.FACTORY_SESSION = self.db
-        ViolationFactory.FACTORY_SESSION = self.db
-        KeyFactory.FACTORY_SESSION = self.db
-        KeysCategoryFactory.FACTORY_SESSION = self.db
-        RequestFactory.FACTORY_SESSION = self.db
-        UserFactory.FACTORY_SESSION = self.db
-        LimiterFactory.FACTORY_SESSION = self.db
-        DomainsViolationsPrefsFactory.FACTORY_SESSION = self.db
 
     def tearDown(self):
         self.db.rollback()

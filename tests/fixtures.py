@@ -6,24 +6,45 @@ import factory
 import factory.alchemy
 import hashlib
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 from holmes.models import (
     Domain, Page, Review, Violation, Fact, Key, KeysCategory, Request,
     User, Limiter, DomainsViolationsPrefs
 )
 from uuid import uuid4
 
+autoflush = True
+engine = create_engine(
+    "mysql+mysqldb://root@localhost:3306/test_holmes",
+    convert_unicode=True,
+    pool_size=1,
+    max_overflow=0,
+    echo=False
+)
+maker = sessionmaker(bind=engine, autoflush=autoflush)
+db = scoped_session(maker)
+
 
 class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        sqlalchemy_session = db
+
     @classmethod
     def _create(cls, target_class, *args, **kwargs):
         instance = super(BaseFactory, cls)._create(target_class, *args, **kwargs)
-        if hasattr(cls, 'FACTORY_SESSION') and cls.FACTORY_SESSION is not None:
-            cls.FACTORY_SESSION.flush()
+        if (hasattr(cls, '_meta')
+           and cls._meta is not None
+           and hasattr(cls._meta, 'sqlalchemy_session')
+           and cls._meta.sqlalchemy_session is not None):
+            cls._meta.sqlalchemy_session.flush()
         return instance
 
 
 class DomainFactory(BaseFactory):
-    FACTORY_FOR = Domain
+    class Meta:
+        model = Domain
 
     name = factory.Sequence(lambda n: 'domain-{0}.com'.format(n))
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
@@ -31,7 +52,8 @@ class DomainFactory(BaseFactory):
 
 
 class PageFactory(BaseFactory):
-    FACTORY_FOR = Page
+    class Meta:
+        model = Page
 
     url = factory.Sequence(lambda n: 'http://my-site.com/{0}/'.format(n))
     url_hash = None
@@ -59,7 +81,8 @@ class PageFactory(BaseFactory):
 
 
 class ReviewFactory(BaseFactory):
-    FACTORY_FOR = Review
+    class Meta:
+        model = Review
 
     facts = factory.LazyAttribute(lambda a: [])
     violations = factory.LazyAttribute(lambda a: [])
@@ -90,7 +113,6 @@ class ReviewFactory(BaseFactory):
 
             violations = []
             for i in range(number_of_violations):
-                db = cls.FACTORY_SESSION
                 key = Key.get_or_create(db, 'key.%d' % i, 'category.%d' % (i % 3))
                 violations.append(
                     Violation(
@@ -110,7 +132,6 @@ class ReviewFactory(BaseFactory):
 
             facts = []
             for i in range(number_of_facts):
-                db = cls.FACTORY_SESSION
                 key = Key.get_or_create(db, 'key.%d' % i, 'category.%d' % (i % 3))
                 facts.append(Fact(key=key, value="value %d" % i))
 
@@ -120,27 +141,31 @@ class ReviewFactory(BaseFactory):
 
 
 class KeysCategoryFactory(BaseFactory):
-    FACTORY_FOR = KeysCategory
+    class Meta:
+        model = KeysCategory
 
     name = factory.Sequence(lambda n: 'category-{0}'.format(n))
 
 
 class KeyFactory(BaseFactory):
-    FACTORY_FOR = Key
+    class Meta:
+        model = Key
 
     name = factory.Sequence(lambda n: 'key-{0}'.format(n))
     category = factory.SubFactory(KeysCategoryFactory)
 
 
 class FactFactory(BaseFactory):
-    FACTORY_FOR = Fact
+    class Meta:
+        model = Fact
 
     key = factory.SubFactory(KeyFactory)
     value = None
 
 
 class ViolationFactory(BaseFactory):
-    FACTORY_FOR = Violation
+    class Meta:
+        model = Violation
 
     key = factory.SubFactory(KeyFactory)
     value = None
@@ -150,7 +175,8 @@ class ViolationFactory(BaseFactory):
 
 
 class RequestFactory(BaseFactory):
-    FACTORY_FOR = Request
+    class Meta:
+        model = Request
 
     domain_name = 'g1.globo.com'
     url = 'http://g1.globo.com'
@@ -162,7 +188,8 @@ class RequestFactory(BaseFactory):
 
 
 class UserFactory(BaseFactory):
-    FACTORY_FOR = User
+    class Meta:
+        model = User
 
     fullname = 'Marcelo Jorge Vieira'
     email = 'marcelo.vieira@corp.globo.com'
@@ -171,7 +198,8 @@ class UserFactory(BaseFactory):
 
 
 class LimiterFactory(BaseFactory):
-    FACTORY_FOR = Limiter
+    class Meta:
+        model = Limiter
 
     url = factory.Sequence(lambda n: 'http://my-site-{0}.com/'.format(n))
     url_hash = None
@@ -184,7 +212,8 @@ class LimiterFactory(BaseFactory):
 
 
 class DomainsViolationsPrefsFactory(BaseFactory):
-    FACTORY_FOR = DomainsViolationsPrefs
+    class Meta:
+        model = DomainsViolationsPrefs
 
     domain = factory.SubFactory(DomainFactory)
     key = factory.SubFactory(KeyFactory)
