@@ -55,6 +55,91 @@ class TestTitleFacter(FacterTestCase):
         expect(facter.review.data).to_include('page.title')
         expect(facter.review.data['page.title_count']).to_equal(1)
 
+    def test_can_get_facts_with_non_ascii_title(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            facters=[]
+        )
+
+        title = u'ãéìôü' * 14
+        content = '<html><title>%s</title></html>' % title
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': lxml.html.fromstring(content)
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
+
+        facter = TitleFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        facter.add_fact.assert_called_once_with(
+            key='page.title',
+            value=title
+        )
+
+        expect(facter.review.data).to_length(2)
+        expect(facter.review.data).to_include('page.title_count')
+        expect(facter.review.data).to_include('page.title')
+        expect(facter.review.data['page.title_count']).to_equal(1)
+        expect(facter.review.data['page.title']).to_length(70)
+
+    def test_can_get_facts_deburring_title(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            facters=[]
+        )
+
+        title = 'a' * 70
+        content = '<html>  <title>\n    %s\n  </title></html>' % title
+        html_content = lxml.html.fromstring(content)
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': html_content
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
+
+        facter = TitleFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        facter.add_fact.assert_called_once_with(
+            key='page.title',
+            value=html_content.cssselect('title')[0].text.strip()
+        )
+
+        expect(facter.review.data).to_length(2)
+        expect(facter.review.data).to_include('page.title_count')
+        expect(facter.review.data).to_include('page.title')
+        expect(facter.review.data['page.title_count']).to_equal(1)
+        expect(facter.review.data['page.title']).to_length(70)
+
     def test_no_title_tag(self):
         page = PageFactory.create()
 
