@@ -33,6 +33,7 @@ class ApiTestCase(CowTestCase):
             COMMIT_ON_REQUEST_END=False,
             REDISHOST='localhost',
             REDISPORT=57575,
+            REDISPUBSUB = True,
             MATERIAL_GIRL_REDISHOST='localhost',
             MATERIAL_GIRL_REDISPORT=57575,
             ELASTIC_SEARCH_HOST='localhost',

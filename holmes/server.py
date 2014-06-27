@@ -1,11 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import logging
-
 from cow.server import Server
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
-from cow.plugins.redis_plugin import RedisPlugin, CowRedisClient
+from cow.plugins.redis_plugin import RedisPlugin
 from tornado.httpclient import AsyncHTTPClient
 import tornado.locale
 #from toredis import Client
@@ -44,7 +42,7 @@ from holmes.handlers.domains_violations_prefs import (
 )
 
 from holmes.handlers.bus import EventBusHandler
-from holmes.event_bus import EventBus, NoOpEventBus
+from holmes.event_bus import EventBus
 from holmes.utils import load_classes, load_languages, locale_path
 from holmes.models import Key, DomainsViolationsPrefs
 from holmes.cache import Cache
@@ -176,9 +174,8 @@ class HolmesApiServer(Server):
             self.application.default_violations_values
         )
 
-        self.application.event_bus = NoOpEventBus(self.application)
+        self.application.event_bus = EventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
-        self.connect_pub_sub(io_loop)
 
         self.application.cache = Cache(self.application)
 
@@ -229,32 +226,6 @@ class HolmesApiServer(Server):
 
             statistics = self.sqltap.collect()
             sqltap.report(statistics, "report.html")
-
-    def connect_pub_sub(self, io_loop):
-        host = self.application.config.get('REDISHOST')
-        port = self.application.config.get('REDISPORT')
-
-        logging.info("Connecting pubsub to redis at %s:%d" % (host, port))
-
-        self.application.redis_pub_sub = CowRedisClient(io_loop=io_loop)
-        self.application.redis_pub_sub.authenticated = False
-        self.application.redis_pub_sub.connect(host, port, callback=self.has_connected(self.application))
-
-    def has_connected(self, application):
-        def handle(*args, **kw):
-            password = application.config.get('REDISPASS', None)
-            if password:
-                application.redis_pub_sub.auth(password, callback=self.handle_authenticated(application))
-            else:
-                self.handle_authenticated(application)()
-        return handle
-
-    def handle_authenticated(self, application):
-        def handle(*args, **kw):
-            application.redis_pub_sub.authenticated = True
-            application.event_bus = EventBus(self.application)  # can now connect to redis using pubsub
-
-        return handle
 
     def configure_i18n(self):
         load_languages()

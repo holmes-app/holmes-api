@@ -51,12 +51,13 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
     def config(self):
         conf = dict(
             SQLALCHEMY_CONNECTION_STRING="mysql+mysqldb://root@localhost:3306/test_holmes",
-            SQLALCHEMY_POOL_SIZE=20,
-            SQLALCHEMY_POOL_MAX_OVERFLOW=10,
-            SQLALCHEMY_AUTO_FLUSH=False,
+            SQLALCHEMY_POOL_SIZE=1,
+            SQLALCHEMY_POOL_MAX_OVERFLOW=0,
+            SQLALCHEMY_AUTO_FLUSH=True,
             COMMIT_ON_REQUEST_END=False,
             REDISHOST='localhost',
             REDISPORT=57575,
+            REDISPUBSUB=True,
             MATERIAL_GIRL_REDISHOST='localhost',
             MATERIAL_GIRL_REDISPORT=57575,
             SEARCH_PROVIDER="holmes.search_providers.noexternal.NoExternalSearchProvider",

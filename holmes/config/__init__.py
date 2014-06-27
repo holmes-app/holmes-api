@@ -82,10 +82,6 @@ Config.define('API_PROXY_PORT', None, _('HTTP Proxy Port to use to connect to th
 
 Config.define('COMMIT_ON_REQUEST_END', True, _('Commit on request end'), 'DB')
 
-Config.define('REDISHOST', 'localhost', _('Redis host'), 'Redis')
-Config.define('REDISPORT', 7575, _('Redis port'), 'Redis')
-Config.define('REDISPASS', None, _('Redis password in case of auth'), 'Redis')
-
 Config.define('MATERIAL_GIRL_REDISPORT', 7575, _('Redis port'), 'Redis')
 Config.define('MATERIAL_GIRL_REDISHOST', 'localhost', _('Redis host'), 'Redis')
 Config.define('MATERIAL_GIRL_REDISPASS', None, _('Redis password in case of auth'), 'Redis')
