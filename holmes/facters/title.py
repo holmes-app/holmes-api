@@ -23,6 +23,9 @@ class TitleFacter(Facter):
         if not titles:
             return
 
+        if not titles[0].text:
+            return
+
         self.review.data['page.title_count'] = len(titles)
 
         title = titles[0].text.strip()

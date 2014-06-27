@@ -173,6 +173,40 @@ class TestTitleFacter(FacterTestCase):
         expect(facter.add_fact.called).to_be_false()
         expect(facter.review.data).to_be_like({})
 
+    def test_with_empty_title(self):
+        page = PageFactory.create()
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            facters=[]
+        )
+
+        content = '<html><title></title></html>'
+        html_content = lxml.html.fromstring(content)
+
+        result = {
+            'url': page.url,
+            'status': 200,
+            'content': content,
+            'html': html_content
+        }
+        reviewer.responses[page.url] = result
+        reviewer._wait_for_async_requests = Mock()
+        reviewer.save_review = Mock()
+        reviewer.content_loaded(page.url, Mock(status_code=200, text=content, headers={}))
+
+        facter = TitleFacter(reviewer)
+        facter.add_fact = Mock()
+
+        facter.get_facts()
+
+        expect(facter.add_fact.called).to_be_false()
+        expect(facter.review.data).to_be_like({})
+
     def test_can_get_fact_definitions(self):
         page = PageFactory.create()
 
