@@ -19,7 +19,7 @@ import logging
 
 
 class ElasticSearchProvider(SearchProvider):
-    def __init__(self, config, db=None, authNZ=None, io_loop=None):
+    def __init__(self, config, db=None, authnz_wrapper=None, io_loop=None):
         self.debug = False
         self.config = config
         if db is not None:

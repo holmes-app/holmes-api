@@ -37,6 +37,14 @@ class BaseCLI(Shepherd):
     def load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
 
+    def load_authnz_wrapper(self):
+        authnz_wrapper_class_name = self.config.get('AUTHNZ_WRAPPER', None)
+        if authnz_wrapper_class_name:
+            authnz_wrapper_list = load_classes(default=[authnz_wrapper_class_name])
+            if isinstance(authnz_wrapper_list, list) and len(authnz_wrapper_list) == 1:
+                return authnz_wrapper_list.pop()
+        return None
+
     def load_search_provider(self):
         search_provider = load_classes(default=[self.config.SEARCH_PROVIDER])
         if isinstance(search_provider, list) and len(search_provider) == 1:

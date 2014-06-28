@@ -113,15 +113,4 @@ make elasticsearch_setup_test  # to create the test index
 make unit  # to run unit tests
 ```
 
-OAuth 2.0
----------
-
-Holmes supports authenticating/authorizing over [OAuth 2.0 Bearer Token](http://tools.ietf.org/html/rfc6750). Up to now, only ElasticOverOAuthSearchProvider uses it. The three config variables involved in authentication/authorization are:
-
-```conf
-OAUTH_TOKEN_ENDPOINT = 'https://oauth-service.com/token-endpoint'
-OAUTH_CLIENT_ID = 'client-id'
-OAUTH_CLIENT_SECRET = 'client-secret'
-```
-
 **Happy contributing!**

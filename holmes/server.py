@@ -10,7 +10,6 @@ import tornado.locale
 import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
-from authnz import AuthNZ
 
 from holmes.handlers.page import (
     PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
@@ -138,7 +137,11 @@ class HolmesApiServer(Server):
             from sqltap import sqltap
             self.sqltap = sqltap.start()
 
-        self.application.authNZ = AuthNZ(self.application.config)
+        authnz_wrapper_class = self._load_authnz_wrapper()
+        if authnz_wrapper_class:
+            self.application.authnz_wrapper = authnz_wrapper_class(self.application.config)
+        else:
+            self.application.authnz_wrapper = None
 
         self.application.facters = self._load_facters()
         self.application.validators = self._load_validators()
@@ -147,7 +150,7 @@ class HolmesApiServer(Server):
         self.application.search_provider = self._load_search_provider()(
             config=self.application.config,
             db=self.application.db,
-            authNZ=self.application.authNZ,
+            authnz_wrapper=self.application.authnz_wrapper,
             io_loop=io_loop
         )
 
@@ -210,6 +213,14 @@ class HolmesApiServer(Server):
 
     def _load_error_handlers(self):
         return load_classes(default=self.config.ERROR_HANDLERS)
+
+    def _load_authnz_wrapper(self):
+        authnz_wrapper_class_name = self.config.get('AUTHNZ_WRAPPER', None)
+        if authnz_wrapper_class_name:
+            authnz_wrapper_list = load_classes(default=[authnz_wrapper_class_name])
+            if isinstance(authnz_wrapper_list, list) and len(authnz_wrapper_list) == 1:
+                return authnz_wrapper_list.pop()
+        return None
 
     def _load_search_provider(self):
         search_provider = load_classes(default=[self.config.SEARCH_PROVIDER])

@@ -8,7 +8,7 @@ from tornado.concurrent import return_future
 
 
 class NoExternalSearchProvider(SearchProvider):
-    def __init__(self, config, db, authNZ=None, io_loop=None):
+    def __init__(self, config, db, authnz_wrapper=None, io_loop=None):
         self.db = db
 
     def index_review(self, review):

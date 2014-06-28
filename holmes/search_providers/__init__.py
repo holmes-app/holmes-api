@@ -5,7 +5,7 @@ from tornado.concurrent import return_future
 
 
 class SearchProvider(object):
-    def __init__(self, config, db, authNZ=None, io_loop=None):
+    def __init__(self, config, db, authnz_wrapper=None, io_loop=None):
         raise NotImplementedError()
 
     def index_review(self, review):

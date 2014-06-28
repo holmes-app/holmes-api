@@ -4,7 +4,6 @@
 import sys
 from uuid import uuid4
 from datetime import datetime, timedelta
-from authnz import AuthNZ
 
 from ujson import dumps
 from colorama import Fore, Style
@@ -103,7 +102,11 @@ class HolmesWorker(BaseWorker):
         self.last_ping = None
         self.last_update_pages_score = None
 
-        self.authNZ = AuthNZ(self.config)
+        authnz_wrapper_class = self.load_authnz_wrapper()
+        if authnz_wrapper_class:
+            self.authnz_wrapper = authnz_wrapper_class(self.config)
+        else:
+            self.authnz_wrapper = None
 
         self.facters = self._load_facters()
         self.validators = self._load_validators()
@@ -114,7 +117,7 @@ class HolmesWorker(BaseWorker):
         self.search_provider = self.load_search_provider()(
             config=self.config,
             db=self.db,
-            authNZ=self.authNZ
+            authnz_wrapper=self.authnz_wrapper
         )
 
         self.connect_to_redis()
