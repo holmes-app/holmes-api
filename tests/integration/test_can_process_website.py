@@ -6,7 +6,7 @@ import os
 
 from preggy import expect
 from octopus.model import Response
-from tests.fixtures import DomainFactory, PageFactory
+from tests.fixtures import DomainFactory, PageFactory, db
 from tests.unit.base import ApiTestCase
 from mock import Mock
 import requests
@@ -25,7 +25,12 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
     def __init__(self, *args, **kw):
         self.options = Mock(concurrency=10, verbose=0, cache=False)
         ApiTestCase.__init__(self, *args, **kw)
+        self.db = db
         self.initialize()
+
+    def connect_sqlalchemy(self):
+        if getattr(self, 'db', None) is None:
+            super(CanProcessWebsiteTest, self).connect_sqlalchemy()
 
     def async_get(self, url, handler, method='GET', **kw):
         response = requests.get(url)
