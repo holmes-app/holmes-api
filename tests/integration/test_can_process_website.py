@@ -29,7 +29,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
         self.initialize()
 
     def connect_sqlalchemy(self):
-        if getattr(self, 'db', None) is None:
+        if not getattr(self, 'db', None):
             super(CanProcessWebsiteTest, self).connect_sqlalchemy()
 
     def async_get(self, url, handler, method='GET', **kw):
