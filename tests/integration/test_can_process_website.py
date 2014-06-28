@@ -66,7 +66,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             MATERIAL_GIRL_REDISHOST='localhost',
             MATERIAL_GIRL_REDISPORT=57575,
             SEARCH_PROVIDER="holmes.search_providers.noexternal.NoExternalSearchProvider",
-            FACTERS = [
+            FACTERS=[
                 'holmes.facters.title.TitleFacter',
                 'holmes.facters.links.LinkFacter',
                 #'holmes.facters.robots.RobotsFacter',
@@ -81,7 +81,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
                 'holmes.facters.google_analytics.GoogleAnalyticsFacter',
                 'holmes.facters.heading_hierarchy.HeadingHierarchyFacter',
             ],
-            VALIDATORS = [
+            VALIDATORS=[
                 'holmes.validators.title.TitleValidator',
                 #'holmes.validators.link_crawler.LinkCrawlerValidator',
                 #'holmes.validators.robots.RobotsValidator',
@@ -146,7 +146,6 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             fact_definitions=self.fact_definitions,
             violation_definitions=self.violation_definitions,
         )
-
 
     def test_can_process_globo_com(self):
         self.db.query(Review).delete()
