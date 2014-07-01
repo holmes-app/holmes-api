@@ -117,7 +117,7 @@ class ElasticSearchProvider(SearchProvider):
     def index_reviews(self, reviewd_pages, reviews_count, batch_size):
         action = {'index': {'_type': 'review'}}
 
-        for i in xrange(0, reviews_count, batch_size):
+        for i in range(0, reviews_count, batch_size):
             body_bits = []
 
             for page in reviewd_pages[i:i + batch_size]:

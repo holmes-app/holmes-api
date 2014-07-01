@@ -51,7 +51,7 @@ class TestImageRequestsValidator(ValidatorTestCase):
                 (
                     'some_image.jpg',
                     Mock(status_code=200, text=self.get_file('2x2.png'))
-                ) for i in xrange(60)
+                ) for i in range(60)
             ],
             'total.size.img': 106,
         }

@@ -57,18 +57,18 @@ class TestDomainsFullDataHandler(ApiTestCase):
     @gen_test
     def test_can_get_domains_full_data(self):
         domains = []
-        for i in xrange(3):
+        for i in range(3):
             domains.append(DomainFactory.create(name='domain-%d.com' % i))
 
         pages = []
         for i, domain in enumerate(domains):
             pages.append([])
-            for j in xrange(3):
+            for j in range(3):
                 pages[i].append(PageFactory.create(domain=domain))
 
         requests = reviews = []
         for i, (domain, page) in enumerate(zip(domains, pages)):
-            for j in xrange(i + 1):
+            for j in range(i + 1):
                 reviews.append(ReviewFactory.create(
                     domain=domain,
                     page=page[j],
@@ -86,7 +86,7 @@ class TestDomainsFullDataHandler(ApiTestCase):
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
-            } for i in xrange(9)
+            } for i in range(9)
         }
 
         response = yield self.http_client.fetch(
@@ -352,7 +352,7 @@ class TestDomainGroupedViolationsHandler(ApiTestCase):
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
-            } for i in xrange(9)
+            } for i in range(9)
         }
 
         response = yield self.http_client.fetch(
@@ -392,7 +392,7 @@ class DomainTopCategoryViolationsHandler(ApiTestCase):
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
-            } for i in xrange(9)
+            } for i in range(9)
         }
 
         key = Key.get_or_create(self.db, 'key.0')

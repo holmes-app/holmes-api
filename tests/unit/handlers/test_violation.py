@@ -36,7 +36,7 @@ class TestMostCommonViolationsHandler(ApiTestCase):
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % i,
                 'key': Key.get_or_create(self.db, 'violation.%d' % i, 'category.%d' % i)
-            } for i in xrange(3)
+            } for i in range(3)
         }
 
         self.db.flush()
@@ -75,12 +75,12 @@ class TestViolationHandler(ApiTestCase):
         domains = [DomainFactory.create(
             name='g%s.com' % chr(i),
             url='http://g%s.com' % chr(i)
-        ) for i in xrange(ord('a'), ord('d'))]
+        ) for i in range(ord('a'), ord('d'))]
 
         pages = [PageFactory.create(
             domain=domains[i % 3],
             url='%s/%d' % (domains[i % 3].url, i % 2)
-        ) for i in xrange(6)]
+        ) for i in range(6)]
 
         for i, page in enumerate(pages):
             review = ReviewFactory.create(
@@ -102,7 +102,7 @@ class TestViolationHandler(ApiTestCase):
                 'category': 'category.%s' % (i % 3),
                 'generic_description': 'description.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
-            } for i in xrange(6)
+            } for i in range(6)
         }
 
         dt = datetime(2014, 04, 15, 11, 44, 4)
@@ -192,12 +192,12 @@ class TestViolationHandler(ApiTestCase):
         domains = [DomainFactory.create(
             name='g%s.com' % chr(i),
             url='http://g%s.com' % chr(i)
-        ) for i in xrange(ord('a'), ord('d'))]
+        ) for i in range(ord('a'), ord('d'))]
 
         pages = [PageFactory.create(
             domain=domains[i % 3],
             url='%s/%d' % (domains[i % 3].url, i % 2)
-        ) for i in xrange(6)]
+        ) for i in range(6)]
 
         for i, page in enumerate(pages):
             review = ReviewFactory.create(
@@ -217,7 +217,7 @@ class TestViolationHandler(ApiTestCase):
                 'title': 'title.%s' % i,
                 'category': 'category.%s' % (i % 3),
                 'key': Key.get_or_create(self.db, 'key.%d' % i, 'category.%d' % (i % 3))
-            } for i in xrange(6)
+            } for i in range(6)
         }
 
         dt = datetime(2014, 04, 15, 11, 44, 2)  # [4, 3, 2, 1, 0]
@@ -304,8 +304,8 @@ class TestViolationHandler(ApiTestCase):
     def test_can_get_blacklist_domains(self):
         key = KeyFactory.create(name='blacklist.domains')
 
-        for i in xrange(3):
-            for j in xrange(i + 1):
+        for i in range(3):
+            for j in range(i + 1):
                 ViolationFactory.create(
                     key=key,
                     value=[
@@ -347,8 +347,8 @@ class TestViolationDomainsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_by_key_name_domains(self):
-        domains = [DomainFactory.create(name='g%d.com' % i) for i in xrange(2)]
-        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in xrange(3)]
+        domains = [DomainFactory.create(name='g%d.com' % i) for i in range(2)]
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in range(3)]
 
         for i in range(3):
             for j in range(i + 1):
@@ -365,7 +365,7 @@ class TestViolationDomainsHandler(ApiTestCase):
                 'category': 'SEO',
                 'generic_description': 'Desc',
                 'key': keys[i]
-            } for i in xrange(3)
+            } for i in range(3)
         }
 
         response = yield self.http_client.fetch(

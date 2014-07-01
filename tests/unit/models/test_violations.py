@@ -53,8 +53,8 @@ class TestViolations(ApiTestCase):
         expect(violations).to_be_like([('some.random.fact.1', 1), ('some.random.fact.2', 2)])
 
     def test_can_get_by_key_id_group_by_domain(self):
-        domains = [DomainFactory.create(name='g%d.com' % i) for i in xrange(2)]
-        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in xrange(3)]
+        domains = [DomainFactory.create(name='g%d.com' % i) for i in range(2)]
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in range(3)]
 
         for i in range(3):
             for j in range(i + 1):
@@ -70,7 +70,7 @@ class TestViolations(ApiTestCase):
         expect(violations).to_be_like([('g0.com', 2), ('g1.com', 1)])
 
     def test_can_get_group_by_value_for_key(self):
-        keys = [KeyFactory.create(name='random.key.%s' % i) for i in xrange(3)]
+        keys = [KeyFactory.create(name='random.key.%s' % i) for i in range(3)]
 
         for i in range(3):
             for j in range(i + 1):
