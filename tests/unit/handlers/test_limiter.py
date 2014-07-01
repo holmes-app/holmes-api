@@ -157,10 +157,10 @@ class TestLimiterHandler(ApiTestCase):
 
         UserFactory(email='test@test.com')
 
-        user_data = dumps({
+        user_data = {
             'reason': 'Unauthorized user',
             'description': 'Unauthorized user'
-        })
+        }
 
         self.mock_request(code=402, body=user_data)
 
@@ -176,9 +176,7 @@ class TestLimiterHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
-            expect(err.response.body).to_equal(
-                '{"reason":"Unauthorized user","description":"Unauthorized user"}'
-            )
+            expect(loads(err.response.body)).to_equal(user_data)
         else:
             assert False, 'Should not have got this far'
 
@@ -257,13 +255,15 @@ class TestLimiterHandler(ApiTestCase):
                 headers={'X-AUTH-HOLMES': '111'}
             )
         except HTTPError:
+            expected = {
+                'reason': 'Invalid data',
+                'description': 'Invalid data'
+            }
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(400)
             expect(err.response.reason).to_equal('Bad Request')
-            expect(err.response.body).to_equal(
-                '{"reason":"Invalid data","description":"Invalid data"}'
-            )
+            expect(loads(err.response.body)).to_equal(expected)
 
     @gen_test
     def test_can_delete_nonexistent_limiter(self):
@@ -290,24 +290,27 @@ class TestLimiterHandler(ApiTestCase):
                 headers={'X-AUTH-HOLMES': '111'}
             )
         except HTTPError:
+            expected = {
+                'reason': 'Not Found',
+                'description': 'Not Found'
+            }
+
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(404)
             expect(err.response.reason).to_equal('Not Found')
-            expect(err.response.body).to_equal(
-                '{"reason":"Not Found","description":"Not Found"}'
-            )
+            expect(loads(err.response.body)).to_equal(expected)
 
     @gen_test
     def test_can_delete_limiter_with_not_authorized_user(self):
         self.db.query(Limiter).delete()
 
-        user_data = dumps({
+        user_data = {
             'reason': 'Unauthorized user',
             'description': 'Unauthorized user'
-        })
+        }
 
-        self.mock_request(code=402, body=user_data)
+        self.mock_request(code=402, body=dumps(user_data))
 
         try:
             yield self.http_client.fetch(
@@ -320,8 +323,6 @@ class TestLimiterHandler(ApiTestCase):
             expect(err).not_to_be_null()
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
-            expect(err.response.body).to_equal(
-                '{"reason":"Unauthorized user","description":"Unauthorized user"}'
-            )
+            expect(loads(err.response.body)).to_be_like(user_data)
         else:
             assert False, 'Should not have got this far'

@@ -3,7 +3,7 @@
 
 from mock import Mock, patch
 from datetime import datetime
-from ujson import dumps
+from ujson import dumps, loads
 
 from preggy import expect
 from tornado.testing import gen_test
@@ -182,12 +182,14 @@ class TestUser(ApiTestCase):
 
         UserFactory(email='test@test.com')
 
+        error_details = {
+            'error': 'invalid_token',
+            'error_description': 'Invalid Value'
+        }
+
         mock_response = Mock(
             code=400,
-            body=dumps({
-                "error": "invalid_token",
-                "error_description": "Invalid Value"
-            })
+            body=dumps(error_details)
         )
 
         def handle_request(url, handler, proxy_host, proxy_port):
@@ -210,9 +212,6 @@ class TestUser(ApiTestCase):
 
         response = self.wait()
 
-        expect(response).to_be_like({
-            'status': 400,
-            'reason': 'Error',
-            'details': '{"error_description":"Invalid Value", \
-                         "error":"invalid_token"}'
-        })
+        expect(response['status']).to_equal(400)
+        expect(response['reason']).to_equal('Error')
+        expect(loads(response['details'])).to_be_like(error_details)
