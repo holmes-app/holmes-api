@@ -1,0 +1,21 @@
+language: python
+
+python:
+    - "2.7"
+
+install:
+    - make setup
+
+before_script:
+    - make elasticsearch_drop_test
+    - make elasticsearch_setup_test
+    - make redis_test
+    - make drop_test
+    - make data_test
+
+script:
+    - make unit
+    - make integration
+
+services:
+    - elasticsearch
