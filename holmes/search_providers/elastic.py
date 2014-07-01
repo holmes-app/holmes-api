@@ -311,14 +311,14 @@ class ElasticSearchProvider(SearchProvider):
             mapping = self.get_index_mapping()
             self.syncES.put_mapping(index=self.index, doc_type='review', mapping=mapping)
             logging.info('Index %s created.' % self.index)
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def delete_index(self):
         try:
             self.syncES.delete_index(index=self.index)
             logging.info('Index %s deleted.' % self.index)
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def _get_max_page_id_from_index(self, must_have_domain_name=False):
@@ -457,7 +457,7 @@ class ElasticSearchProvider(SearchProvider):
                             es.delete_index()
                         except ElasticHttpNotFoundError:
                             pass
-                        except InvalidJsonResponseError, e:
+                        except InvalidJsonResponseError as e:
                             logging.error('Invalid response! Reason: %s' % e)
                             sys.exit(1)
                     if args.create or args.recreate:
@@ -476,7 +476,7 @@ class ElasticSearchProvider(SearchProvider):
                             es.index_all_reviews(args.keys, replace=args.replace, batch_size=batch_size)
                         elif args.all_keys:
                             es.index_all_reviews(replace=args.replace, batch_size=batch_size)
-                    except InvalidJsonResponseError, e:
+                    except InvalidJsonResponseError as e:
                         logging.error('Invalid response! Reason: %s' % e)
                         sys.exit(1)
 

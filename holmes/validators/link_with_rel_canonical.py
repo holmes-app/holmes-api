@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from urlparse import urlparse
+# Deferred imports
+try:
+    from urllib.parse import urlparse  # Py3
+except ImportError:
+    from urlparse import urlparse
 
 from holmes.utils import is_valid, _
 from holmes.validators.base import Validator

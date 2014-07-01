@@ -2,7 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from os.path import join
-import urlparse
+
+# Deferred imports
+try:
+    from urllib.parse import urlparse  # Py3
+except ImportError:
+    from urlparse import urlparse
+
 import inspect
 import email.utils as eut
 from datetime import datetime
@@ -325,5 +331,5 @@ class Reviewer(object):
         self._wait_for_async_requests(self._wait_timeout)
 
     def is_root(self):
-        result = urlparse.urlparse(self.page_url)
+        result = urlparse(self.page_url)
         return '{0}://{1}'.format(result.scheme, result.netloc) == self.page_url.rstrip('/')

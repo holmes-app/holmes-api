@@ -1,7 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urlparse
+# Deferred imports
+try:
+    from urllib.parse import urlparse, urljoin  # Py3
+except ImportError:
+    from urlparse import urlparse, urljoin
+
 from holmes.utils import is_valid
 
 
@@ -27,10 +32,10 @@ class Baser(object):
         return self.reviewer.config
 
     def is_absolute(self, url):
-        return bool(urlparse.urlparse(url).scheme)
+        return bool(urlparse(url).scheme)
 
     def rebase(self, url):
-        return urlparse.urljoin(self.page_url, url)
+        return urljoin(self.page_url, url)
 
     def normalize_url(self, url):
         parse = is_valid(url)
