@@ -22,6 +22,7 @@ Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, _('Number of seconds a connectio
 Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, _('Number of seconds a request can take.'), 'Worker')
 
 Config.define('HOLMES_API_URL', 'http://localhost:2368', ('URL that Worker will communicate with API'), 'Worker')
+Config.define('HOLMES_WEB_URL', 'http://local.holmes.com:9000', _('URL of the client side application of Holmes'), 'Web')
 
 Config.define('LOG_LEVEL', 'ERROR', 'Default log level', 'Logging')
 Config.define('LOG_FORMAT', '%(asctime)s:%(levelname)s %(module)s - %(message)s',
@@ -71,8 +72,6 @@ Config.define('MAX_HEADING_HIEARARCHY_SIZE', 150,
 Config.define('MAX_IMAGE_ALT_SIZE', 70,
               _('Image alt attributes longer than 70 characters may be truncated in the results'),
               'Image Alt Attribute Validator')
-
-Config.define('ORIGIN', '*', _('Access Control Allow Origin header value'), 'Web')
 
 Config.define('HTTP_PROXY_HOST', None, _('HTTP Proxy Host to use'), 'Web')
 Config.define('HTTP_PROXY_PORT', None, _('HTTP Proxy Port to use'), 'Web')
@@ -167,3 +166,6 @@ Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, _('T
 Config.define('SQLALCHEMY_AUTO_FLUSH', True, _('Defines whether auto-flush should be used in sqlalchemy'))
 
 Config.define('DOMAINS_VIOLATIONS_PREFS_EXPIRATION_IN_SECONDS', HOUR, _('Expiration in seconds for domains violations prefs.'), 'Cache')
+
+Config.define('SECRET_KEY', 'set-a-secret-key', _('Secret key to use in JSON Web Token generation'), 'Sessions')
+Config.define('SESSION_EXPIRATION', (60 * 60), _('Time for Session expiration in seconds'), 'Sessions')

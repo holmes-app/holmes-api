@@ -41,9 +41,7 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         self.db.flush()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/most-common-violations/')
-        )
+        response = yield self.authenticated_fetch('/most-common-violations/')
 
         violations = loads(response.body)
 
@@ -56,9 +54,7 @@ class TestMostCommonViolationsHandler(ApiTestCase):
 
         self.db.query(Violation).delete()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/most-common-violations/')
-        )
+        response = yield self.authenticated_fetch('/most-common-violations/')
 
         violations_from_cache = loads(response.body)
 
@@ -108,9 +104,7 @@ class TestViolationHandler(ApiTestCase):
         dt = datetime(2014, 04, 15, 11, 44, 4)
         dt_timestamp = calendar.timegm(dt.utctimetuple())
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1')
-        )
+        response = yield self.authenticated_fetch('/violation/key.1')
         violations = loads(response.body)
         expect(response.code).to_equal(200)
         expect(violations).to_length(3)
@@ -121,8 +115,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews'][3]['page']['url']).to_equal('http://gc.com/0')
         expect(violations['reviews'][3]['page']['completedAt']).to_equal(dt_timestamp)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?page_size=2&current_page=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?page_size=2&current_page=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -131,8 +125,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(2)
         expect(violations['reviewsCount']).to_equal(4)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?page_filter=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?page_filter=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -141,8 +135,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(4)
         expect(violations['reviewsCount']).to_be_null()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?domain_filter=gc.com')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?domain_filter=gc.com'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -151,8 +145,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(2)
         expect(violations['reviewsCount']).to_be_null()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?domain_filter=gc.com&page_filter=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?domain_filter=gc.com&page_filter=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -162,8 +156,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_be_null()
 
         try:
-            response = yield self.http_client.fetch(
-                self.get_url('/violation/foobar')
+            response = yield self.authenticated_fetch(
+                '/violation/foobar'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -174,8 +168,8 @@ class TestViolationHandler(ApiTestCase):
             assert False, 'Should not get this far'
 
         try:
-            response = yield self.http_client.fetch(
-                self.get_url('/violation/key.1?domain_filter=foobar')
+            response = yield self.authenticated_fetch(
+                '/violation/key.1?domain_filter=foobar'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -223,8 +217,8 @@ class TestViolationHandler(ApiTestCase):
         dt = datetime(2014, 04, 15, 11, 44, 2)  # [4, 3, 2, 1, 0]
         dt_timestamp = calendar.timegm(dt.utctimetuple())
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -236,8 +230,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews'][3]['page']['url']).to_equal('http://gb.com/1')
         expect(violations['reviews'][3]['page']['completedAt']).to_equal(dt_timestamp)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?page_size=2&current_page=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?page_size=2&current_page=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -246,8 +240,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(2)
         expect(violations['reviewsCount']).to_equal(5)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?page_filter=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?page_filter=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -256,8 +250,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(5)
         expect(violations['reviewsCount']).to_equal(5)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?domain_filter=gb.com')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?domain_filter=gb.com'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -266,8 +260,8 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviews']).to_length(2)
         expect(violations['reviewsCount']).to_equal(2)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/key.1?domain_filter=gb.com&page_filter=1')
+        response = yield self.authenticated_fetch(
+            '/violation/key.1?domain_filter=gb.com&page_filter=1'
         )
         violations = loads(response.body)
         expect(response.code).to_equal(200)
@@ -277,9 +271,7 @@ class TestViolationHandler(ApiTestCase):
         expect(violations['reviewsCount']).to_equal(1)
 
         try:
-            response = yield self.http_client.fetch(
-                self.get_url('/violation/foobar')
-            )
+            response = yield self.authenticated_fetch('/violation/foobar')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -289,8 +281,8 @@ class TestViolationHandler(ApiTestCase):
             assert False, 'Should not get this far'
 
         try:
-            response = yield self.http_client.fetch(
-                self.get_url('/violation/key.1?domain_filter=foobar')
+            response = yield self.authenticated_fetch(
+                '/violation/key.1?domain_filter=foobar'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -329,8 +321,8 @@ class TestViolationHandler(ApiTestCase):
             }
         }
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/blacklist.domains/domains')
+        response = yield self.authenticated_fetch(
+            '/violation/blacklist.domains/domains'
         )
         expect(response.code).to_equal(200)
 
@@ -348,9 +340,7 @@ class TestViolationDomainsHandler(ApiTestCase):
     @gen_test
     def test_fails_by_invalid_key_name_domains(self):
         try:
-            yield self.http_client.fetch(
-                self.get_url('/violation/foobar/domains')
-            )
+            yield self.authenticated_fetch('/violation/foobar/domains')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -382,8 +372,8 @@ class TestViolationDomainsHandler(ApiTestCase):
             } for i in range(3)
         }
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violation/%s/domains' % keys[2].name)
+        response = yield self.authenticated_fetch(
+            '/violation/%s/domains' % keys[2].name
         )
 
         violation = loads(response.body)
@@ -429,9 +419,7 @@ class TestViolationsHandler(ApiTestCase):
 
         self.server.application.violation_definitions = violation_definitions
 
-        response = yield self.http_client.fetch(
-            self.get_url('/violations')
-        )
+        response = yield self.authenticated_fetch('/violations')
 
         violations = loads(response.body)
 

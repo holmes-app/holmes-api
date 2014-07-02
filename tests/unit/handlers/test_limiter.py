@@ -35,9 +35,7 @@ class TestLimiterHandler(ApiTestCase):
         LimiterFactory.create(url='http://test.com/', value=100)
         LimiterFactory.create(url='http://globo.com/', value=2)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/limiters')
-        )
+        response = yield self.authenticated_fetch('/limiters')
 
         expect(response.code).to_equal(200)
 
@@ -55,9 +53,7 @@ class TestLimiterHandler(ApiTestCase):
     def test_will_return_empty_list_when_no_limiters(self):
         self.db.query(Limiter).delete()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/limiters')
-        )
+        response = yield self.authenticated_fetch('/limiters')
 
         expect(response.code).to_equal(200)
 
@@ -70,10 +66,8 @@ class TestLimiterHandler(ApiTestCase):
         self.db.query(Limiter).delete()
 
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters'),
-                method='POST',
-                body=dumps({
+            yield self.anonymous_fetch(
+                '/limiters', method='POST', body=dumps({
                     'url': 'http://globo.com/',
                     'maxValue': 10
                 })
@@ -81,8 +75,9 @@ class TestLimiterHandler(ApiTestCase):
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
-            expect(err.code).to_equal(403)
-            expect(err.response.reason).to_be_like('Forbidden')
+            expect(err.code).to_equal(401)
+            expect(err.response.reason).to_be_like('Unauthorized')
+            expect(err.response.body).to_be_like('Unauthorized')
         else:
             assert False, 'Should not have got this far'
 
@@ -104,14 +99,11 @@ class TestLimiterHandler(ApiTestCase):
 
         self.mock_request(code=200, body=user_data)
 
-        yield self.http_client.fetch(
-            self.get_url('/limiters'),
-            method='POST',
-            body=dumps({
+        yield self.authenticated_fetch(
+            '/limiters', method='POST', body=dumps({
                 'url': 'http://globo.com/',
                 'maxValue': 10
-            }),
-            headers={'X-AUTH-HOLMES': '111'}
+            })
         )
 
         loaded_limiter = Limiter.by_url('http://globo.com/', self.db)
@@ -136,11 +128,8 @@ class TestLimiterHandler(ApiTestCase):
         self.mock_request(code=200, body=user_data)
 
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters'),
-                method='POST',
-                body='{}',
-                headers={'X-AUTH-HOLMES': '111'}
+            yield self.authenticated_fetch(
+                '/limiters', method='POST', body='{}'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -152,46 +141,31 @@ class TestLimiterHandler(ApiTestCase):
 
     @gen_test
     def test_can_save_limiters_with_not_authorized_user(self):
-        self.db.query(Limiter).delete()
-        self.db.query(User).delete()
-
-        UserFactory(email='test@test.com')
-
-        user_data = {
-            'reason': 'Unauthorized user',
-            'description': 'Unauthorized user'
-        }
-
-        self.mock_request(code=402, body=user_data)
-
+        # TODO: verify in holmes-web if this endpoint is ok
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters'),
-                method='POST',
-                body='{}',
-                headers={'X-AUTH-HOLMES': '111'}
+            yield self.anonymous_fetch(
+                '/limiters', method='POST', body='{}'
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
-            expect(loads(err.response.body)).to_equal(user_data)
+            expect(err.response.body).to_be_like('Unauthorized')
         else:
             assert False, 'Should not have got this far'
 
     @gen_test
     def test_can_delete_limiter_without_access_token(self):
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters/1'),
-                method='DELETE',
+            yield self.anonymous_fetch(
+                '/limiters/1', method='DELETE'
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
-            expect(err.code).to_equal(403)
-            expect(err.response.reason).to_be_like('Forbidden')
+            expect(err.code).to_equal(401)
+            expect(err.response.reason).to_be_like('Unauthorized')
         else:
             assert False, 'Should not have got this far'
 
@@ -218,10 +192,8 @@ class TestLimiterHandler(ApiTestCase):
         loaded_limiter = Limiter.by_id(limiter.id, self.db)
         expect(loaded_limiter).not_to_be_null()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/limiters/%d' % limiter.id),
-            method='DELETE',
-            headers={'X-AUTH-HOLMES': '111'}
+        response = yield self.authenticated_fetch(
+            '/limiters/%d' % limiter.id, method='DELETE'
         )
 
         expect(response.code).to_equal(204)
@@ -249,10 +221,8 @@ class TestLimiterHandler(ApiTestCase):
         self.mock_request(code=200, body=user_data)
 
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters'),
-                method='DELETE',
-                headers={'X-AUTH-HOLMES': '111'}
+            yield self.authenticated_fetch(
+                '/limiters', method='DELETE'
             )
         except HTTPError:
             expected = {
@@ -284,10 +254,8 @@ class TestLimiterHandler(ApiTestCase):
         self.mock_request(code=200, body=user_data)
 
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters/1'),
-                method='DELETE',
-                headers={'X-AUTH-HOLMES': '111'}
+            yield self.authenticated_fetch(
+                '/limiters/1', method='DELETE'
             )
         except HTTPError:
             expected = {
@@ -302,27 +270,21 @@ class TestLimiterHandler(ApiTestCase):
             expect(loads(err.response.body)).to_equal(expected)
 
     @gen_test
-    def test_can_delete_limiter_with_not_authorized_user(self):
-        self.db.query(Limiter).delete()
-
-        user_data = {
-            'reason': 'Unauthorized user',
-            'description': 'Unauthorized user'
-        }
-
-        self.mock_request(code=402, body=dumps(user_data))
-
+    def test_can_delete_limiter_with_anonymoys_request(self):
         try:
-            yield self.http_client.fetch(
-                self.get_url('/limiters/1'),
-                method='DELETE',
-                headers={'X-AUTH-HOLMES': '111'}
+            yield self.anonymous_fetch(
+                '/limiters/1', method='DELETE'
             )
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
             expect(err.code).to_equal(401)
             expect(err.response.reason).to_be_like('Unauthorized')
-            expect(loads(err.response.body)).to_be_like(user_data)
+            expect(err.response.body).to_be_like('Unauthorized')
         else:
             assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_can_delete_limiter_with_not_authorized_user(self):
+        # TODO: waiting for user permissions implementation
+        pass

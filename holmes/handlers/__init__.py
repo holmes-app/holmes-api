@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import datetime, timedelta
 
 from ujson import dumps
 from tornado.web import RequestHandler
@@ -11,12 +12,47 @@ import holmes.utils as utils
 
 
 class BaseHandler(RequestHandler):
+
+    @property
+    def config(self):
+        return self.application.config
+
     def initialize(self, *args, **kw):
         super(BaseHandler, self).initialize(*args, **kw)
-        self._session = None
 
         locale = self.get_browser_locale()
         self._ = utils.install_i18n(locale.code)
+        self.jwt = utils.Jwt(self.config.SECRET_KEY)
+
+    def set_unauthorized(self):
+        self.set_status(401)
+        self.write('Unauthorized')
+        self.finish()
+
+    def renew_authentication(self, payload):
+        payload.update(dict(
+            iat=datetime.utcnow(),
+            exp=datetime.utcnow() + timedelta(
+                seconds=self.config.SESSION_EXPIRATION
+            )
+        ))
+        token = self.jwt.encode(payload)
+        self.set_cookie('HOLMES_AUTH_TOKEN', token)
+
+    def is_authenticated(self):
+        return self.jwt.try_to_decode(self.get_cookie('HOLMES_AUTH_TOKEN'))
+
+    def authenticate_request(self):
+        authenticated, payload = self.is_authenticated()
+        if authenticated:
+            self.renew_authentication(payload)
+        else:
+            self.set_unauthorized()
+
+    def prepare(self):
+        if self.request.method != 'OPTIONS' and \
+           self.request.uri != '/authenticate':
+            self.authenticate_request()
 
     def log_exception(self, typ, value, tb):
         for handler in self.application.error_handlers:
@@ -41,16 +77,20 @@ class BaseHandler(RequestHandler):
                 self.db.commit()
                 self.application.event_bus.flush()
 
-    def options(self):
-        self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
-        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        self.set_header('Access-Control-Allow-Headers', 'Accept, Content-Type, X-AUTH-HOLMES')
+    def options(self, *args):
         self.set_status(200)
         self.finish()
 
     def set_default_headers(self):
-        self.set_header('Access-Control-Allow-Origin', self.application.config.ORIGIN)
-        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header(
+            'Access-Control-Allow-Origin',
+            self.application.config.HOLMES_WEB_URL
+        )
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header(
+            'Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS'
+        )
+        self.set_header('Access-Control-Allow-Headers', 'Accept, Content-Type')
 
     def write_json(self, obj):
         self.set_header("Content-Type", "application/json")
@@ -67,25 +107,3 @@ class BaseHandler(RequestHandler):
     @property
     def girl(self):
         return self.application.girl
-
-    def is_empty_access_token(self, access_token):
-        if access_token is None:
-            self.set_status(403)
-            self.write_json({
-                'reason': 'Empty access token',
-                'description': self._('Empty access token')
-            })
-            return True
-
-        return False
-
-    def is_unauthorized_user(self, data):
-        if data and data.get('user', None) is None:
-            self.set_status(401)
-            self.write_json({
-                'reason': 'Unauthorized user',
-                'description': self._('Unauthorized user')
-            })
-            return True
-
-        return False

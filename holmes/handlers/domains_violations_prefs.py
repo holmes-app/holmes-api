@@ -5,7 +5,7 @@ from tornado.gen import coroutine
 from tornado import gen
 from ujson import loads
 
-from holmes.models import Domain, DomainsViolationsPrefs, User
+from holmes.models import Domain, DomainsViolationsPrefs
 from holmes.handlers import BaseHandler
 
 
@@ -50,16 +50,6 @@ class DomainsViolationsPrefsHandler(BaseHandler):
 
     @gen.coroutine
     def post(self, domain_name):
-        access_token = self.request.headers.get('X-AUTH-HOLMES', None)
-
-        if self.is_empty_access_token(access_token):
-            return
-
-        result = yield User.authenticate(access_token, self.application)
-
-        if self.is_unauthorized_user(result):
-            return
-
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:

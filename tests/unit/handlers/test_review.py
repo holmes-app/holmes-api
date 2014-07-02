@@ -21,12 +21,9 @@ class TestReviewHandler(ApiTestCase):
     def test_invalid_page_uuid_returns_404(self):
         page = PageFactory.create()
 
-        url = self.get_url('/page/%s/review/invalid' % page.uuid)
-
         try:
-            yield self.http_client.fetch(
-                url,
-                method='GET'
+            yield self.authenticated_fetch(
+                '/page/%s/review/invalid' % page.uuid
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -41,8 +38,9 @@ class TestReviewHandler(ApiTestCase):
         page = PageFactory.create()
         review = ReviewFactory.create(page=page)
 
-        url = self.get_url('/page/%s/review/%s' % (page.uuid, self.ZERO_UUID))
-        response = yield self.http_client.fetch(url, method='GET')
+        response = yield self.authenticated_fetch(
+            '/page/%s/review/%s' % (page.uuid, self.ZERO_UUID)
+        )
 
         expect(response.code).to_equal(200)
 
@@ -61,14 +59,9 @@ class TestReviewHandler(ApiTestCase):
 
         self.db.flush()
 
-        url = self.get_url(
-            '/page/%s/review/%s' % (
-                review.page.uuid,
-                review.uuid
-            )
+        response = yield self.authenticated_fetch(
+            '/page/%s/review/%s' % (review.page.uuid, review.uuid)
         )
-
-        response = yield self.http_client.fetch(url)
 
         expect(response.code).to_equal(200)
 
@@ -116,8 +109,7 @@ class TestLastReviewsHandler(ApiTestCase):
         review.is_complete = True
         self.db.flush()
 
-        url = self.get_url('/last-reviews')
-        response = yield self.http_client.fetch(url, method='GET')
+        response = yield self.authenticated_fetch('/last-reviews')
 
         expect(response.code).to_equal(200)
 
@@ -167,8 +159,9 @@ class TestLastReviewsHandler(ApiTestCase):
         ReviewFactory.create(
             is_active=True, is_complete=True, page=page2, completed_date=dt3)
 
-        url = self.get_url('/last-reviews?domain_filter=%s' % domain1.name)
-        response = yield self.http_client.fetch(url, method='GET')
+        response = yield self.authenticated_fetch(
+            '/last-reviews?domain_filter=%s' % domain1.name
+        )
 
         expect(response.code).to_equal(200)
 
@@ -176,8 +169,7 @@ class TestLastReviewsHandler(ApiTestCase):
         expect(all([x['domain'] == domain1.name
                     for x in loads(response.body)])).to_be_true()
 
-        url = self.get_url('/last-reviews')
-        response = yield self.http_client.fetch(url, method='GET')
+        response = yield self.authenticated_fetch('/last-reviews')
 
         expect(response.code).to_equal(200)
 
@@ -215,8 +207,7 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
 
         self.db.flush()
 
-        url = self.get_url('/reviews-in-last-hour')
-        self.http_client.fetch(url, method='GET', callback=self.stop)
+        self.authenticated_fetch('/reviews-in-last-hour', callback=self.stop)
         response = self.wait()
 
         expect(response.code).to_equal(200)
@@ -256,9 +247,9 @@ class TestLastReviewsInLastHourHandler(ApiTestCase):
         )
         self.db.flush()
 
-        url = self.get_url(
-            '/reviews-in-last-hour?domain_filter=%s' % domain1.name)
-        response = yield self.http_client.fetch(url, method='GET')
+        response = yield self.authenticated_fetch(
+            '/reviews-in-last-hour?domain_filter=%s' % domain1.name
+        )
 
         expect(response.code).to_equal(200)
 

@@ -6,11 +6,11 @@ from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
 from cow.plugins.redis_plugin import RedisPlugin
 from tornado.httpclient import AsyncHTTPClient
 import tornado.locale
-#from toredis import Client
 import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
 
+from holmes.handlers.auth import AuthenticateHandler
 from holmes.handlers.page import (
     PageHandler, PageReviewsHandler, PageViolationsPerDayHandler, NextJobHandler
 )
@@ -113,6 +113,7 @@ class HolmesApiServer(Server):
             ('/last-requests/status-code/?', LastRequestsStatusCodeHandler),
             ('/last-requests/failed-responses/?', FailedResponsesHandler),
             ('/version/?', VersionHandler),
+            ('/authenticate/?', AuthenticateHandler),
         ]
 
         return tuple(handlers)

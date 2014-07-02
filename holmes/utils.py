@@ -6,6 +6,7 @@ from os.path import abspath, join, dirname
 import logging
 import gettext
 
+import jwt
 from tornado import httputil
 from six.moves.urllib.parse import urlparse
 
@@ -124,3 +125,41 @@ def count_url_levels(url):
             path = path[1:]
         return len(path.split('/'))
     return None
+
+
+class Jwt(object):
+    '''Json Web Tokens encoding/decoding utility class.
+    Usage:
+    >>> jwt = Jwt('SECRET')
+    >>> token = jwt.encode(dict(sub='user@email.com', iss='provider',
+                           token='123456789', iat=now(),
+                           exp=datetime_expiration))
+    >>> jwt.decode(token)
+    {'sub':'user@email.com', 'iss':'provider', 'token':'123456789',
+     'iat': <datetime>, 'exp': <datetime>}
+    >>> jwt.try_to_decode('invalid-token')
+    (False, None)
+    '''
+
+    def __init__(self, secret, algo='HS512'):
+        self.secret = secret
+        self.algo = algo
+
+    def encode(self, payload):
+        '''Encodes the payload returning a Json Web Token
+        '''
+        return jwt.encode(payload, self.secret, self.algo)
+
+    def decode(self, encrypted_payload):
+        '''Decodes the Json Web Token returning the payload
+        '''
+        return jwt.decode(encrypted_payload, self.secret)
+
+    def try_to_decode(self, encrypted_payload):
+        '''Tries to decrypt the given encrypted and returns a tuple with
+        a decrypted boolean flag and the decrypted object if success is True
+        '''
+        try:
+            return True, self.decode(encrypted_payload)
+        except (jwt.ExpiredSignature, jwt.DecodeError, AttributeError):
+            return False, None

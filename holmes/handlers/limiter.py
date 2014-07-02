@@ -4,7 +4,7 @@
 from ujson import loads
 from tornado.gen import coroutine
 
-from holmes.models import Limiter, User
+from holmes.models import Limiter
 from holmes.handlers import BaseHandler
 
 
@@ -41,16 +41,6 @@ class LimiterHandler(BaseHandler):
 
     @coroutine
     def post(self):
-        access_token = self.request.headers.get('X-AUTH-HOLMES', None)
-
-        if self.is_empty_access_token(access_token):
-            return
-
-        result = yield User.authenticate(access_token, self.application)
-
-        if self.is_unauthorized_user(result):
-            return
-
         post_data = loads(self.request.body)
         url = post_data.get('url', None)
         connections = self.application.config.DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS
@@ -74,15 +64,6 @@ class LimiterHandler(BaseHandler):
             self.write_json({'reason': 'Invalid data', 'description': self._('Invalid data')})
             return
 
-        access_token = self.request.headers.get('X-AUTH-HOLMES', None)
-
-        if self.is_empty_access_token(access_token):
-            return
-
-        result = yield User.authenticate(access_token, self.application)
-
-        if self.is_unauthorized_user(result):
-            return
 
         limiter = Limiter.by_id(limiter_id, self.db)
 

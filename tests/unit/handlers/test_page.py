@@ -32,9 +32,8 @@ class TestPageHandler(ApiTestCase):
 
     def test_get_page_not_found(self):
         try:
-            yield self.http_client.fetch(
-                self.get_url('/page/%s' % self.ZERO_UUID),
-                method='GET'
+            yield self.authenticated_fetch(
+                '/page/%s' % self.ZERO_UUID, method='GET'
             )
         except HTTPError:
             err = sys.exc_info()[1]
@@ -48,7 +47,9 @@ class TestPageHandler(ApiTestCase):
     def test_get_page_get_info(self):
         page = PageFactory.create()
 
-        response = yield self.http_client.fetch(self.get_url('/page/%s' % page.uuid))
+        response = yield self.authenticated_fetch(
+            '/page/%s' % page.uuid
+        )
 
         expect(response.code).to_equal(200)
 
@@ -63,10 +64,8 @@ class TestPageHandler(ApiTestCase):
 
         self.server.application.girl = Mock()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/page'),
-            method='POST',
-            body=dumps({
+        response = yield self.authenticated_fetch(
+            '/page', method='POST', body=dumps({
                 'url': 'http://www.globo.com'
             })
         )
@@ -92,7 +91,7 @@ class TestPageHandler(ApiTestCase):
 
         self.mock_request(status_code=200, effective_url="http://www.globo.com")
 
-        response = self.fetch(
+        response = yield self.authenticated_fetch(
             '/page',
             method='POST',
             body=dumps({
@@ -113,10 +112,8 @@ class TestPageHandler(ApiTestCase):
         invalid_url = ''
 
         try:
-            yield self.http_client.fetch(
-                self.get_url('/page'),
-                method='POST',
-                body=dumps({
+            yield self.authenticated_fetch(
+                '/page', method='POST', body=dumps({
                     'url': invalid_url
                 })
             )
@@ -134,10 +131,8 @@ class TestPageHandler(ApiTestCase):
 
         self.mock_request(status_code=200, effective_url="http://www.globo.com")
 
-        response = yield self.http_client.fetch(
-            self.get_url('/page'),
-            method='POST',
-            body=dumps({
+        response = yield self.authenticated_fetch(
+            '/page', method='POST', body=dumps({
                 'url': page.url
             })
         )
@@ -162,8 +157,8 @@ class TestPageReviewsHandler(ApiTestCase):
         review1 = ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt1, number_of_violations=20)
         review2 = ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=30)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/page/%s/reviews/' % page.uuid)
+        response = yield self.authenticated_fetch(
+            '/page/%s/reviews/' % page.uuid
         )
 
         expect(response.code).to_equal(200)
@@ -193,8 +188,8 @@ class TestViolationsPerDayHandler(ApiTestCase):
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
         ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/page/%s/violations-per-day/' % page.uuid)
+        response = yield self.authenticated_fetch(
+            '/page/%s/violations-per-day/' % page.uuid
         )
 
         expect(response.code).to_equal(200)
@@ -234,7 +229,7 @@ class TestNextJobHandler(ApiTestCase):
         page = PageFactory.create()
         PageFactory.create()
 
-        response = yield self.http_client.fetch(self.get_url('/next-jobs'))
+        response = yield self.authenticated_fetch('/next-jobs')
 
         returned_page = loads(response.body)
 
@@ -254,7 +249,9 @@ class TestNextJobHandler(ApiTestCase):
         page = PageFactory.create(domain=domain)
         PageFactory.create()
 
-        response = yield self.http_client.fetch(self.get_url('/next-jobs?domain_filter=test123.com'))
+        response = yield self.authenticated_fetch(
+            '/next-jobs?domain_filter=test123.com'
+        )
 
         returned_page = loads(response.body)
 
@@ -273,7 +270,9 @@ class TestNextJobHandler(ApiTestCase):
         domain = DomainFactory.create(name='test123.com')
         PageFactory.create(domain=domain)
 
-        response = yield self.http_client.fetch(self.get_url('/next-jobs?domain_filter=otherdomain.com'))
+        response = yield self.authenticated_fetch(
+            '/next-jobs?domain_filter=otherdomain.com'
+        )
 
         returned_page = loads(response.body)
 

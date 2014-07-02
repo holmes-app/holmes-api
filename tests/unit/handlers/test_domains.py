@@ -22,9 +22,7 @@ class TestDomainsHandler(ApiTestCase):
         DomainFactory.create(url="http://globo.com", name="globo.com")
         DomainFactory.create(url="http://g1.globo.com", name="g1.globo.com")
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains')
-        )
+        response = yield self.authenticated_fetch('/domains')
 
         expect(response.code).to_equal(200)
 
@@ -42,9 +40,7 @@ class TestDomainsHandler(ApiTestCase):
 
     @gen_test
     def test_will_return_empty_list_when_no_domains(self):
-        response = yield self.http_client.fetch(
-            self.get_url('/domains')
-        )
+        response = yield self.authenticated_fetch('/domains')
 
         expect(response.code).to_equal(200)
 
@@ -90,9 +86,7 @@ class TestDomainsFullDataHandler(ApiTestCase):
             } for i in range(9)
         }
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains-details')
-        )
+        response = yield self.authenticated_fetch('/domains-details')
 
         expect(response.code).to_equal(200)
 
@@ -122,9 +116,7 @@ class TestDomainDetailsHandler(ApiTestCase):
         ReviewFactory.create(page=page, is_active=True, is_complete=True, number_of_violations=20)
         ReviewFactory.create(page=page2, is_active=True, is_complete=True, number_of_violations=30)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/' % domain.name)
-        )
+        response = yield self.authenticated_fetch('/domains/%s/' % domain.name)
 
         expect(response.code).to_equal(200)
 
@@ -146,7 +138,7 @@ class TestDomainDetailsHandler(ApiTestCase):
         name = 'haha.com.br'
 
         try:
-            yield self.http_client.fetch(self.get_url('/domains/%s/' % name))
+            yield self.authenticated_fetch('/domains/%s/' % name)
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -161,7 +153,7 @@ class TestDomainDetailsHandler(ApiTestCase):
         self.server.application.girl.get = Mock(return_value=[])
 
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com'))
+            yield self.authenticated_fetch('/domains/domain-0.com')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -186,9 +178,7 @@ class TestDomainViolationsPerDayHandler(ApiTestCase):
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=10)
         ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt3, number_of_violations=30)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/violations-per-day/' % page.domain.name)
-        )
+        response = yield self.authenticated_fetch('/domains/%s/violations-per-day/' % page.domain.name)
 
         expect(response.code).to_equal(200)
 
@@ -215,7 +205,7 @@ class TestDomainViolationsPerDayHandler(ApiTestCase):
     @gen_test
     def test_domain_not_found(self):
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations-per-day'))
+            yield self.authenticated_fetch('/domains/domain-0.com/violations-per-day')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -247,8 +237,8 @@ class TestDomainReviewsHandler(ApiTestCase):
         ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=11)
         ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt, number_of_violations=10)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/reviews/?term=1' % domain.name)
+        response = yield self.authenticated_fetch(
+            '/domains/%s/reviews/?term=1' % domain.name
         )
 
         expect(response.code).to_equal(200)
@@ -258,9 +248,7 @@ class TestDomainReviewsHandler(ApiTestCase):
         expect(domain_details['pages']).to_length(1)
         expect(domain_details['reviewsCount']).to_be_null()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/reviews/' % domain.name)
-        )
+        response = yield self.authenticated_fetch('/domains/%s/reviews/' % domain.name)
 
         expect(response.code).to_equal(200)
 
@@ -303,9 +291,7 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         self.server.application.search_provider.refresh()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/reviews/' % domain.name)
-        )
+        response = yield self.authenticated_fetch('/domains/%s/reviews/' % domain.name)
 
         expect(response.code).to_equal(200)
 
@@ -345,8 +331,8 @@ class TestDomainReviewsHandler(ApiTestCase):
             )
             reviews.append(review)
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/reviews/?current_page=1' % domain.name)
+        response = yield self.authenticated_fetch(
+            '/domains/%s/reviews/?current_page=1' % domain.name
         )
 
         expect(response.code).to_equal(200)
@@ -359,8 +345,8 @@ class TestDomainReviewsHandler(ApiTestCase):
             expect(domain_details['pages'][i]['url']).to_equal(pages[i].url)
             expect(domain_details['pages'][i]['uuid']).to_equal(str(pages[i].uuid))
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/reviews/?current_page=2' % domain.name)
+        response = yield self.authenticated_fetch(
+            '/domains/%s/reviews/?current_page=2' % domain.name
         )
 
         expect(response.code).to_equal(200)
@@ -376,7 +362,7 @@ class TestDomainReviewsHandler(ApiTestCase):
     @gen_test
     def test_domain_not_found(self):
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/reviews'))
+            yield self.authenticated_fetch('/domains/domain-0.com/reviews')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -409,8 +395,8 @@ class TestDomainGroupedViolationsHandler(ApiTestCase):
             } for i in range(9)
         }
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/violations' % domain1.name)
+        response = yield self.authenticated_fetch(
+            '/domains/%s/violations' % domain1.name
         )
 
         expect(response.code).to_equal(200)
@@ -428,7 +414,7 @@ class TestDomainGroupedViolationsHandler(ApiTestCase):
     @gen_test
     def test_domain_not_found(self):
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations'))
+            yield self.authenticated_fetch('/domains/domain-0.com/violations')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -463,8 +449,8 @@ class TestDomainTopCategoryViolationsHandler(ApiTestCase):
 
         key = Key.get_by_name(self.db, 'key.0')
 
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/%s/violations/%d/' % (domain1.name, key.category_id))
+        response = yield self.authenticated_fetch(
+            '/domains/%s/violations/%d/' % (domain1.name, key.category_id)
         )
 
         expect(response.code).to_equal(200)
@@ -481,7 +467,7 @@ class TestDomainTopCategoryViolationsHandler(ApiTestCase):
     @gen_test
     def test_domain_not_found(self):
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations/0'))
+            yield self.authenticated_fetch('/domains/domain-0.com/violations/0')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -495,7 +481,7 @@ class TestDomainTopCategoryViolationsHandler(ApiTestCase):
         DomainFactory.create(name='domain-0.com')
 
         try:
-            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations/0'))
+            yield self.authenticated_fetch('/domains/domain-0.com/violations/0')
         except HTTPError:
             err = sys.exc_info()[1]
             expect(err).not_to_be_null()
@@ -511,8 +497,8 @@ class TestChangeDomainStatus(ApiTestCase):
     def test_can_set_domain_to_inactive(self):
         domain = DomainFactory.create(url="http://www.domain.com", name="domain.com", is_active=True)
 
-        response = yield self.http_client.fetch(
-            self.get_url(r'/domains/%s/change-status/' % domain.name),
+        response = yield self.authenticated_fetch(
+            '/domains/%s/change-status/' % domain.name,
             method='POST',
             body=''
         )
@@ -524,8 +510,8 @@ class TestChangeDomainStatus(ApiTestCase):
     def test_can_set_domain_to_active(self):
         domain = DomainFactory.create(url="http://www.domain.com", name="domain.com", is_active=False)
 
-        response = yield self.http_client.fetch(
-            self.get_url(r'/domains/%s/change-status/' % domain.name),
+        response = yield self.authenticated_fetch(
+            r'/domains/%s/change-status/' % domain.name,
             method='POST',
             body=''
         )
@@ -534,22 +520,10 @@ class TestChangeDomainStatus(ApiTestCase):
         expect(domain_from_db.is_active).to_be_true()
 
     @gen_test
-    def test_domain_options(self):
-        response = yield self.http_client.fetch(
-            self.get_url('/domains/domain-0.com/change-status'),
-            method='OPTIONS'
-        )
-
-        expect(response.body).to_length(0)
-        expect(response.headers).to_length(7)
-        expect(response.headers['Access-Control-Allow-Headers']).to_equal('Accept, Content-Type, X-AUTH-HOLMES')
-        expect(response.headers['Access-Control-Allow-Methods']).to_equal('GET,PUT,POST,DELETE,OPTIONS')
-
-    @gen_test
     def test_domain_not_found(self):
         try:
-            yield self.http_client.fetch(
-                self.get_url('/domains/domain-0.com/change-status'),
+            yield self.authenticated_fetch(
+                '/domains/domain-0.com/change-status',
                 method='POST',
                 body=''
             )

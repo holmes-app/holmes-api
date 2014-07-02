@@ -26,10 +26,11 @@ class TestLastRequestsHandler(ApiTestCase):
 
         domain1 = DomainFactory.create()
         domain2 = DomainFactory.create()
-        request = RequestFactory.create(domain_name=domain1.name,
-                                        completed_date=dt1)
+        request = RequestFactory.create(
+            domain_name=domain1.name, completed_date=dt1
+        )
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/'))
+        response = yield self.authenticated_fetch('/last-requests/')
 
         expect(response.code).to_equal(200)
 
@@ -48,11 +49,13 @@ class TestLastRequestsHandler(ApiTestCase):
         request = RequestFactory.create(domain_name=domain2.name,
                                         completed_date=dt1)
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/'))
+        response = yield self.authenticated_fetch('/last-requests/')
         expect(response.code).to_equal(200)
         expect(len(loads(response.body)['requests'])).to_be_like(2)
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/?domain_filter=%s' % domain2.name))
+        response = yield self.authenticated_fetch(
+            '/last-requests/?domain_filter=%s' % domain2.name
+        )
         expect(response.code).to_equal(200)
         response_body = loads(response.body)
         expect(len(response_body['requests'])).to_be_like(1)
@@ -70,7 +73,9 @@ class TestLastRequestsHandler(ApiTestCase):
                 domain_name='g1.globo.com'
             )
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/?status_code_filter=200'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/?status_code_filter=200'
+        )
 
         expect(response.code).to_equal(200)
 
@@ -114,31 +119,41 @@ class TestFailedResponsesHandler(ApiTestCase):
 
         self.db.flush()
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/failed-responses/'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/failed-responses/'
+        )
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([
             {u'count': 3, u'statusCodeTitle': u'OK', u'statusCode': 200},
             {u'count': 6, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
         ])
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/failed-responses/?domain_filter=globo.com'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/failed-responses/?domain_filter=globo.com'
+        )
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([
             {u'count': 3, u'statusCodeTitle': u'OK', u'statusCode': 200},
             {u'count': 3, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
         ])
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/failed-responses/?domain_filter=globoesporte.com'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/failed-responses/?domain_filter=globoesporte.com'
+        )
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([
             {u'count': 3, u'statusCodeTitle': u'Not Found', u'statusCode': 404}
         ])
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/failed-responses/?domain_filter=g1.globo.com'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/failed-responses/?domain_filter=g1.globo.com'
+        )
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([])
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/failed-responses/?domain_filter=domain3.com'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/failed-responses/?domain_filter=domain3.com'
+        )
         expect(response.code).to_equal(200)
         expect(loads(response.body)).to_be_like([])
 
@@ -156,7 +171,9 @@ class TestLastRequestsStatusCodeHandler(ApiTestCase):
 
         self.db.flush()
 
-        response = yield self.http_client.fetch(self.get_url('/last-requests/status-code/'))
+        response = yield self.authenticated_fetch(
+            '/last-requests/status-code/'
+        )
 
         expect(response.code).to_equal(200)
 

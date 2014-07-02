@@ -235,7 +235,3 @@ class DomainsChangeStatusHandler(BaseHandler):
 
         if not domain.is_active:
             yield self.cache.delete_limit_usage_by_domain(domain.url)
-
-    @coroutine
-    def options(self, domain_name):
-        super(DomainsChangeStatusHandler, self).options()

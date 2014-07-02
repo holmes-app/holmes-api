@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
+from datetime import datetime
 from os.path import abspath, dirname, join
 
 from cow.testing import CowTestCase
 from tornado.httpclient import AsyncHTTPClient
+from tornado import gen
 
+from holmes.utils import Jwt
 from holmes.config import Config
 from holmes.server import HolmesApiServer
 from tests.fixtures import db
@@ -52,8 +55,52 @@ class ApiTestCase(CowTestCase):
         app = super(ApiTestCase, self).get_app()
         app.http_client = AsyncHTTPClient(self.io_loop)
         self.db = app.db
-
         return app
+
+    def get_auth_cookie(
+            self, user_email='user@email.com', provider='provider',
+            token='12345', expiration=datetime(year=5000, month=11, day=30)):
+
+        jwt = Jwt(self.server.application.config.SECRET_KEY)
+        token = jwt.encode({
+            'sub': user_email, 'iss': provider, 'token': token, 'exp': expiration
+        })
+        return '='.join(('HOLMES_AUTH_TOKEN', token))
+
+    @gen.coroutine
+    def anonymous_fetch(self, url, *args, **kwargs):
+
+        # ensure that the request has no cookies
+        if 'headers' in kwargs and 'Cookie' in kwargs['headers']:
+            del kwargs['headers']['Cookie']
+
+        response = yield self.http_client.fetch(
+            self.get_url(url), *args, **kwargs
+        )
+
+        raise gen.Return(response)
+
+    @gen.coroutine
+    def authenticated_fetch(self, url, *args, **kwargs):
+
+        # ensure that the request has a valid auth token cookie
+        cookie_header = {'Cookie': self.get_auth_cookie()}
+        if 'headers' in kwargs:
+            if kwargs['headers'] and 'Cookie' in kwargs['headers']:
+                cookie_header = {
+                    'Cookie': '; '.join(
+                        (kwargs['headers']['Cookie'], cookie_header['Cookie'])
+                    )
+                }
+            kwargs['headers'].update(cookie_header)
+        else:
+            kwargs['headers'] = cookie_header
+
+        response = yield self.http_client.fetch(
+            self.get_url(url), *args, **kwargs
+        )
+
+        raise gen.Return(response)
 
     def connect_to_sync_redis(self):
         import redis

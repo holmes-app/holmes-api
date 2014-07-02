@@ -29,9 +29,8 @@ class TestSearchHandler(ApiTestCase):
         page.last_review_date = dt
         self.db.flush()
 
-        response = yield self.http_client.fetch(
-            self.get_url('/search?term=http://www.mypage.something.com'),
-            method='GET',
+        response = yield self.authenticated_fetch(
+            '/search?term=http://www.mypage.something.com'
         )
 
         expect(response.code).to_equal(200)
