@@ -13,7 +13,7 @@ Config.define('WORKER_SLEEP_TIME', 10, _('Main loop sleep time'), 'Worker')
 Config.define('ZOMBIE_WORKER_TIME', 200,
               _('Time to remove a Worker from API List (must be greater than WORKER_SLEEP_TIME + Validation time)'), 'API')
 
-Config.define('WORKERS_LOOK_AHEAD_PAGES', 1000, _('Number of pages that will be retrieved when looking for the next job'), 'Worker')
+Config.define('WORKERS_LOOK_AHEAD_PAGES', 10000, _('Number of pages that will be retrieved when looking for the next job'), 'Worker')
 
 Config.define('UPDATE_PAGES_SCORE_EXPIRATION', 30, _('The expiration for lock to update pages score'), 'Worker')
 Config.define('UPDATE_PAGES_SCORE_SLEEP_TIME', HOUR, _('The expiration for lock to update pages score'), 'Worker')
