@@ -462,8 +462,7 @@ class SyncCache(object):
                         .filter(or_(
                             Page.last_review_date == None,
                             Page.last_review_date <= expired_time
-                        )) \
-                        .order_by(Page.last_review_date.asc())[:look_ahead_pages]
+                        ))[:look_ahead_pages]
 
                     if pages:
                         all_domains_pages_in_need_of_review.append(pages)
