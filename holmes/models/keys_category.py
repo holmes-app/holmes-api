@@ -28,6 +28,18 @@ class KeysCategory(Base):
         }
 
     @classmethod
+    def get_by_id(cls, db, key_category_id):
+        try:
+            result = db \
+                .query(KeysCategory) \
+                .filter(KeysCategory.id == key_category_id) \
+                .one()
+        except NoResultFound:
+            result = None
+
+        return result
+
+    @classmethod
     def get_by_name(cls, db, category_name):
         try:
             result = db \

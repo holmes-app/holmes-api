@@ -31,6 +31,17 @@ def configure_materials(girl, db, config):
     )
 
     girl.add_material(
+        'top_violations_in_category_for_domains',
+        partial(
+            MaterialConveyor.get_top_violations_in_category_for_all_domains,
+            db,
+            config.get('TOP_CATEGORY_VIOLATIONS_LIMIT')
+        ),
+        config.MATERIALS_EXPIRATION_IN_SECONDS['top_violations_in_category_for_domains'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['top_violations_in_category_for_domains']
+    )
+
+    girl.add_material(
         'blacklist_domain_count',
         partial(MaterialConveyor.get_blacklist_domain_count, db),
         config.MATERIALS_EXPIRATION_IN_SECONDS['blacklist_domain_count'],
@@ -72,6 +83,27 @@ class MaterialConveyor(object):
                 ungrouped[domain] += count
         blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
+
+    @classmethod
+    def get_top_violations_in_category_for_all_domains(cls, db, limit):
+        grouped = {}
+
+        top_violations = Violation.get_top_in_category_for_all_domains(db, limit)
+
+        for domain_name, key_category_id, key_name, count in top_violations:
+
+            if domain_name not in grouped:
+                grouped[domain_name] = {}
+
+            if key_category_id not in grouped[domain_name]:
+                grouped[domain_name][key_category_id] = []
+
+            grouped[domain_name][key_category_id].append({
+                'key_name': key_name,
+                'count': count
+            })
+
+        return grouped
 
 
 class MaterialWorker(BaseCLI):

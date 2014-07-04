@@ -130,20 +130,22 @@ class Violation(Base):
             .all()
 
     @classmethod
-    def get_top_in_category_for_domain(cls, db, domain, key_category_id, limit=10):
+    def get_top_in_category_for_all_domains(cls, db, limit=1000):
         from holmes.models.keys import Key  # to avoid circular dependency
+        from holmes.models.domain import Domain  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency
 
         return db \
             .query(
+                Domain.name,
+                Key.category_id,
                 Key.name,
                 sa.func.count(Key.category_id).label('violation_count')
             ) \
-            .filter(Key.id == Violation.key_id) \
-            .filter(Violation.domain_id == domain.id) \
+            .filter(Domain.id == Violation.domain_id) \
+            .filter(Violation.key_id == Key.id) \
             .filter(Violation.review_is_active == True) \
-            .filter(Key.category_id == key_category_id) \
-            .group_by(Key.id) \
+            .group_by(Domain.id, Key.category_id, Key.id) \
             .order_by('violation_count DESC') \
             .limit(limit) \
             .all()

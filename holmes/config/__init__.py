@@ -113,7 +113,7 @@ Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration f
 Config.define('RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for each domain average response time'), 'Cache')
 Config.define('VIOLATIONS_BY_CATEGORY_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain violation count by category'), 'Cache')
 Config.define('TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain top violation in a category'), 'Cache')
-Config.define('TOP_CATEGORY_VIOLATIONS_LIMIT', 10, _('Limit for the size of the list of top vilations of a key category for a domain'), 'Domain Handler')
+Config.define('TOP_CATEGORY_VIOLATIONS_LIMIT', 1000, _('Limit for the size of the list of top vilations of a key category for a domain'), 'Domain Handler')
 Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, _('Expiration for the url lock for each url'), 'Cache')
 Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, _('Expiration for the url lock for next jobs'), 'Cache')
 Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for next jobs count'), 'Cache')
@@ -121,6 +121,7 @@ Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for t
 materials_expiration_in_seconds = {
     'domains_details': 0.5 * MINUTE + 1,
     'violation_count_by_category_for_domains': 3 * MINUTE + 11,
+    'top_violations_in_category_for_domains': 5 * MINUTE + 17,
     'blacklist_domain_count': 10 * MINUTE + 1,
     'most_common_violations': HOUR + 7,
     'failed_responses_count': HOUR + 13,
@@ -130,6 +131,7 @@ Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds
 materials_grace_period_in_seconds = {
     'domains_details': 2 * materials_expiration_in_seconds['domains_details'],
     'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
+    'top_violations_in_category_for_domains': 2 * materials_expiration_in_seconds['top_violations_in_category_for_domains'],
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],
     'most_common_violations': 2 * materials_expiration_in_seconds['most_common_violations'],
     'failed_responses_count': 2 * materials_expiration_in_seconds['failed_responses_count'],

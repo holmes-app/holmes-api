@@ -3,7 +3,7 @@
 
 from tornado.gen import coroutine
 
-from holmes.models import Domain
+from holmes.models import Domain, KeysCategory
 from holmes.handlers import BaseHandler
 
 
@@ -187,20 +187,22 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
             self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
+        key_category = KeysCategory.get_by_id(self.db, key_category_id)
+
+        if not key_category:
+            self.set_status(404, self._('Domain %s not found') % domain_name)
+            return
+
         violation_defs = self.application.violation_definitions
 
-        top_violations = yield self.cache.get_top_in_category_for_domain(
-            domain,
-            key_category_id,
-            self.application.config.get('TOP_CATEGORY_VIOLATIONS_LIMIT')
-        )
+        top_violations = self.girl.get('top_violations_in_category_for_domains')
 
         violations = []
-        for key_name, count in top_violations:
+        for top_violation in top_violations[domain_name][key_category.id]:
             violations.append({
-                'title': self._(violation_defs[key_name]['title']),
-                'count': count,
-                'key': key_name,
+                'title': self._(violation_defs[top_violation['key_name']]['title']),
+                'count': top_violation['count'],
+                'key': top_violation['key_name'],
             })
 
         result = {

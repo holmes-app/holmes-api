@@ -395,7 +395,7 @@ class DomainTopCategoryViolationsHandler(ApiTestCase):
             } for i in range(9)
         }
 
-        key = Key.get_or_create(self.db, 'key.0')
+        key = Key.get_by_name(self.db, 'key.0')
 
         response = yield self.http_client.fetch(
             self.get_url('/domains/%s/violations/%d/' % (domain1.name, key.category_id))
