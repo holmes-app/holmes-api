@@ -113,7 +113,6 @@ Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration f
 Config.define('RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for each domain average response time'), 'Cache')
 Config.define('VIOLATIONS_BY_CATEGORY_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain violation count by category'), 'Cache')
 Config.define('TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain top violation in a category'), 'Cache')
-Config.define('TOP_CATEGORY_VIOLATIONS_LIMIT', 1000, _('Limit for the size of the list of top vilations of a key category for a domain'), 'Domain Handler')
 Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, _('Expiration for the url lock for each url'), 'Cache')
 Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, _('Expiration for the url lock for next jobs'), 'Cache')
 Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for next jobs count'), 'Cache')
@@ -154,6 +153,7 @@ Config.define('DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS', 5, _('Default number o
 
 Config.define('MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION', 3 * HOUR, _('Expiration for the cache key for the most common violations'), 'Cache')
 Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Limit for the size of the Vilation sample used in the aggregation'), 'Violation Handler')
+Config.define('TOP_CATEGORY_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Size of the sample used in the top vilations of a key category for domains'), 'Domain Handler')
 
 throttling_message_type = {
     'new-request': 5,

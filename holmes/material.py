@@ -35,7 +35,7 @@ def configure_materials(girl, db, config):
         partial(
             MaterialConveyor.get_top_violations_in_category_for_all_domains,
             db,
-            config.get('TOP_CATEGORY_VIOLATIONS_LIMIT')
+            config.get('TOP_CATEGORY_VIOLATIONS_SAMPLE_LIMIT')
         ),
         config.MATERIALS_EXPIRATION_IN_SECONDS['top_violations_in_category_for_domains'],
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['top_violations_in_category_for_domains']
