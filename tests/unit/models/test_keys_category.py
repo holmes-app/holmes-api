@@ -50,3 +50,15 @@ class TestKeysCategory(ApiTestCase):
 
         expect(category).to_equal(loaded_category)
         expect(loaded_category.name).to_equal('HOLMES')
+
+    def test_get_by_id(self):
+        no_category = KeysCategory.get_by_id(self.db, -1)
+        expect(no_category).to_be_null()
+
+        category = KeysCategoryFactory.create(name='HOLMES')
+
+        loaded_category = KeysCategory.get_by_id(self.db, category.id)
+
+        expect(category).to_equal(loaded_category)
+        expect(loaded_category.name).to_equal('HOLMES')
+        expect(loaded_category.id).to_equal(category.id)
