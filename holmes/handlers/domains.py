@@ -190,7 +190,7 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
         key_category = KeysCategory.get_by_id(self.db, key_category_id)
 
         if not key_category:
-            self.set_status(404, self._('Key category %d not found') % key_category_id)
+            self.set_status(404, self._('Key category %s not found') % key_category_id)
             return
 
         violation_defs = self.application.violation_definitions
