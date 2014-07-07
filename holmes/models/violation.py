@@ -34,10 +34,14 @@ class Violation(Base):
 
         value = definition.get('value_parser', lambda val: val)(self.value)
         description = _(definition.get('description', '%s'))
+
+        if ('%s' in description or '%d' in description) and value:
+            description = (description % value)
+
         return {
             'key': self.key.name,
             'title': _(definition.get('title', _('undefined'))),
-            'description': (description % value) if value else description,
+            'description': description,
             'points': self.points,
             'category': _(definition.get('category', _('undefined')))
         }
