@@ -119,6 +119,7 @@ Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for t
 
 materials_expiration_in_seconds = {
     'domains_details': 0.5 * MINUTE + 1,
+    'violation_count_for_domains': 4 * MINUTE + 11,
     'violation_count_by_category_for_domains': 3 * MINUTE + 11,
     'top_violations_in_category_for_domains': 5 * MINUTE + 17,
     'blacklist_domain_count': 10 * MINUTE + 1,
@@ -129,6 +130,7 @@ Config.define('MATERIALS_EXPIRATION_IN_SECONDS', materials_expiration_in_seconds
 
 materials_grace_period_in_seconds = {
     'domains_details': 2 * materials_expiration_in_seconds['domains_details'],
+    'violation_count_for_domains': 2 * materials_expiration_in_seconds['violation_count_for_domains'],
     'violation_count_by_category_for_domains': 2 * materials_expiration_in_seconds['violation_count_by_category_for_domains'],
     'top_violations_in_category_for_domains': 2 * materials_expiration_in_seconds['top_violations_in_category_for_domains'],
     'blacklist_domain_count': 2 * materials_expiration_in_seconds['blacklist_domain_count'],

@@ -69,20 +69,20 @@ class Violation(Base):
             .order_by('count desc').all()
 
     @classmethod
-    def get_by_key_id_group_by_domain(cls, db, key_id):
+    def get_group_by_key_id_for_all_domains(cls, db):
 
         from holmes.models.violation import Violation  # to avoid circular dependency
         from holmes.models.domain import Domain  # to avoid circular dependency
 
         return db \
             .query(
+                Violation.key_id,
                 Domain.name.label('domain_name'),
                 sa.func.count(Violation.id).label('violation_count')
             ) \
             .filter(Domain.id == Violation.domain_id) \
-            .filter(Violation.key_id == key_id) \
             .filter(Violation.review_is_active == True) \
-            .group_by(Domain.id) \
+            .group_by(Violation.key_id, Domain.id) \
             .order_by('violation_count DESC') \
             .all()
 

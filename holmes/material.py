@@ -24,6 +24,13 @@ def configure_materials(girl, db, config):
     )
 
     girl.add_material(
+        'violation_count_for_domains',
+        partial(MaterialConveyor.get_violation_count_for_domains, db),
+        config.MATERIALS_EXPIRATION_IN_SECONDS['violation_count_for_domains'],
+        config.MATERIALS_GRACE_PERIOD_IN_SECONDS['violation_count_for_domains']
+    )
+
+    girl.add_material(
         'violation_count_by_category_for_domains',
         partial(Violation.get_group_by_category_id_for_all_domains, db),
         config.MATERIALS_EXPIRATION_IN_SECONDS['violation_count_by_category_for_domains'],
@@ -83,6 +90,24 @@ class MaterialConveyor(object):
                 ungrouped[domain] += count
         blacklist = sorted(ungrouped.items(), key=lambda xz: -xz[1])
         return [dict(zip(('domain', 'count'), x)) for x in blacklist]
+
+    @classmethod
+    def get_violation_count_for_domains(cls, db):
+        grouped = {}
+
+        violations_count = Violation.get_group_by_key_id_for_all_domains(db)
+
+        for key_id, domain_name, count in violations_count:
+
+            if key_id not in grouped:
+                grouped[key_id] = []
+
+            grouped[key_id].append({
+                'name': domain_name,
+                'count': count
+            })
+
+        return grouped
 
     @classmethod
     def get_top_violations_in_category_for_all_domains(cls, db, limit):

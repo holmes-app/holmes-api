@@ -94,14 +94,15 @@ class ViolationDomainsHandler(BaseHandler):
         violation_category = violations[key_name]['category']
         key_id = violations[key_name]['key'].id
 
-        domains = Violation.get_by_key_id_group_by_domain(self.db, key_id)
+        grouped_violations = self.girl.get('violation_count_for_domains')
+        domains = grouped_violations.get(key_id, [])
 
         violation = {
             'title': self._(violation_title),
             'description': self._(violation_description),
             'category': self._(violation_category),
-            'domains': [{'name': name, 'count': count} for (name, count) in domains],
-            'total': sum(count for (name, count) in domains)
+            'domains': domains,
+            'total': sum(domain['count'] for domain in domains)
         }
 
         if key_name in self.key_details_handler:

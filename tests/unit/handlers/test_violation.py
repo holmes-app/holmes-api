@@ -346,6 +346,20 @@ class TestViolationHandler(ApiTestCase):
 class TestViolationDomainsHandler(ApiTestCase):
 
     @gen_test
+    def test_fails_by_invalid_key_name_domains(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/violation/foobar/domains')
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Invalid violation key foobar')
+        else:
+            assert False, 'Should not get this far'
+
+    @gen_test
     def test_can_get_by_key_name_domains(self):
         domains = [DomainFactory.create(name='g%d.com' % i) for i in range(2)]
         keys = [KeyFactory.create(name='random.fact.%s' % i) for i in range(3)]
