@@ -403,3 +403,37 @@ class TestViolationDomainsHandler(ApiTestCase):
         expect(violation).to_length(5)
         expect(violation['domains']).to_length(2)
         expect(violation).to_be_like(expected_violation)
+
+
+class TestViolationsHandler(ApiTestCase):
+
+    @gen_test
+    def test_can_get_violations(self):
+
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in range(3)]
+
+        violation_definitions = {
+            'random.fact.%s' % i: {
+                'title': 'title.%d' % i,
+                'category': 'category.%d' % i,
+                'key': key
+            } for i, key in enumerate(keys)
+        }
+
+        def extract_key_name(violation_definition):
+            key = violation_definition.pop('key')
+            violation_definition['key_name'] = key.name
+            return violation_definition
+
+        expected = [extract_key_name(vd) for vd in violation_definitions.values()]
+
+        self.server.application.violation_definitions = violation_definitions
+
+        response = yield self.http_client.fetch(
+            self.get_url('/violations')
+        )
+
+        violations = loads(response.body)
+
+        expect(violations).to_length(3)
+        expect(violations).to_be_like(expected)

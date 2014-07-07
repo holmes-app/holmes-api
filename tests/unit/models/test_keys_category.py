@@ -33,8 +33,6 @@ class TestKeysCategory(ApiTestCase):
         })
 
     def test_can_get_or_create(self):
-        self.db.query(KeysCategory).delete()
-
         # Create
         cat1 = KeysCategory.get_or_create(self.db, 'SEO')
         expect(cat1.name).to_equal('SEO')

@@ -8,6 +8,7 @@ from ujson import loads
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
+from mock import Mock
 
 from holmes.models import Domain, Key
 from tests.unit.base import ApiTestCase
@@ -153,6 +154,23 @@ class TestDomainDetailsHandler(ApiTestCase):
         else:
             assert False, 'Should not have got this far'
 
+    @gen_test
+    def test_domain_not_found_in_materials(self):
+        DomainFactory.create(name='domain-0.com')
+
+        self.server.application.girl.get = Mock(return_value=[])
+
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+
+        else:
+            assert False, 'Should not have got this far'
+
 
 class TestDomainViolationsPerDayHandler(ApiTestCase):
 
@@ -194,6 +212,18 @@ class TestDomainViolationsPerDayHandler(ApiTestCase):
             }
         ])
 
+    @gen_test
+    def test_domain_not_found(self):
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations-per-day'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+        else:
+            assert False, 'Should not have got this far'
+
 
 class TestDomainReviewsHandler(ApiTestCase):
 
@@ -209,13 +239,24 @@ class TestDomainReviewsHandler(ApiTestCase):
 
         domain = DomainFactory.create(url="http://www.domain-details.com", name="domain-details.com")
 
-        page = PageFactory.create(domain=domain, last_review_date=dt)
-        page2 = PageFactory.create(domain=domain, last_review_date=dt2)
+        page = PageFactory.create(domain=domain, url=domain.url + '/1', last_review_date=dt)
+        page2 = PageFactory.create(domain=domain, url=domain.url + '/2', last_review_date=dt2)
 
         ReviewFactory.create(page=page, is_active=True, is_complete=True, completed_date=dt, number_of_violations=13)
         ReviewFactory.create(page=page, is_active=False, is_complete=True, completed_date=dt2, number_of_violations=12)
         ReviewFactory.create(page=page2, is_active=True, is_complete=True, completed_date=dt2, number_of_violations=11)
         ReviewFactory.create(page=page2, is_active=False, is_complete=True, completed_date=dt, number_of_violations=10)
+
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/%s/reviews/?term=1' % domain.name)
+        )
+
+        expect(response.code).to_equal(200)
+
+        domain_details = loads(response.body)
+
+        expect(domain_details['pages']).to_length(1)
+        expect(domain_details['reviewsCount']).to_be_null()
 
         response = yield self.http_client.fetch(
             self.get_url('/domains/%s/reviews/' % domain.name)
@@ -226,6 +267,7 @@ class TestDomainReviewsHandler(ApiTestCase):
         domain_details = loads(response.body)
 
         expect(domain_details['pages']).to_length(2)
+        expect(domain_details['reviewsCount']).to_equal(2)
 
         expect(domain_details['pages'][1]['url']).to_equal(page2.url)
         expect(domain_details['pages'][1]['uuid']).to_equal(str(page2.uuid))
@@ -331,6 +373,18 @@ class TestDomainReviewsHandler(ApiTestCase):
             expect(domain_details['pages'][i]['url']).to_equal(pages[10 + i].url)
             expect(domain_details['pages'][i]['uuid']).to_equal(str(pages[10 + i].uuid))
 
+    @gen_test
+    def test_domain_not_found(self):
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/reviews'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+        else:
+            assert False, 'Should not have got this far'
+
 
 class TestDomainGroupedViolationsHandler(ApiTestCase):
 
@@ -370,6 +424,18 @@ class TestDomainGroupedViolationsHandler(ApiTestCase):
 
         counts = map(lambda v: v['count'], domain_violations['violations'])
         expect(counts).to_be_like([5, 4, 3])
+
+    @gen_test
+    def test_domain_not_found(self):
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+        else:
+            assert False, 'Should not have got this far'
 
 
 class TestDomainTopCategoryViolationsHandler(ApiTestCase):
@@ -466,3 +532,31 @@ class TestChangeDomainStatus(ApiTestCase):
         expect(response.code).to_equal(200)
         domain_from_db = Domain.get_domain_by_name(domain.name, self.db)
         expect(domain_from_db.is_active).to_be_true()
+
+    @gen_test
+    def test_domain_options(self):
+        response = yield self.http_client.fetch(
+            self.get_url('/domains/domain-0.com/change-status'),
+            method='OPTIONS'
+        )
+
+        expect(response.body).to_length(0)
+        expect(response.headers).to_length(7)
+        expect(response.headers['Access-Control-Allow-Headers']).to_equal('Accept, Content-Type, X-AUTH-HOLMES')
+        expect(response.headers['Access-Control-Allow-Methods']).to_equal('GET,PUT,POST,DELETE,OPTIONS')
+
+    @gen_test
+    def test_domain_not_found(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/domains/domain-0.com/change-status'),
+                method='POST',
+                body=''
+            )
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+        else:
+            assert False, 'Should not have got this far'
