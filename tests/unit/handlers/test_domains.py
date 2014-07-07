@@ -372,7 +372,7 @@ class TestDomainGroupedViolationsHandler(ApiTestCase):
         expect(counts).to_be_like([5, 4, 3])
 
 
-class DomainTopCategoryViolationsHandler(ApiTestCase):
+class TestDomainTopCategoryViolationsHandler(ApiTestCase):
 
     @gen_test
     def test_can_get_domain_top_category_violations(self):
@@ -411,6 +411,32 @@ class DomainTopCategoryViolationsHandler(ApiTestCase):
 
         counts = map(lambda v: v['count'], domain_top_category['violations'])
         expect(counts).to_be_like([2, 1, 1])
+
+    @gen_test
+    def test_domain_not_found(self):
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations/0'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Domain domain-0.com not found')
+        else:
+            assert False, 'Should not have got this far'
+
+    @gen_test
+    def test_key_category_not_found(self):
+        DomainFactory.create(name='domain-0.com')
+
+        try:
+            yield self.http_client.fetch(self.get_url('/domains/domain-0.com/violations/0'))
+        except HTTPError:
+            err = sys.exc_info()[1]
+            expect(err).not_to_be_null()
+            expect(err.code).to_equal(404)
+            expect(err.response.reason).to_be_like('Key category 0 not found')
+        else:
+            assert False, 'Should not have got this far'
 
 
 class TestChangeDomainStatus(ApiTestCase):
