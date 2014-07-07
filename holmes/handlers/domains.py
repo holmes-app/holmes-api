@@ -198,7 +198,7 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
         top_violations = self.girl.get('top_violations_in_category_for_domains')
 
         violations = []
-        for top_violation in top_violations[domain_name][key_category.id]:
+        for top_violation in top_violations.get(domain_name, {}).get(key_category.id, []):
             violations.append({
                 'title': self._(violation_defs[top_violation['key_name']]['title']),
                 'count': top_violation['count'],
