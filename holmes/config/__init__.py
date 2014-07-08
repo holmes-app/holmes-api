@@ -35,10 +35,10 @@ Config.define('REVIEW_EXPIRATION_IN_SECONDS', 6 * 60 * 60, _('Number of seconds 
 Config.define('NUMBER_OF_REVIEWS_TO_KEEP', 4, _('Maximum number of reviews to keep'), 'Review')
 
 Config.define('DAYS_TO_KEEP_REQUESTS', 12, _('Number of days to keep requests'), 'Requests')
-Config.define('MAX_REQUESTS_FOR_FAILED_RESPONSES', 1000, _('Number of requests for falied responses'), 'Requests')
+Config.define('MAX_REQUESTS_FOR_FAILED_RESPONSES', 1000, _('Number of requests for failed responses'), 'Requests')
 
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
-              _('Number of urls to enqueue before submitting to the /pages route'), 'Validators')
+              _('Number of URLs to enqueue before submitting to the /pages route'), 'Validators')
 
 # Reference data retrieved from HTTP Archive in 06-jan-2014
 Config.define('MAX_IMG_REQUESTS_PER_PAGE', 40,
@@ -113,8 +113,8 @@ Config.define('ACTIVE_REVIEW_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration f
 Config.define('RESPONSE_TIME_AVG_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for each domain average response time'), 'Cache')
 Config.define('VIOLATIONS_BY_CATEGORY_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain violation count by category'), 'Cache')
 Config.define('TOP_CATEGORY_VIOLATIONS_EXPIRATION_IN_SECONDS', 6 * 60, _('Expiration for the cache key for each domain top violation in a category'), 'Cache')
-Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, _('Expiration for the url lock for each url'), 'Cache')
-Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, _('Expiration for the url lock for next jobs'), 'Cache')
+Config.define('URL_LOCK_EXPIRATION_IN_SECONDS', 30, _('Expiration for the URL lock for each URL'), 'Cache')
+Config.define('NEXT_JOB_URL_LOCK_EXPIRATION_IN_SECONDS', 3 * 60, _('Expiration for the URL lock for next jobs'), 'Cache')
 Config.define('NEXT_JOBS_COUNT_EXPIRATION_IN_SECONDS', HOUR, _('Expiration for the cache key for next jobs count'), 'Cache')
 
 materials_expiration_in_seconds = {
@@ -150,19 +150,19 @@ Config.define('MAX_URL_LEVELS', 20, _('Maximum levels of URL'))
 Config.define('GOOGLE_CLIENT_ID', None, _('Google client ID'))
 
 Config.define('LIMITER_LOCKS_EXPIRATION', 120, _('The expiration for locks in the limiter'))
-Config.define('LIMITER_VALUES_CACHE_EXPIRATION', 600, _('The expiration for valus in the limiter'))
+Config.define('LIMITER_VALUES_CACHE_EXPIRATION', 600, _('The expiration for values in the limiter'))
 Config.define('DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS', 5, _('Default number of concurrent connections'), 'Limiter')
 
 Config.define('MOST_COMMON_VIOLATIONS_CACHE_EXPIRATION', 3 * HOUR, _('Expiration for the cache key for the most common violations'), 'Cache')
-Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Limit for the size of the Vilation sample used in the aggregation'), 'Violation Handler')
-Config.define('TOP_CATEGORY_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Size of the sample used in the top vilations of a key category for domains'), 'Domain Handler')
+Config.define('MOST_COMMON_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Limit for the size of the Violation sample used in the aggregation'), 'Violation Handler')
+Config.define('TOP_CATEGORY_VIOLATIONS_SAMPLE_LIMIT', 50000, _('Size of the sample used in the top violations of a key category for domains'), 'Domain Handler')
 
 throttling_message_type = {
     'new-request': 5,
     'new-page': 2,
     'new-review': 2,
 }
-Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, _('Trottling by message type'), 'Event Bus')
+Config.define('EVENT_BUS_THROTTLING_MESSAGE_TYPE', throttling_message_type, _('Throttling by message type'), 'Event Bus')
 
 Config.define('SQLALCHEMY_AUTO_FLUSH', True, _('Defines whether auto-flush should be used in sqlalchemy'))
 
