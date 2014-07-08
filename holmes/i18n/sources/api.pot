@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-06-18 13:57-0300\n"
+"POT-Creation-Date: 2014-07-08 09:35-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,11 +72,11 @@ msgid "Number of days to keep requests"
 msgstr ""
 
 #: holmes/config/__init__.py:38
-msgid "Number of requests for falied responses"
+msgid "Number of requests for failed responses"
 msgstr ""
 
 #: holmes/config/__init__.py:41
-msgid "Number of urls to enqueue before submitting to the /pages route"
+msgid "Number of URLs to enqueue before submitting to the /pages route"
 msgstr ""
 
 #: holmes/config/__init__.py:45
@@ -153,154 +153,154 @@ msgstr ""
 msgid "Commit on request end"
 msgstr ""
 
-#: holmes/config/__init__.py:85 holmes/config/__init__.py:90
-msgid "Redis host"
-msgstr ""
-
-#: holmes/config/__init__.py:86 holmes/config/__init__.py:89
+#: holmes/config/__init__.py:85
 msgid "Redis port"
 msgstr ""
 
-#: holmes/config/__init__.py:87 holmes/config/__init__.py:91
+#: holmes/config/__init__.py:86
+msgid "Redis host"
+msgstr ""
+
+#: holmes/config/__init__.py:87
 msgid "Redis password in case of auth"
 msgstr ""
 
-#: holmes/config/__init__.py:93
+#: holmes/config/__init__.py:89
 msgid "List of required meta tags"
 msgstr ""
 
-#: holmes/config/__init__.py:95
+#: holmes/config/__init__.py:91
 msgid "List of Schema.Org ItemType"
 msgstr ""
 
-#: holmes/config/__init__.py:97
+#: holmes/config/__init__.py:93
 msgid "Force canonical"
 msgstr ""
 
-#: holmes/config/__init__.py:99
+#: holmes/config/__init__.py:95
 msgid "Domain blacklist"
 msgstr ""
 
-#: holmes/config/__init__.py:101
+#: holmes/config/__init__.py:97
 msgid "List of classes to handle errors"
 msgstr ""
 
-#: holmes/config/__init__.py:103
+#: holmes/config/__init__.py:99
 msgid "Class to handle searching"
 msgstr ""
 
-#: holmes/config/__init__.py:105
+#: holmes/config/__init__.py:101
 msgid "ElasticSearch protocol (http|https)"
 msgstr ""
 
-#: holmes/config/__init__.py:106
+#: holmes/config/__init__.py:102
 msgid "ElasticSearch host"
 msgstr ""
 
-#: holmes/config/__init__.py:107
+#: holmes/config/__init__.py:103
 msgid "ElasticSearch port"
 msgstr ""
 
-#: holmes/config/__init__.py:108
+#: holmes/config/__init__.py:104
 msgid "ElasticSearch index name"
 msgstr ""
 
-#: holmes/config/__init__.py:111
+#: holmes/config/__init__.py:107
 msgid "If set to true errors will be sent to sentry."
 msgstr ""
 
-#: holmes/config/__init__.py:112
+#: holmes/config/__init__.py:108
 msgid "URL to use as sentry DSN."
 msgstr ""
 
-#: holmes/config/__init__.py:114
+#: holmes/config/__init__.py:110
 msgid "Expiration for the cache key for each domain page count"
 msgstr ""
 
-#: holmes/config/__init__.py:115 holmes/config/__init__.py:116
+#: holmes/config/__init__.py:111 holmes/config/__init__.py:112
 msgid "Expiration for the cache key for each domain violation count"
 msgstr ""
 
-#: holmes/config/__init__.py:117
+#: holmes/config/__init__.py:113
 msgid "Expiration for the cache key for each domain average response time"
 msgstr ""
 
-#: holmes/config/__init__.py:118
+#: holmes/config/__init__.py:114
 msgid "Expiration for the cache key for each domain violation count by category"
 msgstr ""
 
-#: holmes/config/__init__.py:119
+#: holmes/config/__init__.py:115
 msgid "Expiration for the cache key for each domain top violation in a category"
 msgstr ""
 
-#: holmes/config/__init__.py:120
-msgid ""
-"Limit for the size of the list of top vilations of a key category for a "
-"domain"
+#: holmes/config/__init__.py:116
+msgid "Expiration for the URL lock for each URL"
 msgstr ""
 
-#: holmes/config/__init__.py:121
-msgid "Expiration for the url lock for each url"
+#: holmes/config/__init__.py:117
+msgid "Expiration for the URL lock for next jobs"
 msgstr ""
 
-#: holmes/config/__init__.py:122
-msgid "Expiration for the url lock for next jobs"
-msgstr ""
-
-#: holmes/config/__init__.py:123
+#: holmes/config/__init__.py:118
 msgid "Expiration for the cache key for next jobs count"
 msgstr ""
 
-#: holmes/config/__init__.py:141
+#: holmes/config/__init__.py:140
 msgid "Grace period times for materials"
 msgstr ""
 
-#: holmes/config/__init__.py:143
+#: holmes/config/__init__.py:142
 msgid "Page Score for pages that the user includes through the UI"
 msgstr ""
 
-#: holmes/config/__init__.py:144
+#: holmes/config/__init__.py:143
 msgid "Default tax rate for scoring pages."
 msgstr ""
 
-#: holmes/config/__init__.py:145
+#: holmes/config/__init__.py:144
 msgid "Maximum score of page"
 msgstr ""
 
-#: holmes/config/__init__.py:147
+#: holmes/config/__init__.py:146
 msgid "Expiration in seconds for cache storage of responses."
 msgstr ""
 
-#: holmes/config/__init__.py:149
+#: holmes/config/__init__.py:148
 msgid "Maximum levels of URL"
 msgstr ""
 
-#: holmes/config/__init__.py:151
+#: holmes/config/__init__.py:150
 msgid "Google client ID"
 msgstr ""
 
-#: holmes/config/__init__.py:153
+#: holmes/config/__init__.py:152
 msgid "The expiration for locks in the limiter"
 msgstr ""
 
-#: holmes/config/__init__.py:154
-msgid "The expiration for valus in the limiter"
+#: holmes/config/__init__.py:153
+msgid "The expiration for values in the limiter"
 msgstr ""
 
-#: holmes/config/__init__.py:155
+#: holmes/config/__init__.py:154
 msgid "Default number of concurrent connections"
 msgstr ""
 
-#: holmes/config/__init__.py:157
+#: holmes/config/__init__.py:156
 msgid "Expiration for the cache key for the most common violations"
 msgstr ""
 
+#: holmes/config/__init__.py:157
+msgid "Limit for the size of the Violation sample used in the aggregation"
+msgstr ""
+
 #: holmes/config/__init__.py:158
-msgid "Limit for the size of the Vilation sample used in the aggregation"
+msgid ""
+"Size of the sample used in the top violations of a key category for "
+"domains"
 msgstr ""
 
 #: holmes/config/__init__.py:165
-msgid "Trottling by message type"
+msgid "Throttling by message type"
 msgstr ""
 
 #: holmes/config/__init__.py:167
@@ -352,7 +352,7 @@ msgstr ""
 #: holmes/validators/google_analytics.py:41
 #: holmes/validators/heading_hierarchy.py:31 holmes/validators/image_alt.py:42
 #: holmes/validators/image_alt.py:57
-#: holmes/validators/link_with_rel_canonical.py:24
+#: holmes/validators/link_with_rel_canonical.py:28
 #: holmes/validators/links_with_rel_nofollow.py:27
 #: holmes/validators/meta_robots.py:23 holmes/validators/meta_robots.py:29
 #: holmes/validators/meta_tags.py:36 holmes/validators/open_graph.py:21
@@ -475,7 +475,7 @@ msgstr ""
 #: holmes/handlers/domains.py:48 holmes/handlers/domains.py:55
 #: holmes/handlers/domains.py:97 holmes/handlers/domains.py:123
 #: holmes/handlers/domains.py:150 holmes/handlers/domains.py:187
-#: holmes/handlers/domains.py:224
+#: holmes/handlers/domains.py:226
 #: holmes/handlers/domains_violations_prefs.py:23
 #: holmes/handlers/domains_violations_prefs.py:66 holmes/handlers/request.py:17
 #: holmes/handlers/violation.py:43
@@ -487,8 +487,13 @@ msgstr ""
 msgid "category"
 msgstr ""
 
-#: holmes/handlers/domains.py:201 holmes/handlers/violation.py:20
-msgid "title"
+#: holmes/handlers/domains.py:193
+#, python-format
+msgid "Key category %s not found"
+msgstr ""
+
+#: holmes/handlers/domains.py:203
+msgid "key_nametitle"
 msgstr ""
 
 #: holmes/handlers/domains_violations_prefs.py:76
@@ -508,8 +513,8 @@ msgstr ""
 msgid "Not Found"
 msgstr ""
 
-#: holmes/handlers/page.py:20 holmes/handlers/page.py:82
-#: holmes/handlers/page.py:107 holmes/handlers/review.py:34
+#: holmes/handlers/page.py:20 holmes/handlers/page.py:84
+#: holmes/handlers/page.py:109 holmes/handlers/review.py:34
 #, python-format
 msgid "Page UUID [%s] not found"
 msgstr ""
@@ -532,6 +537,10 @@ msgstr ""
 #: holmes/handlers/request.py:25
 #, python-format
 msgid "Status code %s is not allowed"
+msgstr ""
+
+#: holmes/handlers/violation.py:20
+msgid "title"
 msgstr ""
 
 #: holmes/handlers/violation.py:49 holmes/handlers/violation.py:89
@@ -990,11 +999,11 @@ msgid ""
 "most cases, instead is best to use a 301 permanent redirect."
 msgstr ""
 
-#: holmes/validators/link_with_rel_canonical.py:16
+#: holmes/validators/link_with_rel_canonical.py:20
 msgid "Link with rel=\"canonical\" not found"
 msgstr ""
 
-#: holmes/validators/link_with_rel_canonical.py:17
+#: holmes/validators/link_with_rel_canonical.py:21
 msgid ""
 "As can be seen in this page <a "
 "href=\"https://support.google.com/webmasters/answer/139394?hl=en\">About "
@@ -1002,7 +1011,7 @@ msgid ""
 "urls in the pages for your website."
 msgstr ""
 
-#: holmes/validators/link_with_rel_canonical.py:25
+#: holmes/validators/link_with_rel_canonical.py:29
 msgid ""
 "Validates the absent of link with rel=\"canonical\" on the head of a "
 "page. This indicates the preferred URL to use to access the green dress "
