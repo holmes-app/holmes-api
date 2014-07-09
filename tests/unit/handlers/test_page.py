@@ -79,9 +79,12 @@ class TestPageHandler(ApiTestCase):
         expect(page).not_to_be_null()
         expect(str(page_uuid)).to_equal(page.uuid)
 
+        expect(self.server.application.girl.expire.call_count).to_equal(4)
         self.server.application.girl.assert_has_calls([
             call.expire('domains_details'),
-            call.expire('failed_responses_count')
+            call.expire('failed_responses_count'),
+            call.expire('violation_count_for_domains'),
+            call.expire('top_violations_in_category_for_domains'),
         ])
 
     def test_can_save_known_domain(self):

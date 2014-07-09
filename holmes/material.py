@@ -13,9 +13,16 @@ from holmes.models.request import Request
 from holmes.utils import get_domain_from_url
 
 
+# Materials grouped by domain should be expired bellow, this function is called
+# every time a new domain is added (see holmes/models/page.py:Page.add_domain)
+def expire_materials(girl):
+    girl.expire('domains_details')
+    girl.expire('failed_responses_count')
+    girl.expire('violation_count_for_domains')
+    girl.expire('top_violations_in_category_for_domains')
+
+
 def configure_materials(girl, db, config):
-    # The following material is grouped by domain and should be
-    # expired whenever a new domain is added (see page.py:Page.add_domain)
     girl.add_material(
         'domains_details',
         partial(Domain.get_domains_details, db),
@@ -66,8 +73,6 @@ def configure_materials(girl, db, config):
         config.MATERIALS_GRACE_PERIOD_IN_SECONDS['most_common_violations']
     )
 
-    # The following material is grouped by domain and should be
-    # expired whenever a new domain is added (see page.py:Page.add_domain)
     girl.add_material(
         'failed_responses_count',
         partial(

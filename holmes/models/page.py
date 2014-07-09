@@ -272,6 +272,7 @@ class Page(Base):
         default_violations_values, violation_definitions, cache):
 
         from holmes.models import Domain, DomainsViolationsPrefs
+        from holmes.material import expire_materials
 
         domain_name, domain_url = get_domain_from_url(url)
 
@@ -292,8 +293,7 @@ class Page(Base):
             db.add(domain)
             db.flush()
 
-            girl.expire('domains_details')
-            girl.expire('failed_responses_count')
+            expire_materials(girl)
 
             publish_method(dumps({
                 'type': 'new-domain',
