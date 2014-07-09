@@ -6,12 +6,9 @@ from os.path import abspath, join, dirname
 import logging
 import gettext
 
-try:
-    from tornado import httputil
+from tornado import httputil
+from six.moves.urllib.parse import urlparse
 
-    from six.moves.urllib.parse import urlparse
-except ImportError:
-    logging.warning('Could not import some dependencies. Probably setup.py installing holmes...')
 
 EMPTY_DOMAIN_RESULT = ('', '')
 
