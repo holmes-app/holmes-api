@@ -35,8 +35,11 @@ class Violation(Base):
         value = definition.get('value_parser', lambda val: val)(self.value)
         description = _(definition.get('description', '%s'))
 
-        if ('%s' in description or '%d' in description) and value:
-            description = (description % value)
+        if value:
+            try:
+                description = (description % value)
+            except TypeError:
+                pass
 
         return {
             'key': self.key.name,
