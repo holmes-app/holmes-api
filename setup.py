@@ -65,7 +65,6 @@ Holmes is a service to investigate your website health.
         'pyelasticsearch>=0.6.1,<0.7.0',
         'tornadoes>=2.1.0,<2.2.0',
         'Babel>=1.3,<1.4',
-        'holmesalf>=0.1.2,<0.2.0'
     ],
     extras_require={
         'tests': tests_require,
