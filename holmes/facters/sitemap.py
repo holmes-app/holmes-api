@@ -4,7 +4,6 @@
 import logging
 import re
 import lxml.etree
-import magic
 from cStringIO import StringIO
 from gzip import GzipFile
 
@@ -97,10 +96,11 @@ class SitemapFacter(Facter):
         if response.status_code > 399 or response.text is None or not response.text.strip():
             return
 
-        mime = magic.from_buffer(response.text, mime=True)
-        if 'gzip' in mime:
+        try:
             gzipped = GzipFile(mode='r', fileobj=StringIO(response.text))
             response.text = gzipped.read()
+        except IOError:
+            pass
 
         self.review.facts['total.sitemap.indexes']['value'] += 1
 
