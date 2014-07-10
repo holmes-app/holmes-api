@@ -247,6 +247,43 @@ class TestSitemapFacter(FacterTestCase):
             facter.handle_sitemap_loaded
         )
 
+    def test_gzipeed_sitemap(self):
+        page = PageFactory.create(url="http://g1.globo.com/")
+
+        reviewer = Reviewer(
+            api_url='http://localhost:2368',
+            page_uuid=page.uuid,
+            page_url=page.url,
+            page_score=0.0,
+            config=Config(),
+            validators=[]
+        )
+
+        content = self.get_file('index_sitemap.xml.gz')
+        response = Mock(status_code=200, text=content)
+
+        facter = SitemapFacter(reviewer)
+        facter.async_get = Mock()
+        facter.get_sitemaps = Mock(return_value=['http://g1.globo.com/sitemap.xml.gz'])
+
+        facter.get_facts()
+        facter.async_get = Mock()
+        facter.handle_sitemap_loaded("http://g1.globo.com/sitemap.xml.gz", response)
+
+        expect(facter.review.data['sitemap.files.size']["http://g1.globo.com/sitemap.xml.gz"]).to_equal(0.2607421875)
+        expect(facter.review.data['sitemap.urls']["http://g1.globo.com/sitemap.xml.gz"]).to_equal(set())
+        expect(facter.review.facts['total.size.sitemap']['value']).to_equal(0.2607421875)
+        expect(facter.review.facts['total.size.sitemap.gzipped']['value']).to_equal(0.146484375)
+        expect(facter.review.data['total.size.sitemap']).to_equal(0.2607421875)
+        expect(facter.review.data['total.size.sitemap.gzipped']).to_equal(0.146484375)
+        expect(facter.review.data['sitemap.files.urls']["http://g1.globo.com/sitemap.xml.gz"]).to_equal(2)
+        expect(facter.async_get.call_args_list).to_include(
+            call('http://domain.com/1.xml', facter.handle_sitemap_loaded),
+        )
+        expect(facter.async_get.call_args_list).to_include(
+            call('http://domain.com/2.xml', facter.handle_sitemap_loaded),
+        )
+
     def test_can_get_fact_definitions(self):
         reviewer = Mock()
         facter = SitemapFacter(reviewer)
