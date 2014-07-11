@@ -38,8 +38,6 @@ class AuthenticateHandler(BaseHandler):
         user = yield self.authenticate(provider, access_token)
         if user:
 
-            # http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html
-            # #RegisteredClaimName
             payload = dict(
                 sub=user.email,
                 iss=user.provider,
@@ -61,15 +59,13 @@ class AuthenticateHandler(BaseHandler):
         '''
         Authenticate user with the given access_token on the specific
         provider method. If it returns the user data, try to fetch the user
-        on the database or create user if it doesnt exist and then return
+        on the database or create user if it doesn`t exist and then return
         the user object. Otherwise, returns None, meaning invalid
         authentication parameters.
         '''
 
         if provider == u'GooglePlus':
             oauth_user = yield self.authenticate_on_google(access_token)
-        # elif provider == u'Facebook':
-            # oauth_user = yield self.authenticate_on_facebook(access_token)
         else:
             oauth_user = None
 
@@ -79,7 +75,7 @@ class AuthenticateHandler(BaseHandler):
             if user:
                 user.last_login = datetime.utcnow()
                 db.flush()
-                db.commit()
+                db.commit()  # FIXME, test if commit() is necessary
             else:
                 user = User.add_user(
                     db, oauth_user['fullname'], oauth_user['email'], provider,
@@ -89,11 +85,6 @@ class AuthenticateHandler(BaseHandler):
             user = None
 
         raise gen.Return(user)
-
-    # @gen.coroutine
-    # def authenticate_on_facebook(self, access_token):
-        # logging.info('Authenticating on Facebook...')
-        # pass
 
     @gen.coroutine
     def authenticate_on_google(self, access_token):

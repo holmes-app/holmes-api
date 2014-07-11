@@ -168,4 +168,4 @@ Config.define('SQLALCHEMY_AUTO_FLUSH', True, _('Defines whether auto-flush shoul
 Config.define('DOMAINS_VIOLATIONS_PREFS_EXPIRATION_IN_SECONDS', HOUR, _('Expiration in seconds for domains violations prefs.'), 'Cache')
 
 Config.define('SECRET_KEY', 'set-a-secret-key', _('Secret key to use in JSON Web Token generation'), 'Sessions')
-Config.define('SESSION_EXPIRATION', (60 * 60), _('Time for Session expiration in seconds'), 'Sessions')
+Config.define('SESSION_EXPIRATION', HOUR, _('Time for Session expiration in seconds'), 'Sessions')
