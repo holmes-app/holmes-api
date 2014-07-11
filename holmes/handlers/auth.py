@@ -50,7 +50,7 @@ class AuthenticateHandler(BaseHandler):
             auth_token = self.jwt.encode(payload)
 
             self.set_cookie('HOLMES_AUTH_TOKEN', auth_token)
-            self.write('OK')
+            self.write_json(dict(authenticated=True, first_login=user.first_login))
         else:
             self.set_unauthorized()
 
@@ -76,11 +76,13 @@ class AuthenticateHandler(BaseHandler):
                 user.last_login = datetime.utcnow()
                 db.flush()
                 db.commit()  # FIXME, test if commit() is necessary
+                user.first_login = False
             else:
                 user = User.add_user(
                     db, oauth_user['fullname'], oauth_user['email'], provider,
                     datetime.utcnow()
                 )
+                user.first_login = True
         else:
             user = None
 
