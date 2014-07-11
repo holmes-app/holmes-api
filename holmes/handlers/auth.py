@@ -18,9 +18,9 @@ class AuthenticateHandler(BaseHandler):
         '''
         self.set_status(200)
         if self.is_authenticated()[0]:
-            self.write('true')
+            self.write_json(dict(authenticated=True))
         else:
-            self.write('false')
+            self.write_json(dict(authenticated=False))
 
     @gen.coroutine
     def post(self):
