@@ -134,6 +134,8 @@ class TestViolations(ApiTestCase):
         expect(violations[0]).to_be_like((keys[2].id, 'g0.com', 2))
 
     def test_can_get_group_by_value_for_key(self):
+        self.db.query(Key).delete()
+        self.db.query(Violation).delete()
         keys = [KeyFactory.create(name='random.key.%s' % i) for i in range(3)]
 
         for i in range(3):
