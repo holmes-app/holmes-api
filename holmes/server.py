@@ -112,8 +112,8 @@ class HolmesApiServer(Server):
             ('/last-requests/?', LastRequestsHandler),
             ('/last-requests/status-code/?', LastRequestsStatusCodeHandler),
             ('/last-requests/failed-responses/?', FailedResponsesHandler),
-            ('/version/?', VersionHandler),
-            ('/authenticate/?', AuthenticateHandler),
+            ('/version/?', VersionHandler, dict(is_public=True)),
+            ('/authenticate/?', AuthenticateHandler, dict(is_public=True)),
         ]
 
         return tuple(handlers)

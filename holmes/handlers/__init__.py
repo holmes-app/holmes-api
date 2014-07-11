@@ -18,6 +18,7 @@ class BaseHandler(RequestHandler):
         return self.application.config
 
     def initialize(self, *args, **kw):
+        self.is_public = kw.pop('is_public', False)
         super(BaseHandler, self).initialize(*args, **kw)
 
         locale = self.get_browser_locale()
@@ -50,8 +51,7 @@ class BaseHandler(RequestHandler):
             self.set_unauthorized()
 
     def prepare(self):
-        if self.request.method != 'OPTIONS' and \
-           self.request.uri != '/authenticate':
+        if self.request.method != 'OPTIONS' and not self.is_public:
             self.authenticate_request()
 
     def log_exception(self, typ, value, tb):
