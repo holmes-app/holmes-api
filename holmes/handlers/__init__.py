@@ -8,6 +8,7 @@ from ujson import dumps
 from tornado.web import RequestHandler
 
 from holmes import __version__
+from holmes.models import User
 import holmes.utils as utils
 
 
@@ -24,6 +25,22 @@ class BaseHandler(RequestHandler):
         locale = self.get_browser_locale()
         self._ = utils.install_i18n(locale.code)
         self.jwt = utils.Jwt(self.config.SECRET_KEY)
+
+    def get_authenticated_user(self):
+        authenticated, payload = self.is_authenticated()
+        if authenticated:
+            user_email = payload['sub']
+            user = User.by_email(user_email, self.db)
+            return user
+        else:
+            return None
+
+    def validate_superuser(self):
+        user = self.get_authenticated_user()
+        if not user or not user.is_superuser:
+            self.set_unauthorized()
+            return False
+        return True
 
     def set_unauthorized(self):
         self.set_status(401)

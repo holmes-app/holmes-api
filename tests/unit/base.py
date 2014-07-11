@@ -58,7 +58,7 @@ class ApiTestCase(CowTestCase):
         return app
 
     def get_auth_cookie(
-            self, user_email='user@email.com', provider='provider',
+            self, user_email='simple@user.com', provider='provider',
             token='12345', expiration=datetime(year=5000, month=11, day=30)):
 
         jwt = Jwt(self.server.application.config.SECRET_KEY)
@@ -81,10 +81,10 @@ class ApiTestCase(CowTestCase):
         raise gen.Return(response)
 
     @gen.coroutine
-    def authenticated_fetch(self, url, *args, **kwargs):
+    def authenticated_fetch(self, url, user_email=None, *args, **kwargs):
 
         # ensure that the request has a valid auth token cookie
-        cookie_header = {'Cookie': self.get_auth_cookie()}
+        cookie_header = {'Cookie': self.get_auth_cookie(user_email)}
         if 'headers' in kwargs:
             if kwargs['headers'] and 'Cookie' in kwargs['headers']:
                 cookie_header = {

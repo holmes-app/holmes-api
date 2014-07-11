@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
 from preggy import expect
 from tornado.testing import gen_test
 from tornado.httpclient import HTTPError
 from ujson import loads, dumps
-from mock import Mock
 
 from tests.unit.base import ApiTestCase
 
@@ -32,32 +30,14 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
 
         super(ApiTestCase, self).tearDown()
 
-    def mock_request(self, code, body):
-        def handle(*args, **kw):
-            response_mock = Mock(code=code, body=body)
-            if 'callback' in kw:
-                kw['callback'](response_mock)
-            else:
-                args[-1](response_mock)
-
-        client = Mock()
-        self.server.application.http_client = client
-        client.fetch.side_effect = handle
-
     @gen_test
     def test_can_get_prefs_for_invalid_domain(self):
         try:
-            user = UserFactory()
-            user_data = dumps(user.to_dict())
-
-            self.mock_request(code=200, body=user_data)
-
             yield self.authenticated_fetch('/domains/blah.com/violations-prefs/')
-        except HTTPError:
-            err = sys.exc_info()[1]
-            expect(err).not_to_be_null()
-            expect(err.code).to_equal(404)
-            expect(err.response.reason).to_equal('Domain blah.com not found')
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(404)
+            expect(e.response.reason).to_equal('Domain blah.com not found')
 
     @gen_test
     def test_can_get_prefs(self):
@@ -131,11 +111,11 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
         expect(loads(response.body)).to_length(0)
 
     @gen_test
-    def test_can_save_prefs_with_access_token(self):
+    def test_can_save_prefs_as_superuser(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='superuser@user.com', is_superuser=True)
         domain = DomainFactory.create(name='globo.com')
-
         key = KeyFactory.create(name='some.random')
-
         DomainsViolationsPrefsFactory.create(domain=domain, key=key, value=100)
 
         loaded_prefs = DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain.name)
@@ -145,13 +125,9 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
             'key': 'some.random'
         })
 
-        user = UserFactory()
-        user_data = dumps(user.to_dict())
-
-        self.mock_request(code=200, body=user_data)
-
         yield self.authenticated_fetch(
             '/domains/%s/violations-prefs/' % domain.name,
+            user_email=user.email,
             method='POST',
             body=dumps([
                 {'key': 'some.random', 'value': 10},
@@ -166,28 +142,99 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
         })
 
     @gen_test
-    def test_can_save_prefs_for_invalid_domain(self):
-        user = UserFactory()
-        user_data = dumps(user.to_dict())
+    def test_cant_save_prefs_as_normal_user(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='normalser@user.com', is_superuser=False)
+        domain = DomainFactory.create(name='globo.com')
+        key = KeyFactory.create(name='some.random')
+        DomainsViolationsPrefsFactory.create(domain=domain, key=key, value=100)
 
-        self.mock_request(code=200, body=user_data)
+        loaded_prefs = DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain.name)
+        expect(loaded_prefs).to_length(1)
+        expect(loaded_prefs[0]).to_be_like({
+            'value': 100,
+            'key': 'some.random'
+        })
 
         try:
             yield self.authenticated_fetch(
-                '/domains/blah.com/violations-prefs/',
+                '/domains/%s/violations-prefs/' % domain.name,
+                user_email=user.email,
                 method='POST',
                 body=dumps([
                     {'key': 'some.random', 'value': 10},
                 ])
             )
-        except HTTPError:
-            err = sys.exc_info()[1]
-            expect(err).not_to_be_null()
-            expect(err.code).to_equal(404)
-            expect(err.response.reason).to_equal('Domain blah.com not found')
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_be_like('Unauthorized')
+        else:
+            assert False, 'Should not have got this far'
+
+        loaded_prefs = DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain.name)
+        expect(loaded_prefs).to_length(1)
+        expect(loaded_prefs[0]).to_be_like({
+            'value': 100,
+            'key': 'some.random'
+        })
 
     @gen_test
-    def test_can_save_prefs_without_access_token(self):
+    def test_cant_save_prefs_as_anonymous_user(self):
+        domain = DomainFactory.create(name='globo.com')
+        key = KeyFactory.create(name='some.random')
+        DomainsViolationsPrefsFactory.create(domain=domain, key=key, value=100)
+
+        loaded_prefs = DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain.name)
+        expect(loaded_prefs).to_length(1)
+        expect(loaded_prefs[0]).to_be_like({
+            'value': 100,
+            'key': 'some.random'
+        })
+
+        try:
+            yield self.anonymous_fetch(
+                '/domains/%s/violations-prefs/' % domain.name,
+                method='POST',
+                body=dumps([
+                    {'key': 'some.random', 'value': 10},
+                ])
+            )
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_be_like('Unauthorized')
+        else:
+            assert False, 'Should not have got this far'
+
+        loaded_prefs = DomainsViolationsPrefs.get_domains_violations_prefs_by_domain(self.db, domain.name)
+        expect(loaded_prefs).to_length(1)
+        expect(loaded_prefs[0]).to_be_like({
+            'value': 100,
+            'key': 'some.random'
+        })
+
+    @gen_test
+    def test_can_save_prefs_for_invalid_domain_as_superuser(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='superuser@user.com', is_superuser=True)
+
+        try:
+            yield self.authenticated_fetch(
+                '/domains/blah.com/violations-prefs/',
+                method='POST',
+                user_email=user.email,
+                body=dumps([
+                    {'key': 'some.random', 'value': 10},
+                ])
+            )
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(404)
+            expect(e.response.reason).to_equal('Domain blah.com not found')
+
+    @gen_test
+    def test_cant_save_prefs_as_anonymous_user(self):
         try:
             yield self.anonymous_fetch(
                 '/domains/blah.com/violations-prefs/',
@@ -196,31 +243,44 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
                     {'key': 'some.random', 'value': 10},
                 ])
             )
-        except HTTPError:
-            err = sys.exc_info()[1]
-            expect(err).not_to_be_null()
-            expect(err.code).to_equal(401)
-            expect(err.response.reason).to_equal('Unauthorized')
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_equal('Unauthorized')
 
     @gen_test
-    def test_can_save_prefs_with_not_authorized_user(self):
-        # TODO: this test need an refactory on the User business model
-        # we need to provide a @decorator to handlers get/post/etc functions
-        # to check user permissions, and then can test something like that
-        pass
-        #try:
-            #yield self.anonymous_fetch(
-                #'/domains/blah.com/violations-prefs/',
-                #method='POST',
-                #body=dumps([
-                    #{'key': 'some.random', 'value': 10},
-                #])
-            #)
-        #except HTTPError:
-            #err = sys.exc_info()[1]
-            #expect(err).not_to_be_null()
-            #expect(err.code).to_equal(401)
-            #expect(err.response.reason).to_be_like('Unauthorized')
-            #expect(err.response.body).to_be_like('Unauthorized')
-        #else:
-            #assert False, 'Should not have got this far'
+    def test_cant_save_prefs_with_invalid_cookie(self):
+        try:
+            yield self.http_client.fetch(
+                self.get_url('/domains/blah.com/violations-prefs/'),
+                method='POST',
+                body=dumps([
+                    {'key': 'some.random', 'value': 10},
+                ]),
+                headers={'Cookie': 'HOLMES_AUTH_TOKEN=INVALID'}
+            )
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_equal('Unauthorized')
+
+    @gen_test
+    def test_can_save_prefs_as_normal_user(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='normaluser@user.com', is_superuser=False)
+        try:
+            yield self.authenticated_fetch(
+                '/domains/blah.com/violations-prefs/',
+                method='POST',
+                user_email=user.email,
+                body=dumps([
+                    {'key': 'some.random', 'value': 10},
+                ])
+            )
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_be_like('Unauthorized')
+            expect(e.response.body).to_be_like('Unauthorized')
+        else:
+            assert False, 'Should not have got this far'

@@ -50,6 +50,9 @@ class DomainsViolationsPrefsHandler(BaseHandler):
 
     @gen.coroutine
     def post(self, domain_name):
+        if not self.validate_superuser():
+            return
+
         domain = Domain.get_domain_by_name(domain_name, self.db)
 
         if not domain:

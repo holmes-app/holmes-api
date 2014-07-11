@@ -1,19 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-from datetime import datetime
 from preggy import expect
 from tornado.testing import gen_test
 from tornado import gen
 from tornado.httpclient import HTTPError
-from ujson import loads, dumps
+from ujson import dumps
 from mock import Mock, patch
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import LimiterFactory, UserFactory
+from tests.fixtures import UserFactory
 
-from holmes.models import Limiter, User
+from holmes.models import User
 from holmes.handlers.auth import AuthenticateHandler
 
 
@@ -23,13 +21,13 @@ class TestAuthenticateHandler(ApiTestCase):
     def test_can_verify_authenticated_request(self):
         response = yield self.authenticated_fetch('/authenticate')
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('true')
+        expect(response.body).to_equal('{"authenticated":true}')
 
     @gen_test
     def test_can_verify_not_authenticated_request(self):
         response = yield self.anonymous_fetch('/authenticate')
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('false')
+        expect(response.body).to_equal('{"authenticated":false}')
 
     @gen_test
     def test_cannot_authenticate_a_user_with_invalid_google_plus_token(self):

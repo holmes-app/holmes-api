@@ -41,6 +41,9 @@ class LimiterHandler(BaseHandler):
 
     @coroutine
     def post(self):
+        if not self.validate_superuser():
+            return
+
         post_data = loads(self.request.body)
         url = post_data.get('url', None)
         connections = self.application.config.DEFAULT_NUMBER_OF_CONCURRENT_CONNECTIONS
@@ -59,11 +62,13 @@ class LimiterHandler(BaseHandler):
 
     @coroutine
     def delete(self, limiter_id=None):
+        if not self.validate_superuser():
+            return
+
         if not limiter_id:
             self.set_status(400)
             self.write_json({'reason': 'Invalid data', 'description': self._('Invalid data')})
             return
-
 
         limiter = Limiter.by_id(limiter_id, self.db)
 
