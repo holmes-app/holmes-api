@@ -1,4 +1,4 @@
-test: elasticsearch redis_test drop_test data_test elasticsearch_drop_test elasticsearch_setup_test unit integration kill_run
+test: validate_elasticsearch elasticsearch redis_test drop_test data_test validate_elasticsearch_running elasticsearch_drop_test elasticsearch_setup_test unit integration kill_run
 
 unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
@@ -13,9 +13,15 @@ integration: kill_run run_daemon
 tox:
 	@PATH=$$PATH:~/.pythonbrew/pythons/Python-2.6.*/bin/:~/.pythonbrew/pythons/Python-2.7.*/bin/ tox
 
-setup:
+setup: validate_elasticsearch
 	@gem install crowdin-cli
 	@pip install -U -e .\[tests\]
+
+validate_elasticsearch:
+	@if [[ "`which elasticsearch`" == "" ]]; then echo "\nERROR:\n\nElasticSearch was not found. Please install it before running holmes tests.\n" && exit 1; fi
+
+validate_elasticsearch_running:
+	@if [[ "`curl -sv http://localhost:9200/ 2>&1 | grep 'Connection refused'`" != "" ]]; then echo "\nERROR:\n\nElasticSearch must be running. Please make sure you can run it before running holmes tests (Do you have the latest JDK installed? JRE is not enough for ElasticSearch).\n" && exit 1; fi
 
 kill_redis:
 	-redis-cli -p 7575 shutdown
@@ -60,7 +66,7 @@ kill_elasticsearch:
 	-@pkill -F elasticsearch.pid
 
 elasticsearch: kill_elasticsearch
-	elasticsearch -d -p elasticsearch.pid
+	@elasticsearch -d -p elasticsearch.pid
 
 elasticsearch_setup:
 	@python holmes/search_providers/elastic.py -vv -c ./holmes/config/local.conf --create
