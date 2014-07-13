@@ -16,6 +16,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 import logging
+import time
 
 
 class ElasticSearchProvider(SearchProvider):
@@ -107,12 +108,19 @@ class ElasticSearchProvider(SearchProvider):
         }
 
     def index_review(self, review):
-        self.syncES.send_request(
-            method='POST',
-            path_components=[self.index, 'review', review.page_id],
-            body=dumps(self.gen_doc(review)),
-            encode_body=False
-        )
+        for _ in range(3):
+            try:
+                self.syncES.send_request(
+                    method='POST',
+                    path_components=[self.index, 'review', review.page_id],
+                    body=dumps(self.gen_doc(review)),
+                    encode_body=False
+                )
+                break
+            except Exception as e:
+                values = review.id, review.page_id, str(e)
+                logging.error('Could not index review (review_id:{0}, page_id:{1}): {2}'.format(*values))
+                time.sleep(1)
 
     def index_reviews(self, reviewd_pages, reviews_count, batch_size):
         action = {'index': {'_type': 'review'}}
@@ -144,30 +152,36 @@ class ElasticSearchProvider(SearchProvider):
     def get_by_violation_key_name(self, key_id, current_page=1, page_size=10, domain=None, page_filter=None, callback=None):
         def treat_response(response):
             if response.error is None:
-                hits = loads(response.body).get('hits', {'hits': []})
+                try:
+                    hits = loads(response.body).get('hits', {'hits': []})
 
-                reviews_data = []
-                for hit in hits['hits']:
-                    completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
-                    reviews_data.append({
-                        'uuid': hit['_source']['uuid'],
-                        'page': {
-                            'uuid': hit['_source']['page_uuid'],
-                            'url': hit['_source']['page_url'],
-                            'completedAt': completedAt
-                        },
-                        'domain': hit['_source']['domain_name']
+                    reviews_data = []
+                    for hit in hits['hits']:
+                        completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
+                        reviews_data.append({
+                            'uuid': hit['_source']['uuid'],
+                            'page': {
+                                'uuid': hit['_source']['page_uuid'],
+                                'url': hit['_source']['page_url'],
+                                'completedAt': completedAt
+                            },
+                            'domain': hit['_source']['domain_name']
+                        })
+
+                    reviews_count = hits.get('total', 0)
+
+                    callback({
+                        'reviews': reviews_data,
+                        'reviewsCount': reviews_count
                     })
-
-                reviews_count = hits.get('total', 0)
-
-                callback({
-                    'reviews': reviews_data,
-                    'reviewsCount': reviews_count
-                })
+                except Exception as e:
+                    reason = 'ElasticSearchProvider: invalid response (%s [%s])' % (type(e), e.message)
+                    logging.error(reason)
+                    callback({'error': {'status_code': 500, 'reason': reason}})
             else:
-                logging.error('ElasticSearchProvider error: %s (%s)' % (response.error.message, response.body))
-                raise response.error
+                reason = 'ElasticSearchProvider: erroneous response (%s [%s])' % (response.error.message, response.body)
+                logging.error(reason)
+                callback({'error': {'status_code': 500, 'reason': reason}})
 
         inner_query = self._assemble_inner_query(domain, page_filter)
         filter_terms = self._assemble_filter_terms(key_id, domain)
@@ -199,28 +213,34 @@ class ElasticSearchProvider(SearchProvider):
     def get_domain_active_reviews(self, domain, current_page=1, page_size=10, page_filter=None, callback=None):
         def treat_response(response):
             if response.error is None:
-                hits = loads(response.body).get('hits', {'hits': []})
+                try:
+                    hits = loads(response.body).get('hits', {'hits': []})
 
-                pages = []
-                for hit in hits['hits']:
-                    completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
-                    pages.append({
-                        'url': hit['_source']['page_url'],
-                        'uuid': hit['_source']['page_uuid'],
-                        'violationCount': len(hit['_source']['keys']),
-                        'completedAt': completedAt,
-                        'reviewId': hit['_source']['uuid']
+                    pages = []
+                    for hit in hits['hits']:
+                        completedAt = datetime.utcfromtimestamp(hit['_source']['completed_date'])
+                        pages.append({
+                            'url': hit['_source']['page_url'],
+                            'uuid': hit['_source']['page_uuid'],
+                            'violationCount': len(hit['_source']['keys']),
+                            'completedAt': completedAt,
+                            'reviewId': hit['_source']['uuid']
+                        })
+
+                    reviews_count = hits.get('total', 0)
+
+                    callback({
+                        'reviewsCount': reviews_count,
+                        'pages': pages
                     })
-
-                reviews_count = hits.get('total', 0)
-
-                callback({
-                    'reviewsCount': reviews_count,
-                    'pages': pages
-                })
+                except Exception as e:
+                    reason = 'ElasticSearchProvider: invalid response (%s [%s])' % (type(e), e.message)
+                    logging.error(reason)
+                    callback({'error': {'status_code': 500, 'reason': reason}})
             else:
-                logging.error('ElasticSearchProvider error: %s' % response.error.message)
-                raise response.error
+                reason = 'ElasticSearchProvider: erroneous response (%s [%s])' % (response.error.message, response.body)
+                logging.error(reason)
+                callback({'error': {'status_code': 500, 'reason': reason}})
 
         inner_query = self._assemble_inner_query(domain=domain, page_filter=page_filter)
         filter_terms = self._assemble_filter_terms(domain=domain)
@@ -249,7 +269,10 @@ class ElasticSearchProvider(SearchProvider):
         )
 
     def refresh(self):
-        self.syncES.refresh(index=self.index)
+        try:
+            self.syncES.refresh(index=self.index)
+        except Exception as e:
+            logging.error('Could not refresh index (%s)' % e)
 
     def get_index_settings(cls):
         return {

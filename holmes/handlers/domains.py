@@ -130,6 +130,11 @@ class DomainReviewsHandler(BaseHandler):
             page_filter=term,
         )
 
+        if 'error' in reviews:
+            self.set_status(reviews['error']['status_code'], reviews['error']['reason'])
+            self.finish()
+            return
+
         if 'reviewsCount' not in reviews:
             if not term:
                 reviews['reviewsCount'] = yield self.cache.get_active_review_count(domain)

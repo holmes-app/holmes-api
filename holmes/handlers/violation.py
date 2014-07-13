@@ -61,6 +61,11 @@ class ViolationHandler(BaseHandler):
             page_filter=page_filter,
         )
 
+        if 'error' in violation:
+            self.set_status(violation['error']['status_code'], violation['error']['reason'])
+            self.finish()
+            return
+
         if 'reviewsCount' not in violation:
             if not domain and not page_filter:
                 violation['reviewsCount'] = Review.count_by_violation_key_name(self.db, key_id)
