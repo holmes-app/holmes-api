@@ -122,13 +122,13 @@ class ElasticSearchProvider(SearchProvider):
                 logging.error('Could not index review (review_id:{0}, page_id:{1}): {2}'.format(*values))
                 time.sleep(1)
 
-    def index_reviews(self, reviewd_pages, reviews_count, batch_size):
+    def index_reviews(self, reviewed_pages, reviews_count, batch_size):
         action = {'index': {'_type': 'review'}}
 
         for i in range(0, reviews_count, batch_size):
             body_bits = []
 
-            for page in reviewd_pages[i:i + batch_size]:
+            for page in reviewed_pages[i:i + batch_size]:
                 doc = self.gen_doc(page.last_review)
 
                 action['index']['_id'] = doc['page_id']
@@ -403,11 +403,11 @@ class ElasticSearchProvider(SearchProvider):
         reviews_count = apply_filters(self.db.query(func.count(Page))).scalar()
 
         query = self.db.query(Page).options(joinedload('last_review'))
-        reviewd_pages = apply_filters(query).order_by(Page.id.asc())
+        reviewed_pages = apply_filters(query).order_by(Page.id.asc())
 
         logging.info('Indexing %d reviews...' % reviews_count)
 
-        self.index_reviews(reviewd_pages, reviews_count, batch_size)
+        self.index_reviews(reviewed_pages, reviews_count, batch_size)
 
     @classmethod
     def new_instance(cls, config):
