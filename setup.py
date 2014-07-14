@@ -61,7 +61,7 @@ Holmes is a service to investigate your website health.
         'toredis>=0.1.2,<0.2.0',
         'raven>=4.1.1,<4.2.0',
         'rotunicode>=1.0.1,<1.1.0',
-        'materialgirl>=0.5.1,<0.6.0',
+        'materialgirl>=0.5.2,<0.6.0',
         'pyelasticsearch>=0.6.1,<0.7.0',
         'tornadoes>=2.1.0,<2.2.0',
         'Babel>=1.3,<1.4',
