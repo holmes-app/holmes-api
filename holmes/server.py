@@ -28,9 +28,6 @@ from holmes.handlers.domains import (
 from holmes.handlers.search import (
     SearchHandler
 )
-from holmes.handlers.settings import (
-    TaxHandler
-)
 from holmes.handlers.request import (
     RequestDomainHandler, LastRequestsHandler, FailedResponsesHandler,
     LastRequestsStatusCodeHandler
@@ -109,7 +106,6 @@ class HolmesApiServer(Server):
             ('/violations/?', ViolationsHandler),
             ('/violation/(%s)/?' % key_name_regex, ViolationHandler),
             ('/violation/(%s)/domains/?' % key_name_regex, ViolationDomainsHandler),
-            ('/tax/?', TaxHandler),
             ('/limiters/?', LimiterHandler),
             ('/limiters/(%s)/?' % numbers_regex, LimiterHandler),
             ('/next-jobs/?', NextJobHandler),
