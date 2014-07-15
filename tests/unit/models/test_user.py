@@ -1,14 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from mock import Mock, patch
+from mock import Mock
 from datetime import datetime
-from ujson import dumps, loads
 
 from preggy import expect
-from tornado.testing import gen_test
 
-from holmes.config import Config
 from holmes.models import User
 from tests.unit.base import ApiTestCase
 from tests.fixtures import UserFactory
