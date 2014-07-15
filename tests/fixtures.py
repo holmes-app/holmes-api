@@ -195,6 +195,7 @@ class UserFactory(BaseFactory):
     email = 'marcelo.vieira@corp.globo.com'
     is_superuser = True
     last_login = datetime.datetime(2013, 12, 11, 10, 9, 8)
+    locale = 'en_US'
 
 
 class LimiterFactory(BaseFactory):

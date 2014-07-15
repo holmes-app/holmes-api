@@ -37,6 +37,7 @@ from holmes.handlers.domains_violations_prefs import (
     DomainsViolationsPrefsHandler
 )
 from holmes.handlers.users_violations_prefs import UsersViolationsPrefsHandler
+from holmes.handlers.users import UserLocaleHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus
@@ -116,6 +117,7 @@ class HolmesApiServer(Server):
             ('/version/?', VersionHandler, dict(is_public=True)),
             ('/authenticate/?', AuthenticateHandler, dict(is_public=True)),
             ('/users/violations-prefs/?', UsersViolationsPrefsHandler),
+            ('/users/locale/?', UserLocaleHandler),
         ]
 
         return tuple(handlers)

@@ -21,6 +21,7 @@ class User(Base):
         default=False
     )
     last_login = sa.Column('last_login', sa.DateTime, nullable=True)
+    locale = sa.Column('locale', sa.String(10), nullable=True)
 
     violations_prefs = relationship('UsersViolationsPrefs', backref='user')
 
@@ -29,7 +30,8 @@ class User(Base):
             'fullname': self.fullname,
             'email': self.email,
             'is_superuser': bool(self.is_superuser),
-            'last_login': self.last_login
+            'last_login': self.last_login,
+            'locale': self.locale,
         }
 
     def __str__(self):
@@ -49,3 +51,9 @@ class User(Base):
         db.add(user)
         db.flush()
         return user
+
+    @classmethod
+    def update_locale(cls, db, user, locale):
+        db \
+            .query(User).filter(User.id == user.id) \
+            .update({'locale': locale})

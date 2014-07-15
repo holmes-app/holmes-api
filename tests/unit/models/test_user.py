@@ -56,3 +56,16 @@ class TestUser(ApiTestCase):
 
         invalid_user = User.by_email('blah@corp.globo.com', self.db)
         expect(invalid_user).to_be_null()
+
+    def test_can_update_locale(self):
+        user = UserFactory.create(locale='es_ES')
+
+        loaded_user = User.by_email(user.email, self.db)
+        expect(loaded_user.id).to_equal(user.id)
+        expect(loaded_user.locale).to_equal('es_ES')
+
+        User.update_locale(self.db, user, 'pt_BR')
+
+        loaded_user = User.by_email(user.email, self.db)
+        expect(loaded_user.id).to_equal(user.id)
+        expect(loaded_user.locale).to_equal('pt_BR')
