@@ -8,6 +8,9 @@ from holmes.models.page import Page
 from holmes.models.violation import Violation
 
 from pyelasticsearch import ElasticSearch
+from pyelasticsearch.exceptions import (
+    Timeout, ConnectionError, ElasticHttpError, InvalidJsonResponseError
+)
 from tornado.concurrent import return_future
 from tornadoes import ESConnection
 from ujson import loads, dumps
@@ -35,6 +38,7 @@ class ElasticSearchProvider(SearchProvider):
             protocol=config.get('ELASTIC_SEARCH_PROTOCOL'),
         )
         self.index = config.get('ELASTIC_SEARCH_INDEX')
+        self.max_retries = config.get('ELASTIC_SEARCH_MAX_RETRIES')
 
     def activate_debug(self):
         self.debug = True
@@ -108,7 +112,7 @@ class ElasticSearchProvider(SearchProvider):
         }
 
     def index_review(self, review):
-        for _ in range(3):
+        for attempt in range(self.max_retries):
             try:
                 self.syncES.send_request(
                     method='POST',
@@ -117,10 +121,14 @@ class ElasticSearchProvider(SearchProvider):
                     encode_body=False
                 )
                 break
-            except Exception as e:
+            except (Timeout, ConnectionError, ElasticHttpError, InvalidJsonResponseError) as e:
                 values = review.id, review.page_id, str(e)
                 logging.error('Could not index review (review_id:{0}, page_id:{1}): {2}'.format(*values))
                 time.sleep(1)
+                if attempt >= self.max_retries - 1:
+                    raise
+            else:
+                raise
 
     def index_reviews(self, reviewed_pages, reviews_count, batch_size):
         action = {'index': {'_type': 'review'}}

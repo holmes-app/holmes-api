@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 from datetime import datetime
-from mock import Mock, patch
+from mock import Mock, patch, call
 from preggy import expect
-from pyelasticsearch import InvalidJsonResponseError
+from pyelasticsearch.exceptions import ConnectionError, ElasticHttpNotFoundError, InvalidJsonResponseError
 from tornado.concurrent import Future
 from tornado.testing import gen_test
 
 from holmes.search_providers.elastic import ElasticSearchProvider
 
 from tests.unit.base import ApiTestCase
-from tests.fixtures import ReviewFactory, PageFactory, DomainFactory
+from tests.fixtures import ReviewFactory
 
 
 class TestElasticSearchProvider(ApiTestCase):
@@ -22,6 +24,12 @@ class TestElasticSearchProvider(ApiTestCase):
         self.index = self.config.get('ELASTIC_SEARCH_INDEX')
         self.ES = ElasticSearchProvider(self.config, self.db)
         self.ES.activate_debug()
+        self.exception_generator = self.create_exception_generator()
+
+    def create_exception_generator(self):
+        yield ConnectionError('ConnectionError')
+        yield ElasticHttpNotFoundError('ElasticHttpNotFoundError')
+        yield InvalidJsonResponseError('InvalidJsonResponseError')
 
     def mkfuture(self, result):
         future = Future()
@@ -117,8 +125,8 @@ class TestElasticSearchProvider(ApiTestCase):
 
         expect(doc).to_be_like(expected)
 
-    @patch('logging.error')
     @patch('time.sleep')
+    @patch('logging.error')
     def test_can_index_review(self, logging_error_mock, time_sleep_mock):
         self.ES.gen_doc = Mock(return_value=0)
         self.ES.syncES = Mock(send_request=Mock())
@@ -140,21 +148,25 @@ class TestElasticSearchProvider(ApiTestCase):
         expect(logging_error_mock.called).to_be_false()
         expect(time_sleep_mock.called).to_be_false()
 
-    @patch('logging.error')
     @patch('time.sleep')
-    def test_try_index_review_up_to_three_times(self, logging_error_mock, time_sleep_mock):
+    @patch('logging.error')
+    def test_try_index_review_up_to_three_times_and_raise_known_exceptions(self, logging_error_mock, time_sleep_mock):
 
         def exception_raiser(*args, **kwargs):
-            raise InvalidJsonResponseError(
-                'Invalid JSON returned from ES: <Response [504]>'
-            )
+            raise next(self.exception_generator)
 
         self.ES.gen_doc = Mock(return_value=0)
         self.ES.syncES = Mock(send_request=Mock(side_effect=exception_raiser))
 
-        review = Mock(page_id=0)
+        review = Mock(id=0, page_id=0)
 
-        self.ES.index_review(review)
+        try:
+            self.ES.index_review(review)
+        except:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of('InvalidJsonResponseError')
+        else:
+            assert False, 'Should not have gotten this far'
 
         expect(self.ES.gen_doc.call_count).to_equal(3)
         expect(self.ES.syncES.send_request.call_count).to_equal(3)
@@ -167,6 +179,44 @@ class TestElasticSearchProvider(ApiTestCase):
 
         expect(logging_error_mock.call_count).to_equal(3)
         expect(time_sleep_mock.call_count).to_equal(3)
+
+        logging_error_mock.assert_has_calls([
+            call('Could not index review (review_id:0, page_id:0): ConnectionError'),
+            call('Could not index review (review_id:0, page_id:0): ElasticHttpNotFoundError'),
+            call('Could not index review (review_id:0, page_id:0): InvalidJsonResponseError')
+        ])
+
+    @patch('time.sleep')
+    @patch('logging.error')
+    def test_try_index_review_just_once_and_raise_other_exceptions(self, logging_error_mock, time_sleep_mock):
+
+        def exception_raiser(*args, **kwargs):
+            raise AttributeError('AttributeError')
+
+        self.ES.gen_doc = Mock(return_value=0)
+        self.ES.syncES = Mock(send_request=Mock(side_effect=exception_raiser))
+
+        review = Mock(id=0, page_id=0)
+
+        try:
+            self.ES.index_review(review)
+        except:
+            err = sys.exc_info()[1]
+            expect(err).to_have_an_error_message_of('AttributeError')
+        else:
+            assert False, 'Should not have gotten this far'
+
+        expect(self.ES.gen_doc.call_count).to_equal(1)
+        expect(self.ES.syncES.send_request.call_count).to_equal(1)
+        self.ES.syncES.send_request.assert_called_with(
+            method='POST',
+            path_components=[self.index, 'review', 0],
+            body='0',
+            encode_body=False
+        )
+
+        expect(logging_error_mock.call_count).to_equal(0)
+        expect(time_sleep_mock.call_count).to_equal(0)
 
     def test_can_index_reviews(self):
         expected_body = '{"index":{"_type":"review","_id":0}}\n{"page_id":0}\n' * 5
