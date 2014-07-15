@@ -46,6 +46,7 @@ Holmes is a service to investigate your website health.
     include_package_data=True,
     install_requires=[
         'derpconf>=0.6.0,<0.7.0',
+        'tornado>=3.2.2,<3.3.0',
         'cow-framework>=0.8.0,<0.9.0',
         'ujson>=1.33,<1.34.0',
         'requests>=2.2.1,<2.3.0',
