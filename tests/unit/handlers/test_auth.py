@@ -18,16 +18,40 @@ from holmes.handlers.auth import AuthenticateHandler
 class TestAuthenticateHandler(ApiTestCase):
 
     @gen_test
-    def test_can_verify_authenticated_request(self):
+    def test_can_verify_authenticated_request_with_inexistent_user(self):
         response = yield self.authenticated_fetch('/authenticate')
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('{"authenticated":true}')
+        response_body = loads(response.body)
+        expect(response_body['authenticated']).to_be_false()
+        expect(response_body['isSuperUser']).to_be_false()
+
+    @gen_test
+    def test_can_verify_authenticated_request_as_valid_user(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='test@test.com', is_superuser=False)
+        response = yield self.authenticated_fetch('/authenticate', user_email=user.email)
+        expect(response.code).to_equal(200)
+        response_body = loads(response.body)
+        expect(response_body['authenticated']).to_be_true()
+        expect(response_body['isSuperUser']).to_be_false()
 
     @gen_test
     def test_can_verify_not_authenticated_request(self):
         response = yield self.anonymous_fetch('/authenticate')
         expect(response.code).to_equal(200)
-        expect(response.body).to_equal('{"authenticated":false}')
+        response_body = loads(response.body)
+        expect(response_body['authenticated']).to_be_false()
+        expect(response_body['isSuperUser']).to_be_false()
+
+    @gen_test
+    def test_can_verify_authenticated_request_as_superuser(self):
+        self.db.query(User).delete()
+        user = UserFactory(email='test@test.com', is_superuser=True)
+        response = yield self.authenticated_fetch('/authenticate', user_email=user.email)
+        expect(response.code).to_equal(200)
+        response_body = loads(response.body)
+        expect(response_body['authenticated']).to_be_true()
+        expect(response_body['isSuperUser']).to_be_true()
 
     @gen_test
     def test_cannot_authenticate_a_user_with_invalid_google_plus_token(self):

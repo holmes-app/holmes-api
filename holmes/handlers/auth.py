@@ -17,10 +17,15 @@ class AuthenticateHandler(BaseHandler):
         Only returns true or false if is a valid authenticated request
         '''
         self.set_status(200)
-        if self.is_authenticated()[0]:
-            self.write_json(dict(authenticated=True))
+        user = self.get_authenticated_user()
+        if user:
+            self.write_json({
+                'authenticated': True, 'isSuperUser': user.is_superuser
+            })
         else:
-            self.write_json(dict(authenticated=False))
+            self.write_json({
+                'authenticated': False, 'isSuperUser': False
+            })
 
     @gen.coroutine
     def post(self):

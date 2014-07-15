@@ -40,6 +40,15 @@ class TestDomainsViolationsPrefsHandler(ApiTestCase):
             expect(e.response.reason).to_equal('Domain blah.com not found')
 
     @gen_test
+    def test_cant_get_prefs_as_anonymous_user(self):
+        try:
+            yield self.anonymous_fetch('/domains/blah.com/violations-prefs/')
+        except HTTPError, e:
+            expect(e).not_to_be_null()
+            expect(e.code).to_equal(401)
+            expect(e.response.reason).to_equal('Unauthorized')
+
+    @gen_test
     def test_can_get_prefs(self):
         domain = DomainFactory.create(name='globo.com')
 
