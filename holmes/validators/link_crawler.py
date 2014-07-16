@@ -52,7 +52,7 @@ class LinkCrawlerValidator(Validator):
                 'category': _('HTTP'),
                 'generic_description': _(
                     'Validates links that uses a 302 or 307 redirect. '
-                    'In this cases, it passes 0%% of link juice (ranking '
+                    'In this cases, it passes 0% of link juice (ranking '
                     'power) and, in most cases, should not be used. Use of '
                     '301 is recommended.'
                 )
