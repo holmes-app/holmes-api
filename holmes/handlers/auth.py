@@ -30,7 +30,7 @@ class AuthenticateHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         '''
-        Try to authenticate user if the provider and access_token POST data.
+        Try to authenticate user with the provider and access_token POST data.
         If the `self.authenticate` method returns the user, create a JSON
         Web Token (JWT) and set a `HOLMES_AUTH_TOKEN` cookie with the encoded
         value. Otherwise returns a unauthorized request.
