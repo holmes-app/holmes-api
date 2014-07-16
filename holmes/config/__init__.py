@@ -102,7 +102,7 @@ Config.define('ELASTIC_SEARCH_HOST', 'localhost', _('ElasticSearch host'), 'Elas
 Config.define('ELASTIC_SEARCH_PORT', 9200, _('ElasticSearch port'), 'ElasticSearchProvider')
 Config.define('ELASTIC_SEARCH_INDEX', 'holmes', _('ElasticSearch index name'), 'ElasticSearchProvider')
 
-Config.define('ELASTIC_SEARCH_MAX_RETRIES', 3, _('ElasticSearch max numer of retries'), 'ElasticSearchProvider')
+Config.define('ELASTIC_SEARCH_MAX_RETRIES', 3, _('ElasticSearch max number of retries'), 'ElasticSearchProvider')
 
 # SENTRY ERROR HANDLER
 Config.define('USE_SENTRY', False, _('If set to true errors will be sent to sentry.'), 'Sentry')
