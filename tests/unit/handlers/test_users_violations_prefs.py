@@ -188,7 +188,7 @@ class TestUsersViolationsPrefsHandler(ApiTestCase):
         })
 
     @gen_test
-    def test_can_get_prefs_without_as_anonymous(self):
+    def test_can_get_prefs_as_anonymous(self):
         try:
             yield self.anonymous_fetch(
                 '/users/violations-prefs/',
