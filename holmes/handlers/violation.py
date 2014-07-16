@@ -5,7 +5,7 @@ from tornado import gen
 from functools import partial
 
 from holmes.handlers import BaseHandler
-from holmes.models import Review, Violation, Domain
+from holmes.models import Review, Domain
 
 
 class MostCommonViolationsHandler(BaseHandler):
