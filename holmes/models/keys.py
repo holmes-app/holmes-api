@@ -31,6 +31,12 @@ class Key(Base):
     def __repr__(self):
         return str(self)
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'category': self.category.name
+        }
+
     @classmethod
     def get_by_name(cls, db, key_name):
         try:
@@ -44,7 +50,7 @@ class Key(Base):
     def get_or_create(cls, db, key_name, category_name=None):
         key = cls.get_by_name(db, key_name)
 
-        if key is not None:
+        if key and key.category and key.category.name == category_name:
             return key
 
         if category_name is None:
@@ -69,27 +75,18 @@ class Key(Base):
                 query_params
             )
 
+        db.flush()
+
         return cls.get_by_name(db, key_name)
 
     @classmethod
     def insert_keys(cls, db, keys, default_values=[]):
-        from holmes.models import KeysCategory
-
         for name in keys.keys():
-            key = Key.get_or_create(db, name)
-            keys[name]['key'] = key
-
             category_name = keys[name].get('category', None)
 
-            if category_name:
-                category = KeysCategory.insert_key_category(
-                    db, key, category_name
-                )
+            key = Key.get_or_create(db, name, category_name)
+            keys[name]['key'] = key
 
-                key.category = category
-
-            db.add(key)
-            db.flush()
             db.commit()
 
         for key in default_values:
