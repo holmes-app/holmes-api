@@ -41,9 +41,9 @@ class UsersViolationsPrefsHandler(BaseHandler):
 
             result.append({
                 'key': key_name,
-                'name': name,
-                'description': description,
-                'category': category,
+                'name': self._(name),
+                'description': self._(description),
+                'category': self._(category),
                 'is_active': is_active
             })
 
