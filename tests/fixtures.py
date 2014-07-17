@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
 import datetime
 import factory
 import factory.alchemy
@@ -15,15 +16,16 @@ from holmes.models import (
 )
 from uuid import uuid4
 
-autoflush = True
+
+sqlalchemy_echo = logging.getLogger('nose').getEffectiveLevel() < logging.INFO
 engine = create_engine(
     "mysql+mysqldb://root@localhost:3306/test_holmes",
     convert_unicode=True,
     pool_size=1,
     max_overflow=0,
-    echo=False
+    echo=sqlalchemy_echo
 )
-maker = sessionmaker(bind=engine, autoflush=autoflush)
+maker = sessionmaker(bind=engine, autoflush=True)
 db = scoped_session(maker)
 
 
