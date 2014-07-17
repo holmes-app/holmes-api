@@ -149,7 +149,7 @@ materials_lock_timeout_in_seconds = {
     'most_common_violations': 3 * materials_grace_period_in_seconds['most_common_violations'] / 4,
     'failed_responses_count': 3 * materials_grace_period_in_seconds['failed_responses_count'] / 4,
 }
-Config.define('MATERIALS_LOCK_TIMEOUT_IN_SECONDS', materials_lock_timeout_in_seconds, _('Grace period times for materials'), 'material')
+Config.define('MATERIALS_LOCK_TIMEOUT_IN_SECONDS', materials_lock_timeout_in_seconds, _('Lock timeouts for materials'), 'material')
 
 Config.define('DEFAULT_PAGE_SCORE', 1, _('Page Score for pages that the user includes through the UI'), 'General')
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, _('Default tax rate for scoring pages.'), 'General')
