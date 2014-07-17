@@ -41,7 +41,7 @@ class JsonTypeGzipped(types.TypeDecorator):
     def process_bind_param(self, value, dialect):
         value = dumps(value)
         out = StringIO()
-        with GzipFile(fileobj=out, mode="w") as f:
+        with GzipFile(fileobj=out, mode="w", mtime=0) as f:
             f.write(value)
         return out.getvalue()
 

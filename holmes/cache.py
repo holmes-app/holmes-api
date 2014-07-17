@@ -342,7 +342,7 @@ class SyncCache(object):
         cache_key = "urls-%s" % url
 
         out = StringIO()
-        with GzipFile(fileobj=out, mode="w") as f:
+        with GzipFile(fileobj=out, mode="w", mtime=0) as f:
             f.write(text)
         text = out.getvalue()
 
