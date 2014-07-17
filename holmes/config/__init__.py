@@ -140,6 +140,17 @@ materials_grace_period_in_seconds = {
 }
 Config.define('MATERIALS_GRACE_PERIOD_IN_SECONDS', materials_grace_period_in_seconds, _('Grace period times for materials'), 'material')
 
+materials_lock_timeout_in_seconds = {
+    'domains_details': 3 * materials_grace_period_in_seconds['domains_details'] / 4,
+    'violation_count_for_domains': 3 * materials_grace_period_in_seconds['violation_count_for_domains'] / 4,
+    'violation_count_by_category_for_domains': 3 * materials_grace_period_in_seconds['violation_count_by_category_for_domains'] / 4,
+    'top_violations_in_category_for_domains': 3 * materials_grace_period_in_seconds['top_violations_in_category_for_domains'] / 4,
+    'blacklist_domain_count': 3 * materials_grace_period_in_seconds['blacklist_domain_count'] / 4,
+    'most_common_violations': 3 * materials_grace_period_in_seconds['most_common_violations'] / 4,
+    'failed_responses_count': 3 * materials_grace_period_in_seconds['failed_responses_count'] / 4,
+}
+Config.define('MATERIALS_LOCK_TIMEOUT_IN_SECONDS', materials_lock_timeout_in_seconds, _('Grace period times for materials'), 'material')
+
 Config.define('DEFAULT_PAGE_SCORE', 1, _('Page Score for pages that the user includes through the UI'), 'General')
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, _('Default tax rate for scoring pages.'), 'General')
 Config.define('MAX_PAGE_SCORE', 15000000, _('Maximum score of page'), 'General')
