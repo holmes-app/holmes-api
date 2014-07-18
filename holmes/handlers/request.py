@@ -78,7 +78,7 @@ class LastRequestsHandler(BaseHandler):
 class FailedResponsesHandler(BaseHandler):
     @coroutine
     def get(self):
-        requests = self.girl.get('failed_responses_count')
+        requests = self.girl.get('failed_responses_count') or []
         domain_filter = self.get_argument('domain_filter', None)
 
         if not domain_filter:

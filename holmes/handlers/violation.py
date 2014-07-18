@@ -12,7 +12,7 @@ class MostCommonViolationsHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        violations = dict(self.girl.get('most_common_violations'))
+        violations = dict(self.girl.get('most_common_violations') or [])
 
         result = []
         for violation in self.application.violation_definitions.values():
@@ -99,7 +99,7 @@ class ViolationDomainsHandler(BaseHandler):
         violation_category = violations[key_name]['category']
         key_id = violations[key_name]['key'].id
 
-        grouped_violations = self.girl.get('violation_count_for_domains')
+        grouped_violations = self.girl.get('violation_count_for_domains') or {}
         domains = grouped_violations.get(key_id, [])
 
         violation = {
@@ -111,7 +111,7 @@ class ViolationDomainsHandler(BaseHandler):
         }
 
         if key_name in self.key_details_handler:
-            violation['details'] = self.key_details_handler[key_name]()
+            violation['details'] = self.key_details_handler[key_name]() or []
 
         self.write_json(violation)
         self.finish()

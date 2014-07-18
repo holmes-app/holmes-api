@@ -202,7 +202,10 @@ class HolmesApiServer(Server):
 
         self.redis_material = redis.StrictRedis(host=host, port=port, db=0)
 
-        self.application.girl = Materializer(storage=RedisStorage(redis=self.redis_material))
+        self.application.girl = Materializer(
+            storage=RedisStorage(redis=self.redis_material),
+            load_on_cachemiss=self.config.get('MATERIAL_GIRL_LOAD_ON_CACHEMISS', True)
+        )
 
         configure_materials(self.application.girl, self.application.db, self.config)
 

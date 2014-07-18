@@ -84,6 +84,7 @@ Config.define('COMMIT_ON_REQUEST_END', True, _('Commit on request end'), 'DB')
 Config.define('MATERIAL_GIRL_REDISPORT', 7575, _('Redis port'), 'Redis')
 Config.define('MATERIAL_GIRL_REDISHOST', 'localhost', _('Redis host'), 'Redis')
 Config.define('MATERIAL_GIRL_REDISPASS', None, _('Redis password in case of auth'), 'Redis')
+Config.define('MATERIAL_GIRL_LOAD_ON_CACHEMISS', True, _('Load from database on cache miss'), 'Materializer')
 
 Config.define('REQUIRED_META_TAGS', [], _('List of required meta tags'), 'Meta tag Validator')
 

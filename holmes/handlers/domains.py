@@ -34,7 +34,7 @@ class DomainsFullDataHandler(BaseHandler):
 
     @coroutine
     def get(self):
-        result = self.girl.get('domains_details')
+        result = self.girl.get('domains_details') or []
         self.write_json(result)
 
 
@@ -48,7 +48,7 @@ class DomainDetailsHandler(BaseHandler):
             self.set_status(404, self._('Domain %s not found') % domain_name)
             return
 
-        result = self.girl.get('domains_details')
+        result = self.girl.get('domains_details') or []
         data = next((l for l in result if l['name'] == domain_name), None)
 
         if not data:
@@ -157,7 +157,7 @@ class DomainGroupedViolationsHandler(BaseHandler):
 
         violation_defs = self.application.violation_definitions
 
-        grouped_violations = self.girl.get('violation_count_by_category_for_domains')
+        grouped_violations = self.girl.get('violation_count_by_category_for_domains') or {}
 
         total = 0
         violations = []
@@ -200,7 +200,7 @@ class DomainTopCategoryViolationsHandler(BaseHandler):
 
         violation_defs = self.application.violation_definitions
 
-        top_violations = self.girl.get('top_violations_in_category_for_domains')
+        top_violations = self.girl.get('top_violations_in_category_for_domains') or {}
 
         violations = []
         for top_violation in top_violations.get(domain_name, {}).get(key_category.id, []):
