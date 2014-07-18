@@ -86,36 +86,6 @@ class TestPage(ApiTestCase):
         invalid_page = Page.by_uuid('123', self.db)
         expect(invalid_page).to_be_null()
 
-    def test_get_next_job_list(self):
-        domain1 = DomainFactory.create(name='testabc.com')
-        page = PageFactory.create(domain=domain1)
-        PageFactory.create()
-
-        next_job_list = Page.get_next_job_list(self.db, expiration=100)
-
-        expect(next_job_list).to_length(2)
-
-        pages = [{'url': x.url, 'uuid': str(x.uuid)} for x in next_job_list]
-        expect(pages).to_include({
-            'url': page.url,
-            'uuid': str(page.uuid)
-        })
-
-        next_job_list = Page.get_next_job_list(self.db, expiration=100,
-                                               domain_filter=domain1.name)
-
-        expect(next_job_list).to_length(1)
-        pages = [{'url': x.url, 'uuid': str(x.uuid)} for x in next_job_list]
-        expect(pages[0]).to_equal({
-            'url': page.url,
-            'uuid': str(page.uuid)
-        })
-
-        next_job_list = Page.get_next_job_list(self.db, expiration=100,
-                                               domain_filter='notExistingDomain.com')
-
-        expect(next_job_list).to_length(0)
-
     def test_update_pages_score(self):
         config = Config()
         config.MAX_PAGE_SCORE = 15000000

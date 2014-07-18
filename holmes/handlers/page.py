@@ -119,21 +119,18 @@ class PageViolationsPerDayHandler(BaseHandler):
 
 
 class NextJobHandler(BaseHandler):
+
     @gen.coroutine
     def get(self):
-        get_next_job_list = Page.get_next_job_list(
-            self.db,
-            self.application.config.REVIEW_EXPIRATION_IN_SECONDS,
-            current_page=int(self.get_argument('current_page', 1)),
-            page_size=int(self.get_argument('page_size', 10)),
-            domain_filter=self.get_argument('domain_filter', None)
-        )
+        current_page=int(self.get_argument('current_page', 1))
+        page_size=int(self.get_argument('page_size', 10))
 
-        pages = []
-        for item in get_next_job_list:
-            pages.append({
-                'uuid': item.uuid,
-                'url': item.url,
-            })
+        next_job_list = yield self.cache.get_next_job_list(current_page, page_size)
 
-        self.write_json({'pages': pages})
+        jobs = []
+        for idx, data in enumerate(next_job_list):
+            page = loads(data)
+            page['num'] = idx + 1 + (current_page - 1) * page_size
+            jobs.append(page)
+
+        self.write_json({'pages': jobs})

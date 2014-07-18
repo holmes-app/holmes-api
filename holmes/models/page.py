@@ -105,42 +105,6 @@ class Page(Base):
         return int(db.query(sa.func.count(Page.id)).scalar())
 
     @classmethod
-    def get_next_job_list(cls, db, expiration, current_page=1, page_size=200,
-                          domain_filter=None):
-        from holmes.models import Domain
-
-        lower_bound = (current_page - 1) * page_size
-        upper_bound = lower_bound + page_size
-
-        expired_time = datetime.utcnow() - timedelta(seconds=expiration)
-
-        if domain_filter:
-            domain = Domain.get_domain_by_name(domain_filter, db)
-            if domain and domain.is_active:
-                active_domains_ids = [domain.id]
-            else:
-                return []
-        else:
-            active_domains = Domain.get_active_domains(db)
-            active_domains_ids = [item.id for item in active_domains]
-
-        pages_query = db \
-            .query(
-                Page.uuid,
-                Page.url,
-                Page.score,
-                Page.last_review_date
-            ) \
-            .filter(Page.domain_id.in_(active_domains_ids)) \
-            .filter(or_(
-                Page.last_review_date == None,
-                Page.last_review_date <= expired_time
-            )) \
-            .order_by(Page.last_review_date.asc())
-
-        return pages_query[lower_bound:upper_bound]
-
-    @classmethod
     @return_future
     def add_page(cls, db, cache, url, score, fetch_method, publish_method,
         config, girl, default_violations_values, violation_definitions, callback):

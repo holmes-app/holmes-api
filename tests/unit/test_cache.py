@@ -217,6 +217,22 @@ class CacheTestCase(ApiTestCase):
         data = yield Task(self.cache.redis.zrange, key, 1, 1)
         expect(data).to_be_like([dumps({"url": "http://g1.com", "page": "1"})])
 
+    @gen_test
+    def test_can_get_next_job_list(self):
+        key = 'next-job-bucket'
+        self.cache.redis.delete(key)
+
+        for x in range(2):
+            page = PageFactory.create(uuid='%d' %x, url='http://g%d.com' % x)
+            yield Task(self.cache.add_next_job_bucket, page.uuid, page.url)
+
+        data = yield Task(self.cache.get_next_job_list, 1, 10)
+
+        expect(data).to_equal([
+            '{"url":"http:\\/\\/g0.com","page":"0"}',
+            '{"url":"http:\\/\\/g1.com","page":"1"}'
+        ])
+
 
 class SyncCacheTestCase(ApiTestCase):
     def setUp(self):

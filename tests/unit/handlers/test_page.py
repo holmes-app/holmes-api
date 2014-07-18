@@ -220,14 +220,23 @@ class TestNextJobHandler(ApiTestCase):
     def cache(self):
         return self.server.application.cache
 
+    @property
+    def sync_cache(self):
+        return self.connect_to_sync_redis()
+
     @gen_test
     def test_can_get_pages(self):
-        self.db.query(Page).delete()
-        self.cache.redis.delete('next-jobs')
+        key = 'next-job-bucket'
+        self.sync_cache.redis.delete(key)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
 
-        DomainFactory.create(name='test123.com')
-        page = PageFactory.create()
-        PageFactory.create()
+        for x in range(1, 3):
+            page = PageFactory.create(
+                uuid='%d' % x,
+                url='http://g%d.com' % x
+            )
+            self.sync_cache.add_next_job_bucket(page.uuid, page.url)
 
         response = yield self.authenticated_fetch('/next-jobs')
 
@@ -235,46 +244,52 @@ class TestNextJobHandler(ApiTestCase):
 
         expect(response.code).to_equal(200)
         expect(returned_page['pages']).to_length(2)
-        expect(returned_page['pages']).to_include({
-            'url': page.url,
-            'uuid': str(page.uuid)
-        })
+
+        for x in range(1, 3):
+            expect(returned_page['pages']).to_include({
+                'url': 'http://g%d.com' % x,
+                'page': '%d' % x,
+                'num': x
+            })
 
     @gen_test
-    def test_can_get_pages_with_domain_filter(self):
-        self.db.query(Page).delete()
-        self.cache.redis.delete('next-jobs')
+    def test_can_get_pages_with_pagination(self):
+        key = 'next-job-bucket'
+        self.sync_cache.redis.delete(key)
+        prefs = self.sync_cache.redis.get(key)
+        expect(prefs).to_be_null()
 
-        domain = DomainFactory.create(name='test123.com')
-        page = PageFactory.create(domain=domain)
-        PageFactory.create()
+        for x in range(1, 11):
+            page = PageFactory.create(
+                uuid='%d' % x,
+                url='http://g%d.com' % x
+            )
+            self.sync_cache.add_next_job_bucket(page.uuid, page.url)
 
-        response = yield self.authenticated_fetch(
-            '/next-jobs?domain_filter=test123.com'
-        )
+        response = yield self.authenticated_fetch('/next-jobs?page_size=5&current_page=1')
 
         returned_page = loads(response.body)
 
         expect(response.code).to_equal(200)
-        expect(returned_page['pages']).to_length(1)
-        expect(returned_page['pages'][0]).to_equal({
-            'url': page.url,
-            'uuid': str(page.uuid)
-        })
+        expect(returned_page['pages']).to_length(5)
 
-    @gen_test
-    def test_can_get_pages_with_inexistent_domain_filter(self):
-        self.db.query(Page).delete()
-        self.cache.redis.delete('next-jobs')
+        for x in range(1, 6):
+            expect(returned_page['pages']).to_include({
+                'url': 'http://g%d.com' % x,
+                'page': '%d' % x,
+                'num': x
+            })
 
-        domain = DomainFactory.create(name='test123.com')
-        PageFactory.create(domain=domain)
-
-        response = yield self.authenticated_fetch(
-            '/next-jobs?domain_filter=otherdomain.com'
-        )
+        response = yield self.authenticated_fetch('/next-jobs?page_size=5&current_page=2')
 
         returned_page = loads(response.body)
 
         expect(response.code).to_equal(200)
-        expect(returned_page['pages']).to_length(0)
+        expect(returned_page['pages']).to_length(5)
+
+        for x in range(6, 11):
+            expect(returned_page['pages']).to_include({
+                'url': 'http://g%d.com' % x,
+                'page': '%d' % x,
+                'num': x
+            })

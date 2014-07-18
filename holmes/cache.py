@@ -230,6 +230,15 @@ class Cache(object):
         data = {dumps({'page': str(uuid), 'url': url}): time.clock()}
         self.redis.zadd('next-job-bucket', data, callback=callback)
 
+    @return_future
+    def get_next_job_list(self, current_page=1, page_size=10, callback=None):
+        lower_bound = (current_page * page_size) - page_size
+        upper_bound = (lower_bound + page_size) - 1
+
+        self.redis.zrange(
+            'next-job-bucket', lower_bound, upper_bound, callback=callback
+        )
+
 
 class SyncCache(object):
     def __init__(self, db, redis, config):
