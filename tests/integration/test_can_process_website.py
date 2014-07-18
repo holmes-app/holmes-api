@@ -33,7 +33,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             super(CanProcessWebsiteTest, self).connect_sqlalchemy()
 
     def async_get(self, url, handler, method='GET', **kw):
-        response = requests.get(url)
+        response = requests.get(url, allow_redirects=False)
         resp = Response(
             url=url, status_code=response.status_code,
             headers=dict([(key, value) for key, value in response.headers.items()]),
@@ -83,7 +83,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
             ],
             VALIDATORS=[
                 'holmes.validators.title.TitleValidator',
-                #'holmes.validators.link_crawler.LinkCrawlerValidator',
+                'holmes.validators.link_crawler.LinkCrawlerValidator',
                 #'holmes.validators.robots.RobotsValidator',
                 #'holmes.validators.sitemap.SitemapValidator',
                 #'holmes.validators.domain_canonicalization.DomainCanonicalizationValidator',
@@ -96,7 +96,7 @@ class CanProcessWebsiteTest(ApiTestCase, HolmesWorker):
                 #'holmes.validators.meta_robots.MetaRobotsValidator',
                 'holmes.validators.required_meta_tags.RequiredMetaTagsValidator',
                 'holmes.validators.links_with_rel_nofollow.LinkWithRelNofollowValidator',
-                #'holmes.validators.link_with_redirect.LinkWithRedirectValidator',
+                'holmes.validators.link_with_redirect.LinkWithRedirectValidator',
                 'holmes.validators.schema_org_item_type.SchemaOrgItemTypeValidator',
                 'holmes.validators.body.BodyValidator',
                 'holmes.validators.link_with_rel_canonical.LinkWithRelCanonicalValidator',

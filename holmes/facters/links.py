@@ -5,7 +5,7 @@ import re
 import logging
 
 from holmes.facters import Facter
-from holmes.utils import get_domain_from_url, count_url_levels, _
+from holmes.utils import count_url_levels, _
 
 REMOVE_HASH = re.compile('([#].*)$')
 URL_RE = re.compile(
@@ -96,12 +96,7 @@ class LinkFacter(Facter):
                 logging.info('Max URL levels! Details: %s' % url)
                 continue
 
-            should_get = False
-            domain, domain_url = get_domain_from_url(url)
-            if domain in self.page_url:
-                should_get = True
-
-            if should_get and URL_RE.match(url):
+            if URL_RE.match(url):
                 num_links += 1
                 links_to_get.add(url)
 

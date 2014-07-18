@@ -4,7 +4,7 @@
 import re
 
 from holmes.validators.base import Validator
-from holmes.utils import _
+from holmes.utils import get_domain_from_url, _
 
 REMOVE_HASH = re.compile('([#].*)$')
 
@@ -70,7 +70,14 @@ class LinkCrawlerValidator(Validator):
         link_score = available_score / number_of_links
 
         for url, response in links:
-            self.send_url(response.effective_url, link_score, response)
+            domain, domain_url = get_domain_from_url(url)
+            if domain in self.page_url:
+                self.send_url(response.effective_url, link_score, response)
+            else:
+                if response.status_code in [302, 307]:
+                    self.moved_link_violation(url, response)
+                elif response.status_code > 399:
+                    self.broken_link_violation(url, response)
 
         if self.broken_links:
             self.add_violation(

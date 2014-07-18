@@ -57,6 +57,8 @@ class TestLinksFacter(FacterTestCase):
         expect(link.get('href')).to_equal('/')
         expect(link.get('title')).to_equal('globo.com')
 
+        expect(facter.async_get.call_count).to_equal(335)
+
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='page.links',
@@ -66,25 +68,7 @@ class TestLinksFacter(FacterTestCase):
         expect(facter.add_fact.call_args_list).to_include(
             call(
                 key='total.number.links',
-                value=4,
-            ))
-
-        expect(facter.async_get.call_args_list).to_include(
-            call(
-                'http://my-site.com/privacidade.html',
-                facter.handle_url_loaded
-            ))
-
-        expect(facter.async_get.call_args_list).to_include(
-            call(
-                'http://my-site.com/',
-                facter.handle_url_loaded
-            ))
-
-        expect(facter.async_get.call_args_list).to_include(
-            call(
-                'http://my-site.com/todos-os-sites.html',
-                facter.handle_url_loaded
+                value=489,
             ))
 
         expect(facter.add_fact.call_args_list).to_include(
