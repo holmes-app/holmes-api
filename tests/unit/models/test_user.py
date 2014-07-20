@@ -12,18 +12,6 @@ from tests.fixtures import UserFactory
 
 
 class TestUser(ApiTestCase):
-    def mock_request(self, status_code, effective_url):
-        def handle(*args, **kw):
-            response_mock = Mock(status_code=status_code, effective_url=effective_url)
-            if 'callback' in kw:
-                kw['callback'](response_mock)
-            else:
-                args[-1](response_mock)
-
-        client = Mock()
-        self.server.application.http_client = client
-        client.fetch.side_effect = handle
-
     def test_can_create_user(self):
         user = UserFactory.create()
 
