@@ -55,15 +55,22 @@ class TestAuthenticateHandler(ApiTestCase):
 
     @gen_test
     def test_cannot_authenticate_a_user_with_invalid_google_plus_token(self):
-        try:
-            response = yield self.anonymous_fetch(
-                '/authenticate', method='POST', body=dumps({
-                    'provider': 'GooglePlus',
-                    'access_token': 'INVALID-TOKEN',
-                })
-            )
-        except HTTPError, e:
-            response = e.response
+        with patch.object(AuthenticateHandler, '_fetch_google_userinfo') as auth_mock:
+            result = gen.Future()
+            response_mock = Mock(code=401, body=('Unauthorized'))
+            result.set_result(response_mock)
+            auth_mock.return_value = result
+
+            try:
+                response = yield self.anonymous_fetch(
+                    '/authenticate', method='POST', body=dumps({
+                        'provider': 'GooglePlus',
+                        'access_token': 'INVALID-TOKEN',
+                    })
+                )
+            except HTTPError, e:
+                response = e.response
+
         expect(response.code).to_equal(401)
         expect(response.body).to_equal('Unauthorized')
 
