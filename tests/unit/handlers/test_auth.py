@@ -187,3 +187,14 @@ class TestAuthenticateHandler(ApiTestCase):
             expect(loads(response.body)['first_login']).to_be_true()
             expect(loads(response.body)['authenticated']).to_be_true()
             expect('HOLMES_AUTH_TOKEN' in response.headers.get('Set-Cookie')).to_equal(True)
+
+    @gen_test
+    def test_can_remove_cookie(self):
+        try:
+            response = yield self.authenticated_fetch('/authenticate', method='DELETE')
+        except HTTPError, e:
+            response = e.response
+
+        expect(response.code).to_equal(200)
+        expect(loads(response.body)['loggedOut']).to_be_true()
+        expect('HOLMES_AUTH_TOKEN=;' in response.headers.get('Set-Cookie')).to_equal(True)

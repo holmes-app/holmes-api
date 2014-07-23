@@ -59,6 +59,10 @@ class AuthenticateHandler(BaseHandler):
         else:
             self.set_unauthorized()
 
+    def delete(self):
+        self.clear_cookie('HOLMES_AUTH_TOKEN')
+        self.write_json({'loggedOut': True})
+
     @gen.coroutine
     def authenticate(self, provider, access_token):
         '''
