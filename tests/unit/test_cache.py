@@ -4,7 +4,7 @@
 import time
 from gzip import GzipFile
 from cStringIO import StringIO
-from ujson import dumps
+from ujson import dumps, loads
 
 import msgpack
 from preggy import expect
@@ -228,9 +228,9 @@ class CacheTestCase(ApiTestCase):
 
         data = yield Task(self.cache.get_next_job_list, 1, 10)
 
-        expect(data).to_equal([
-            '{"url":"http:\\/\\/g0.com","page":"0"}',
-            '{"url":"http:\\/\\/g1.com","page":"1"}'
+        expect([loads(job) for job in data]).to_equal([
+            {"url":"http://g0.com","page":"0"},
+            {"url":"http://g1.com","page":"1"}
         ])
 
 
