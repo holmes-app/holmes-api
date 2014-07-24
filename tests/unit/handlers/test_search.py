@@ -40,5 +40,6 @@ class TestSearchHandler(ApiTestCase):
         expect(obj).to_be_like({
             u'url': u'http://www.mypage.something.com',
             u'reviewId': str(review1.uuid),
-            u'uuid': str(page.uuid)
+            u'uuid': str(page.uuid),
+            u'domain': 'mypage.something.com'
         })

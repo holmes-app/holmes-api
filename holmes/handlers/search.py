@@ -5,6 +5,7 @@ from sqlalchemy import or_
 
 from holmes.models import Page
 from holmes.handlers import BaseHandler
+from holmes.utils import get_domain_from_url
 
 
 class SearchHandler(BaseHandler):
@@ -24,8 +25,11 @@ class SearchHandler(BaseHandler):
             self.write_json(None)
             return
 
+        domain_name, domain_url = get_domain_from_url(page.url)
+
         self.write_json({
             "uuid": str(page.uuid),
             "url": page.url,
-            "reviewId": str(page.last_review.uuid)
+            "reviewId": str(page.last_review.uuid),
+            "domain": domain_name
         })
