@@ -3,7 +3,7 @@
 
 import sys
 from uuid import uuid4
-from datetime import datetime, timedelta
+from datetime import datetime
 import hashlib
 import logging
 
