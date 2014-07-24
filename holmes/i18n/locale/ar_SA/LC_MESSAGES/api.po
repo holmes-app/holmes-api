@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: holmes\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-16 18:27-0300\n"
-"PO-Revision-Date: 2014-07-16 17:28-0400\n"
+"POT-Creation-Date: 2014-07-24 17:32-0300\n"
+"PO-Revision-Date: 2014-07-24 16:33-0400\n"
 "Last-Translator: bernardoheynemann <heynemann@gmail.com>\n"
 "Language-Team: Arabic\n"
 "MIME-Version: 1.0\n"
@@ -155,159 +155,167 @@ msgstr ""
 msgid "Redis password in case of auth"
 msgstr ""
 
-#: holmes/config/__init__.py:88
+#: holmes/config/__init__.py:87
+msgid "Load from database on cache miss"
+msgstr ""
+
+#: holmes/config/__init__.py:89
 msgid "List of required meta tags"
 msgstr ""
 
-#: holmes/config/__init__.py:90
+#: holmes/config/__init__.py:91
 msgid "List of Schema.Org ItemType"
 msgstr ""
 
-#: holmes/config/__init__.py:92
+#: holmes/config/__init__.py:93
 msgid "Force canonical"
 msgstr ""
 
-#: holmes/config/__init__.py:94
+#: holmes/config/__init__.py:95
 msgid "Domain blacklist"
 msgstr ""
 
-#: holmes/config/__init__.py:96
+#: holmes/config/__init__.py:97
 msgid "List of classes to handle errors"
 msgstr ""
 
-#: holmes/config/__init__.py:98
+#: holmes/config/__init__.py:99
 msgid "Class to handle searching"
 msgstr ""
 
-#: holmes/config/__init__.py:100
+#: holmes/config/__init__.py:101
 msgid "ElasticSearch protocol (http|https)"
 msgstr ""
 
-#: holmes/config/__init__.py:101
+#: holmes/config/__init__.py:102
 msgid "ElasticSearch host"
 msgstr ""
 
-#: holmes/config/__init__.py:102
+#: holmes/config/__init__.py:103
 msgid "ElasticSearch port"
 msgstr ""
 
-#: holmes/config/__init__.py:103
+#: holmes/config/__init__.py:104
 msgid "ElasticSearch index name"
 msgstr ""
 
-#: holmes/config/__init__.py:105
+#: holmes/config/__init__.py:106
 msgid "ElasticSearch max number of retries"
 msgstr ""
 
-#: holmes/config/__init__.py:108
+#: holmes/config/__init__.py:109
 msgid "If set to true errors will be sent to sentry."
 msgstr ""
 
-#: holmes/config/__init__.py:109
+#: holmes/config/__init__.py:110
 msgid "URL to use as sentry DSN."
 msgstr ""
 
-#: holmes/config/__init__.py:111
+#: holmes/config/__init__.py:112
 msgid "Expiration for the cache key for each domain page count"
 msgstr ""
 
-#: holmes/config/__init__.py:112 holmes/config/__init__.py:113
+#: holmes/config/__init__.py:113 holmes/config/__init__.py:114
 msgid "Expiration for the cache key for each domain violation count"
 msgstr ""
 
-#: holmes/config/__init__.py:114
+#: holmes/config/__init__.py:115
 msgid "Expiration for the cache key for each domain average response time"
 msgstr ""
 
-#: holmes/config/__init__.py:115
+#: holmes/config/__init__.py:116
 msgid "Expiration for the cache key for each domain violation count by category"
 msgstr ""
 
-#: holmes/config/__init__.py:116
+#: holmes/config/__init__.py:117
 msgid "Expiration for the cache key for each domain top violation in a category"
 msgstr ""
 
-#: holmes/config/__init__.py:117
+#: holmes/config/__init__.py:118
 msgid "Expiration for the URL lock for each URL"
 msgstr ""
 
-#: holmes/config/__init__.py:118
+#: holmes/config/__init__.py:119
 msgid "Expiration for the URL lock for next jobs"
 msgstr ""
 
-#: holmes/config/__init__.py:119
+#: holmes/config/__init__.py:120
 msgid "Expiration for the cache key for next jobs count"
 msgstr ""
 
-#: holmes/config/__init__.py:141
+#: holmes/config/__init__.py:142
 msgid "Grace period times for materials"
 msgstr ""
 
-#: holmes/config/__init__.py:143
-msgid "Page Score for pages that the user includes through the UI"
-msgstr ""
-
-#: holmes/config/__init__.py:144
-msgid "Default tax rate for scoring pages."
-msgstr ""
-
-#: holmes/config/__init__.py:145
-msgid "Maximum score of page"
-msgstr ""
-
-#: holmes/config/__init__.py:147
-msgid "Expiration in seconds for cache storage of responses."
-msgstr ""
-
-#: holmes/config/__init__.py:149
-msgid "Maximum levels of URL"
-msgstr ""
-
-#: holmes/config/__init__.py:151
-msgid "Google client ID"
-msgstr ""
-
 #: holmes/config/__init__.py:153
-msgid "The expiration for locks in the limiter"
-msgstr ""
-
-#: holmes/config/__init__.py:154
-msgid "The expiration for values in the limiter"
+msgid "Lock timeouts for materials"
 msgstr ""
 
 #: holmes/config/__init__.py:155
-msgid "Default number of concurrent connections"
+msgid "Page Score for pages that the user includes through the UI"
+msgstr ""
+
+#: holmes/config/__init__.py:156
+msgid "Default tax rate for scoring pages."
 msgstr ""
 
 #: holmes/config/__init__.py:157
-msgid "Expiration for the cache key for the most common violations"
-msgstr ""
-
-#: holmes/config/__init__.py:158
-msgid "Limit for the size of the Violation sample used in the aggregation"
+msgid "Maximum score of page"
 msgstr ""
 
 #: holmes/config/__init__.py:159
-msgid "Size of the sample used in the top violations of a key category for domains"
+msgid "Expiration in seconds for cache storage of responses."
+msgstr ""
+
+#: holmes/config/__init__.py:161
+msgid "Maximum levels of URL"
+msgstr ""
+
+#: holmes/config/__init__.py:163
+msgid "Google client ID"
+msgstr ""
+
+#: holmes/config/__init__.py:165
+msgid "The expiration for locks in the limiter"
 msgstr ""
 
 #: holmes/config/__init__.py:166
-msgid "Throttling by message type"
+msgid "The expiration for values in the limiter"
 msgstr ""
 
-#: holmes/config/__init__.py:168
-msgid "Defines whether auto-flush should be used in sqlalchemy"
+#: holmes/config/__init__.py:167
+msgid "Default number of concurrent connections"
+msgstr ""
+
+#: holmes/config/__init__.py:169
+msgid "Expiration for the cache key for the most common violations"
 msgstr ""
 
 #: holmes/config/__init__.py:170
+msgid "Limit for the size of the Violation sample used in the aggregation"
+msgstr ""
+
+#: holmes/config/__init__.py:171
+msgid "Size of the sample used in the top violations of a key category for domains"
+msgstr ""
+
+#: holmes/config/__init__.py:178
+msgid "Throttling by message type"
+msgstr ""
+
+#: holmes/config/__init__.py:180
+msgid "Defines whether auto-flush should be used in sqlalchemy"
+msgstr ""
+
+#: holmes/config/__init__.py:182
 msgid "Expiration in seconds for domains violations prefs."
 msgstr ""
 
-#: holmes/config/__init__.py:172
+#: holmes/config/__init__.py:184
 msgid "Secret key to use in JSON Web Token generation"
 msgstr ""
 
-#: holmes/config/__init__.py:173
+#: holmes/config/__init__.py:185
 msgid "Time for Session expiration in seconds"
 msgstr ""
 
