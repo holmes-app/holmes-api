@@ -3,14 +3,13 @@
 
 import sys
 from uuid import uuid4
-from ujson import dumps
 
 import requests
 from preggy import expect
 from mock import patch, Mock, call
 
 from holmes.reviewer import Reviewer, ReviewDAO
-from holmes.models import Page, Domain, Key, DomainsViolationsPrefs, Request
+from holmes.models import Page, Domain, Key, DomainsViolationsPrefs
 from holmes.config import Config
 from holmes.validators.base import Validator
 from tests.unit.base import ApiTestCase
@@ -319,66 +318,3 @@ class TestReview(ApiTestCase):
         DomainsViolationsPrefs.update_by_domain(self.db, self.sync_cache, domain, data)
         prefs = reviewer.get_domains_violations_prefs_by_key('page.title.size')
         expect(prefs).to_equal('10')
-
-    def test_cannot_save_request_for_external_domain(self):
-        self.db.query(Request).delete()
-
-        page_uuid = uuid4()
-
-        reviewer = self.get_reviewer(page_uuid=page_uuid, db=self.db)
-
-        url = 'http://google.com/robots.txt'
-        response_mock = Mock(
-            status_code=200,
-            text='OK',
-            request_time=0.1,
-            effective_url=url
-        )
-
-        reviewer.publish = Mock()
-
-        self.db.query(Domain).delete()
-
-        reviewer.save_request(url, response_mock)
-
-        req = self.db.query(Request).all()
-
-        expect(req).to_length(0)
-        expect(reviewer.publish.called).to_be_false()
-
-    def test_can_save_request(self):
-        self.db.query(Request).delete()
-
-        domain = DomainFactory.create(name='t.com')
-        page = PageFactory.create(domain=domain, url='http://t.com/a.html')
-
-        reviewer = self.get_reviewer(
-            page_uuid=page.uuid, page_url=page.url, db=self.db
-        )
-
-        url = 'http://t.com/robots.txt'
-        response_mock = Mock(
-            status_code=200,
-            text='OK',
-            request_time=0.1,
-            effective_url=url
-        )
-
-        reviewer.publish = Mock()
-
-        reviewer.save_request(url, response_mock)
-
-        req = self.db.query(Request).all()
-
-        expect(req).to_length(1)
-        expect(req[0].url).to_equal(url)
-        expect(req[0].status_code).to_equal(200)
-        expect(req[0].response_time).to_equal(0.1)
-        expect(req[0].domain_name).to_equal('t.com')
-        expect(req[0].review_url).to_equal('http://t.com/a.html')
-
-        expect(reviewer.publish.called).to_be_true()
-
-        reviewer.publish.assert_called_once_with(
-            dumps({'url': url, 'type': 'new-request'})
-        )

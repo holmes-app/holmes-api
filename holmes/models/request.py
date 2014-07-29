@@ -4,7 +4,9 @@
 from collections import defaultdict
 import sqlalchemy as sa
 from sqlalchemy import func, distinct
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+
+from ujson import dumps
 
 from holmes.utils import get_status_code_title
 from holmes.models import Base
@@ -161,3 +163,36 @@ class Request(Base):
           })
 
         return result
+
+    @classmethod
+    def save_requests(cls, db, publish, page, requests):
+        if not requests:
+            return
+
+        domain_name = page.domain.name
+        page_url = page.url
+
+        data = []
+        for url, response in requests:
+            request_time = response.request_time
+            effective_url = response.effective_url
+            status_code = response.status_code
+
+            data.append({
+                'domain_name': domain_name,
+                'url': url,
+                'effective_url': effective_url,
+                'status_code': int(status_code),
+                'response_time': request_time,
+                'completed_date': datetime.now().date(),
+                'review_url': page_url
+            })
+
+        db.execute(Request.__table__.insert(), data)
+
+        url = url.encode('utf-8')
+
+        publish(dumps({
+            'type': 'new-request',
+            'url': str(url)
+        }))

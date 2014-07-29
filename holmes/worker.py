@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import logging
 from uuid import uuid4
 from datetime import datetime, timedelta
 
@@ -10,9 +11,10 @@ from colorama import Fore, Style
 from octopus import TornadoOctopus
 from octopus.limiter.redis.per_domain import Limiter
 from retools.lock import Lock, LockTimeout
+from sqlalchemy.orm import scoped_session
 
 from holmes import __version__
-from holmes.reviewer import Reviewer, InvalidReviewError
+from holmes.reviewer import Reviewer
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
 from holmes.models import Page, Request, Key, DomainsViolationsPrefs
 from holmes.cli import BaseCLI
@@ -57,6 +59,18 @@ class BaseWorker(BaseCLI):
         self.otto.start()
 
     def handle_error(self, exc_type, exc_value, tb):
+        try:
+            if not self.db.connection_invalidated:
+                self.db.rollback()
+        except Exception:
+            err = sys.exc_info()[1]
+            logging.error("Cannot rollback: %s" % str(err))
+
+        self.otto.url_queue = []
+        self.db.close_all()
+        self.db.remove()
+        self.db = scoped_session(self.sqlalchemy_db_maker)
+
         for handler in self.error_handlers:
             handler.handle_exception(
                 exc_type, exc_value, tb, extra={
@@ -186,51 +200,33 @@ class HolmesWorker(BaseWorker):
         )
 
     def do_work(self):
-        has_errored = False
+        self.debug('Started doing work...')
 
-        try:
-            self.debug('Started doing work...')
+        dt = datetime.utcnow() - timedelta(seconds=self.config.UPDATE_PAGES_SCORE_SLEEP_TIME)
 
-            dt = datetime.utcnow() - timedelta(seconds=self.config.UPDATE_PAGES_SCORE_SLEEP_TIME)
+        if not self.last_update_pages_score or self.last_update_pages_score < dt:
+            self._update_pages_score()
 
-            if not self.last_update_pages_score or self.last_update_pages_score < dt:
-                self._update_pages_score()
+        self.update_otto_limiter()
+        job = self._load_next_job()
 
-            err = None
-            self.update_otto_limiter()
-            job = self._load_next_job()
+        if job is None:
+            self.info('No jobs could be found! Returning...')
+            self._ping_api()
+            return
 
-            if job is None:
-                self.info('No jobs could be found! Returning...')
-                self._ping_api()
-                return
-
-            if not self._start_job(job):
-                self.info('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
-                lock = job.get('lock', None)
-                self._release_lock(lock)
-                return
-
-            try:
-                self.info('Starting new job for %s...' % job['url'])
-                self._start_reviewer(job=job)
-            except InvalidReviewError:
-                err = str(sys.exc_info()[1])
-                self.error("Fail to review %s: %s" % (job['url'], err))
-                raise
-
+        if not self._start_job(job):
+            self.info('Could not start job for url "%s". Maybe other worker doing it?' % job['url'])
             lock = job.get('lock', None)
-            self._complete_job(lock)
+            self._release_lock(lock)
+            return
 
-        except Exception:
-            has_errored = True
-            err = str(sys.exc_info()[1])
-            self.error("Fail to complete work: %s" % err)
-            self.db.rollback()
-            raise
-        finally:
-            if not has_errored:
-                self.db.commit()
+        self.info('Starting new job for %s...' % job['url'])
+        self._start_reviewer(job=job)
+
+        lock = job.get('lock', None)
+        self._complete_job(lock)
+        self.db.commit()
 
     def _start_reviewer(self, job):
         if job:

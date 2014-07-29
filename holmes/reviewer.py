@@ -12,7 +12,6 @@ except ImportError:
 import inspect
 import email.utils as eut
 from datetime import datetime
-from ujson import dumps
 
 import codecs
 from box.util.rotunicode import RotUnicode
@@ -24,7 +23,7 @@ import logging
 from holmes.config import Config
 from holmes.facters import Facter
 from holmes.validators.base import Validator
-from holmes.models import Page, Request, Domain
+from holmes.models import Page
 from holmes.utils import get_domain_from_url
 
 
@@ -42,6 +41,7 @@ class ReviewDAO(object):
         self.violations = []
         self.data = {}
         self._current = None
+        self.requests = []
 
     def add_fact(self, key, value):
         self.facts[key] = {
@@ -63,7 +63,8 @@ class ReviewDAO(object):
             'facts': self.facts.values(),
             'violations': self.violations,
             'lastModified': self.last_modified,
-            'expires': self.expires
+            'expires': self.expires,
+            'requests': self.requests
         }
 
 
@@ -154,41 +155,11 @@ class Reviewer(object):
         def handle(url, response):
             if not hasattr(response, 'from_cache') or not response.from_cache:
                 response.from_cache = False
-                self.save_request(url, response)
+                self.review_dao.requests.append((url, response))
 
             handler(url, response)
 
         return handle
-
-    def save_request(self, url, response):
-        if not response:
-            return
-
-        request_time = response.request_time
-        effective_url = response.effective_url
-        status_code = response.status_code
-
-        if self.domain_name not in Domain.get_domain_names(self.db):
-            return
-
-        req = Request(
-            domain_name=self.domain_name,
-            url=url,
-            effective_url=effective_url,
-            status_code=int(status_code),
-            response_time=request_time,
-            completed_date=datetime.now().date(),
-            review_url=self.page_url
-        )
-
-        self.db.add(req)
-
-        url = url.encode('utf-8')
-
-        self.publish(dumps({
-            'type': 'new-request',
-            'url': str(url)
-        }))
 
     def review(self):
         self.load_content(self.content_loaded)

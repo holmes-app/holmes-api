@@ -193,12 +193,15 @@ class Review(Base):
 
     @classmethod
     def save_review(cls, page_uuid, review_data, db, search_provider, fact_definitions, violation_definitions, cache, publish, config):
-        from holmes.models import Page
+        from holmes.models import Page, Request
 
         page = Page.by_uuid(page_uuid, db)
 
         if page is None:
             return
+
+        if review_data['requests']:
+            Request.save_requests(db, publish, page, review_data['requests'])
 
         last_review = page.last_review
 

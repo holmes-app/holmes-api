@@ -4,9 +4,11 @@
 from datetime import date, timedelta, datetime
 from preggy import expect
 
-from tests.unit.base import ApiTestCase
-from tests.fixtures import RequestFactory, DomainFactory
+from mock import Mock
+from ujson import dumps
 
+from tests.unit.base import ApiTestCase
+from tests.fixtures import RequestFactory, DomainFactory, PageFactory
 from holmes.models import Request
 from holmes.config import Config
 
@@ -189,3 +191,42 @@ class TestRequest(ApiTestCase):
                 'statusCode': 500
             }
         ])
+
+    def test_can_save_requests(self):
+        self.db.query(Request).delete()
+
+        domain = DomainFactory.create(name='t.com')
+        page = PageFactory.create(domain=domain, url='http://t.com/a.html')
+
+        requests = []
+        for x in range(3):
+            url = 'http://t.com/file%d.html' % x
+            response_mock = Mock(
+                status_code=100 * x,
+                text='OK',
+                request_time=0.1 * x,
+                effective_url=url
+            )
+            requests.append((url, response_mock))
+
+        publish = Mock()
+
+        Request.save_requests(self.db, publish, page, requests)
+
+        loaded_requests = self.db.query(Request).all()
+
+        expect(loaded_requests).to_length(3)
+
+        for idx, request in enumerate(loaded_requests):
+            expect(request.url).to_equal('http://t.com/file%d.html' % idx)
+            expect(request.status_code).to_equal(100 * idx)
+            expect(request.response_time).to_equal(0.1 * idx)
+            expect(request.domain_name).to_equal('t.com')
+            expect(request.review_url).to_equal('http://t.com/a.html')
+
+        expect(publish.called).to_be_true()
+
+        publish.assert_called_once_with(
+            dumps({'url': url, 'type': 'new-request'})
+        )
+
