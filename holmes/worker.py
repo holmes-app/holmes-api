@@ -114,7 +114,6 @@ class HolmesWorker(BaseWorker):
         self.working_url = None
         self.domain_name = None
         self.last_ping = None
-        self.last_update_pages_score = None
 
         authnz_wrapper_class = self.load_authnz_wrapper()
         if authnz_wrapper_class:
@@ -201,11 +200,6 @@ class HolmesWorker(BaseWorker):
 
     def do_work(self):
         self.debug('Started doing work...')
-
-        dt = datetime.utcnow() - timedelta(seconds=self.config.UPDATE_PAGES_SCORE_SLEEP_TIME)
-
-        if not self.last_update_pages_score or self.last_update_pages_score < dt:
-            self._update_pages_score()
 
         self.update_otto_limiter()
         job = self._load_next_job()
@@ -308,16 +302,6 @@ class HolmesWorker(BaseWorker):
     def _release_lock(self, lock):
         if lock is not None:
             lock.release()
-
-    def _update_pages_score(self):
-        expiration = self.config.UPDATE_PAGES_SCORE_EXPIRATION
-        lock = self.cache.has_update_pages_lock(expiration)
-
-        if lock is not None:
-            self.debug('Updating pages score...')
-            Page.update_pages_score(self.db, self.cache, self.config)
-            self.cache.release_update_pages_lock(lock)
-            self.last_update_pages_score = datetime.utcnow()
 
 
 def main():

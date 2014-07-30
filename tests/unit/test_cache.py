@@ -609,51 +609,6 @@ class SyncCacheTestCase(ApiTestCase):
         score = self.sync_cache.redis.zscore('page-scores', 'page-1')
         expect(score).to_equal(2)
 
-    def test_seized_pages_score(self):
-        self.sync_cache.redis.delete('page-scores')
-
-        for i in range(3):
-            self.sync_cache.increment_page_score('page-%d' % i)
-
-        total = self.sync_cache.redis.zcard('page-scores')
-        expect(total).to_equal(3)
-
-        values = self.sync_cache.seized_pages_score()
-        expect(values).to_length(3)
-
-        total = self.sync_cache.redis.zcard('page-scores')
-        expect(total).to_equal(0)
-
-    def test_lock_update_pages_score(self):
-        self.sync_cache.redis.delete('update-pages-score-lock')
-
-        lock = self.sync_cache.lock_update_pages_score(5)
-
-        expect(lock.acquire()).to_be_true()
-
-    def test_has_update_pages_lock(self):
-        self.sync_cache.redis.delete('update-pages-score-lock')
-
-        lock = self.sync_cache.lock_update_pages_score(20)
-        expect(lock).not_to_be_null()
-
-        has_update_pages_lock = self.sync_cache.has_update_pages_lock(20)
-        expect(has_update_pages_lock).not_to_be_null()
-
-        has_update_pages_lock = self.sync_cache.has_update_pages_lock(20)
-        expect(has_update_pages_lock).to_be_null()
-
-    def test_release_update_pages_lock(self):
-        self.sync_cache.redis.delete('update-pages-score-lock')
-
-        has_update_pages_lock = self.sync_cache.has_update_pages_lock(5)
-        expect(has_update_pages_lock).not_to_be_null()
-
-        self.sync_cache.release_update_pages_lock(has_update_pages_lock)
-
-        lock = self.sync_cache.has_update_pages_lock(5)
-        expect(lock).not_to_be_null()
-
     def test_can_delete_domain_violations_prefs(self):
         domain_url = 'globo.com'
         key = 'violations-prefs-%s' % domain_url

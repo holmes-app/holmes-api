@@ -275,17 +275,3 @@ class Page(Base):
             Limiter.add_or_update_limiter(db, domain_url, connections)
 
         return domain
-
-    @classmethod
-    def update_pages_score(cls, db, cache, config):
-        pages = cache.seized_pages_score()
-
-        for page_id, score in pages:
-            db \
-                .query(Page).filter(Page.id == page_id) \
-                .update(
-                    {'score': sa.func.least(
-                        config.MAX_PAGE_SCORE, Page.score + score)
-                    },
-                    synchronize_session=False
-                )

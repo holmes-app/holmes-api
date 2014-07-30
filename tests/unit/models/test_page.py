@@ -9,7 +9,7 @@ from preggy import expect
 from holmes.config import Config
 from holmes.models import Page
 from tests.unit.base import ApiTestCase
-from tests.fixtures import PageFactory, ReviewFactory, DomainFactory
+from tests.fixtures import PageFactory, ReviewFactory
 
 
 class TestPage(ApiTestCase):
@@ -85,30 +85,3 @@ class TestPage(ApiTestCase):
 
         invalid_page = Page.by_uuid('123', self.db)
         expect(invalid_page).to_be_null()
-
-    def test_update_pages_score(self):
-        config = Config()
-        config.MAX_PAGE_SCORE = 15000000
-
-        self.db.query(Page).delete()
-        self.sync_cache.redis.delete('pages-score')
-
-        page1 = PageFactory.create(score=3)
-        page2 = PageFactory.create(score=0)
-
-        for i in range(3):
-            self.sync_cache.increment_page_score(page1.id)
-
-        self.sync_cache.increment_page_score(page2.id)
-
-        expect(page1.score).to_equal(3)
-        expect(page2.score).to_equal(0)
-
-        Page.update_pages_score(self.db, self.sync_cache, config)
-        self.db.flush()
-
-        self.db.refresh(page1)
-        self.db.refresh(page2)
-
-        expect(page1.score).to_equal(6)
-        expect(page2.score).to_equal(1)

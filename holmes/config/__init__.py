@@ -15,9 +15,6 @@ Config.define('ZOMBIE_WORKER_TIME', 200,
 
 Config.define('WORKERS_LOOK_AHEAD_PAGES', 10000, _('Number of pages that will be retrieved when looking for the next job'), 'Worker')
 
-Config.define('UPDATE_PAGES_SCORE_EXPIRATION', 30, _('The expiration for lock to update pages score'), 'Worker')
-Config.define('UPDATE_PAGES_SCORE_SLEEP_TIME', HOUR, _('The expiration for lock to update pages score'), 'Worker')
-
 Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, _('Number of seconds a connection can take.'), 'Worker')
 Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, _('Number of seconds a request can take.'), 'Worker')
 
@@ -154,7 +151,6 @@ Config.define('MATERIALS_LOCK_TIMEOUT_IN_SECONDS', materials_lock_timeout_in_sec
 
 Config.define('DEFAULT_PAGE_SCORE', 1, _('Page Score for pages that the user includes through the UI'), 'General')
 Config.define('PAGE_SCORE_TAX_RATE', 0.1, _('Default tax rate for scoring pages.'), 'General')
-Config.define('MAX_PAGE_SCORE', 15000000, _('Maximum score of page'), 'General')
 
 Config.define('REQUEST_CACHE_EXPIRATION_IN_SECONDS', HOUR, _('Expiration in seconds for cache storage of responses.'), 'Cache')
 
