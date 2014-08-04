@@ -16,7 +16,7 @@ from sqlalchemy.orm import scoped_session
 from holmes import __version__
 from holmes.reviewer import Reviewer
 from holmes.utils import load_classes, count_url_levels, get_domain_from_url
-from holmes.models import Page, Request, Key, DomainsViolationsPrefs
+from holmes.models import Request, Key, DomainsViolationsPrefs
 from holmes.cli import BaseCLI
 
 
