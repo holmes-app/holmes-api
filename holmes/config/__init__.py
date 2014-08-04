@@ -15,8 +15,8 @@ Config.define('ZOMBIE_WORKER_TIME', 200,
 
 Config.define('WORKERS_LOOK_AHEAD_PAGES', 10000, _('Number of pages that will be retrieved when looking for the next job'), 'Worker')
 
-Config.define('CONNECT_TIMEOUT_IN_SECONDS', 20, _('Number of seconds a connection can take.'), 'Worker')
-Config.define('REQUEST_TIMEOUT_IN_SECONDS', 60, _('Number of seconds a request can take.'), 'Worker')
+Config.define('CONNECT_TIMEOUT_IN_SECONDS', 10, _('Number of seconds a connection can take.'), 'Worker')
+Config.define('REQUEST_TIMEOUT_IN_SECONDS', 10, _('Number of seconds a request can take.'), 'Worker')
 
 Config.define('HOLMES_API_URL', 'http://localhost:2368', ('URL that Worker will communicate with API'), 'Worker')
 Config.define('HOLMES_WEB_URL', 'http://local.holmes.com:9000', _('URL of the client side application of Holmes'), 'Web')
