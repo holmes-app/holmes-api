@@ -153,3 +153,19 @@ class TestViolations(ApiTestCase):
 
         violations = Violation.get_group_by_value_for_key(self.db, keys[2].name)
         expect(violations).to_be_like([('random.value.2', 3)])
+
+    def test_can_get_top_in_category_for_all_domains(self):
+        domains = [DomainFactory.create(name='g%d.com' % i) for i in range(2)]
+        keys = [KeyFactory.create(name='random.fact.%s' % i) for i in range(3)]
+
+        for i in range(3):
+            for j in range(i + 1):
+                ViolationFactory.create(
+                    key=keys[i],
+                    domain=domains[j % 2]
+                )
+        violations = Violation.get_top_in_category_for_all_domains(self.db)
+
+        expect(violations).to_length(5)
+        top = ('g0.com', keys[2].category_id, str(keys[2]), 2)
+        expect(violations[0]).to_be_like(top)

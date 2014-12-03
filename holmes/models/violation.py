@@ -150,17 +150,30 @@ class Violation(Base):
         from holmes.models.domain import Domain  # to avoid circular dependency
         from holmes.models.violation import Violation  # to avoid circular dependency
 
+        sample = db \
+            .query(
+                Violation.key_id.label('violations_key_id'),
+                Violation.domain_id,
+                sa.func.count(Violation.id).label('violation_count')
+            ) \
+            .filter(Violation.review_is_active == True) \
+            .group_by(Violation.domain_id, Violation.key_id) \
+            .subquery()
+
         return db \
             .query(
                 Domain.name,
                 Key.category_id,
                 Key.name,
-                sa.func.count(Key.category_id).label('violation_count')
+                sample.columns.violation_count
             ) \
-            .filter(Domain.id == Violation.domain_id) \
-            .filter(Violation.key_id == Key.id) \
-            .filter(Violation.review_is_active == True) \
-            .group_by(Domain.id, Key.category_id, Key.id) \
+            .filter(sample.columns.domain_id == Domain.id) \
+            .filter(sample.columns.violations_key_id == Key.id) \
+            .group_by(
+                sample.columns.domain_id,
+                sample.columns.violations_key_id,
+                Key.category_id
+            ) \
             .order_by('violation_count DESC') \
             .limit(limit) \
             .all()
