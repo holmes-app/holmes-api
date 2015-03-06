@@ -87,7 +87,7 @@ class HolmesApiServer(Server):
         handlers = [
             ('/most-common-violations/?', MostCommonViolationsHandler),
             ('/last-reviews/?', LastReviewsHandler),
-            ('/reviews-in-last-hour/?', ReviewsInLastHourHandler),
+            ('/reviews-in-last-hour/?', ReviewsInLastHourHandler, dict(is_public=True)),
             ('/page/(%s)/review/(%s)/?' % (uuid_regex, uuid_regex), ReviewHandler),
             ('/page/(%s)/reviews/?' % uuid_regex, PageReviewsHandler),
             ('/page/(%s)/violations-per-day/?' % uuid_regex, PageViolationsPerDayHandler),
