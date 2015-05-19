@@ -172,17 +172,10 @@ class Reviewer(object):
         if response.status_code > 399 or response.text is None:
             if response.text:
                 headers = None
-                if response.status_code == 404:
-                    text = None
-                else:
-                    text = response.text.decode('rotunicode')
             else:
-                text = 'Empty response.text'
                 headers = response.headers
 
-            msg = "Could not load '%s' (%s) - %s!" % (url,
-                                                      response.status_code,
-                                                      text)
+            msg = "Could not load '%s' (%s)" % (url, response.status_code)
             logging.error(msg)
             if headers is not None:
                 logging.warning('Response is from cache: %s' % response.from_cache)
