@@ -169,7 +169,7 @@ class Reviewer(object):
         self._async_get(self.page_url, callback)
 
     def content_loaded(self, url, response):
-        if response.status_code > 399 or response.text is None:
+        if response.status_code > 499 or response.text is None:
             if response.text:
                 headers = None
             else:
