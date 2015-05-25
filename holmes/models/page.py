@@ -128,7 +128,8 @@ class Page(Base):
                 default_violations_values, violation_definitions, callback
             )),
             proxy_host=config.HTTP_PROXY_HOST,
-            proxy_port=config.HTTP_PROXY_PORT
+            proxy_port=config.HTTP_PROXY_PORT,
+            user_agent=config.HOLMES_USER_AGENT,
         )
 
     @classmethod

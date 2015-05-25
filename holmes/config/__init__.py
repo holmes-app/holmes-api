@@ -34,6 +34,7 @@ Config.define('NUMBER_OF_REVIEWS_TO_KEEP', 4, _('Maximum number of reviews to ke
 
 Config.define('DAYS_TO_KEEP_REQUESTS', 12, _('Number of days to keep requests'), 'Requests')
 Config.define('MAX_REQUESTS_FOR_FAILED_RESPONSES', 1000, _('Number of requests for failed responses'), 'Requests')
+Config.define('HOLMES_USER_AGENT', 'Mozilla/5.0 (compatible; Holmes)', _('User agent'), 'Requests')
 
 Config.define('MAX_ENQUEUE_BUFFER_LENGTH', 1000,
               _('Number of URLs to enqueue before submitting to the /pages route'), 'Validators')

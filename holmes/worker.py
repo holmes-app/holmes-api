@@ -82,6 +82,8 @@ class BaseWorker(BaseCLI):
     def async_get(self, url, handler, method='GET', **kw):
         url, response = self.cache.get_request(url)
 
+        kw['user_agent'] = self.config.HOLMES_USER_AGENT
+
         if not response:
             kw['proxy_host'] = self.config.HTTP_PROXY_HOST
             kw['proxy_port'] = self.config.HTTP_PROXY_PORT
