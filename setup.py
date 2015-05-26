@@ -17,6 +17,7 @@ tests_require = [
     'sqltap',
     'sphinx',
     'honcho',
+    'nose-focus',
 ]
 
 setup(

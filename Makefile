@@ -4,6 +4,9 @@ unit:
 	@coverage run --branch `which nosetests` -vv --with-yanc -s tests/unit/
 	@coverage report -m --fail-under=80
 
+focus:
+	@coverage run --branch `which nosetests` -vv --with-yanc --with-focus -s tests/unit/
+
 coverage-html: unit
 	@coverage html -d cover
 
