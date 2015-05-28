@@ -70,6 +70,7 @@ Holmes is a service to investigate your website health.
         'holmesalf>=0.1.2,<0.2.0',
         'PyJWT>=0.2.1,<0.3.0',
         'SQLAlchemy>=0.9.0,<1.0.0',
+        'tornado-redis-sentinel>=0.1.2,<0.2.0',
     ],
     extras_require={
         'tests': tests_require,

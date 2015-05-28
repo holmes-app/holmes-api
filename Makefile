@@ -26,10 +26,18 @@ validate_elasticsearch:
 validate_elasticsearch_running:
 	@if [[ "`curl -sv http://localhost:9200/ 2>&1 | grep 'Connection refused'`" != "" ]]; then echo "\nERROR:\n\nElasticSearch must be running. Please make sure you can run it before running holmes tests (Do you have the latest JDK installed? JRE is not enough for ElasticSearch).\n" && exit 1; fi
 
+kill-redis-sentinel:
+	-redis-cli -p 57575 shutdown
+	-redis-cli -p 57574 shutdown
+
+redis-sentinel: kill-redis-sentinel
+	redis-sentinel ./redis_sentinel.conf; sleep 1
+	redis-cli -p 57574 info > /dev/null
+
 kill_redis:
 	-redis-cli -p 7575 shutdown
 
-redis: kill_redis
+redis: kill_redis redis-sentinel
 	redis-server ./redis.conf; sleep 1
 	redis-cli -p 7575 info > /dev/null
 
@@ -39,7 +47,7 @@ flush_redis:
 kill_redis_test:
 	-redis-cli -p 57575 shutdown
 
-redis_test: kill_redis_test
+redis_test: kill_redis_test redis-sentinel
 	redis-server ./redis_test.conf; sleep 1
 	redis-cli -p 57575 info > /dev/null
 

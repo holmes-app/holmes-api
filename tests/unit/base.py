@@ -24,7 +24,8 @@ class ApiTestCase(CowTestCase):
 
     def tearDown(self):
         self.db.rollback()
-        self.server.application.redis.flushdb()
+        # self.server.application.redis.flushdb()
+
         super(ApiTestCase, self).tearDown()
 
     def get_config(self):
@@ -34,14 +35,14 @@ class ApiTestCase(CowTestCase):
             SQLALCHEMY_POOL_MAX_OVERFLOW=0,
             SQLALCHEMY_AUTO_FLUSH=True,
             COMMIT_ON_REQUEST_END=False,
-            REDISHOST='localhost',
-            REDISPORT=57575,
             REDISPUBSUB=True,
-            MATERIAL_GIRL_REDISHOST='localhost',
-            MATERIAL_GIRL_REDISPORT=57575,
+            MATERIAL_GIRL_SENTINEL_HOSTS=['127.0.0.1:57574'],
+            MATERIAL_GIRL_REDIS_MASTER='master-test',
             ELASTIC_SEARCH_HOST='localhost',
             ELASTIC_SEARCH_PORT=9200,
             ELASTIC_SEARCH_INDEX='holmes-test',
+            REDIS_SENTINEL_HOSTS=['127.0.0.1:57574'],
+            REDIS_MASTER='master-test',
         )
 
     def get_server(self):
@@ -49,11 +50,18 @@ class ApiTestCase(CowTestCase):
         debug = os.environ.get('DEBUG_TESTS', 'False').lower() == 'true'
 
         self.server = HolmesApiServer(config=cfg, debug=debug, db=db)
+
         return self.server
 
     def get_app(self):
         app = super(ApiTestCase, self).get_app()
         app.http_client = AsyncHTTPClient(self.io_loop)
+
+        # FIXME
+        self.server.connect_redis(self.io_loop)
+        self.server.connect_redis_pub_sub(self.io_loop)
+        self.server._after_start(self.io_loop)
+
         self.db = app.db
         return app
 
@@ -103,14 +111,14 @@ class ApiTestCase(CowTestCase):
         raise gen.Return(response)
 
     def connect_to_sync_redis(self):
-        import redis
+        from holmes.utils import get_redis
         from holmes.cache import SyncCache
 
-        host = self.server.application.config.get('REDISHOST')
-        port = self.server.application.config.get('REDISPORT')
-
-        redis = redis.StrictRedis(host=host, port=port, db=0)
-
+        redis = get_redis(
+            self.server.application.config.get('REDIS_SENTINEL_HOSTS'),
+            self.server.application.config.get('REDIS_MASTER'),
+            self.server.application.config.get('REDISPASS')
+        )
         return SyncCache(self.db, redis, self.server.application.config)
 
     def use_no_external_search_provider(self):
@@ -141,6 +149,7 @@ class ValidatorTestCase(ApiTestCase):
     @property
     def sync_cache(self):
         return self.connect_to_sync_redis()
+
 
 class FacterTestCase(ValidatorTestCase):
     pass

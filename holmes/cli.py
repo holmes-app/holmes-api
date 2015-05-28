@@ -6,12 +6,11 @@ import logging
 from sheep import Shepherd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
 
 from holmes.cache import SyncCache
-from holmes.utils import load_classes
+from holmes.utils import load_classes, get_redis_port_host, get_redis
 from holmes.config import Config
 
 
@@ -75,22 +74,38 @@ class BaseCLI(Shepherd):
         self.db = scoped_session(self.sqlalchemy_db_maker)
 
     def connect_to_redis(self):
-        host = self.config.get('REDISHOST')
-        port = self.config.get('REDISPORT')
+        host, port = get_redis_port_host(
+            self.config.get('REDIS_SENTINEL_HOSTS'),
+            self.config.get('REDIS_MASTER')
+        )
 
         self.info("Connecting to redis at %s:%d" % (host, port))
-        self.redis = redis.StrictRedis(host=host, port=port, db=0)
+        self.redis = get_redis(
+            self.config.get('REDIS_SENTINEL_HOSTS'),
+            self.config.get('REDIS_MASTER'),
+            self.config.get('REDISPASS')
+        )
 
         self.cache = SyncCache(self.db, self.redis, self.config)
 
         self.info("Connecting pubsub to redis at %s:%d" % (host, port))
-        self.redis_pub_sub = redis.StrictRedis(host=host, port=port, db=0)
+        self.redis_pub_sub = get_redis(
+            self.config.get('REDIS_SENTINEL_HOSTS'),
+            self.config.get('REDIS_MASTER'),
+            self.config.get('REDISPASS')
+        )
 
-        host = self.config.get('MATERIAL_GIRL_REDISHOST')
-        port = self.config.get('MATERIAL_GIRL_REDISPORT')
+        host, port = get_redis_port_host(
+            self.config.get('MATERIAL_GIRL_SENTINEL_HOSTS'),
+            self.config.get('MATERIAL_GIRL_REDIS_MASTER')
+        )
 
         self.info("Connecting material girl to redis at %s:%d" % (host, port))
-        self.redis_material = redis.StrictRedis(host=host, port=port, db=0)
+        self.redis_material = get_redis(
+            self.config.get('MATERIAL_GIRL_SENTINEL_HOSTS'),
+            self.config.get('MATERIAL_GIRL_REDIS_MASTER'),
+            self.config.get('MATERIAL_GIRL_REDISPASS')
+        )
 
     def configure_material_girl(self):
         from holmes.material import configure_materials

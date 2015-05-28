@@ -1,14 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
+
 from cow.server import Server
 from cow.plugins.sqlalchemy_plugin import SQLAlchemyPlugin
-from cow.plugins.redis_plugin import RedisPlugin
 from tornado.httpclient import AsyncHTTPClient
 import tornado.locale
-import redis
 from materialgirl import Materializer
 from materialgirl.storage.redis import RedisStorage
+from tornado_redis_sentinel import SentinelClient
 
 from holmes.handlers.auth import AuthenticateHandler
 from holmes.handlers.page import (
@@ -41,7 +42,9 @@ from holmes.handlers.users import UserLocaleHandler
 
 from holmes.handlers.bus import EventBusHandler
 from holmes.event_bus import EventBus
-from holmes.utils import load_classes, load_languages, locale_path
+from holmes.utils import (
+    load_classes, load_languages, locale_path, get_redis
+)
 from holmes.models import Key, DomainsViolationsPrefs
 from holmes.cache import Cache
 from holmes import __version__
@@ -74,6 +77,8 @@ class HolmesApiServer(Server):
         super(HolmesApiServer, self).initialize_app(*args, **kw)
 
         self.application.db = None
+        self.application.redis = None
+        self.application.redis_pub_sub = None
 
         if self.force_debug is not None:
             self.debug = self.force_debug
@@ -125,10 +130,78 @@ class HolmesApiServer(Server):
     def get_plugins(self):
         return [
             SQLAlchemyPlugin,
-            RedisPlugin
         ]
 
+    def on_disconnect_redis(self, io_loop, *args, **kwargs):
+        self.application.redis.connect(
+            sentinels=self.application.config.get('REDIS_SENTINEL_HOSTS'),
+            master_name=self.application.config.get('REDIS_MASTER'),
+            callback=self.connect_redis(io_loop)
+        )
+
+    def on_disconnect_redis_pub_sub(self, io_loop, *args, **kwargs):
+        self.application.redis_pub_sub.connect(
+            sentinels=self.application.config.get('REDIS_SENTINEL_HOSTS'),
+            master_name=self.application.config.get('REDIS_MASTER'),
+            callback=self.connect_redis_pub_sub(io_loop)
+        )
+
+    def on_connected_redis(self, io_loop):
+        self.application.redis.auth(
+            self.application.config.get('REDISPASS'),
+            callback=lambda *args: self.connect_redis_pub_sub(io_loop)
+        )
+
+    def on_connected_redis_pub_sub(self, io_loop):
+        def handle(*args, **kwargs):
+            def on_auth(*args, **kwargs):
+                self.application.event_bus = EventBus(self.application)
+                self._after_start(io_loop)
+
+            # FIXME
+            if not hasattr(self.application.redis_pub_sub, 'connection_status'):
+                return self.connect_redis_pub_sub(io_loop)
+
+            if self.application.redis_pub_sub.connection_status != 'CONNECTED':
+                # raise RuntimeError("could not connect to redis...")
+                return self.connect_redis_pub_sub(io_loop)
+
+            if self.application.config.get('REDISPASS') is not None:
+                self.application.redis_pub_sub.auth(
+                    self.application.config.get('REDISPASS'),
+                    on_auth
+                )
+            else:
+                on_auth()
+        return handle
+
+    def connect_redis(self, io_loop):
+        self.application.redis = SentinelClient(
+            io_loop=io_loop,
+            # disconnect_callback=self.on_disconnect_redis(io_loop)
+        )
+        self.application.redis.connect(
+            sentinels=self.application.config.get('REDIS_SENTINEL_HOSTS'),
+            master_name=self.application.config.get('REDIS_MASTER'),
+            callback=lambda *args: self.on_connected_redis(io_loop)
+        )
+
+    def connect_redis_pub_sub(self, io_loop):
+        self.application.redis_pub_sub = SentinelClient(
+            io_loop=io_loop,
+            # disconnect_callback=self.on_disconnect_redis_pub_sub(io_loop)
+        )
+        self.application.redis_pub_sub.connect(
+            sentinels=self.application.config.get('REDIS_SENTINEL_HOSTS'),
+            master_name=self.application.config.get('REDIS_MASTER'),
+            callback=self.on_connected_redis_pub_sub(io_loop)
+        )
+
     def after_start(self, io_loop):
+        self.connect_redis(io_loop)
+
+    def _after_start(self, io_loop):
+
         if self.db is not None:
             self.application.db = self.db
         else:
@@ -178,7 +251,6 @@ class HolmesApiServer(Server):
             self.application.default_violations_values
         )
 
-        self.application.event_bus = EventBus(self.application)
         self.application.http_client = AsyncHTTPClient(io_loop=io_loop)
 
         self.application.cache = Cache(self.application)
@@ -197,10 +269,11 @@ class HolmesApiServer(Server):
     def configure_material_girl(self):
         from holmes.material import configure_materials
 
-        host = self.config.get('MATERIAL_GIRL_REDISHOST')
-        port = self.config.get('MATERIAL_GIRL_REDISPORT')
-
-        self.redis_material = redis.StrictRedis(host=host, port=port, db=0)
+        self.redis_material = get_redis(
+            self.config.get('MATERIAL_GIRL_SENTINEL_HOSTS'),
+            self.config.get('MATERIAL_GIRL_REDIS_MASTER'),
+            self.config.get('MATERIAL_GIRL_REDISPASS')
+        )
 
         self.application.girl = Materializer(
             storage=RedisStorage(redis=self.redis_material),
@@ -235,6 +308,14 @@ class HolmesApiServer(Server):
 
     def before_end(self, io_loop):
         self.application.db.remove()
+
+        if hasattr(self.application, 'redis'):
+            del self.application.redis
+            logging.info('Disconnecting from redis...')
+
+        if hasattr(self.application, 'redis_pub_sub'):
+            del self.application.redis_pub_sub
+            logging.info('Disconnecting from redis pubsub...')
 
         if self.debug and getattr(self, 'sqltap', None) is not None:
             from sqltap import sqltap
