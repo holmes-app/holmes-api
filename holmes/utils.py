@@ -16,14 +16,19 @@ EMPTY_DOMAIN_RESULT = ('', '')
 locale_path = abspath(join(dirname(__file__), 'i18n/locale/'))
 languages = {}
 
+
 def _(message):
     return message
+
 
 def load_languages():
     global languages
 
     for language in os.listdir(locale_path):
-        languages[language] = gettext.translation('api', locale_path, languages=[language])
+        languages[language] = gettext.translation(
+            'api', locale_path, languages=[language]
+        )
+
 
 def install_i18n(language="en_US"):
     global languages
@@ -41,15 +46,17 @@ def get_domain_from_url(url, default_scheme='http'):
     result = urlparse(url)
     domain = result.netloc
 
-    if (result.scheme and result.scheme in ['http', 'https']):
+    protocols = ['http', 'https']
+
+    if (result.scheme and result.scheme in protocols):
         scheme = result.scheme
 
-    if (result.scheme and result.scheme not in ['http', 'https']) and not domain:
+    if (result.scheme and result.scheme not in protocols) and not domain:
         domain = result.scheme
     else:
         if not domain:
             domain = result.path.split('/')[0]
-            if not '.' in domain:
+            if '.' not in domain:
                 return EMPTY_DOMAIN_RESULT
 
         if ':' in domain:
@@ -88,11 +95,17 @@ def load_classes(classes=None, classes_to_load=None, default=None):
             klass = get_class(class_full_name)
             classes.append(klass)
         except ValueError:
-            logging.warn('Invalid class name [%s]. Will be ignored.' % class_full_name)
+            logging.warn(
+                'Invalid class name [%s]. Will be ignored.' % class_full_name
+            )
         except AttributeError:
-            logging.warn('Class [%s] not found. Will be ignored.' % class_full_name)
+            logging.warn(
+                'Class [%s] not found. Will be ignored.' % class_full_name
+            )
         except ImportError:
-            logging.warn('Module [%s] not found. Will be ignored.' % class_full_name)
+            logging.warn(
+                'Module [%s] not found. Will be ignored.' % class_full_name
+            )
 
     return classes
 
