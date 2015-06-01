@@ -60,7 +60,7 @@ class BaseWorker(BaseCLI):
 
     def handle_error(self, exc_type, exc_value, tb):
         try:
-            if not self.db.invalidated:
+            if not self.db.connection().invalidated:
                 self.db.rollback()
         except Exception:
             err = sys.exc_info()[1]
