@@ -134,11 +134,11 @@ class Request(Base):
         dt = date.today() - timedelta(days=config.DAYS_TO_KEEP_REQUESTS)
 
         older_requests = db \
-            .query(Request) \
+            .query(Request.id) \
             .filter(Request.completed_date <= dt) \
-            .limit(limit) \
+            .limit(limit)
 
-        older_requests_ids = [item.id for item in older_requests]
+        older_requests_ids = [r for (r, ) in older_requests]
 
         if not older_requests_ids:
             return None
