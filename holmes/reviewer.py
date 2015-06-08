@@ -176,7 +176,7 @@ class Reviewer(object):
                 headers = response.headers
 
             msg = "Could not load '%s' (%s)" % (url, response.status_code)
-            logging.error(msg)
+            logging.debug(msg)
             if headers is not None:
                 logging.warning('Response is from cache: %s' % response.from_cache)
                 logging.warning('Headers for "%s": %s' % (url, headers))
